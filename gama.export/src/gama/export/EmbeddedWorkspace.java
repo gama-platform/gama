@@ -41,15 +41,30 @@ public final class EmbeddedWorkspace {
 	 *             the core exception
 	 */
 	public void registerProjects() throws IOException, CoreException {
+		registerProjects(Path.of(ExportHelper.toAbsoluteFromEmbeddedWorkspacePath("")));
+	}
+
+	public void registerProjects(final Path workspacePath) throws IOException, CoreException {
 		final var workspace = ResourcesPlugin.getWorkspace();
-		try (Stream<Path> paths = Files.list(Path.of(ExportHelper.toAbsoluteFromEmbeddedWorkspacePath("")))) {
+		try (Stream<Path> paths = Files.list(workspacePath)) {
 			for (final Path path : (Iterable<Path>) paths::iterator) {
 				final Path metadata = path.resolve(".project");
 				if (!Files.isRegularFile(metadata)) { continue; }
 				final var description = workspace
 						.loadProjectDescription(org.eclipse.core.runtime.Path.fromOSString(metadata.toString()));
 				final var project = workspace.getRoot().getProject(description.getName());
-				if (!project.exists()) { project.create(description, null); }
+				final Path location = path.toRealPath();
+				if (project.exists()) {
+					if (project.getLocation() == null
+							|| !project.getLocation().toFile().toPath().toRealPath().equals(location))
+						throw new IOException("A different project is already registered as " + description.getName());
+				} else {
+					final Path defaultLocation = workspace.getRoot().getLocation().toFile().toPath()
+							.toRealPath().resolve(description.getName());
+					description.setLocation(defaultLocation.equals(location) ? null
+							: org.eclipse.core.runtime.Path.fromOSString(location.toString()));
+					project.create(description, null);
+				}
 				if (!project.isOpen()) { project.open(null); }
 			}
 		}

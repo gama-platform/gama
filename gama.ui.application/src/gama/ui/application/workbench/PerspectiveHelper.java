@@ -331,9 +331,12 @@ public class PerspectiveHelper {
 	public static boolean openPerspective(final String perspectiveId, final boolean immediately,
 			final boolean withAutoSave, final boolean memorizeEditors) {
 		if (perspectiveId == null) return false;
-		if (perspectiveId.equals(currentPerspectiveId)) return true;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		if (page == null) return false;
+		if (page.getPerspective() != null && perspectiveId.equals(page.getPerspective().getId())) {
+			currentPerspectiveId = perspectiveId;
+			return true;
+		}
 		if (GamaPreferences.Modeling.EDITOR_PERSPECTIVE_SAVE.getValue()) { page.saveAllEditors(false); }
 		if (memorizeEditors) { memorizeActiveEditor(page); }
 		final IPerspectiveDescriptor oldDescriptor = page.getPerspective();

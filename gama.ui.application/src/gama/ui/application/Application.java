@@ -84,7 +84,28 @@ public class Application implements IApplication {
 			if (filesToOpen.isEmpty()) return;
 			final String[] filePaths = filesToOpen.toArray(new String[filesToOpen.size()]);
 			filesToOpen.clear();
-			for (final String path : filePaths) { WorkspaceModelsManager.instance.openModelPassedAsArgument(path); }
+			for (final String path : filePaths) { openDocument(path); }
+		}
+	}
+
+	/** Routes package documents through their handler without introducing a dependency on the export UI bundle. */
+	public static void openDocument(final String path) {
+		if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".gamp")) {
+			WorkspaceModelsManager.instance.openModelPassedAsArgument(path);
+			return;
+		}
+		final var workbench = PlatformUI.getWorkbench();
+		final var commands = workbench.getService(org.eclipse.ui.commands.ICommandService.class);
+		final var handlers = workbench.getService(org.eclipse.ui.handlers.IHandlerService.class);
+		try {
+			final var command = org.eclipse.core.commands.ParameterizedCommand.generateCommand(
+					commands.getCommand("gama.ui.export.openPackage"), java.util.Map.of("gama.ui.export.packagePath", path));
+			if (command == null) throw new IllegalStateException("The exported model command is not available");
+			handlers.executeCommand(command, null);
+		} catch (final org.eclipse.core.commands.common.CommandException | RuntimeException e) {
+			DEBUG.ERR("Unable to open exported model " + path, e);
+			org.eclipse.jface.dialogs.MessageDialog.openError(workbench.getActiveWorkbenchWindow().getShell(),
+					"Unable to open exported model", e.getMessage());
 		}
 	}
 
@@ -96,6 +117,15 @@ public class Application implements IApplication {
 	public static void createProcessor(final Display display) {
 		if (display == null) return;
 		OPEN_DOCUMENT_PROCESSOR = new OpenDocumentEventProcessor(display);
+		if (display.getData("gama.pendingStartupDocuments") instanceof java.util.List<?> pending) {
+			for (final Object path : pending) {
+				if (!(path instanceof String document)) continue;
+				final Event event = new Event();
+				event.text = document;
+				OPEN_DOCUMENT_PROCESSOR.handleEvent(event);
+			}
+			display.setData("gama.pendingStartupDocuments", null);
+		}
 	}
 
 	@Override
@@ -115,7 +145,7 @@ public class Application implements IApplication {
 		});
 		final Display display = configureDisplay();
 		try {
-			Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
+			Object check = Display.getCurrent().syncCall(() -> checkWorkspace());
 
 
 			if (!EXIT_OK.equals(check)) {
@@ -144,6 +174,8 @@ public class Application implements IApplication {
 
 	/** Called after workspace selection and before the workbench is created; EXIT_OK cancels startup. */
 	protected Object initializeWorkspace() throws Exception { return null; }
+
+	protected Object checkWorkspace() throws Exception { return GAMA.getWorkspaceManager().checkWorkspace(); }
 
 	protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() { return new ApplicationWorkbenchAdvisor(); }
 

@@ -8,9 +8,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -27,12 +29,19 @@ import org.eclipse.swt.widgets.Text;
 
 import gama.api.runtime.SystemInfo;
 import gama.export.LauncherConfiguration;
+import gama.export.SimulationPackageExporter.Dependency;
 
 public class ExportModelDialog extends TitleAreaDialog {
+
+	public enum Format { STANDALONE, PACKAGE }
 
 	private final String[] availableExperiments;
 	private final String defaultTitle;
 	private final String defaultDescription;
+	private Format format;
+	private Composite formatOptions;
+	private Composite packageOptions;
+	private Composite applicationOptions;
 	private final List<Button> defaultButtons = new ArrayList<>();
 	private Text destination;
 	private Table experiments;
@@ -42,6 +51,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private Text title;
 	private Text description;
 	private Text image;
+	private Text pluginPaths;
 	private int defaultExperiment = -1;
 	private LauncherConfiguration homeConfiguration;
 	private Path output;
@@ -49,23 +59,36 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private boolean oneFile;
 	private List<String> selectedExperiments = List.of();
 	private String startupLabel = "";
+	private final String exportedPackageId = "simulation." + java.util.UUID.randomUUID();
+	private List<Dependency> dependencies = List.of();
+	private String dependencyError;
 
 	public ExportModelDialog(final String[] experimentNames) {
 		this(experimentNames, "", "");
 	}
 
 	public ExportModelDialog(final String[] experimentNames, final String defaultTitle, final String defaultDescription) {
+		this(experimentNames, defaultTitle, defaultDescription, Format.PACKAGE);
+	}
+
+	public ExportModelDialog(final String[] experimentNames, final String defaultTitle, final String defaultDescription,
+			final Format format) {
 		super(Display.getDefault().getActiveShell());
 		availableExperiments = experimentNames.clone();
 		this.defaultTitle = defaultTitle;
 		this.defaultDescription = defaultDescription;
+		this.format = format;
 		setHelpAvailable(false);
 	}
 
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Export standalone model");
+		updateHeading();
+	}
+
+	private void updateHeading() {
+		setTitle(format == Format.PACKAGE ? "Export model" : "Export standalone application");
 		setMessage("Select experiments to export and optionally choose one to run by default.",
 				IMessageProvider.INFORMATION);
 	}
@@ -88,9 +111,56 @@ public class ExportModelDialog extends TitleAreaDialog {
 		description.setText(defaultDescription);
 		createImageSection(container);
 		createExperimentSection(container);
+		formatOptions = new Composite(container, SWT.NONE);
+		formatOptions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final StackLayout formats = new StackLayout();
+		formatOptions.setLayout(formats);
+		packageOptions = new Composite(formatOptions, SWT.NONE);
+		packageOptions.setLayout(new GridLayout(2, false));
+		createPackageSection(packageOptions);
+		applicationOptions = new Composite(formatOptions, SWT.NONE);
+		applicationOptions.setLayout(new GridLayout(2, false));
+		createApplicationOptions(applicationOptions);
+		formats.topControl = format == Format.PACKAGE ? packageOptions : applicationOptions;
 		createOptionsSection(container);
 		createDestinationSection(container);
 		return area;
+	}
+
+	private void createPackageSection(final Composite container) {
+		final List<Dependency> extraDependencies = dependencies.stream().filter(dependency -> !dependency.standard()).toList();
+		if (!extraDependencies.isEmpty()) createDependencySection(container, extraDependencies);
+		final Label explanation = new Label(container, SWT.WRAP);
+		explanation.setText("The exported model includes your models and data and opens with the same or a newer version of GAMA. "
+				+ "Include any files referenced through dynamically constructed paths in your project before exporting.");
+		if (dependencyError != null)
+			explanation.setText("Model dependencies could not be resolved: " + dependencyError
+					+ "\nThe application exporter is still available using the button below.");
+		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		data.widthHint = 500;
+		explanation.setLayoutData(data);
+	}
+
+	private void createDependencySection(final Composite container, final List<Dependency> extraDependencies) {
+		new Label(container, SWT.NONE).setText("Plugin dependencies");
+		final Composite row = new Composite(container, SWT.NONE);
+		row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		final GridLayout layout = new GridLayout(2, false);
+		layout.marginWidth = layout.marginHeight = 0;
+		row.setLayout(layout);
+		pluginPaths = new Text(row, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
+		pluginPaths.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		((GridData) pluginPaths.getLayoutData()).heightHint = 45;
+		pluginPaths.setToolTipText("Required non-standard Java plugins are included automatically; review exact host requirements and unsupported extras.");
+		updateDependencies();
+		final Composite actions = new Composite(row, SWT.NONE);
+		actions.setLayout(new GridLayout());
+		final Button choose = new Button(actions, SWT.PUSH);
+		choose.setText("Review dependencies...");
+		choose.setEnabled(dependencyError == null);
+		choose.addListener(SWT.Selection, event -> {
+			new PackageDependenciesDialog(getShell(), extraDependencies).open();
+		});
 	}
 
 	private Text textField(final Composite parent, final String caption, final int style) {
@@ -203,15 +273,24 @@ public class ExportModelDialog extends TitleAreaDialog {
 		final GridLayout layout = new GridLayout(2, false);
 		layout.marginWidth = layout.marginHeight = 0;
 		row.setLayout(layout);
-		includeJdkButton = new Button(row, SWT.CHECK);
-		includeJdkButton.setText("Include JDK");
-		includeJdkButton.setSelection(true);
 		showHomeButton = new Button(row, SWT.CHECK);
 		showHomeButton.setText("Show Home at startup");
 		showHomeButton.setToolTipText("Required when no default experiment is selected");
 		updateDefault();
+	}
+
+	private void createApplicationOptions(final Composite container) {
+		final Label explanation = new Label(container, SWT.WRAP);
+		explanation.setText("Export a complete application instead of an exported model. Application signing and notarization "
+				+ "remain your responsibility when distributing it.");
+		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		data.widthHint = 500;
+		explanation.setLayoutData(data);
+		includeJdkButton = new Button(container, SWT.CHECK);
+		includeJdkButton.setText("Include JDK");
+		includeJdkButton.setSelection(true);
 		if (!SystemInfo.isMac()) {
-			oneFileButton = new Button(row, SWT.CHECK);
+			oneFileButton = new Button(container, SWT.CHECK);
 			oneFileButton.setText("Export as a single-file executable");
 			oneFileButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 			oneFileButton.addListener(SWT.Selection, event -> {
@@ -226,6 +305,42 @@ public class ExportModelDialog extends TitleAreaDialog {
 		}
 	}
 
+	@Override
+	protected void createButtonsForButtonBar(final Composite parent) {
+		createButton(parent, IDialogConstants.CLIENT_ID, alternateFormatLabel(), false);
+		super.createButtonsForButtonBar(parent);
+		getButton(IDialogConstants.OK_ID).setText("Export");
+	}
+
+	private String alternateFormatLabel() {
+		return format == Format.PACKAGE ? "Export application instead..." : "Export model instead...";
+	}
+
+	@Override
+	protected void buttonPressed(final int buttonId) {
+		if (buttonId != IDialogConstants.CLIENT_ID) {
+			super.buttonPressed(buttonId);
+			return;
+		}
+		final String previousSuffix = exportSuffix();
+		format = format == Format.PACKAGE ? Format.STANDALONE : Format.PACKAGE;
+		final String value = destination.getText();
+		if (value.toLowerCase(java.util.Locale.ROOT).endsWith(previousSuffix))
+			destination.setText(value.substring(0, value.length() - previousSuffix.length()) + exportSuffix());
+		((StackLayout) formatOptions.getLayout()).topControl = format == Format.PACKAGE ? packageOptions : applicationOptions;
+		formatOptions.layout(true, true);
+		getButton(IDialogConstants.CLIENT_ID).setText(alternateFormatLabel());
+		getButton(IDialogConstants.CLIENT_ID).getParent().layout(true, true);
+		setErrorMessage(null);
+		updateHeading();
+	}
+
+	private String exportSuffix() {
+		if (format == Format.PACKAGE) return ".gamp";
+		if (oneFileButton != null && oneFileButton.getSelection()) return SystemInfo.isWindows() ? ".exe" : "";
+		return SystemInfo.isMac() ? ".app.zip" : ".zip";
+	}
+
 	private void createDestinationSection(final Composite container) {
 		new Label(container, SWT.NONE).setText("Save as");
 		final Composite row = new Composite(container, SWT.NONE);
@@ -236,14 +351,15 @@ public class ExportModelDialog extends TitleAreaDialog {
 		destination = new Text(row, SWT.BORDER);
 		destination.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		final String filename = defaultTitle.isBlank() ? "launcher"
-				: defaultTitle.replaceFirst("\\.[^.]+$", "").replaceAll("[\\\\/:*?\"<>|]", "_");
+				: defaultTitle.replaceFirst("(?i)\\.gaml$", "").replaceAll("[\\\\/:*?\"<>|]", "_");
 		destination.setText(Path.of(System.getProperty("user.home"),
-				filename + (SystemInfo.isMac() ? ".app.zip" : ".zip")).toString());
+				filename + (format == Format.PACKAGE ? ".gamp" : SystemInfo.isMac() ? ".app.zip" : ".zip")).toString());
 		final Button browse = new Button(row, SWT.PUSH);
 		browse.setText("Browse...");
 		browse.addListener(SWT.Selection, event -> {
 			final FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-			dialog.setText("Export standalone model");
+			dialog.setText(format == Format.PACKAGE ? "Export model" : "Export standalone model");
+			if (format == Format.PACKAGE) dialog.setFilterExtensions(new String[] { "*.gamp" });
 			dialog.setOverwrite(true);
 			try {
 				final Path path = Path.of(destination.getText()).toAbsolutePath();
@@ -268,6 +384,15 @@ public class ExportModelDialog extends TitleAreaDialog {
 			output = Path.of(destination.getText().trim()).toAbsolutePath().normalize();
 			if (output.getFileName() == null || Files.isDirectory(output))
 				throw new IllegalArgumentException("The destination must be a file, not a directory.");
+			if (format == Format.PACKAGE) {
+				if (dependencyError != null) throw new IllegalArgumentException("Model dependencies could not be resolved: " + dependencyError);
+				for (final Dependency dependency : dependencies) {
+					if (!dependency.standard() && !dependency.embeddable())
+						throw new IllegalArgumentException("Cannot package " + dependency.id() + ": " + dependency.reason());
+				}
+				if (!output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamp"))
+					throw new IllegalArgumentException("Exported model files must use the .gamp extension.");
+			}
 			selectedExperiments = Arrays.stream(experiments.getSelectionIndices())
 					.mapToObj(index -> availableExperiments[index]).toList();
 			if (selectedExperiments.isEmpty()) throw new IllegalArgumentException("Select at least one experiment.");
@@ -282,8 +407,10 @@ public class ExportModelDialog extends TitleAreaDialog {
 			setErrorMessage(e.getMessage());
 			return;
 		}
-		includeJdk = includeJdkButton.getSelection();
-		oneFile = oneFileButton != null && oneFileButton.getSelection();
+		if (Files.exists(output) && !org.eclipse.jface.dialogs.MessageDialog.openQuestion(getShell(), "Replace existing export?",
+				"The file already exists:\n" + output + "\n\nReplace it?")) return;
+		includeJdk = format == Format.STANDALONE && includeJdkButton.getSelection();
+		oneFile = format == Format.STANDALONE && oneFileButton != null && oneFileButton.getSelection();
 		startupLabel = defaultExperiment < 0 ? "" : availableExperiments[defaultExperiment];
 		homeConfiguration = new LauncherConfiguration(title.getText().trim(), description.getText(),
 				showHomeButton.getSelection(), startupLabel, image.getText().trim());
@@ -306,4 +433,30 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	public String getStartupExperiment() { return startupLabel; }
+
+	public String getPackageId() { return exportedPackageId; }
+
+	public String getPackageVersion() { return "1.0.0"; }
+
+	public List<Path> getEmbeddedPlugins() {
+		return dependencies.stream().filter(Dependency::automatic).map(Dependency::file).toList();
+	}
+
+	public Format getFormat() { return format; }
+
+	public void setDependencies(final List<Dependency> dependencies) {
+		this.dependencies = List.copyOf(dependencies);
+	}
+
+	public void setDependencyError(final String error) { dependencyError = error; }
+
+	private void updateDependencies() {
+		final List<Path> embeddedPlugins = getEmbeddedPlugins();
+		final long unsupported = dependencies.stream().filter(dependency -> !dependency.standard() && !dependency.embeddable()).count();
+		pluginPaths.setText(embeddedPlugins.size() + " additional plugins included automatically"
+				+ (unsupported == 0 ? "" : "; " + unsupported + " unsupported (export blocked)")
+				+ "\n" + String.join(", ", dependencies.stream()
+						.filter(dependency -> dependency.embeddable() && embeddedPlugins.contains(dependency.file()))
+						.map(Dependency::id).toList()));
+	}
 }

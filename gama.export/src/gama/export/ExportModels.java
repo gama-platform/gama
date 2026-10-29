@@ -119,7 +119,10 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 					.compile(URI.createPlatformResourceURI(file.getFullPath().toString(), true), null);
 			if (model == null) throw new IOException(
 					"Cannot export " + file.getFullPath() + ": please correct its compilation errors first");
+			final Path parent = file.getLocation().toFile().toPath().getParent();
+			final Set<Path> outputOnly;
 			try {
+				outputOnly = ModelDataPaths.outputOnly(model.getDescription().getUnderlyingElement(), parent);
 				projects.add(file.getProject());
 				final GamlProperties properties = new GamlProperties();
 				model.getDescription().collectMetaInformation(properties);
@@ -135,9 +138,11 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 				model.dispose();
 			}
 			final GamlFileInfo info = new GamlFileInfo(file);
-			final Path parent = file.getLocation().toFile().toPath().getParent();
 			final Set<String> files = dataFiles.computeIfAbsent(file.getProject(), key -> new HashSet<>());
-			for (final String use : info.getUses()) { files.add(parent.resolve(use).normalize().toString()); }
+			for (final String use : info.getUses()) {
+				final Path path = parent.resolve(use.replace('\\', '/')).toAbsolutePath().normalize();
+				if (!outputOnly.contains(path)) files.add(path.toString());
+			}
 			for (final String imported : info.getImports()) {
 				final IPath path = imported.startsWith("/resource/")
 						? org.eclipse.core.runtime.Path.fromPortableString(
@@ -152,7 +157,8 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 	}
 
 	public String defaultTitle() {
-		return roots.size() == 1 ? roots.getFirst().getName() : roots.getFirst().getProject().getName();
+		return roots.size() == 1 ? roots.getFirst().getName().replaceFirst("(?i)\\.gaml$", "")
+				: roots.getFirst().getProject().getName();
 	}
 
 	public String defaultDescription() throws IOException, CoreException {

@@ -644,7 +644,8 @@ public class SwtGui implements IGui {
 			final Boolean showNavigator, final Boolean showControls, final Boolean keepTray,
 			final Supplier<IColor> color, final boolean showEditors) {
 
-		WorkbenchHelper.setWorkbenchWindowTitle(exp.getName() + " - " + exp.getModel().getFilePath());
+		if (!Boolean.getBoolean("exported_runner"))
+			WorkbenchHelper.setWorkbenchWindowTitle(exp.getName() + " - " + exp.getModel().getFilePath());
 		// Capture all view-arrangement work as a Runnable rather than scheduling it as a UIJob.
 		// openAndApplyLayout() will drain and execute this inside its single setRedraw(false/true)
 		// syncExec, so console, navigator, toolbar and display views all appear in one paint.

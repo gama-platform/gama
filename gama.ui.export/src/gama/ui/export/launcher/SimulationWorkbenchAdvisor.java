@@ -12,12 +12,17 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.keys.BindingService;
 import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 
 import gama.api.GAMA;
 import gama.api.utils.files.BufferingUtils;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
+import gama.ui.application.workbench.ApplicationWorkbenchWindowAdvisor;
+import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.export.commands.SaveSimulationsArtifacts;
+import gama.export.SimulationPackageLauncher;
+import gama.ui.shared.utils.LaunchPresentation;
 
 public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdvisor {
 
@@ -33,6 +38,15 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 	@Override
 	protected void openStartupModel() {
 		configureLauncherUI();
+		if (System.getProperty(SimulationPackageLauncher.CONTENT_PROPERTY) != null) {
+			try {
+				java.nio.file.Files.writeString(StartupModelHelper.getInstance().getContentRoot().resolve("player.ready"),
+						"Simulation player workbench started\n");
+			} catch (final java.io.IOException e) {
+				DEBUG.ERR("Unable to record simulation player startup", e);
+				GAMA.getGui().getDialogFactory().error("Unable to record player startup: " + e.getMessage());
+			}
+		}
 		if (!StartupModelHelper.getInstance().getConfiguration().showHome()) {
 			org.eclipse.swt.widgets.Display.getDefault().asyncExec(
 					() -> StartupModelHelper.getInstance().launchDefaultExperiment());
@@ -42,8 +56,37 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 	@Override
 	public String getInitialWindowPerspectiveId() { return LauncherHomePerspective.ID; }
 
+	@Override
+	public ApplicationWorkbenchWindowAdvisor createWorkbenchWindowAdvisor(final IWorkbenchWindowConfigurer configurer) {
+		return new ApplicationWorkbenchWindowAdvisor(this, configurer) {
+			@Override
+			public void preWindowOpen() {
+				super.preWindowOpen();
+				configurer.setTitle(StartupModelHelper.getInstance().getPresentation().title() + " powered by GAMA");
+			}
+
+			@Override
+			public void postWindowOpen() {
+				super.postWindowOpen();
+				if (configurer.getWindow() instanceof WorkbenchWindow window)
+					configureHomeTrim(window, true);
+			}
+		};
+	}
+
+	private static void configureHomeTrim(final WorkbenchWindow window, final boolean home) {
+		// Search/status/heap controls live beside the cool bar in the same top trim.
+		window.setCoolBarVisible(!home && !Boolean.FALSE.equals(PerspectiveHelper.keepControls()));
+		for (final var element : window.getTopTrim().getChildren()) {
+			if ("SearchField".equals(element.getElementId())) element.setVisible(!home);
+		}
+		window.getTopTrim().setVisible(!home);
+	}
+
 	private void configureLauncherUI() {
 		final var workbench = PlatformUI.getWorkbench();
+		final var home = workbench.getPerspectiveRegistry().findPerspectiveWithId(LauncherHomePerspective.ID);
+		if (home == null) throw new IllegalStateException("The simulation player Home perspective is not installed");
 		final var service = workbench.getService(IBindingService.class);
 		if (service instanceof BindingService bindings) {
 			try {
@@ -56,11 +99,28 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 			}
 		}
 		for (final var window : workbench.getWorkbenchWindows()) {
+			final var page = window.getActivePage();
+			if (page == null) throw new IllegalStateException("The simulation player has no active workbench page");
+			if (page.getPerspective() == null || !LauncherHomePerspective.ID.equals(page.getPerspective().getId()))
+				page.setPerspective(home);
+			try {
+				page.showView(LauncherHomeView.ID);
+			} catch (final org.eclipse.ui.PartInitException e) {
+				throw new IllegalStateException("Unable to open the simulation player Home screen", e);
+			}
+			page.setEditorAreaVisible(false);
+			final var helper = StartupModelHelper.getInstance();
+			final String selection = helper.getConfiguration().startupExperiment().isBlank()
+					? helper.getSelections().getFirst() : helper.getConfiguration().startupExperiment();
+			window.getShell().setData(LaunchPresentation.SHELL_DATA_KEY,
+					new LaunchPresentation.State(helper.getPresentation(), selection, null));
+			window.getShell().setText(helper.getPresentation().title() + " powered by GAMA");
 			if (!(window instanceof WorkbenchWindow internal)) continue;
+			configureHomeTrim(internal, true);
 			window.addPerspectiveListener(new PerspectiveAdapter() {
 				@Override
 				public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
-					if (LauncherHomePerspective.ID.equals(perspective.getId())) internal.setCoolBarVisible(true);
+					configureHomeTrim(internal, LauncherHomePerspective.ID.equals(perspective.getId()));
 				}
 			});
 			final var menu = internal.getMenuBarManager();

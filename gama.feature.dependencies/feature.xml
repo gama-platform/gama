@@ -508,4 +508,33 @@
          id="org.apache.commons.commons-logging"
          version="0.0.0"/>
 
+   <!-- Keep implicitly resolved stock libraries explicit for portable-package dependency classification. -->
+   <plugin id="bcpg" version="0.0.0"/>
+   <plugin id="bcprov" version="0.0.0"/>
+   <plugin id="bcutil" version="0.0.0"/>
+   <plugin id="com.google.guava.failureaccess" version="0.0.0"/>
+   <plugin id="com.ibm.icu" version="0.0.0"/>
+   <plugin id="jakarta.annotation-api" version="0.0.0"/>
+   <plugin id="org.apache.batik.constants" version="0.0.0"/>
+   <plugin id="org.apache.batik.css" version="0.0.0"/>
+   <plugin id="org.apache.batik.i18n" version="0.0.0"/>
+   <plugin id="org.apache.batik.util" version="0.0.0"/>
+   <plugin id="org.apache.commons.httpclient" version="0.0.0"/>
+   <plugin id="org.apache.commons.text" version="0.0.0"/>
+   <plugin id="org.apache.log4j" version="0.0.0"/>
+   <plugin id="org.hamcrest" version="0.0.0"/>
+   <plugin id="org.objectweb.asm" version="0.0.0"/>
+   <plugin id="org.objectweb.asm.commons" version="0.0.0"/>
+   <plugin id="org.objectweb.asm.tree" version="0.0.0"/>
+   <plugin id="org.objectweb.asm.tree.analysis" version="0.0.0"/>
+   <plugin id="org.objectweb.asm.util" version="0.0.0"/>
+   <plugin id="org.osgi.service.component" version="0.0.0"/>
+   <plugin id="org.osgi.service.event" version="0.0.0"/>
+   <plugin id="org.osgi.service.prefs" version="0.0.0"/>
+   <plugin id="org.osgi.util.function" version="0.0.0"/>
+   <plugin id="org.osgi.util.measurement" version="0.0.0"/>
+   <plugin id="org.osgi.util.position" version="0.0.0"/>
+   <plugin id="org.osgi.util.promise" version="0.0.0"/>
+   <plugin id="org.osgi.util.xml" version="0.0.0"/>
+   <plugin id="slf4j.simple" version="0.0.0"/>
 </feature>

@@ -57,6 +57,15 @@ public final class ExportRegressionTest {
 			Files.writeString(configuration, "startupExperiment=Run@project/model.gaml\n");
 			check(!LauncherConfiguration.load(installation).showHome(),
 					"Configurations without the Home option preserve direct startup");
+			final var legacyContext = new SimulationLaunchContext(installation,
+					installation.resolve("Embedded_Workspace"), new LauncherConfiguration("Legacy", "", false, "Run", ""),
+					java.util.List.of("Run"), "project/models/model.gaml");
+			check(legacyContext.content().equals(installation), "Legacy player assets remain installation-relative");
+			check(legacyContext.workspace().equals(installation.resolve("Embedded_Workspace")),
+					"Legacy player projects remain in the embedded workspace");
+			check(legacyContext.selections().equals(java.util.List.of("Run"))
+					&& legacyContext.defaultModel().equals("project/models/model.gaml"),
+					"Legacy experiment selections preserve the separate default model");
 
 			final Path project = Files.createDirectories(root.resolve("project"));
 			final Path baseline = Files.writeString(project.resolve("model.gaml"), "model test");

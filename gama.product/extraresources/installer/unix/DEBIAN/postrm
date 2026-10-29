@@ -2,3 +2,10 @@
 
 rm /usr/sbin/gama-headless
 rm -fr /opt/gama-platform
+
+if command -v update-mime-database >/dev/null 2>&1; then
+    update-mime-database /usr/share/mime || exit $?
+fi
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database /usr/share/applications || exit $?
+fi

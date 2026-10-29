@@ -95,6 +95,8 @@ jobs:
           echo "=== Unlock Keychain ==="
           security unlock-keychain -p "$MACOS_KEYCHAIN_PWD" build.keychain
           unzip -q ${{ github.workspace }}/artifacts/${{ matrix.zipName }}.zip -d . && rm ${{ github.workspace }}/artifacts/*.zip
+          # Compile before signing: package document capture and splash run in the existing launcher process.
+          bash ./Gama.app/Contents/Eclipse/launcher/build-macos.sh
           # Sign everything inside app
           echo "=== Start signing ==="
           bash ${{ github.workspace }}/artifacts/mac-sign.sh

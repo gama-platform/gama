@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -50,6 +51,7 @@ import gama.ui.shared.resources.IGamaIcons;
  * <li>A scrollable, read-only console area at the bottom that echoes every status message and every
  * {@code write}/{@code print} statement produced during loading. The user can freely scroll through the history.</li>
  * </ul>
+ * Simulation-player windows reuse their Home presentation instead of the generic title and subtitle.
  *
  * <h3>Lifecycle</h3>
  * <ol>
@@ -174,6 +176,10 @@ public class LaunchingOverlay {
 	 * {@link #overlayConsoleListener} and the status interceptor.
 	 */
 	private StyledText consoleText;
+	private LaunchPresentation presentation;
+	private ScrolledComposite presentationArea;
+	private LaunchPresentation.State presentationState;
+	private org.eclipse.swt.graphics.Point initialSize;
 
 	/**
 	 * The console listener registered on {@link #consoleSource} while the overlay is visible. Removed by
@@ -307,6 +313,8 @@ public class LaunchingOverlay {
 		// available for move/resize interactions.
 		final Shell overlay = new Shell(parent, OVERLAY_SHELL_STYLE);
 		overlay.setBackground(bg);
+		overlay.setForeground(fg);
+		overlay.setFont(parent.getFont());
 		overlay.setLayout(null);
 		overlayShell = overlay;
 		launchOverlayVisible = true;
@@ -331,6 +339,20 @@ public class LaunchingOverlay {
 		// ── Canvas for background + title + subtitle ─────────────────────────────
 		canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
 		canvas.addPaintListener(e -> paintCanvas(e, bg, fg));
+		if (parent.getData(LaunchPresentation.SHELL_DATA_KEY) instanceof LaunchPresentation.State state) {
+			presentationState = state;
+			initialSize = new org.eclipse.swt.graphics.Point(parent.getClientArea().width, parent.getClientArea().height);
+			presentationArea = new ScrolledComposite(overlay, SWT.V_SCROLL);
+			presentationArea.setBackground(bg);
+			presentationArea.setForeground(fg);
+			presentationArea.setFont(parent.getFont());
+			presentationArea.setExpandHorizontal(true);
+			presentationArea.setExpandVertical(true);
+			presentation = new LaunchPresentation(presentationArea, state.content(), state.selection(), true,
+					selection -> {}, this::handleCancel);
+			presentationArea.setContent(presentation);
+			cancelBar.setVisible(false);
+		}
 
 		// ── Scrollable console area at the bottom ─────────────────────────────────
 		// No SWT.H_SCROLL – SWT.WRAP already prevents horizontal overflow.
@@ -503,24 +525,41 @@ public class LaunchingOverlay {
 		final int blockH = titleH + 4 + subH + textToBtn + bs.y;
 		final int blockTop = (sz.y - blockH) / 2;
 		final int btnY = blockTop + titleH + 4 + subH + textToBtn;
+		final int consoleY = Math.max(0, sz.y - CONSOLE_AREA_HEIGHT - CONSOLE_BOTTOM_MARGIN);
 
 		// Canvas fills the whole shell (draws background + title + subtitle).
 		canvas.setBounds(0, 0, sz.x, sz.y);
 
 		// Cancel bar centred horizontally, just below the text block.
-		cancelBar.setBounds((sz.x - bs.x) / 2, btnY, bs.x, bs.y);
-		cancelBar.moveAbove(canvas);
+		if (presentation == null) {
+			cancelBar.setBounds((sz.x - bs.x) / 2, btnY, bs.x, bs.y);
+			cancelBar.moveAbove(canvas);
+		} else {
+			final Rectangle anchor = presentationState.bounds();
+			final int width = Math.min(Math.max(1, sz.x - 32), anchor == null ? 560 : anchor.width);
+			final var size = presentation.computeSize(width, SWT.DEFAULT);
+			final int availableHeight = Math.max(1, consoleY - 30);
+			final int height = Math.min(availableHeight, size.y);
+			final int desiredY = anchor == null ? (consoleY - size.y) / 2 : anchor.y + (sz.y - initialSize.y) / 2;
+			final int y = Math.max(12, Math.min(desiredY, consoleY - height - 18));
+			final int x = anchor == null ? (sz.x - width) / 2
+					: Math.max(0, Math.min(sz.x - width, anchor.x + (sz.x - initialSize.x) / 2));
+			presentationArea.setBounds(x, y, width, height);
+			presentationArea.setMinSize(presentation.computeSize(presentationArea.getClientArea().width, SWT.DEFAULT));
+			presentationArea.moveAbove(canvas);
+		}
 
 		// Scrollable console at the bottom, centred horizontally with side margins.
 		final int hMargin = sz.x / CONSOLE_H_MARGIN_DIVISOR;
-		final int consoleY = sz.y - CONSOLE_AREA_HEIGHT - CONSOLE_BOTTOM_MARGIN;
-		consoleText.setBounds(hMargin, consoleY, sz.x - 2 * hMargin, CONSOLE_AREA_HEIGHT);
+		final int consoleHeight = Math.max(0, Math.min(CONSOLE_AREA_HEIGHT, sz.y - consoleY - CONSOLE_BOTTOM_MARGIN));
+		consoleText.setBounds(hMargin, consoleY, sz.x - 2 * hMargin, consoleHeight);
 		consoleText.moveAbove(canvas);
 
 		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar,
 		// and the console bounds so it can draw a visible border around the terminal area.
 		canvas.setData("blockTop", blockTop);
-		canvas.setData("consoleBounds", new Rectangle(hMargin, consoleY, sz.x - 2 * hMargin, CONSOLE_AREA_HEIGHT));
+		canvas.setData("consoleBounds", consoleHeight == 0 ? null
+				: new Rectangle(hMargin, consoleY, sz.x - 2 * hMargin, consoleHeight));
 		canvas.redraw();
 	}
 
@@ -558,6 +597,8 @@ public class LaunchingOverlay {
 			// Restore background for subsequent text drawing
 			e.gc.setBackground(bg);
 		}
+
+		if (presentation != null) return;
 
 		// ── Title (20pt bold) ─────────────────────────────────────────────────
 		final FontData fd = parent.getFont().getFontData()[0];

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.core.runtime.applications" id="DocumentApplication" name="GAMA Document Router">
+      <application>
+         <run class="gama.export.DocumentApplication"/>
+      </application>
+   </extension>
+   <extension point="org.eclipse.core.runtime.applications" id="PackageApplication" name="GAMA Package Bootstrap">
+      <application>
+         <run class="gama.export.PackageApplication"/>
+      </application>
+   </extension>
+</plugin>

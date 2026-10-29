@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension point="org.eclipse.ui.splashHandlers">
+      <splashHandler id="gama.ui.export.playerSplash"
+            class="gama.ui.export.launcher.PlayerSplashHandler"/>
+      <splashHandlerProductBinding productId="gama.ui.application.product"
+            splashId="gama.ui.export.playerSplash"/>
+   </extension>
    <extension point="org.eclipse.ui.activities">
       <activity id="gama.ui.export.homeActivity" name="Simulation launcher home">
          <enabledWhen><systemTest property="exported_runner" value="true"/></enabledWhen>
@@ -22,6 +28,9 @@
       </application>
    </extension>
    <extension point="org.eclipse.ui.commands">
+      <command id="gama.ui.export.openPackage" name="Open standalone model" categoryId="gama.category">
+         <commandParameter id="gama.ui.export.packagePath" name="Exported model path" optional="true"/>
+      </command>
       <command id="gama.ui.export.model" name="Export as standalone model" categoryId="gama.category"/>
       <command id="gama.ui.export.selectedModel" name="Export as standalone model" categoryId="gama.category"/>
       <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
@@ -61,6 +70,7 @@
       </definition>
    </extension>
    <extension point="org.eclipse.ui.handlers">
+      <handler commandId="gama.ui.export.openPackage" class="gama.ui.export.commands.OpenSimulationPackage"/>
       <handler commandId="gama.ui.export.model" class="gama.ui.export.commands.ExportSimulation">
          <activeWhen><reference definitionId="gama.ui.export.isModelEditor"/></activeWhen>
       </handler>
@@ -90,6 +100,9 @@
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:file?after=additions">
+         <command commandId="gama.ui.export.openPackage" label="Open standalone model...">
+            <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
+         </command>
          <command commandId="gama.ui.export.model" label="Export as standalone model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isModelEditor"/></visibleWhen>

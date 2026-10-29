@@ -11,6 +11,22 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>gamp</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>GAMA Exported Model</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.gama.simulation-package</string>
+			</array>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>gaml</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
@@ -43,6 +59,28 @@
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>org.gama.simulation-package</string>
+			<key>UTTypeDescription</key>
+			<string>GAMA Exported Model</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gamp</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.gama.simulation-package</string>
+			</dict>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>

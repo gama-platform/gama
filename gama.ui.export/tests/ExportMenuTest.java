@@ -25,6 +25,8 @@ public final class ExportMenuTest {
 		factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		final var document = factory.newDocumentBuilder().parse(root.resolve("gama.ui.export/plugin.xml").toFile());
 		final String label = "Export as standalone model...";
+		check(!matches(document, "//*[@commandId='gama.ui.export.sessions' or @id='gama.ui.export.sessions']"),
+				"Do not expose a package history or session management command");
 		for (String command : new String[] { "gama.ui.export.model", "gama.ui.export.selectedModel" }) {
 			check(matches(document, "//command[@id='" + command + "' and @name='Export as standalone model']"),
 					"Both export commands must use the standalone model name");
@@ -35,7 +37,7 @@ public final class ExportMenuTest {
 		check(matches(document, "//menuContribution[@locationURI='menu:file?after=additions']"
 				+ "/command[@commandId='gama.ui.export.model' and @label='" + label + "']"),
 				"Rename the File menu entry");
-		check(matches(document, "//menuContribution[@locationURI='popup:navigator.menu?after=menu.gama.export']"
+		check(matches(document, "//menuContribution[@locationURI='popup:navigator.menu?endof=additions']"
 				+ "/command[@commandId='gama.ui.export.selectedModel' and @label='" + label + "']"),
 				"Add the model entry directly to the navigator context menu");
 		check(matches(document, "//handler[@commandId='gama.ui.export.selectedModel']"
@@ -50,6 +52,14 @@ public final class ExportMenuTest {
 				"Only model files and experiment nodes enable model export");
 		check(matches(document, "//handler[@commandId='gama.ui.navigator.commands.exportProjectAsSimulation']"),
 				"Retain the existing project/folder export");
+
+		final var shared = factory.newDocumentBuilder().parse(root.resolve("gama.ui.shared/plugin.xml").toFile());
+		for (String command : new String[] { "gama.ui.install.graphical", "gama.ui.install.copilot", "gama.ui.install" }) {
+			check(matches(shared, "//menuContribution[@locationURI='menu:support?after=group.about.ext']"
+					+ "/command[@commandId='" + command + "']/visibleWhen[@checkEnabled='false']"
+					+ "/not/systemTest[@property='exported_runner' and @value='true']"),
+					"Hide Support installation entries in player mode: " + command);
+		}
 
 		for (String bundle : new String[] { "gama.ui.editor", "gama.ui.navigator" }) {
 			try (var input = Files.newInputStream(root.resolve(bundle + "/META-INF/MANIFEST.MF"))) {

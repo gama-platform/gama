@@ -103,7 +103,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		// Defer linking until the workbench startup sequence has initialized the UI.
 		if (checkCopyOfBuiltInModels()) { WorkspaceModelsManager.instance.linkSampleModelsToWorkspace(); }
 		FileUtils.cleanCache();
-		final String[] args = Platform.getApplicationArgs();
+		final String[] args = Boolean.TRUE.equals(org.eclipse.swt.widgets.Display.getCurrent()
+				.getData("gama.startupArgumentsConsumed")) ? new String[0] : Platform.getApplicationArgs();
 		// DEBUG.LOG("Arguments received by GAMA : " + DEBUG.TO_STRING(args));
 
 		// Start Server after the GUI is loaded
@@ -117,7 +118,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			if (i < args.length) {
 				String exp = args[i];
 				if (!exp.endsWith(".gamr")) {
-					WorkspaceModelsManager.instance.openModelPassedAsArgument(args[args.length - 1]);
+					Application.openDocument(args[args.length - 1]);
 					return;
 				}
 				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {

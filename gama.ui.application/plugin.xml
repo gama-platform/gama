@@ -7,7 +7,7 @@
          name="Base product"
          point="org.eclipse.core.runtime.products">
       <product
-            application="gama.ui.application.GamaApplication"
+            application="gama.export.DocumentApplication"
             name="Gama">
 	<property
             name="rendererFactoryUri"

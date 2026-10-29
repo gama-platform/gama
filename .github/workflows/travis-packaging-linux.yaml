@@ -32,6 +32,8 @@ jobs:
         run: |
           unzip ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/extraresources-unix.zip -d ${{ github.workspace }}/${ZIPNAME} && rm ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/extraresources-unix.zip
           mv ${{ github.workspace }}/${ZIPNAME}/gama-platform.desktop ${{ github.workspace }}/${ZIPNAME}/usr/share/applications/gama-platform.desktop
+          mkdir -p ${{ github.workspace }}/${ZIPNAME}/usr/share/mime/packages
+          mv ${{ github.workspace }}/${ZIPNAME}/gama-simulation-package.xml ${{ github.workspace }}/${ZIPNAME}/usr/share/mime/packages/gama-simulation-package.xml
           cd ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform && unzip ${ZIPNAME}.zip && cd -
           rm ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/*.zip
         env:

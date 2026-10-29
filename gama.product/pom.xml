@@ -53,6 +53,11 @@
 						</goals>
 						<configuration>
 							<target>
+                                <exec executable="${java.home}/bin/java" failonerror="true">
+                                    <arg value="${project.basedir}/launcher/LauncherInstaller.java"/>
+                                    <arg value="${project.basedir}"/>
+                                    <arg value="${project.build.directory}/products/gama.ui.application.product"/>
+                                </exec>
 								<!--
 								MacOS
 								x64 -->

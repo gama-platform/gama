@@ -27,7 +27,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.net.URL;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osgi.framework.Bundle;
@@ -184,29 +183,9 @@ public class GamaZipBuilder {
         final Path archiveModelPath = Path.of(entryName.replace('\\', '/'));
         final Path archiveIncludeDir = Path.of(embeddedWorkspacePathStr,
                 includeDir.getParent().getFileName().toString(), "includes");
-        final Matcher matcher = Pattern.compile("([\"'])([^\"']+)\\1").matcher(content);
-        final StringBuffer rewritten = new StringBuffer();
-        while (matcher.find()) {
-            String replacement = matcher.group();
-            try {
-                Path literalPath = Path.of(matcher.group(2).replace('\\', File.separatorChar));
-                Path resolvedPath = (literalPath.isAbsolute() ? literalPath : filePath.getParent().resolve(literalPath))
-                        .toAbsolutePath().normalize();
-                String includeName = externalDataFiles.get(resolvedPath);
-                if (includeName != null) {
-                    Path archiveIncludePath = archiveIncludeDir.resolve(includeName);
-                    String relativePath = archiveModelPath.getParent().relativize(archiveIncludePath)
-                            .toString().replace('\\', '/');
-                    replacement = matcher.group(1) + relativePath + matcher.group(1);
-                }
-            } catch (RuntimeException ignored) {
-                // Non-path string literals are left unchanged.
-            }
-            matcher.appendReplacement(rewritten, Matcher.quoteReplacement(replacement));
-        }
-        matcher.appendTail(rewritten);
-
-        archive.addEntryFromString(rewritten.toString(),entryName);
+        final Map<Path, Path> relocated = new LinkedHashMap<>();
+        externalDataFiles.forEach((source, name) -> relocated.put(source, archiveIncludeDir.resolve(name)));
+        archive.addEntryFromString(GamlExportPaths.rewrite(content, filePath, archiveModelPath, relocated), entryName);
     }
 
     public GamaZipBuilder(

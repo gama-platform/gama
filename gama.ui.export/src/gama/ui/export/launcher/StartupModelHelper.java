@@ -12,15 +12,18 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.export.EmbeddedWorkspace;
+import gama.export.ExportHelper;
 import gama.export.LauncherConfiguration;
 import gama.export.SimulationArtifacts;
+import gama.export.SimulationLaunchContext;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.workspace.manager.WorkspacePaths;
+import gama.ui.shared.menus.ExperimentMenu;
+import gama.ui.shared.utils.LaunchPresentation;
 
 public final class StartupModelHelper {
 
 	private static final StartupModelHelper INSTANCE = new StartupModelHelper();
-	private static final String CONTEXTUAL_SEPARATOR = "    from model    ";
 
 	private final SimulationArtifacts artifacts = new SimulationArtifacts();
 	private final EmbeddedWorkspace workspace = new EmbeddedWorkspace();
@@ -30,10 +33,20 @@ public final class StartupModelHelper {
 	private List<String> selections = List.of();
 	private Path projectPath;
 	private boolean startupAttempted;
+	private SimulationLaunchContext context;
 
 	public LauncherConfiguration getConfiguration() { return configuration; }
 
 	public List<String> getSelections() { return selections; }
+
+	public Path getContentRoot() { return context.content(); }
+
+	public LaunchPresentation.Content getPresentation() {
+		return new LaunchPresentation.Content(
+				configuration.title().isBlank() ? "GAMA simulation launcher" : configuration.title(),
+				configuration.description(), configuration.image().isBlank() ? null : getContentRoot().resolve(configuration.image()),
+				selections.stream().map(selection -> new ExperimentMenu.Entry(selection, label(selection), "gui")).toList());
+	}
 
 	public boolean isHomeVisibleAtStartup() { return configuration.showHome() || startupAttempted; }
 
@@ -45,8 +58,7 @@ public final class StartupModelHelper {
 
 	public String label(final String selection) {
 		final int separator = selection.lastIndexOf('@');
-		return separator < 0 ? selection
-				: selection.substring(0, separator) + CONTEXTUAL_SEPARATOR + selection.substring(separator + 1);
+		return "Experiment " + (separator < 0 ? selection : selection.substring(0, separator));
 	}
 
 	private StartupModelHelper() {}
@@ -54,21 +66,32 @@ public final class StartupModelHelper {
 	public static StartupModelHelper getInstance() { return INSTANCE; }
 
 	public boolean initialize() throws IOException, CoreException {
-		workspace.registerProjects();
 		final String selection = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
 		if (selection == null || selection.isBlank()) throw new IOException("No startup experiment is configured");
-		selections = List.of(selection.split("#"));
-		configuration = LauncherConfiguration.load(WorkspacePaths.installationDirectory());
-		final String startup = configuration.startupExperiment();
-		if (!startup.isBlank() && !selections.contains(startup))
-			throw new IOException("The configured default experiment is not exported");
+		final var defaultModel = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
+		try {
+			return initialize(new SimulationLaunchContext(WorkspacePaths.installationDirectory(),
+					Path.of(ExportHelper.toAbsoluteFromEmbeddedWorkspacePath("")),
+					LauncherConfiguration.load(WorkspacePaths.installationDirectory()), List.of(selection.split("#")),
+					defaultModel == null ? "" : defaultModel.getPath(null)));
+		} catch (final IllegalArgumentException e) {
+			throw new IOException("Invalid simulation launch configuration: " + e.getMessage(), e);
+		}
+	}
+
+	public boolean initialize(final SimulationLaunchContext launchContext) throws IOException, CoreException {
+		if (context != null) throw new IllegalStateException("The simulation player is already initialized");
+		workspace.registerProjects(launchContext.workspace());
+		context = launchContext;
+		selections = context.selections();
+		configuration = context.configuration();
 		return true;
 	}
 
 	private void select(final String selected) {
 		final int separator = selected.lastIndexOf('@');
 		experiment = separator < 0 ? selected : selected.substring(0, separator);
-		modelPath = separator < 0 ? GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue().getPath(null)
+		modelPath = separator < 0 ? context.defaultModel()
 				: selected.substring(separator + 1);
 	}
 

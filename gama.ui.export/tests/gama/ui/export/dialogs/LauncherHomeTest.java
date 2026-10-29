@@ -21,6 +21,7 @@ import gama.ui.export.launcher.LauncherHomeView;
 import gama.ui.export.launcher.StartupModelHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.ExperimentMenu;
+import gama.ui.shared.utils.LaunchPresentation;
 
 /** SWT checks; Home and menu checks also run in an initialized workbench. */
 public final class LauncherHomeTest {
@@ -49,7 +50,7 @@ public final class LauncherHomeTest {
 			PerspectiveHelper.setHomePerspectiveId(PerspectiveHelper.PERSPECTIVE_MODELING_ID);
 		}
 		check(StartupModelHelper.getInstance().label("Run@project/model.gaml")
-				.equals("Run    from model    project/model.gaml"), "Contextual experiment labels");
+				.equals("Experiment Run"), "Experiment labels omit internal model paths");
 		check(ExportModels.leadingDescription("/**\n* Name: Model\n* Description: First line\n* Second line\n"
 				+ "* Author: Someone\n* Tags: example\n*/\nmodel test\n// Not header")
 				.equals("First line\nSecond line"), "Prefill only leading description, not header metadata");
@@ -64,6 +65,9 @@ public final class LauncherHomeTest {
 			checkDialog(true, false);
 			checkDialog(true, true);
 			checkScrollableExperiments();
+			checkPackageDialog();
+			checkDependenciesDialog();
+			checkDependencyVisibility();
 		} finally {
 			display.dispose();
 		}
@@ -75,9 +79,113 @@ public final class LauncherHomeTest {
 		checkDialog(true, false);
 		checkDialog(true, true);
 		checkScrollableExperiments();
+		checkPackageDialog();
+		checkDependenciesDialog();
+		checkDependencyVisibility();
 		checkHomeView(Display.getCurrent(), false);
 		checkHomeView(Display.getCurrent(), true);
 		checkSharedMenu(Display.getCurrent());
+	}
+
+	private static void checkDependenciesDialog() throws Exception {
+		final var file = java.nio.file.Path.of("installed-extension.jar");
+		final var dependencies = java.util.List.of(
+				new gama.export.SimulationPackageExporter.Dependency("example.extension", "1.0.0", file, true, false, "Automatically embedded"),
+				new gama.export.SimulationPackageExporter.Dependency("gama.core", "1.0.0", null, false, true, "Platform requirement"),
+				new gama.export.SimulationPackageExporter.Dependency("example.native", "1.0.0", file, false, false, "Native code is host-only"));
+		final var dialog = new PackageDependenciesDialog(Display.getCurrent().getActiveShell(), dependencies);
+		try {
+			dialog.create();
+			final Field tableField = PackageDependenciesDialog.class.getDeclaredField("table");
+			tableField.setAccessible(true);
+			final Table table = (Table) tableField.get(dialog);
+			check(table.getItemCount() == 3 && table.getItem(0).getChecked()
+					&& table.getItem(0).getText(2).equals("Package (automatic)")
+					&& table.getItem(1).getText(2).equals("Standard GAMA")
+					&& table.getItem(2).getText(2).equals("Unsupported extra"), "Distinguish standard, packaged and unsupported extra dependencies");
+			final var host = table.getItem(1);
+			check(host.getGrayed(), "Host-only requirements must not look selectable");
+			host.setChecked(true);
+			final var event = new org.eclipse.swt.widgets.Event();
+			event.item = host;
+			event.detail = SWT.CHECK;
+			table.notifyListeners(SWT.Selection, event);
+			check(!host.getChecked(), "Do not allow embedding platform or unsupported plugins");
+			table.getItem(0).setChecked(false);
+			event.item = table.getItem(0);
+			table.notifyListeners(SWT.Selection, event);
+			check(table.getItem(0).getChecked(), "Required non-standard Java plugins remain included");
+			final var wizard = new ExportModelDialog(new String[] { "Run" }, "Model", "");
+			wizard.setDependencies(dependencies);
+			check(wizard.getEmbeddedPlugins().equals(java.util.List.of(file)), "Wizard defaults to automatic extra plugins only");
+		} finally {
+			dialog.close();
+		}
+	}
+
+	private static void checkPackageDialog() throws Exception {
+		final var dialog = new ExportModelDialog(new String[] { "Run" }, "Model.gaml", "Description");
+		final String identifier = dialog.getPackageId();
+		try {
+			dialog.create();
+			check(dialog.getFormat() == ExportModelDialog.Format.PACKAGE
+					&& !field(dialog, "applicationOptions", Composite.class).getVisible(), "Default to packages and hide application options");
+			check(field(dialog, "destination", Text.class).getText().endsWith("Model.gamp"), "Use the package suffix");
+			check(field(dialog, "pluginPaths", Text.class) == null, "No dependency controls when no extras are required");
+			check(java.util.Arrays.stream(field(dialog, "packageOptions", Composite.class).getChildren())
+					.noneMatch(control -> control instanceof Label label
+							&& (label.getText().equals("Package identifier") || label.getText().equals("Package version"))),
+					"Technical package metadata is not exposed as form fields");
+			field(dialog, "title", Text.class).setText("Preserve my title");
+			field(dialog, "experiments", Table.class).setSelection(0);
+			dialog.buttonPressed(org.eclipse.jface.dialogs.IDialogConstants.CLIENT_ID);
+			check(dialog.getFormat() == ExportModelDialog.Format.STANDALONE
+					&& field(dialog, "applicationOptions", Composite.class).getVisible()
+					&& !field(dialog, "destination", Text.class).getText().endsWith(".gamp"),
+					"Application button must reveal the legacy options and change the destination suffix");
+			dialog.buttonPressed(org.eclipse.jface.dialogs.IDialogConstants.CLIENT_ID);
+			check(dialog.getFormat() == ExportModelDialog.Format.PACKAGE
+					&& field(dialog, "destination", Text.class).getText().endsWith(".gamp")
+					&& field(dialog, "title", Text.class).getText().equals("Preserve my title")
+					&& dialog.getPackageId().equals(identifier)
+					&& field(dialog, "experiments", Table.class).getSelectionCount() == 1,
+					"Switching formats must preserve presentation, package metadata and experiment selection");
+			field(dialog, "destination", Text.class).setText(java.nio.file.Path.of(System.getProperty("java.io.tmpdir"),
+					"package-dialog-" + java.util.UUID.randomUUID() + ".gamp").toString());
+			dialog.okPressed();
+			check(dialog.getShell() == null || dialog.getShell().isDisposed(), "Package OK must close the dialog");
+			check(dialog.getPackageId().equals(identifier) && identifier.matches("simulation\\.[a-f0-9-]+")
+					&& dialog.getPackageVersion().equals("1.0.0")
+					&& dialog.getEmbeddedPlugins().isEmpty(), "Capture package settings before widget disposal");
+			check(!dialog.getIncludeJdk() && !dialog.getOneFile(), "Never embed an application runtime in a package");
+		} finally {
+			dialog.close();
+		}
+	}
+
+	private static void checkDependencyVisibility() throws Exception {
+		final var standard = new gama.export.SimulationPackageExporter.Dependency("gama.core", "1.0", null, false, true, "Standard");
+		for (final boolean extra : new boolean[] { false, true }) {
+			final var dialog = new ExportModelDialog(new String[] { "Run" }, "Model", "");
+			final var plugin = new gama.export.SimulationPackageExporter.Dependency("example.extra", "1.0",
+					java.nio.file.Path.of("extra.jar"), true, false, "Automatic");
+			dialog.setDependencies(extra ? java.util.List.of(standard, plugin) : java.util.List.of(standard));
+			try {
+				dialog.create();
+				final Text summary = field(dialog, "pluginPaths", Text.class);
+				check(extra == (summary != null), "Show dependency controls only when non-standard plugins are needed");
+				if (extra) check(summary.getText().contains("1 additional plugins included automatically")
+						&& !summary.getText().contains("standard GAMA"), "Only summarize extra plugins");
+			} finally { dialog.close(); }
+		}
+		final var failed = new ExportModelDialog(new String[] { "Run" }, "Model", "");
+		failed.setDependencyError("Discovery failed");
+		try {
+			failed.create();
+			check(java.util.Arrays.stream(field(failed, "packageOptions", Composite.class).getChildren())
+					.anyMatch(control -> control instanceof Label label && label.getText().contains("Discovery failed")),
+					"Dependency errors must remain visible even without discovered extra plugins");
+		} finally { failed.close(); }
 	}
 
 	private static void checkHomeView(final Display display, final boolean singleExperiment) throws Exception {
@@ -107,18 +215,19 @@ public final class LauncherHomeTest {
 			final var scroll = (org.eclipse.swt.custom.ScrolledComposite) shell.getChildren()[0];
 			final var content = (org.eclipse.swt.widgets.Composite) scroll.getContent();
 			final var center = (Composite) content.getChildren()[0];
-			final var labels = java.util.Arrays.stream(center.getChildren())
+			final var presentation = (LaunchPresentation) center.getChildren()[0];
+			final var labels = java.util.Arrays.stream(presentation.getChildren())
 					.filter(org.eclipse.swt.widgets.Label.class::isInstance)
 					.map(org.eclipse.swt.widgets.Label.class::cast).map(org.eclipse.swt.widgets.Label::getText).toList();
 			check(labels.containsAll(java.util.List.of("A model", "Description")),
 					"Home must display its presentation");
-			check(java.util.Arrays.stream(center.getChildren()).filter(FlatButton.class::isInstance).count()
+			check(java.util.Arrays.stream(presentation.getChildren()).filter(FlatButton.class::isInstance).count()
 					== (singleExperiment ? 0 : 1), "Only multiple experiments need the shared selector");
-			final var play = java.util.Arrays.stream(center.getChildren()).filter(ToolBar.class::isInstance)
+			final var play = java.util.Arrays.stream(presentation.getChildren()).filter(ToolBar.class::isInstance)
 					.map(ToolBar.class::cast).findFirst().orElseThrow();
 			check(play.getItemCount() == 1 && play.getItem(0).getImage() != null,
 					"Home must have one play button, not one button per experiment");
-			final Label title = (Label) center.getChildren()[0];
+			final Label title = (Label) presentation.getChildren()[0];
 			check(title.getFont().getFontData()[0].getHeight() == 20
 					&& (title.getStyle() & SWT.CENTER) != 0, "Home title must match the centered overlay heading");
 			final var buttons = java.util.Arrays.stream(center.getChildren()).filter(Button.class::isInstance)
@@ -137,6 +246,8 @@ public final class LauncherHomeTest {
 		final var dialog = new ExportModelDialog(new String[] { "First", "Second" }, "Model.gaml", "Model description");
 		try {
 			dialog.create();
+			dialog.buttonPressed(org.eclipse.jface.dialogs.IDialogConstants.CLIENT_ID);
+			check(dialog.getFormat() == ExportModelDialog.Format.STANDALONE, "Reach application export through the wizard button");
 			check(field(dialog, "title", Text.class).getText().equals("Model.gaml"), "Prefill the model filename");
 			check(field(dialog, "description", Text.class).getText().equals("Model description"),
 					"Prefill the leading model documentation");
@@ -181,6 +292,7 @@ public final class LauncherHomeTest {
 					"Default experiment must survive SWT disposal");
 			check(dialog.getSelectedExperiments().length == 1
 					&& dialog.getSelectedExperiments()[0].equals("Second"), "Export only the selected rows");
+			check(dialog.getIncludeJdk(), "Preserve application exporter options after switching from a package");
 			check(java.nio.file.Path.of(dialog.getOutputPath(), dialog.getOutputFileName()).toString()
 					.equals(destination), "Destination combines filename and path");
 		} finally {

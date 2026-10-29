@@ -266,6 +266,11 @@
                label="Install diagramming..."
                style="push"
                tooltip="Install the GAMA graphical editor and its Graphiti dependencies">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
          </command>
          <command
                commandId="gama.ui.install.copilot"
@@ -273,6 +278,11 @@
                label="Install Copilot..."
                style="push"
                tooltip="Install GitHub Copilot and its dependencies">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
          </command>
          <separator
                name="gama.ui.shared.separator4"
