@@ -34,7 +34,7 @@ public class CleanAndUpdateAction extends Action {
 	public CleanAndUpdateAction() {
 		super("Clean and update workspace...");
 		setId(ID);
-		setToolTipText("Rebuilds the metadata, the library of models and the classification of all the projects");
+		setToolTipText("Repairs library links using the running installation and rebuilds metadata and projects");
 	}
 
 	@Override
@@ -42,8 +42,12 @@ public class CleanAndUpdateAction extends Action {
 		if (!GAMA.getGui().getDialogFactory().confirm("Clean and update the workspace",
 				"The metadata of all the files will be deleted and rebuilt, the library of models will be rebuilt "
 						+ "to be in sync with GAMA and its plugins, and all the projects will be reclassified and "
-						+ "rebuilt. This can take some time. Do you want to proceed?"))
+						+ "rebuilt. Library projects will be linked to the running installation's versions, without "
+						+ "creating user copies. Genuine user projects and original library files will not be deleted. "
+						+ "A report will describe the result.\n\n"
+						+ "This can take some time. Do you want to proceed?"))
 			return;
+		if (!org.eclipse.ui.PlatformUI.getWorkbench().saveAllEditors(true)) return;
 		final IRefreshHandler refresh = WorkbenchHelper.getService(IRefreshHandler.class);
 		if (refresh != null) { refresh.completeRefresh(null); }
 	}

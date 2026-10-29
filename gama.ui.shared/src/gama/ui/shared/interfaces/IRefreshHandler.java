@@ -33,6 +33,7 @@ public interface IRefreshHandler {
 	 */
 	void refreshResource(final IResource resource);
 
-	// void refreshNavigator();
+	/** Rebuild the navigator's virtual folders without reloading or rebuilding workspace resources. */
+	void refreshNavigator();
 
 }

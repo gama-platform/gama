@@ -651,6 +651,9 @@ public interface IGui {
 	 */
 	default void refreshNavigator() {}
 
+	/** Refresh virtual categories after library reconciliation, without initiating another workspace rebuild. */
+	default void refreshNavigatorContents() {}
+
 	/**
 	 * Checks if is in display thread.
 	 *

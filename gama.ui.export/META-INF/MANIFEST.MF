@@ -24,5 +24,6 @@ Require-Bundle: gama.export,
  org.eclipse.ui.ide.application,
  org.eclipse.jface,
  org.eclipse.swt,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.core.expressions;bundle-version="[3.9.0,4.0.0)"
 Import-Package: org.osgi.framework

@@ -47,6 +47,7 @@ import gama.ui.navigator.view.contents.UserGroups;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
+import gama.workspace.manager.LibraryUpdateReport;
 import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
@@ -115,9 +116,16 @@ public class RefreshHandler implements IRefreshHandler {
 	}
 
 	@Override
+	public void refreshNavigator() {
+		runInUI("Refreshing library categories", 0, monitor -> {
+			NavigatorRoot.getInstance().resetVirtualFolders(NavigatorRoot.getInstance().getManager());
+			WorkbenchHelper.refreshNavigator();
+		});
+	}
+
+	@Override
 	public void completeRefresh(final List<? extends IResource> list) {
-		final IStatus[] errorStatus = new IStatus[1];
-		errorStatus[0] = Status.OK_STATUS;
+		final LibraryUpdateReport[] report = { new LibraryUpdateReport() };
 		final List<? extends IResource> resources =
 				list == null || list.isEmpty() ? Collections.singletonList(GAMA.getWorkspaceManager().getRoot()) : list;
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
@@ -134,7 +142,9 @@ public class RefreshHandler implements IRefreshHandler {
 							}
 							resource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 							if (monitor != null) { monitor.worked(1); }
-						} catch (final CoreException e) {}
+						} catch (final CoreException e) {
+							report[0].error("Could not refresh " + resource.getFullPath(), e);
+						}
 						if (monitor != null && monitor.isCanceled()) throw new OperationCanceledException();
 					}
 				} finally {
@@ -151,7 +161,7 @@ public class RefreshHandler implements IRefreshHandler {
 					ResourceManager.block();
 					monitor.beginTask("Refreshing GAMA Workspace: updating the library of models", 100);
 					DEBUG.LOG("Refreshing GAMA Workspace: updating the library of models");
-					WorkspaceModelsManager.instance.loadModelsLibrary();
+					report[0] = WorkspaceModelsManager.instance.loadModelsLibrary(monitor);
 					monitor.beginTask("Refreshing GAMA Workspace: recreating files metadata", 1000);
 					DEBUG.LOG("Refreshing GAMA Workspace: recreating files metadata");
 					reconstructMetadata(resources, monitor);
@@ -172,16 +182,30 @@ public class RefreshHandler implements IRefreshHandler {
 						});
 
 					} catch (final CoreException ex) {
-						ex.printStackTrace();
+						report[0].error("Could not rebuild workspace projects", ex);
 					}
-				} catch (final Exception e) {
+				} catch (final OperationCanceledException e) {
 					return Status.CANCEL_STATUS;
+				} catch (final InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return Status.CANCEL_STATUS;
+				} catch (final java.lang.reflect.InvocationTargetException e) {
+					report[0].error("Workspace repair failed", e.getCause());
+				} catch (final CoreException | RuntimeException e) {
+					report[0].error("Workspace repair failed", e);
 				} finally {
 					ResourceManager.unblock(monitor);
 					WorkbenchHelper.refreshNavigator();
 					monitor.done();
 				}
-				return errorStatus[0];
+				report[0].save();
+				if (report[0].needsAttention()) {
+					GAMA.getGui().getDialogFactory().warning(report[0].getSummary());
+				} else {
+					GAMA.getGui().getDialogFactory().inform(report[0].getSummary()
+							+ "\n\nFile metadata and workspace projects have been rebuilt.");
+				}
+				return report[0].getStatus();
 			}
 
 		};
@@ -228,7 +252,7 @@ public class RefreshHandler implements IRefreshHandler {
 		if (!location.exists() && GAMA.getGui().getDialogFactory().confirm("Project location has been deleted",
 				"The location for project " + project.getName() + " (" + location.toString()
 						+ ") has been deleted. Do you want to remove " + project.getName() + " from the workspace ?")) {
-			project.delete(true, true, null);
+			project.delete(false, true, null);
 		}
 	}
 

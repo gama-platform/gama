@@ -47,7 +47,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
@@ -433,10 +432,11 @@ public class WorkspaceModelsManager {
 
 			@Override
 			public IStatus runInWorkspace(final IProgressMonitor monitor) {
-				// DEBUG.OUT("Asynchronous link of models library...");
-				loadModelsLibrary();
-				GAMA.getGui().refreshNavigator();
-				return GamaBundleLoader.ERRORED ? Status.CANCEL_STATUS : Status.OK_STATUS;
+				final LibraryUpdateReport report = loadModelsLibrary(monitor);
+				GAMA.getGui().refreshNavigatorContents();
+				report.save();
+				if (report.needsAttention()) { GAMA.getGui().getDialogFactory().warning(report.getSummary()); }
+				return report.getStatus();
 			}
 
 		};
@@ -456,37 +456,50 @@ public class WorkspaceModelsManager {
 	 * Load models library.
 	 */
 	public void loadModelsLibrary() {
+		final LibraryUpdateReport report = loadModelsLibrary(new NullProgressMonitor());
+		report.save();
+		if (report.needsAttention()) { GAMA.getGui().getDialogFactory().warning(report.getSummary()); }
+	}
+
+	/**
+	 * Reconciles library links using workspace-owned provenance. The running installation is authoritative:
+	 * old library links are replaced without prompting or creating user copies. Original files are not deleted.
+	 */
+	public LibraryUpdateReport loadModelsLibrary(final IProgressMonitor monitor) {
+		final LibraryUpdateReport report = new LibraryUpdateReport();
+		clearCaches();
 		ProjectCategory.reset();
-		removeLegacyNatures();
 		final List<GamaBundleLoader.ModelFolder> folders = new ArrayList<>(GamaBundleLoader.getModelFolders());
+		if (folders.isEmpty() || GamaBundleLoader.CORE_MODELS == null) {
+			report.error("The running installation's model library could not be discovered. "
+					+ "Check that the gama.library bundle is installed and enabled. Existing projects were left untouched.",
+					null);
+			return report;
+		}
+		removeLegacyNatures(report);
 		// The core library has the priority when several plugins contribute projects with the same name
 		folders.sort((f1, f2) -> Boolean.compare(!f1.bundle().equals(GamaBundleLoader.CORE_MODELS),
 				!f2.bundle().equals(GamaBundleLoader.CORE_MODELS)));
 		final Map<String, Bundle> claimedNames = new HashMap<>();
 		final java.util.Set<String> importedNames = new java.util.HashSet<>();
 		for (final GamaBundleLoader.ModelFolder folder : folders) {
-			linkModelsToWorkspace(folder, claimedNames, importedNames);
+			if (monitor.isCanceled()) throw new OperationCanceledException();
+			linkModelsToWorkspace(folder, claimedNames, importedNames, report, monitor);
 		}
-		stampWorkspaceFromModels();
-		removeObsoleteProjects(importedNames);
+		if (importedNames.isEmpty()) {
+			report.error("Model folders were discovered, but no library projects could be linked. "
+					+ "The workspace was not stamped as updated. Run Clean and update workspace to retry.", null);
+			return report;
+		}
+		removeObsoleteProjects(importedNames, report);
+		if (!report.needsAttention()) { stampWorkspaceFromModels(); }
 		// If the directory is not empty, we should maybe try to recreate the projects (if they do not exist...)
 		final java.nio.file.Path workspace = java.nio.file.Path.of(GAMA.getWorkspaceManager().getWorkspaceLocation());
-		recreateProjects(workspace, false);
+		recreateProjects(workspace, false, 0, report);
 		// The test projects of the user are in a dedicated sub-directory of the workspace
 		final java.nio.file.Path tests = workspace.resolve(ProjectCategory.USER_TESTS_FOLDER);
-		if (Files.isDirectory(tests)) { recreateProjects(tests, true); }
-	}
-
-	/**
-	 * Recreates the projects of the workspace found in the sub-directories of a directory.
-	 *
-	 * @param directory
-	 *            the directory to scan
-	 * @param explicitLocation
-	 *            whether the projects are not in their default location in the workspace
-	 */
-	private void recreateProjects(final java.nio.file.Path directory, final boolean explicitLocation) {
-		recreateProjects(directory, explicitLocation, 0);
+		if (Files.isDirectory(tests)) { recreateProjects(tests, true, 0, report); }
+		return report;
 	}
 
 	/**
@@ -495,20 +508,22 @@ public class WorkspaceModelsManager {
 	 * projects found in groups are always created with an explicit location.
 	 */
 	private void recreateProjects(final java.nio.file.Path directory, final boolean explicitLocation,
-			final int depth) {
+			final int depth, final LibraryUpdateReport report) {
 		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(directory, Files::isDirectory)) {
 			for (final java.nio.file.Path r : paths) {
 				final File folder = r.toFile();
 				final String name = folder.getName();
 				if (isGamaProject(folder)) {
-					createOrUpdateProject(name, explicitLocation || depth > 0 ? folder : null);
+					if (createOrUpdateProject(name, explicitLocation || depth > 0 ? folder : null) == null) {
+						report.error("Could not restore workspace project " + folder, null);
+					}
 				} else if (!explicitLocation && depth < MAX_GROUP_DEPTH && !name.startsWith(".")
 						&& !ProjectCategory.isReservedName(name)) {
-					recreateProjects(r, false, depth + 1);
+					recreateProjects(r, false, depth + 1, report);
 				}
 			}
 		} catch (final IOException e1) {
-			e1.printStackTrace();
+			report.error("Could not scan workspace directory " + directory, e1);
 		}
 	}
 
@@ -521,12 +536,20 @@ public class WorkspaceModelsManager {
 	 * projects that were contributed by a plugin in a previous layout, and whose location does not exist anymore, are
 	 * removed from the workspace (without deleting their contents). User projects are never removed.
 	 */
-	private void removeLegacyNatures() {
+	private void removeLegacyNatures(final LibraryUpdateReport report) {
 		for (final IProject p : GAMA.getWorkspaceManager().getRoot().getProjects()) {
 			try {
-				if (!p.exists()) { continue; }
+				if (!p.isOpen()) { continue; }
 				final IProjectDescription desc = p.getDescription();
 				final List<String> natures = new ArrayList<>(List.of(desc.getNatureIds()));
+				// Only the old built-in/plugin natures prove ownership; test natures were also used by user projects.
+				if (natures.contains("gama.workspace.builtinNature") || natures.contains("gama.workspace.pluginNature")
+						|| natures.contains("msi.gama.application.builtinNature")
+						|| natures.contains("msi.gama.application.pluginNature")) {
+					if (p.isOpen() && !LibraryProjectSupport.isBuiltIn(p)) {
+						p.setPersistentProperty(BUILTIN_PROPERTY, "legacy");
+					}
+				}
 				final boolean removed = natures.removeAll(List.of(LEGACY_NATURES));
 				final String[] migrated = GamaNatures.migrate(natures.toArray(new String[0]));
 				final boolean renamed = !List.of(migrated).equals(natures);
@@ -534,14 +557,14 @@ public class WorkspaceModelsManager {
 				natures.clear();
 				natures.addAll(List.of(migrated));
 				final IPath loc = p.getLocation();
-				if (loc != null && !loc.toFile().exists()) {
+				if (loc != null && !loc.toFile().exists() && LibraryProjectSupport.isBuiltIn(p)) {
 					p.delete(false, true, null);
 				} else if (p.isOpen()) {
 					desc.setNatureIds(natures.toArray(new String[0]));
 					p.setDescription(desc, IResource.FORCE, null);
 				}
 			} catch (final CoreException e) {
-				DEBUG.ERR("Could not update the natures of project " + p.getName(), e);
+				report.error("Could not update the natures of project " + p.getName(), e);
 			}
 		}
 	}
@@ -553,15 +576,25 @@ public class WorkspaceModelsManager {
 	 * @param importedNames
 	 *            the names of the projects that have just been imported
 	 */
-	private void removeObsoleteProjects(final java.util.Set<String> importedNames) {
+	private void removeObsoleteProjects(final java.util.Set<String> importedNames, final LibraryUpdateReport report) {
 		for (final IProject p : GAMA.getWorkspaceManager().getRoot().getProjects()) {
 			if (importedNames.contains(p.getName())) { continue; }
 			try {
 				final IPath loc = p.getLocation();
-				if (loc == null || loc.toFile().exists()) { continue; }
-				if (p.getPersistentProperty(BUILTIN_PROPERTY) != null) { p.delete(false, true, null); }
+				if (loc == null) { continue; }
+				if (loc.toFile().exists()) {
+					if (LibraryProjectSupport.isBuiltIn(p)) {
+						report.warning("Library project '" + p.getName() + "' is not available from this installation. "
+								+ "Its existing reference and files were kept at " + loc + ".");
+					}
+					continue;
+				}
+				if (LibraryProjectSupport.isBuiltIn(p)) {
+					p.delete(false, true, null);
+					report.changed("Removed missing library reference: " + p.getName() + " (" + loc + ").");
+				}
 			} catch (final CoreException e) {
-				DEBUG.ERR("Could not check project " + p.getName(), e);
+				report.error("Could not check project " + p.getName(), e);
 			}
 		}
 	}
@@ -577,10 +610,13 @@ public class WorkspaceModelsManager {
 	 *            the names of all the projects imported so far
 	 */
 	private void linkModelsToWorkspace(final GamaBundleLoader.ModelFolder folder, final Map<String, Bundle> claimedNames,
-			final java.util.Set<String> importedNames) {
+			final java.util.Set<String> importedNames, final LibraryUpdateReport report, final IProgressMonitor monitor) {
 		final Bundle bundle = folder.bundle();
 		final URL fileURL = bundle.getEntry(folder.path());
-		if (fileURL == null) return;
+		if (fileURL == null) {
+			report.error("Missing model folder in " + bundle.getSymbolicName() + ": " + folder.path(), null);
+			return;
+		}
 		File modelsRep = null;
 		try {
 			final URL resolvedFileURL = FileLocator.toFileURL(fileURL);
@@ -589,12 +625,17 @@ public class WorkspaceModelsManager {
 			modelsRep = new File(resolvedURI);
 
 		} catch (final URISyntaxException | IOException e1) {
-			e1.printStackTrace();
+			report.error("Could not resolve models from " + bundle.getSymbolicName() + ": " + folder.path(), e1);
+			return;
 		}
 
 		final Map<File, IPath> foundProjects = new ConcurrentHashMap<>();
-		findProjects(modelsRep, foundProjects);
-		importBuiltInProjects(bundle, foundProjects, claimedNames, importedNames);
+		try {
+			findProjects(modelsRep, foundProjects);
+		} catch (final IOException e) {
+			report.error("Could not discover all model projects in " + modelsRep, e);
+		}
+		importBuiltInProjects(folder, modelsRep, foundProjects, claimedNames, importedNames, report, monitor);
 	}
 
 	/**
@@ -605,21 +646,22 @@ public class WorkspaceModelsManager {
 	 * @param found
 	 *            the map to store found projects (folder -> .project file path)
 	 */
-	private void findProjects(final File folder, final Map<File, IPath> found) {
-		if (folder == null || !folder.exists() || !folder.isDirectory()) return;
+	private void findProjects(final File folder, final Map<File, IPath> found) throws IOException {
+		if (folder == null || !folder.isDirectory()) throw new IOException("Missing model directory: " + folder);
+		if (Files.isSymbolicLink(folder.toPath())) throw new IOException("Cannot scan symbolic model directory: " + folder);
 
 		// Check for .project file in current directory
 		final File[] dotFiles = folder.listFiles(DOT_PROJECT_FILTER);
-		if (dotFiles != null && dotFiles.length > 0) {
+		if (dotFiles == null) throw new IOException("Cannot read model directory: " + folder);
+		if (dotFiles.length > 0) {
 			found.put(folder, new Path(dotFiles[0].getAbsolutePath()));
 			return; // Found project, no need to search subdirectories
 		}
 
 		// Search subdirectories
 		final File[] subdirectories = folder.listFiles(File::isDirectory);
-		if (subdirectories != null) {
-			Stream.of(subdirectories).parallel().forEach(subdir -> findProjects(subdir, found));
-		}
+		if (subdirectories == null) throw new IOException("Cannot read model directory: " + folder);
+		for (final File subdir : subdirectories) { findProjects(subdir, found); }
 	}
 
 	/**
@@ -628,9 +670,13 @@ public class WorkspaceModelsManager {
 	 * @param workspace
 	 * @param project
 	 */
-	private void importBuiltInProjects(final Bundle plugin, final Map<File, IPath> projects,
-			final Map<String, Bundle> claimedNames, final java.util.Set<String> importedNames) {
-		for (final Map.Entry<File, IPath> entry : projects.entrySet()) {
+	private void importBuiltInProjects(final GamaBundleLoader.ModelFolder folder, final File modelsRoot,
+			final Map<File, IPath> projects, final Map<String, Bundle> claimedNames,
+			final java.util.Set<String> importedNames, final LibraryUpdateReport report, final IProgressMonitor monitor) {
+		final Bundle plugin = folder.bundle();
+		for (final Map.Entry<File, IPath> entry : projects.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey()).toList()) {
+			if (monitor.isCanceled()) throw new OperationCanceledException();
 			final File project = entry.getKey();
 			final IPath location = entry.getValue();
 
@@ -638,7 +684,7 @@ public class WorkspaceModelsManager {
 			try {
 				description = GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(location);
 			} catch (final CoreException e) {
-				DEBUG.ERR("Could not load the project description of: " + project.getName(), e);
+				report.error("Could not load the project description of: " + project.getAbsolutePath(), e);
 				continue;
 			}
 			// Skip projects whose .project file declares no natures: they are
@@ -656,42 +702,122 @@ public class WorkspaceModelsManager {
 					name = project.getName() + " (" + lastSegment(plugin) + " " + i + ")";
 				}
 			}
-			final String projectName = name;
+			final String source = plugin.getSymbolicName() + ":" + folder.path() + "/"
+					+ modelsRoot.toPath().relativize(project.toPath()).toString().replace('\\', '/');
 			final IPath projectLocation = new Path(project.getAbsolutePath());
+			final IProject target;
+			try {
+				target = findLibraryTarget(name, source, projectLocation, report);
+			} catch (final CoreException | IOException e) {
+				report.error("Could not resolve the library project " + name, e);
+				continue;
+			}
+			final String projectName = target.getName();
 			description.setName(projectName);
-			importedNames.add(projectName);
+			description.setLocation(projectLocation);
+
+			final IPath oldLocation = target.exists() ? target.getLocation() : null;
+			final boolean relinking;
+			try {
+				relinking = target.exists() && !sameLocation(oldLocation, projectLocation);
+			} catch (final IOException e) {
+				importedNames.add(projectName);
+				report.error("Could not resolve the location of " + projectName + " at " + oldLocation
+						+ ". The library link was left untouched.", e);
+				continue;
+			}
 
 			final WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
 
 				@Override
 				protected void execute(final IProgressMonitor monitor)
 						throws CoreException, InvocationTargetException, InterruptedException {
-					IProject proj = GAMA.getWorkspaceManager().getRoot().getProject(projectName);
-					if (proj.exists()) {
-						final IPath existingLocation = proj.getLocation();
-						final boolean sameLocation = existingLocation != null && existingLocation.equals(projectLocation);
-						if (!sameLocation) {
-							// A project of the user with the same name is never replaced
-							if (existingLocation != null && existingLocation.toFile().exists()
-									&& ProjectCategory.of(existingLocation) == ProjectCategory.USER)
-								return;
-							// Otherwise, it is a project contributed by a plugin that has moved or is not accessible
-							proj.delete(false, true, monitor);
-							proj = GAMA.getWorkspaceManager().getRoot().getProject(projectName);
-						}
-					}
+					final IProject proj = GAMA.getWorkspaceManager().getRoot().getProject(projectName);
+					final boolean created = !proj.exists() || relinking;
+					if (relinking) { replaceLibraryLink(proj, description, monitor); }
 					if (!proj.exists()) { proj.create(description, monitor); }
 					proj.open(IResource.NONE, monitor);
-					setValuesProjectDescription(proj, plugin);
+					configureProjectDescription(proj, plugin);
+					LibraryProjectSupport.remember(proj, source, ProjectCategory.ofFolder(folder.category()));
+					importedNames.add(projectName);
+					report.available();
+					if (relinking) {
+						report.changed("Relinked " + projectName + "\n  From: " + oldLocation + "\n  To: " + projectLocation);
+					} else if (created) {
+						report.changed("Restored " + projectName + " from " + projectLocation + ".");
+					}
 				}
 			};
 			try {
-				operation.run(null);
-			} catch (final InterruptedException | InvocationTargetException e) {
-				e.printStackTrace();
+				operation.run(monitor);
+			} catch (final InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new OperationCanceledException();
+			} catch (final InvocationTargetException e) {
+				report.error("Could not link " + projectName + " to " + projectLocation, e.getCause());
 			}
 		}
+	}
 
+	private static boolean sameLocation(final IPath first, final IPath second) throws IOException {
+		return first != null && second != null
+				&& first.toFile().getCanonicalFile().equals(second.toFile().getCanonicalFile());
+	}
+
+	/** Prefer a stable identity; never evict a user project, even when its files have disappeared. */
+	IProject findLibraryTarget(final String name, final String source, final IPath location,
+			final LibraryUpdateReport report) throws CoreException, IOException {
+		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
+		for (final IProject project : root.getProjects()) {
+			if (source.equals(LibraryProjectSupport.propertyOf(project, LibraryProjectSupport.SOURCE))) return project;
+		}
+		final IProject candidate = root.getProject(name);
+		if (!candidate.exists() || sameLocation(candidate.getLocation(), location)) return candidate;
+		final boolean wasOpen = candidate.isOpen();
+		try {
+			// A legacy closed project has no root-level provenance yet. Open it only for migration,
+			// and restore its closed state if it turns out to be a user project.
+			if (!wasOpen) { candidate.open(new NullProgressMonitor()); }
+			if (LibraryProjectSupport.isBuiltIn(candidate)
+					&& LibraryProjectSupport.propertyOf(candidate, LibraryProjectSupport.SOURCE) == null) return candidate;
+		} finally {
+			if (!wasOpen) { candidate.close(new NullProgressMonitor()); }
+		}
+		for (int i = 1;; i++) {
+			final IProject alternative = root.getProject(name + " (library" + (i == 1 ? "" : " " + i) + ")");
+			if (!alternative.exists() || sameLocation(alternative.getLocation(), location)) {
+				report.warning("Kept existing project '" + name + "' at " + candidate.getLocation()
+						+ ". The bundled project is available as '" + alternative.getName() + "' at " + location + ".");
+				return alternative;
+			}
+		}
+	}
+
+	/** Re-register only, retaining the old files and restoring the original registration if creation fails. */
+	void replaceLibraryLink(final IProject project, final IProjectDescription replacement,
+			final IProgressMonitor monitor) throws CoreException {
+		final boolean wasOpen = project.isOpen();
+		if (!wasOpen) { project.open(monitor); }
+		final IProjectDescription previous = project.getDescription();
+		final Map<QualifiedName, String> properties = project.getPersistentProperties();
+		project.delete(false, true, monitor);
+		try {
+			project.create(replacement, monitor);
+		} catch (final CoreException | OperationCanceledException e) {
+			try {
+				if (!project.exists()) {
+					project.create(previous, new NullProgressMonitor());
+					project.open(new NullProgressMonitor());
+					for (final var property : properties.entrySet()) {
+						project.setPersistentProperty(property.getKey(), property.getValue());
+					}
+					if (!wasOpen) { project.close(new NullProgressMonitor()); }
+				}
+			} catch (final CoreException restoreError) {
+				e.addSuppressed(restoreError);
+			}
+			throw e;
+		}
 	}
 
 	/**
@@ -773,20 +899,24 @@ public class WorkspaceModelsManager {
 	 */
 	public void setValuesProjectDescription(final IProject proj, final Bundle bundle) {
 		try {
-			final IProjectDescription desc = proj.getDescription();
-			desc.setNatureIds(new String[] { GamaNatures.XTEXT_NATURE, GamaNatures.GAMA_NATURE });
-			desc.setComment(bundle == null ? "" : bundle.getSymbolicName());
-			proj.setDescription(desc, IResource.FORCE, null);
-
-			if (bundle != null) {
-				final String version = Platform.getProduct().getDefiningBundle().getVersion().toString();
-				proj.setPersistentProperty(BUILTIN_PROPERTY, version);
-			}
-			DEBUG.OUT("Successfully configured project: " + proj.getName());
-
+			configureProjectDescription(proj, bundle);
 		} catch (final CoreException e) {
 			DEBUG.ERR("Failed to set project description for: " + proj.getName(), e);
 		}
+	}
+
+	private void configureProjectDescription(final IProject proj, final Bundle bundle) throws CoreException {
+		final IProjectDescription desc = proj.getDescription();
+		final String[] natures = { GamaNatures.XTEXT_NATURE, GamaNatures.GAMA_NATURE };
+		final String comment = bundle == null ? "" : bundle.getSymbolicName();
+		if (!java.util.Arrays.equals(desc.getNatureIds(), natures) || !comment.equals(desc.getComment())) {
+			desc.setNatureIds(natures);
+			desc.setComment(comment);
+			proj.setDescription(desc, IResource.FORCE, null);
+		}
+
+		if (bundle != null) { proj.setPersistentProperty(BUILTIN_PROPERTY, bundle.getVersion().toString()); }
+		DEBUG.OUT("Successfully configured project: " + proj.getName());
 	}
 
 	// static private IProjectDescription setProjectDescription(final File project) {

@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
@@ -45,7 +43,6 @@ import gama.dev.DEBUG;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
-import gama.workspace.manager.ProjectCategory;
 
 /**
  * The Class ApplicationWorkbenchAdvisor.
@@ -101,7 +98,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		super.postStartup();
 		showInteractiveConsoleAtStartup();
 		// Defer linking until the workbench startup sequence has initialized the UI.
-		if (checkCopyOfBuiltInModels()) { WorkspaceModelsManager.instance.linkSampleModelsToWorkspace(); }
+		if (checkCopyOfBuiltInModels()) {
+			WorkspaceModelsManager.instance.linkSampleModelsToWorkspace();
+		}
 		FileUtils.cleanCache();
 		final String[] args = Boolean.TRUE.equals(org.eclipse.swt.widgets.Display.getCurrent()
 				.getData("gama.startupArgumentsConsumed")) ? new String[0] : Platform.getApplicationArgs();
@@ -201,81 +200,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	}
 
 	/**
-	 * Check copy of built in models.
+	 * Reconcile on every normal startup, including workspaces containing only part of the current library.
+	 * Exported simulations override this hook to leave their dedicated workspace alone.
 	 *
 	 * @return true, if successful
 	 */
-	protected boolean checkCopyOfBuiltInModels() {
-
-		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
-		final IProject[] projects = workspace.getRoot().getProjects();
-		// User projects do not imply that the bundled library is present in this workspace.
-		for (final IProject project : projects) {
-			if (ProjectCategory.of(project) != ProjectCategory.USER) return false;
-		}
-		return true;
-		// Following is not ready for prime time !
-		// // If there are projects, we must be careful to distinguish user projects from built-in projects
-		// List<IProject> builtInProjects = new ArrayList<>();
-		// for ( IProject p : projects ) {
-		// try {
-		// // Assumption here : a non-accessible / linked project means a built-in model that is not accessible
-		// // anymore. Maybe false sometimes... But how to check ?
-		// DEBUG.OUT("Project = " + p.getName());
-		// DEBUG.OUT(" ==== > Accessible : " + p.isAccessible());
-		// DEBUG.OUT(" ==== > Open : " + p.isOpen());
-		// DEBUG.OUT(" ==== > Linked : " + p.isLinked());
-		// if ( !p.isAccessible() && p.isLinked() ) {
-		// builtInProjects.add(p);
-		// } else if ( p.isOpen() && p.getPersistentProperty(BUILTIN_PROPERTY) != null ) {
-		// builtInProjects.add(p);
-		// }
-		// } catch (CoreException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// if ( builtInProjects.isEmpty() ) {
-		// // only user projects there
-		// return true;
-		// }
-		// String workspaceStamp = null;
-		// try {
-		// workspaceStamp = workspace.getRoot().getPersistentProperty(BUILTIN_PROPERTY);
-		// DEBUG.OUT("Version of the models in workspace = " + workspaceStamp);
-		// } catch (CoreException e) {
-		// e.printStackTrace();
-		// }
-		// String gamaStamp = getCurrentGamaStampString();
-		// // We dont know when the builtin models have been created -- there is probably a problem, but we do not try
-		// to
-		// // solve it
-		// if ( gamaStamp == null ) {
-		// DEBUG.ERR("Problem when trying to gather the date of creation of built-in models");
-		// return false;
-		// }
-		// if ( gamaStamp.equals(workspaceStamp) ) {
-		// // It's ok. The models in the workspace and in GAMA have the same time stamp
-		// return false;
-		// }
-		// // We now have to (1) ask the user if he/she wants to update the models
-		// boolean create =
-		// MessageDialog
-		// .openConfirm(
-		// Display.getDefault().getActiveShell(),
-		// "Update the models library",
-		// "A new version of the built-in library of models is available. Would you like to update the ones present in
-		// the workspace?");
-		// // (2) erase the built-in projects from the workspace
-		// if ( !create ) { return false; }
-		// for ( IProject p : builtInProjects ) {
-		// try {
-		// p.delete(true, null);
-		// } catch (CoreException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// return true;
-	}
+	protected boolean checkCopyOfBuiltInModels() { return true; }
 
 	@Override
 	public String getInitialWindowPerspectiveId() { return IGui.PERSPECTIVE_MODELING_ID; }

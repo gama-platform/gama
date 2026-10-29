@@ -961,6 +961,12 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
+	public void refreshNavigatorContents() {
+		final IRefreshHandler refresh = WorkbenchHelper.getService(IRefreshHandler.class);
+		if (refresh != null) { refresh.refreshNavigator(); }
+	}
+
+	@Override
 	public boolean isInDisplayThread() { return EventQueue.isDispatchThread() || Display.getCurrent() != null; }
 
 	@Override

@@ -47,6 +47,21 @@ mvn clean install
 
 The produced release should be stored in the project `gama.product` under the `target` folder.
 
+## Repairing a workspace after switching GAMA installations
+
+GAMA reconciles bundled model projects with the running installation at startup, including when a workspace
+was previously opened from Eclipse or another release. Library ownership is stored in workspace metadata,
+independently of installation paths; user projects are never replaced just because they share a library name.
+Name collisions keep the existing project and import the bundled project with a `(library)` suffix.
+
+Use **Clean and update workspace...** in the Models navigator to retry reconciliation and rebuild file metadata
+and projects. Library projects are silently relinked to the running installation's versions, including legacy
+projects and projects changed in an older installation. No user copies or backups of library projects are created.
+Original library files and genuine user projects are not deleted.
+The result dialog reports unresolved projects and discovery failures instead of silently treating them as success.
+The full latest reconciliation report, including old and new locations, is in
+`<workspace>/.metadata/gama-library-repair.log`. Exported standalone simulations do not reconcile the model library.
+
 ## Controlling GAMA from a WebSocket client
 
 GAMA Server works in both the desktop GUI and headless mode. A `load` request can set experiment parameters **before initialization**, choose which console/status/dialog/runtime-error messages are sent to the client, and supply an `until` condition to stop execution. In GUI mode, displays and local output remain available.

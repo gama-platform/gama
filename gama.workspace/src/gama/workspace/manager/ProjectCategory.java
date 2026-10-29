@@ -15,12 +15,14 @@ import org.eclipse.core.runtime.IPath;
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.additions.GamaBundleLoader.ModelFolder;
+import gama.dev.DEBUG;
 
 /**
  * The categories under which the projects of the workspace are classified in the top-level folders of the navigator.
  *
  * <p>
- * The category of a project is derived from its <em>physical location</em> only:
+ * The category of a project is derived from its <em>physical location</em>, with workspace-owned library provenance
+ * as a fallback for links into another installation:
  * </p>
  * <ul>
  * <li>a project located in {@code <workspace>/Tests/<project>} is a user test project ({@link #TESTS}). This
@@ -117,7 +119,15 @@ public enum ProjectCategory {
 	 * @return its category, {@link #USER} if it cannot be determined
 	 */
 	public static ProjectCategory of(final IProject project) {
-		return project == null ? USER : of(project.getLocation());
+		if (project == null) return USER;
+		final ProjectCategory category = of(project.getLocation());
+		if (category != USER) return category;
+		try {
+			return LibraryProjectSupport.categoryOf(project);
+		} catch (final org.eclipse.core.runtime.CoreException e) {
+			DEBUG.ERR("Could not read the library provenance of " + project.getName(), e);
+			return USER;
+		}
 	}
 
 	/**
@@ -209,7 +219,7 @@ public enum ProjectCategory {
 				final URI uri = new URI(resolved.getProtocol(), resolved.getPath(), null).normalize();
 				result.add(new Root(normalize(new File(uri)), ofFolder(folder.category())));
 			} catch (final URISyntaxException | IOException e) {
-				// The folder cannot be resolved: its projects are considered as user projects
+				DEBUG.ERR("Could not resolve models from " + folder.bundle().getSymbolicName() + ": " + folder.path(), e);
 			}
 		}
 		// Only cache a non-empty result: the plugins may not have been scanned yet
