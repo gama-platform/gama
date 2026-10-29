@@ -17,3 +17,6 @@ if command -v update-desktop-database >/dev/null 2>&1; then
 else
     echo "GAMA: refresh the application database after installing desktop-file-utils." >&2
 fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1 && [ -f /usr/share/icons/hicolor/index.theme ]; then
+    gtk-update-icon-cache -q -t /usr/share/icons/hicolor || exit $?
+fi

@@ -2,7 +2,15 @@
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-gama-simulation-package">
     <comment>GAMA Exported Model</comment>
+    <icon name="application-x-gama-simulation-package"/>
     <sub-class-of type="application/zip"/>
     <glob pattern="*.gamp"/>
+  </mime-type>
+  <mime-type type="text/x-gama-model">
+    <comment>GAMA Model</comment>
+    <icon name="text-x-gama-model"/>
+    <sub-class-of type="text/plain"/>
+    <glob pattern="*.gaml"/>
+    <glob pattern="*.experiment"/>
   </mime-type>
 </mime-info>

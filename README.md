@@ -148,6 +148,31 @@ Local macOS assembly builds the universal Cocoa bridge with Clang. When products
 release workflow builds it before signing, so the resulting library is signed with the rest of GAMA. The installed
 application's OS identity and icon remain GAMA's; package-specific assets are generated only in the private session.
 
+Standalone model documents reuse the existing green Play document artwork. Editable `.gaml` and `.experiment` files
+share the blue-G document artwork. The product includes `.icns` for Finder, multi-resolution `.ico` for Windows
+Explorer, and PNG Linux MIME icons installed by the Debian package. OS registrations are applied when the new application is installed;
+the running/installed application is not modified by exporting a model.
+
+In GAMA's navigator, `.gamp` files have their own content type, document icon and player association. Open/double-click
+starts the standalone player rather than a text editor. With navigator metadata enabled, the suffix lists the included
+model paths and experiment count. **Properties > Standalone model** shows the experiments, required GAMA version and
+any embedded extra plugins. Inspection reads the archive's bounded manifest without extracting files or loading code;
+invalid archives show an explicit error. Cached metadata is invalidated when the file changes.
+
+The OS artwork sources are the existing `Model.icns` and `Experiment.icns` in `gama.product/extraresources`;
+`StandaloneModel.icns` is an exact copy of `Experiment.icns`. The navigator uses a simple flat package outline with a G,
+with light/dark variants in `gama.ui.shared/icons_svg/{light,dark}/navigator/files/file.gamp.svg`.
+Regenerate Windows/Linux artwork from PNGs decoded from the original ICNS files (macOS example):
+
+```sh
+sips -s format png gama.product/extraresources/Experiment.icns --out /tmp/gama-play.png
+java -Djava.awt.headless=true gama.product/icons/GenerateDocumentIcons.java \
+  gama.product/extraresources StandaloneModel /tmp/gama-play.png
+sips -s format png gama.product/extraresources/Model.icns --out /tmp/gama-model.png
+java -Djava.awt.headless=true gama.product/icons/GenerateDocumentIcons.java \
+  gama.product/extraresources Model /tmp/gama-model.png
+```
+
 The player uses a private Equinox configuration, bundle inventory, preference store, and workspace under
 `~/.gama/package-sessions/`. Installed bundle paths are referenced without modifying the application. Required host
 bundles must meet the declared minimum versions; newer GAMA releases and newer host bundles are assumed compatible.
