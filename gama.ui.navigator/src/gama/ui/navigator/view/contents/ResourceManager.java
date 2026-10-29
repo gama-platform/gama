@@ -255,7 +255,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 				if (!viewer.getControl().isDisposed()) { viewer.update(vc, null); }
 			}
 			if (toReveal != null) {
-				final VirtualContent<?> vc = findWrappedInstanceOf(toReveal);
+				final VirtualContent<?> vc = resolveWrappedInstanceOf(toReveal);
 				if (!viewer.getControl().isDisposed() && vc != null) {
 					viewer.setSelection(new StructuredSelection(vc), true);
 				}
@@ -380,6 +380,10 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 */
 	// Returns whether to update or not
 	boolean processAddition(final IResource res) {
+		if (res.getParent() != null) {
+			invalidateModelsCountCache(res.getParent());
+			invalidateSeverityCache(res.getParent());
+		}
 		boolean update = false;
 		switch (res.getType()) {
 			case IResource.FILE:
@@ -396,6 +400,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 				break;
 			case IResource.FOLDER:
 				folderAdded((IFolder) res);
+				update = true;
 		}
 		final IFileMetadataProvider provider = GAMA.getMetadataProvider();
 		provider.storeMetaData(res, null, true);
@@ -413,7 +418,6 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	public void fileAdded(final IFile file) {
 		if (DEBUG.IS_ON()) { DEBUG.OUT("File " + file.getName() + " has been added"); }
 		final WrappedContainer<?> parent = findWrappedInstanceOf(file.getParent());
-		wrap(parent, file);
 		if (parent != null) {
 			parent.initializeChildren();
 			refreshResource(parent);
@@ -545,6 +549,10 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 */
 	// Returns whether to update or not
 	boolean processRemoval(final IResource res) {
+		if (res.getParent() != null) {
+			invalidateModelsCountCache(res.getParent());
+			invalidateSeverityCache(res.getParent());
+		}
 		boolean update = false;
 		switch (res.getType()) {
 			case IResource.FILE:
@@ -557,6 +565,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 				break;
 			case IResource.FOLDER:
 				folderRemoved((IFolder) res);
+				update = true;
 				break;
 			case IResource.PROJECT:
 				projectRemoved((IProject) res);
@@ -590,11 +599,11 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 */
 	public void folderRemoved(final IFolder folder) {
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Folder " + folder.getName() + " has been removed"); }
-		final WrappedFolder wc = (WrappedFolder) findWrappedInstanceOf(folder);
+		final WrappedContainer<?> parent = findWrappedInstanceOf(folder.getParent());
 		cache.invalidate(folder);
-		if (wc != null) {
-			wc.getParent().initializeChildren();
-			refreshResource(wc.getParent());
+		if (parent != null) {
+			parent.initializeChildren();
+			refreshResource(parent);
 		}
 	}
 
@@ -664,7 +673,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (res.getType() == IResource.FILE) {
 			invalidateSeverityCache(res);
 			final WrappedFile file = (WrappedFile) findWrappedInstanceOf(res);
-			refreshResource(file.getParent());
+			if (file != null) { refreshResource(file.getParent()); }
 		}
 		return true;
 	}
@@ -697,7 +706,12 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 */
 	private void updateResource(final IResource res) {
 		if (res == null) return;
-		updateResource(findWrappedInstanceOf(res));
+		final WrappedResource<?, ?> wrapped = findWrappedInstanceOf(res);
+		if (wrapped != null) {
+			updateResource(wrapped);
+		} else {
+			updateResource(res.getParent());
+		}
 	}
 
 	/**
@@ -756,7 +770,29 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 */
 	private void invalidateModelsCountCache(final IContainer container) {
 		final WrappedContainer<?> p = findWrappedInstanceOf(container);
-		if (p != null) { p.invalidateModelsCount(); }
+		if (p != null) {
+			p.invalidateModelsCount();
+		} else if (container != null && container.getParent() != null) {
+			invalidateModelsCountCache(container.getParent());
+		}
+	}
+
+	/** Resolve only the ancestor chain requested by reveal, restoration or linked-file navigation. */
+	public WrappedResource<?, ?> resolveWrappedInstanceOf(final Object resource) {
+		final WrappedResource<?, ?> cached = findWrappedInstanceOf(resource);
+		if (cached != null) return cached;
+		if (!(resource instanceof IResource r) || !r.exists()) return null;
+		if (r instanceof IProject project) {
+			for (final TopLevelFolder folder : NavigatorRoot.getInstance().getFolders()) {
+				for (final WrappedProject candidate : folder.getProjects()) {
+					if (candidate.getResource().equals(project)) return candidate;
+				}
+			}
+			return null;
+		}
+		if (r.getParent() == null) return null;
+		final WrappedResource<?, ?> parent = resolveWrappedInstanceOf(r.getParent());
+		return parent instanceof WrappedContainer<?> container ? wrap(container, r) : null;
 	}
 
 	/**

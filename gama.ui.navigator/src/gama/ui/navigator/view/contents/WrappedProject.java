@@ -13,7 +13,6 @@ package gama.ui.navigator.view.contents;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.ecore.xml.type.internal.DataValue.URI;
@@ -169,35 +168,4 @@ public class WrappedProject extends WrappedContainer<IProject> {
 	@Override
 	public WrappedProject getProject() { return this; }
 
-	@Override
-	public int findMaxProblemSeverity() {
-		if (severity != NOT_COMPUTED) return severity;
-		if (!isOpen()) {
-			severity = CLOSED;
-			return severity;
-		}
-		// children may be null during the super-constructor call that precedes
-		// initializeChildren(); in that case defer the computation.
-		if (children == null) return NO_PROBLEM;
-		// Aggregate severity from child resources only.
-		// This intentionally excludes markers placed directly on the IProject
-		// resource itself (e.g. Eclipse's charset-encoding warning marker) which
-		// must not be surfaced as a folder warning when the individual files are
-		// problem-free.
-		severity = NO_PROBLEM;
-		for (final Object child : children) {
-			// Only aggregate from children that are actually shown with a severity overlay
-			// (i.e. GAML files and folders that contain GAML files). This intentionally
-			// excludes non-GAML resource files, hidden Eclipse metadata files (.project,
-			// .settings, etc.) and other WrappedFile objects whose canBeDecorated()
-			// returns false, because problem markers placed on those by Eclipse or Xtext
-			// must not surface as phantom warnings when every visible file is clean.
-			if (child instanceof WrappedResource<?, ?> wr && wr.canBeDecorated()) {
-				final int s = wr.findMaxProblemSeverity();
-				if (s > severity) { severity = s; }
-				if (severity == IMarker.SEVERITY_ERROR) { break; }
-			}
-		}
-		return severity;
-	}
 }

@@ -1,6 +1,7 @@
 package gama.workspace.manager;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
@@ -62,12 +63,19 @@ final class LibraryProjectSupport {
 
 	static void remember(final IProject project, final String source, final ProjectCategory category)
 			throws CoreException {
-		project.setPersistentProperty(SOURCE, source);
-		project.setPersistentProperty(CATEGORY, category.name());
+		setIfChanged(project, SOURCE, source);
+		setIfChanged(project, CATEGORY, category.name());
 		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
-		root.setPersistentProperty(workspaceKey(project, SOURCE), source);
-		root.setPersistentProperty(workspaceKey(project, CATEGORY), category.name());
-		root.setPersistentProperty(workspaceKey(project, LOCATION), project.getLocation().toPortableString());
+		setIfChanged(root, workspaceKey(project, SOURCE), source);
+		setIfChanged(root, workspaceKey(project, CATEGORY), category.name());
+		setIfChanged(root, workspaceKey(project, LOCATION), project.getLocation().toPortableString());
+	}
+
+	static void setIfChanged(final IResource resource, final QualifiedName key, final String value)
+			throws CoreException {
+		if (!java.util.Objects.equals(resource.getPersistentProperty(key), value)) {
+			resource.setPersistentProperty(key, value);
+		}
 	}
 
 	static void forget(final IProject project) throws CoreException {

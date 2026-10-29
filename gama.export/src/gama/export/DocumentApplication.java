@@ -40,10 +40,12 @@ public final class DocumentApplication implements IApplication {
 			final var arguments = PackageDocuments.fromArguments(supplied instanceof String[] values ? values : new String[0]);
 			context.applicationRunning();
 			// Cocoa delivers the initial document event after the native launcher has completed its startup handshake.
-			final long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(250);
-			do {
-				if (!display.readAndDispatch()) Thread.sleep(5);
-			} while (System.nanoTime() < deadline);
+			if (PackageDocuments.shouldWaitForNativeDocuments(Platform.OS_MACOSX.equals(Platform.getOS()), arguments)) {
+				final long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(250);
+				do {
+					if (!display.readAndDispatch()) Thread.sleep(5);
+				} while (System.nanoTime() < deadline);
+			}
 			final var initial = new ArrayList<>(arguments);
 			for (final String path : documents) if (!initial.contains(path)) initial.add(path);
 			if (!PackageDocuments.packagesOnly(initial)) {

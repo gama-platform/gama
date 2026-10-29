@@ -203,7 +203,7 @@ public class GamaNavigator extends CommonNavigator
 		final String[] names = saved.split("@@");
 		for (final String s : names) {
 			if (s.startsWith("/")) {
-				final WrappedResource<?, ?> resource = getInstance().getManager().findWrappedInstanceOf(
+				final WrappedResource<?, ?> resource = getInstance().getManager().resolveWrappedInstanceOf(
 						GAMA.getWorkspaceManager().getWorkspace().getRoot().findMember(new Path(s)));
 				if (resource != null) { contents.add(resource); }
 			} else {
@@ -224,7 +224,7 @@ public class GamaNavigator extends CommonNavigator
 		VirtualContent<?> current;
 		final Object o1 = getCommonViewer().getStructuredSelection().getFirstElement();
 		if (o1 instanceof IResource) {
-			current = NavigatorRoot.getInstance().getManager().findWrappedInstanceOf(o1);
+			current = NavigatorRoot.getInstance().getManager().resolveWrappedInstanceOf(o1);
 		} else {
 			current = (VirtualContent<?>) getCommonViewer().getStructuredSelection().getFirstElement();
 		}
@@ -233,7 +233,7 @@ public class GamaNavigator extends CommonNavigator
 			newSelection = (StructuredSelection) selection;
 			Object o = ((StructuredSelection) selection).getFirstElement();
 			if (o instanceof IResource) {
-				o = NavigatorRoot.getInstance().getManager().findWrappedInstanceOf(o);
+				o = NavigatorRoot.getInstance().getManager().resolveWrappedInstanceOf(o);
 				if (o != null) { newSelection = new StructuredSelection(o); }
 			}
 		}

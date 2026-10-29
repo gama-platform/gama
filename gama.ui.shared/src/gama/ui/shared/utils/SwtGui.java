@@ -436,6 +436,13 @@ public class SwtGui implements IGui {
 	@Override
 	public boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
 		if (model == null) return false;
+		try {
+			GraphicsInitialization.initialize();
+		} catch (final RuntimeException e) {
+			DEBUG.ERR("Unable to initialize graphics for experiment " + experimentName, e);
+			getDialogFactory().error("Unable to initialize graphics: " + e.getMessage());
+			return false;
+		}
 		return PerspectiveHelper.openSimulationPerspective(model, experimentName);
 	}
 
@@ -450,6 +457,7 @@ public class SwtGui implements IGui {
 	 */
 	@Override
 	public IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object uiComponent) {
+		GraphicsInitialization.initialize();
 		final String keyword = output.getData().getDisplayType();
 		final IDisplayCreator creator = GamaAdditionRegistry.getDisplay(keyword);
 		if (creator == null)

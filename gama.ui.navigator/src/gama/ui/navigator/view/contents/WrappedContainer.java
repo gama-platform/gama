@@ -11,9 +11,14 @@
 package gama.ui.navigator.view.contents;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.dev.DEBUG;
+import gama.workspace.metadata.FileMetaDataProvider;
 import one.util.streamex.StreamEx;
 
 /**
@@ -43,13 +48,18 @@ public abstract class WrappedContainer<C extends IContainer> extends WrappedReso
 	 */
 	public WrappedContainer(final VirtualContent<?> root, final C wrapped) {
 		super(root, wrapped);
-		initializeChildren();
 	}
 
 	/**
 	 * Initialize children.
 	 */
 	public void initializeChildren() {
+		invalidateModelsCount();
+		invalidateSeverity();
+		if (children != null) { loadChildren(); }
+	}
+
+	private void loadChildren() {
 		if (!isOpen()) {
 			children = EMPTY;
 			return;
@@ -63,18 +73,21 @@ public abstract class WrappedContainer<C extends IContainer> extends WrappedReso
 				children = StreamEx.of(cc).map(r -> getManager().wrap(this, r)).toArray(WrappedResource.class);
 			}
 		} catch (final CoreException e) {
-			e.printStackTrace();
+			DEBUG.ERR("Unable to load navigator children of " + getResource().getFullPath(), e);
+			children = EMPTY;
 		}
-		countModels();
 	}
 
 	@Override
 	public boolean hasChildren() {
-		return isOpen() && children.length > 0;
+		return isOpen() && getNavigatorChildren().length > 0;
 	}
 
 	@Override
-	public Object[] getNavigatorChildren() { return children; }
+	public Object[] getNavigatorChildren() {
+		if (children == null) { loadChildren(); }
+		return children;
+	}
 
 	@Override
 	public int countModels() {
@@ -82,11 +95,42 @@ public abstract class WrappedContainer<C extends IContainer> extends WrappedReso
 			modelsCount = 0;
 			suffix = null;
 			if (isOpen()) {
-				for (final Object c : children) { modelsCount += ((WrappedResource<?, ?>) c).countModels(); }
+				try {
+					getResource().accept(r -> {
+						if (r instanceof IFile file && isModel(file)) { modelsCount++; }
+						return true;
+					});
+				} catch (final CoreException e) {
+					modelsCount = NOT_COMPUTED;
+					throw new IllegalStateException("Unable to count navigator models in " + getResource().getFullPath(), e);
+				}
 				if (modelsCount > 0) { suffix = "" + modelsCount + " model" + (modelsCount > 1 ? "s" : ""); }
 			}
 		}
 		return modelsCount;
+	}
+
+	private static boolean isModel(final IFile file) {
+		return IFileMetadataProvider.GAML_CT_ID.equals(FileMetaDataProvider.getContentTypeId(file));
+	}
+
+	@Override
+	public int findMaxProblemSeverity() {
+		if (!isOpen()) return CLOSED;
+		if (severity == NOT_COMPUTED) {
+			int result = NO_PROBLEM;
+			try {
+				for (final IMarker marker : getResource().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)) {
+					if (marker.getResource() instanceof IFile file && isModel(file)) {
+						result = Math.max(result, marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO));
+					}
+				}
+				severity = result;
+			} catch (final CoreException e) {
+				throw new IllegalStateException("Unable to read navigator markers in " + getResource().getFullPath(), e);
+			}
+		}
+		return severity;
 	}
 
 	/**

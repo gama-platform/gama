@@ -47,7 +47,6 @@ public abstract class WrappedResource<P extends VirtualContent<?>, T extends IRe
 	public WrappedResource(final P root, final T wrapped) {
 		super(root, wrapped.getName());
 		resource = wrapped;
-		findMaxProblemSeverity();
 	}
 
 	@SuppressWarnings ({ "unchecked" })

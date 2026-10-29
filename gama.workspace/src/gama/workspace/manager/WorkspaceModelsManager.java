@@ -674,6 +674,13 @@ public class WorkspaceModelsManager {
 			final Map<File, IPath> projects, final Map<String, Bundle> claimedNames,
 			final java.util.Set<String> importedNames, final LibraryUpdateReport report, final IProgressMonitor monitor) {
 		final Bundle plugin = folder.bundle();
+		final Map<String, IProject> bySource;
+		try {
+			bySource = indexLibrarySources();
+		} catch (final CoreException e) {
+			report.error("Could not read workspace library provenance for " + folder.path(), e);
+			return;
+		}
 		for (final Map.Entry<File, IPath> entry : projects.entrySet().stream()
 				.sorted(Map.Entry.comparingByKey()).toList()) {
 			if (monitor.isCanceled()) throw new OperationCanceledException();
@@ -707,7 +714,7 @@ public class WorkspaceModelsManager {
 			final IPath projectLocation = new Path(project.getAbsolutePath());
 			final IProject target;
 			try {
-				target = findLibraryTarget(name, source, projectLocation, report);
+				target = findLibraryTarget(name, source, projectLocation, report, bySource);
 			} catch (final CoreException | IOException e) {
 				report.error("Could not resolve the library project " + name, e);
 				continue;
@@ -750,6 +757,7 @@ public class WorkspaceModelsManager {
 			};
 			try {
 				operation.run(monitor);
+				bySource.putIfAbsent(source, target);
 			} catch (final InterruptedException e) {
 				Thread.currentThread().interrupt();
 				throw new OperationCanceledException();
@@ -767,10 +775,23 @@ public class WorkspaceModelsManager {
 	/** Prefer a stable identity; never evict a user project, even when its files have disappeared. */
 	IProject findLibraryTarget(final String name, final String source, final IPath location,
 			final LibraryUpdateReport report) throws CoreException, IOException {
-		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
-		for (final IProject project : root.getProjects()) {
-			if (source.equals(LibraryProjectSupport.propertyOf(project, LibraryProjectSupport.SOURCE))) return project;
+		return findLibraryTarget(name, source, location, report, indexLibrarySources());
+	}
+
+	private Map<String, IProject> indexLibrarySources() throws CoreException {
+		final Map<String, IProject> result = new HashMap<>();
+		for (final IProject project : GAMA.getWorkspaceManager().getRoot().getProjects()) {
+			final String source = LibraryProjectSupport.propertyOf(project, LibraryProjectSupport.SOURCE);
+			if (source != null) result.putIfAbsent(source, project);
 		}
+		return result;
+	}
+
+	private IProject findLibraryTarget(final String name, final String source, final IPath location,
+			final LibraryUpdateReport report, final Map<String, IProject> bySource) throws CoreException, IOException {
+		final IProject known = bySource.get(source);
+		if (known != null) return known;
+		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
 		final IProject candidate = root.getProject(name);
 		if (!candidate.exists() || sameLocation(candidate.getLocation(), location)) return candidate;
 		final boolean wasOpen = candidate.isOpen();
@@ -915,7 +936,9 @@ public class WorkspaceModelsManager {
 			proj.setDescription(desc, IResource.FORCE, null);
 		}
 
-		if (bundle != null) { proj.setPersistentProperty(BUILTIN_PROPERTY, bundle.getVersion().toString()); }
+		if (bundle != null) {
+			LibraryProjectSupport.setIfChanged(proj, BUILTIN_PROPERTY, bundle.getVersion().toString());
+		}
 		DEBUG.OUT("Successfully configured project: " + proj.getName());
 	}
 
@@ -935,6 +958,9 @@ public class WorkspaceModelsManager {
 			final String currentStamp = GAMA.getWorkspaceManager().getCurrentGamaStampString();
 			final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
 			final String oldStamp = root.getPersistentProperty(BUILTIN_PROPERTY);
+			final java.nio.file.Path newStampPath =
+					java.nio.file.Paths.get(GAMA.getWorkspaceManager().getWorkspaceLocation(), currentStamp);
+			if (currentStamp.equals(oldStamp) && Files.isRegularFile(newStampPath)) return;
 
 			// Remove old stamp file if it exists
 			if (oldStamp != null) {
@@ -949,11 +975,9 @@ public class WorkspaceModelsManager {
 			}
 
 			// Set new stamp property
-			root.setPersistentProperty(BUILTIN_PROPERTY, currentStamp);
+			LibraryProjectSupport.setIfChanged(root, BUILTIN_PROPERTY, currentStamp);
 
 			// Create new stamp file
-			final java.nio.file.Path newStampPath =
-					java.nio.file.Paths.get(GAMA.getWorkspaceManager().getWorkspaceLocation(), currentStamp);
 			try {
 				Files.createFile(newStampPath);
 				DEBUG.OUT("Created new workspace stamp: " + currentStamp);

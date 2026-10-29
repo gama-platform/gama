@@ -28,7 +28,7 @@ public class PhysicsActivator extends GamaBundleActivator {
 	public static final boolean LOAD_NATIVE_BULLET_LIBRARY = true;
 
 	/** The native bullet library loaded. */
-	public static Boolean NATIVE_BULLET_LIBRARY_LOADED = null;
+	public static volatile Boolean NATIVE_BULLET_LIBRARY_LOADED = null;
 
 	/** The Constant NATIVE_LIBRARY_LOCATION. */
 	public static final String NATIVE_LIBRARY_LOCATION = "/libs/Libbulletjme 21.2.1/native/";
@@ -47,6 +47,11 @@ public class PhysicsActivator extends GamaBundleActivator {
 
 	/** The Load native library. */
 	public boolean loadNativeLibrary() {
+		return ensureNativeLibraryLoaded();
+	}
+
+	/** Load on first physics request, serializing concurrent simulations and caching failures as well as success. */
+	public static synchronized boolean ensureNativeLibraryLoaded() {
 		if (NATIVE_BULLET_LIBRARY_LOADED == null) {
 			NATIVE_BULLET_LIBRARY_LOADED = false;
 			if (LOAD_NATIVE_BULLET_LIBRARY) {
@@ -61,7 +66,7 @@ public class PhysicsActivator extends GamaBundleActivator {
 					};
 					NativeUtils.loadLibraryFromJar(NATIVE_LIBRARY_LOCATION + name);
 					NATIVE_BULLET_LIBRARY_LOADED = true;
-				} catch (Throwable e) {
+				} catch (Exception | LinkageError e) {
 					NATIVE_BULLET_LIBRARY_LOADED = false;
 					ERR(">> Impossible to load Bullet native library because " + e.getMessage());
 					ERR(">> GAMA will fall back to JBullet instead");
@@ -73,7 +78,6 @@ public class PhysicsActivator extends GamaBundleActivator {
 
 	@Override
 	protected void initialize(final BundleContext context) {
-		loadNativeLibrary();
 	}
 
 }

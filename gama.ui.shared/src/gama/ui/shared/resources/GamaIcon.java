@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -58,19 +59,6 @@ public class GamaIcon implements IGamaIcons {
 	/** The icon cache. */
 	private static final Cache<String, GamaIcon> ICON_CACHE = CacheBuilder.newBuilder().build();
 
-	/** The Constant PATH_TO_ICONS. */
-	private static final Path PATH_TO_ICONS;
-
-	static {
-		// we need to use a tmp variable because PATH_TO_ICONS is final
-		Path tmp = null;
-		try {
-			URL folderURL = toFileURL(Platform.getBundle(PLUGIN_ID).getEntry(ICONS_PATH));
-			tmp = Path.of(new URI(folderURL.getProtocol(), folderURL.getPath(), null).normalize());
-		} catch (Exception e) {}
-		PATH_TO_ICONS = tmp;
-	}
-
 	/**
 	 * Preload all icons.
 	 *
@@ -79,22 +67,25 @@ public class GamaIcon implements IGamaIcons {
 	 */
 	public static void preloadAllIcons() {
 		try {
+			final URL entry = Platform.getBundle(PLUGIN_ID).getEntry(ICONS_PATH);
+			if (entry == null) throw new IOException("Missing GAMA icons directory: " + ICONS_PATH);
+			final URL folderURL = toFileURL(entry);
+			final Path icons = Path.of(new URI(folderURL.getProtocol(), folderURL.getPath(), null).normalize());
 			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "completed in", () -> {
-				if (PATH_TO_ICONS == null) return;
-				Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
+				Files.walkFileTree(icons, new SimpleFileVisitor<Path>() {
 
 					@Override
 					public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
 							throws IOException {
 						if (attrs.isRegularFile()) {
-							String s = FilenameUtils.separatorsToUnix(PATH_TO_ICONS.relativize(file).toString());
+							String s = FilenameUtils.separatorsToUnix(icons.relativize(file).toString());
 							if (FilenameUtils.isExtension(s, "svg")) { named(FilenameUtils.removeExtension(s)); }
 						}
 						return FileVisitResult.CONTINUE;
 					}
 				});
 			});
-		} catch (IOException e) {
+		} catch (IOException | URISyntaxException e) {
 			DEBUG.ERR(e);
 		}
 	}

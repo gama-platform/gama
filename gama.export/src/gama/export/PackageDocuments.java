@@ -39,4 +39,8 @@ public final class PackageDocuments {
 	public static boolean packagesOnly(final List<String> documents) {
 		return !documents.isEmpty() && documents.stream().allMatch(PackageDocuments::isPackage);
 	}
+
+	static boolean shouldWaitForNativeDocuments(final boolean macOS, final List<String> arguments) {
+		return macOS && arguments.isEmpty();
+	}
 }

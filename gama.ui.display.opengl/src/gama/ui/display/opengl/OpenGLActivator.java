@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.FutureTask;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.osgi.framework.BundleContext;
@@ -29,15 +30,18 @@ import com.jogamp.opengl.GLProfile;
 
 import gama.api.runtime.SystemInfo;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.api.ui.displays.GraphicsInitializerRegistry;
 import gama.dependencies.GamaBundleActivator;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
+import gama.ui.shared.utils.GraphicsInitialization;
 
 /**
  * The Class OpenGLActivator.
  */
 public class OpenGLActivator extends GamaBundleActivator {
+
+	private static final FutureTask<Void> CAPABILITIES = new FutureTask<>(OpenGLActivator::gatherOpenGLProperties, null);
 
 	/**
 	 * Start.
@@ -49,34 +53,24 @@ public class OpenGLActivator extends GamaBundleActivator {
 	 */
 	@Override
 	public void initialize(final BundleContext context) {
-
-		// // Necessary to load the native libraries correctly (see
-		// //
-		// http://forum.jogamp.org/Return-of-the-quot-java-lang-UnsatisfiedLinkError-Can-t-load-library-System-Library-Frameworks-glueg-td4034549.html)
-		runAsync(() -> {
-			DEBUG.TIMER(BANNER_CATEGORY.OpenGL, "Subsystem preloaded", "in", () -> {
-
-				JarUtil.setResolver(url -> {
-					try {
-						final URL urlUnescaped = FileLocator.resolve(url);
-						return new URI(urlUnescaped.getProtocol(), urlUnescaped.getPath(), null).toURL();
-					} catch (final IOException | URISyntaxException urisyntaxexception) {
-						return url;
-					}
-				});
-
-				// Necessary to initialize very early because initializing it
-				// while opening a Java2D view before leads to a deadlock
+		GraphicsInitializerRegistry.register(() -> {
+			JarUtil.setResolver(url -> {
 				try {
-					GLProfile.initSingleton();
-				} catch (Exception e1) {
-					DEBUG.ERR("Impossible to initialize OpenGL", e1);
-					return;
+					final URL resolved = FileLocator.resolve(url);
+					return new URI(resolved.getProtocol(), resolved.getPath(), null).toURL();
+				} catch (final IOException | URISyntaxException e) {
+					DEBUG.ERR("Unable to resolve OpenGL native library URL: " + url, e);
+					return url;
 				}
-				while (!GLProfile.isInitialized()) { THREADS.WAIT(100, null, "Impossible to initialize OpenGL"); }
-				gatherOpenGLProperties();
 			});
+			// Complete before Java2D creates a view: later JOGL initialization can deadlock with AWT.
+			GLProfile.initSingleton();
 		});
+	}
+
+	public static void initializeCapabilities() {
+		GraphicsInitialization.initialize();
+		GraphicsInitialization.await(CAPABILITIES);
 	}
 
 	/**
@@ -85,7 +79,7 @@ public class OpenGLActivator extends GamaBundleActivator {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 21 déc. 2023
 	 */
-	private void gatherOpenGLProperties() {
+	private static void gatherOpenGLProperties() {
 		GL gl = null;
 		GLOffscreenAutoDrawable offscreen = null;
 		String property = "Loading";
@@ -142,8 +136,8 @@ public class OpenGLActivator extends GamaBundleActivator {
 			SystemInfo.setGraphicsCard(graphicsCard);
 			DEBUG.BANNER(prefix, property, "is", graphicsCard);
 		} catch (Exception e) {
-			// do not interrupt the thread if something goes wrong and simply report problem
-			DEBUG.BANNER(prefix, "Properties", "error on", property);
+			DEBUG.ERR("Unable to inspect OpenGL property: " + property, e);
+			throw new IllegalStateException("Unable to inspect OpenGL capabilities", e);
 		} finally {
 			if (gl != null) { gl.getContext().destroy(); }
 			if (offscreen != null) { offscreen.destroy(); }

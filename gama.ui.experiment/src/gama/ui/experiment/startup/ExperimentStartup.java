@@ -34,9 +34,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * <li><b>{@link PerspectiveHelper#prewarmPerspective()}</b> — constructs a throw-away
  * {@link gama.ui.application.workbench.SimulationPerspectiveDescriptor} so that the reflection-based write into
  * {@code PerspectiveRegistry} happens at startup, not when the user clicks the experiment button.</li>
- * <li><b>{@link GamaIcon#preloadAllIcons()}</b> — walks the SVG icon tree and populates the icon cache. Without
- * pre-loading, every icon lookup during view creation causes a file-system walk and SVG rasterization on the UI
- * thread.</li>
+ * <li>Icons are loaded on demand by direct bundle lookup; the full icon tree is not scanned at startup.</li>
  * <li><b>{@link IGamaColors} class loading</b> — the interface's static fields allocate SWT
  * {@link org.eclipse.swt.graphics.Color} objects. Loading the class early ensures those allocations happen before the
  * first display view is painted.</li>

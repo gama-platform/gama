@@ -107,7 +107,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	private void computeFileParent() {
 		if (isShapeFileSupport) {
 			final IResource shape = FileMetaDataProvider.shapeFileSupportedBy(getResource());
-			if (shape != null) { fileParent = (WrappedFile) getManager().findWrappedInstanceOf(shape); }
+			if (shape != null) { fileParent = (WrappedFile) getManager().resolveWrappedInstanceOf(shape); }
 		}
 	}
 
@@ -146,7 +146,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 			final List<VirtualContent> sub = new ArrayList<>();
 			for (final IResource r : folder.members()) {
 				if (r instanceof IFile && FileMetaDataProvider.isSupport(p, (IFile) r)) {
-					sub.add(getManager().findWrappedInstanceOf(r));
+					sub.add(getManager().resolveWrappedInstanceOf(r));
 				}
 			}
 			final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(p, false, false);

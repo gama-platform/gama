@@ -40,9 +40,9 @@ public class LinkedFile extends VirtualContent<Category> implements IAdaptable {
 	 * @param name
 	 */
 	public LinkedFile(final Category root, final IFile wrapped, final String originalName) {
-		super(root, NavigatorRoot.getInstance().getManager().findWrappedInstanceOf(wrapped).getName());
+		super(root, wrapped.getName());
 		suffix = originalName;
-		file = (WrappedFile) getManager().findWrappedInstanceOf(wrapped);
+		file = (WrappedFile) getManager().resolveWrappedInstanceOf(wrapped);
 	}
 
 	/**

@@ -129,7 +129,7 @@ import gama.extension.physics.native_version.NativeBulletPhysicalWorld;
 				name = IPhysicalConstants.USE_NATIVE,
 				type = IType.BOOL,
 				doc = { @doc ("This attribute allows to manually switch between the Java version of the Bullet library (JBullet, a modified version of https://github.com/stephengold/jbullet, which corresponds to version 2.72 of the original library) and the native Bullet library (Libbulletjme, https://github.com/stephengold/Libbulletjme, which is kept up-to-date with the 3.x branch of the original library)."
-						+ "The native version is the default one unless the libraries cannot be loaded, making JBullet the default") }),
+						+ "The native version is the default one unless the libraries cannot be loaded, making JBullet the default. Native loading is deferred until this attribute is queried or a native Bullet world is requested.") }),
 		@variable (
 				name = IPhysicalConstants.LIBRARY_NAME,
 				type = IType.STRING,
@@ -162,7 +162,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	IPhysicalWorld gateway;
 
 	/** The use native library. */
-	Boolean useNativeLibrary = PhysicsActivator.NATIVE_BULLET_LIBRARY_LOADED;
+	Boolean useNativeLibrary;
 
 	/** The library to use. */
 	String libraryToUse = BULLET_LIBRARY_NAME;
@@ -357,7 +357,9 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@getter (
 			value = USE_NATIVE)
 	public Boolean usesNativeLibrary(final IScope scope) {
-		if (useNativeLibrary == null) { useNativeLibrary = PhysicsActivator.NATIVE_BULLET_LIBRARY_LOADED; }
+		if (!Boolean.FALSE.equals(useNativeLibrary)) {
+			useNativeLibrary = PhysicsActivator.ensureNativeLibraryLoaded();
+		}
 		return useNativeLibrary;
 	}
 
@@ -371,8 +373,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 */
 	@setter (USE_NATIVE)
 	public void useNativeLibrary(final IScope scope, final Boolean v) {
-		// If we have not successfully loaded the library, then the setting should remain false.
-		useNativeLibrary = v;
+		useNativeLibrary = Boolean.TRUE.equals(v) ? PhysicsActivator.ensureNativeLibraryLoaded() : false;
 	}
 
 	/**
@@ -871,7 +872,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 
 	@Override
 	public void dispose() {
-		getGateway().dispose();
+		if (gateway != null) { gateway.dispose(); }
 		joints.clear();
 		registeredAgents.clear();
 		super.dispose();
@@ -906,7 +907,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 		if (gateway == null) {
 			boolean isBullet = BULLET_LIBRARY_NAME.equals(libraryToUse);
 			if (isBullet) {
-				if (useNativeLibrary) {
+				if (usesNativeLibrary(getScope())) {
 					gateway = new NativeBulletPhysicalWorld(this);
 				} else {
 					gateway = new BulletPhysicalWorld(this);

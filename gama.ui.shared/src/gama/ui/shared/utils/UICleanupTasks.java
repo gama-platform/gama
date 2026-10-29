@@ -285,7 +285,6 @@ public class UICleanupTasks {
 	 * @throws IOException
 	 */
 	public static void run() {
-		GamaIcon.preloadAllIcons();
 		final MApplication a = PlatformUI.getWorkbench().getService(MApplication.class);
 		EclipseContext context = (EclipseContext) a.getContext();
 		if (context != null) {

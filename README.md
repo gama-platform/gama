@@ -47,6 +47,32 @@ mvn clean install
 
 The produced release should be stored in the project `gama.product` under the `target` folder.
 
+## Desktop startup
+
+Navigator project/folder wrappers load their immediate children on demand instead of recursively wrapping
+the workspace. Model-count labels and problem overlays scan Eclipse resources without constructing hidden
+wrappers. Search and expand-all still traverse the tree when requested, and restoring expanded folders or
+revealing an editor resource resolves its ancestor chain on demand.
+
+Native Bullet loading is deferred until a physical simulation queries `use_native`, explicitly enables it,
+or first requests its native Bullet world. Loading is serialized and attempted once per process; failure
+is logged and selects JBullet instead. Explicit Java-only physics and Box2D world creation do not request
+native loading unless `use_native` is queried or enabled.
+
+Icons are loaded and cached on demand rather than scanning the entire SVG tree at startup.
+Library reconciliation still checks every launch for missing or relocated projects, but indexes provenance
+per model folder and avoids rewriting unchanged persistent properties and workspace stamps.
+
+JOGL native initialization is deferred until the first desktop experiment launch, before any Java2D view
+is opened (initializing it later can deadlock with AWT). A progress dialog keeps the UI responsive when
+launch is requested on the UI thread. The offscreen OpenGL capability probe is deferred further, until
+the first legacy OpenGL surface is created, without showing a probe dialog. Both operations are performed
+once; the cost moves from application startup to the first experiment/display.
+
+Deferred graphics callbacks are registered in the API bundle, not the shared UI bundle. Display-bundle
+activation happens during language loading, before the workbench exists; touching a shared-UI class
+at registration time can prematurely activate its workbench-dependent activator.
+
 ## Repairing a workspace after switching GAMA installations
 
 GAMA reconciles bundled model projects with the running installation at startup, including when a workspace

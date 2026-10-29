@@ -144,6 +144,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 *            the objects
 	 */
 	public SWTOpenGLDisplaySurface(final IOutput.Display output, final Object parent) {
+		gama.ui.display.opengl.OpenGLActivator.initializeCapabilities();
 		this.output = output;
 		this.parent = (Composite) parent;
 		this.output.getData().addListener(this);
