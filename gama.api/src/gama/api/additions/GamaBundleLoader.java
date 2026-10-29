@@ -548,9 +548,8 @@ public class GamaBundleLoader {
 		for (final IConfigurationElement e : registry.getConfigurationElementsFor(METADATA_EXTENSION)) {
 			try {
 				GAMA.getMetadataProvider().registerMetadataClass(e.getAttribute("content_type"),
-						(Class<? extends IGamaFileMetaData>) GamaClassLoader.getInstance()
-								.loadClass(e.getAttribute("class")));
-				// TODO Add the defining plug-in
+						Platform.getBundle(e.getContributor().getName()).loadClass(e.getAttribute("class"))
+								.asSubclass(IGamaFileMetaData.class));
 			} catch (final Exception e1) {
 				ERROR("Error in loading metadata declaration : " + e.getDeclaringExtension().getContributor().getName(),
 						e1);

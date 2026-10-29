@@ -9,3 +9,6 @@ fi
 if command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database /usr/share/applications || exit $?
 fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1 && [ -f /usr/share/icons/hicolor/index.theme ]; then
+    gtk-update-icon-cache -q -t /usr/share/icons/hicolor || exit $?
+fi

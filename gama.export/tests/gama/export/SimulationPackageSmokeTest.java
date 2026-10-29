@@ -192,6 +192,43 @@ public final class SimulationPackageSmokeTest {
 									gama.export.SimulationPackageExporter.export(discovered, discovered.experiments(), config,
 										"example.authored", "1.0", java.util.List.of(), output, new org.eclipse.core.runtime.NullProgressMonitor());
 									var packaged = gama.export.SimulationPackage.inspect(output);
+									var standalone = project.getFile("exported.gamp");
+									standalone.createLink(output.toUri(), 0, null);
+									var metadata = gama.api.GAMA.getMetadataProvider().getMetaData(standalone, false, true);
+									if (!(metadata instanceof gama.export.ExportedModelInfo)
+											|| !metadata.getSuffix().contains("Example/model.gaml")
+											|| !metadata.getDocumentation().getContents().contains("example.packageprobe"))
+										throw new AssertionError("Navigator metadata contribution was not loaded: " + metadata);
+									var editor = org.eclipse.ui.PlatformUI.getWorkbench().getEditorRegistry()
+										.getDefaultEditor("exported.gamp");
+									if (editor == null || !editor.getId().equals("gama.ui.export.standaloneModel")
+											|| editor.getImageDescriptor() == null)
+										throw new AssertionError("Missing standalone player/icon association");
+									var documentIcon = editor.getImageDescriptor().createImage(false);
+									if (documentIcon == null) throw new AssertionError("Standalone document icon cannot render");
+									documentIcon.dispose();
+									var propertyPage = (org.eclipse.ui.dialogs.PropertyPage) org.eclipse.core.runtime.Platform
+										.getBundle("gama.ui.export").loadClass("gama.ui.export.dialogs.ExportedModelPropertyPage")
+										.getConstructor().newInstance();
+									var propertyShell = new org.eclipse.swt.widgets.Shell(page.getWorkbenchWindow().getShell());
+									try {
+										propertyPage.setElement(standalone);
+										propertyPage.createControl(propertyShell);
+										var controls = new java.util.ArrayDeque<org.eclipse.swt.widgets.Control>();
+										controls.add(propertyPage.getControl());
+										var propertyText = new StringBuilder();
+										while (!controls.isEmpty()) {
+											var control = controls.remove();
+											if (control instanceof org.eclipse.swt.widgets.Text textControl)
+												propertyText.append(textControl.getText());
+											if (control instanceof org.eclipse.swt.widgets.Composite composite)
+												controls.addAll(java.util.List.of(composite.getChildren()));
+										}
+										if (!propertyText.toString().contains("Example/model.gaml")
+												|| !propertyText.toString().contains("Included plugins:"))
+											throw new AssertionError("Standalone model properties are not visible");
+									} finally { propertyPage.dispose(); propertyShell.dispose(); }
+									standalone.delete(true, null);
 									var embedded = packaged.bundles().stream().filter(required -> !required.artifact().isEmpty())
 										.map(gama.export.SimulationPackageManifest.BundleRequirement::symbolicName).collect(java.util.stream.Collectors.toSet());
 									if (!embedded.equals(java.util.Set.of("example.packageprobe", "example.packagehelper")))
@@ -415,7 +452,8 @@ public final class SimulationPackageSmokeTest {
 			final String[] parts = line.split(",");
 			final var uri = java.net.URI.create(parts[2]);
 			Path bundle = uri.isAbsolute() ? Path.of(uri) : install.resolve(parts[2]);
-			if (List.of("gama.export", "gama.ui.export", "gama.ui.application", "gama.ui.shared").contains(parts[0])) {
+			if (List.of("gama.api", "gama.export", "gama.ui.export", "gama.ui.application", "gama.ui.shared",
+					"gama.ui.navigator").contains(parts[0])) {
 				final Path source = repository.resolve(parts[0]);
 				final var contents = new java.util.LinkedHashMap<String, byte[]>();
 				final boolean directory = Files.isDirectory(bundle);
@@ -438,7 +476,11 @@ public final class SimulationPackageSmokeTest {
 				}
 				try (var paths = Files.walk(source.resolve("target/classes"))) {
 					for (final Path path : paths.filter(Files::isRegularFile).toList()) {
-						contents.put(source.resolve("target/classes").relativize(path).toString(), Files.readAllBytes(path));
+						final String name = source.resolve("target/classes").relativize(path).toString();
+						// Keep the installed API/core pair; exercise only the changed extension loader.
+						if (parts[0].equals("gama.api") && !name.startsWith("gama/api/additions/GamaBundleLoader"))
+							continue;
+						contents.put(name, Files.readAllBytes(path));
 					}
 				}
 				contents.remove("META-INF/MANIFEST.MF");

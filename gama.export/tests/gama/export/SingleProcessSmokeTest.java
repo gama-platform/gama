@@ -54,7 +54,8 @@ public final class SingleProcessSmokeTest {
 		for (final String line : Files.readAllLines(configuration.resolve(inventory))) {
 			if (line.startsWith("#") || line.isBlank()) continue;
 			final String[] parts = line.split(",");
-			if (!List.of("gama.export", "gama.ui.export", "gama.ui.application", "gama.ui.shared").contains(parts[0])) continue;
+			if (!List.of("gama.api", "gama.export", "gama.ui.export", "gama.ui.application", "gama.ui.shared",
+					"gama.ui.navigator").contains(parts[0])) continue;
 			final Path existing = plugins.resolve(parts[0] + "_" + parts[1] + ".jar");
 			Files.deleteIfExists(existing);
 			Files.createSymbolicLink(existing, Path.of(java.net.URI.create(parts[2])));
