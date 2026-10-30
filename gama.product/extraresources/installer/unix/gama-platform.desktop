@@ -7,4 +7,4 @@ Terminal=false
 Type=Application
 StartupNotify=true
 Categories=TextEditor;
-MimeType=application/x-gama-simulation-package;text/x-gama-model;
+MimeType=application/x-gama-simulation-package;

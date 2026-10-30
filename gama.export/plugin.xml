@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension point="org.eclipse.core.contenttype.contentTypes">
-      <content-type id="gama.exported.model.type" name="GAMA standalone model"
-            file-extensions="gamp,GAMP" priority="high"/>
-   </extension>
-   <extension point="gama.metadata">
-      <implementation content_type="gama.exported.model.type" class="gama.export.ExportedModelInfo"/>
-   </extension>
    <extension point="org.eclipse.core.runtime.applications" id="DocumentApplication" name="GAMA Document Router">
       <application>
          <run class="gama.export.DocumentApplication"/>

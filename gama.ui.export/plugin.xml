@@ -1,27 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension point="org.eclipse.ui.propertyPages">
-      <page id="gama.ui.export.standaloneModel.properties" name="Standalone model"
-            class="gama.ui.export.dialogs.ExportedModelPropertyPage">
-         <enabledWhen>
-            <adapt type="org.eclipse.core.resources.IFile">
-               <or>
-                  <test property="org.eclipse.core.resources.extension" value="gamp"/>
-                  <test property="org.eclipse.core.resources.extension" value="GAMP"/>
-               </or>
-            </adapt>
-         </enabledWhen>
-      </page>
-   </extension>
-   <extension point="org.eclipse.ui.editors">
-      <editor id="gama.ui.export.standaloneModel" name="Standalone model player"
-            extensions="gamp,GAMP" default="true"
-            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.gamp.svg"
-            launcher="gama.ui.export.commands.StandaloneModelLauncher">
-         <contentTypeBinding contentTypeId="gama.exported.model.type"/>
-      </editor>
-   </extension>
    <extension point="org.eclipse.ui.splashHandlers">
       <splashHandler id="gama.ui.export.playerSplash"
             class="gama.ui.export.launcher.PlayerSplashHandler"/>

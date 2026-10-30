@@ -15,8 +15,6 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>GAMA Exported Model</string>
-			<key>CFBundleTypeIconFile</key>
-			<string>StandaloneModel.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSItemContentTypes</key>
@@ -50,7 +48,7 @@
 				<string>experiment</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>Model.icns</string>
+			<string>Experiment.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Gama Experiment</string>
 			<key>CFBundleTypeOSTypes</key>
@@ -70,8 +68,6 @@
 			<string>org.gama.simulation-package</string>
 			<key>UTTypeDescription</key>
 			<string>GAMA Exported Model</string>
-			<key>UTTypeIconFile</key>
-			<string>StandaloneModel.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.zip-archive</string>

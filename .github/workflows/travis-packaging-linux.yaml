@@ -35,9 +35,6 @@ jobs:
           mkdir -p ${{ github.workspace }}/${ZIPNAME}/usr/share/mime/packages
           mv ${{ github.workspace }}/${ZIPNAME}/gama-simulation-package.xml ${{ github.workspace }}/${ZIPNAME}/usr/share/mime/packages/gama-simulation-package.xml
           cd ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform && unzip ${ZIPNAME}.zip && cd -
-          mkdir -p ${{ github.workspace }}/${ZIPNAME}/usr/share/icons/hicolor/512x512/mimetypes
-          cp ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/StandaloneModel.png ${{ github.workspace }}/${ZIPNAME}/usr/share/icons/hicolor/512x512/mimetypes/application-x-gama-simulation-package.png
-          cp ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/Model.png ${{ github.workspace }}/${ZIPNAME}/usr/share/icons/hicolor/512x512/mimetypes/text-x-gama-model.png
           rm ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/*.zip
         env:
           ZIPNAME: ${{ matrix.zipName }}
