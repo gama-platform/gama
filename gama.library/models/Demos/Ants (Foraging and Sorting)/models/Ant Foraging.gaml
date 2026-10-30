@@ -129,7 +129,7 @@ species ant skills: [moving] control: fsm {
 	reflex pick when: !has_food and (ant_grid(location)).food > 0 {
 		self.pick(1);
 	}
-		/Initial state to make the ant wander 
+	//Initial state to make the ant wander 
 	state wandering initial: true {
 		do wander amplitude: 90.0;
 		ant_grid here <- ant_grid(location);
