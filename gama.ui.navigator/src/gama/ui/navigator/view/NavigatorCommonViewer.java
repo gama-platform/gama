@@ -11,9 +11,11 @@
 package gama.ui.navigator.view;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.TextStyle;
@@ -25,16 +27,50 @@ import org.eclipse.ui.internal.navigator.NavigatorDecoratingLabelProvider;
 import gama.api.GAMA;
 import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
+import gama.ui.navigator.view.contents.LinkedFile;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.VirtualContent.VirtualContentType;
+import gama.ui.navigator.view.contents.WrappedResource;
+import gama.ui.navigator.view.contents.WrappedSyntacticContent;
 import gama.ui.shared.resources.IGamaColors;
 
 /**
  * The Class NavigatorCommonViewer.
  */
 public class NavigatorCommonViewer extends CommonViewer {
+
+	private record ContentKey(Class<?> type, Object parent, Object identifier) {}
+
+	/** Refreshes recreate outline and metadata nodes, so widget identity must not depend on their wrappers. */
+	private static final IElementComparer CONTENT_COMPARER = new IElementComparer() {
+
+		@Override
+		public boolean equals(final Object a, final Object b) {
+			return a == b || Objects.equals(key(a), key(b));
+		}
+
+		@Override
+		public int hashCode(final Object element) {
+			return Objects.hashCode(key(element));
+		}
+
+		private Object key(final Object element) {
+			if (element instanceof WrappedResource<?, ?> resource) return resource.getResource();
+			if (element instanceof VirtualContent<?> content) {
+				Object identifier = content.getName();
+				if (content instanceof WrappedSyntacticContent syntax && syntax.getURI() != null) {
+					identifier = syntax.getURI();
+				} else if (content instanceof LinkedFile link && link.getTarget() != null) {
+					identifier = link.getTarget().getResource();
+				}
+				return new ContentKey(content.getClass(), key(content.getParent()), identifier);
+			}
+			return element;
+		}
+	};
 
 	static {
 		DEBUG.OFF();
@@ -56,6 +92,7 @@ public class NavigatorCommonViewer extends CommonViewer {
 
 	@Override
 	protected void init() {
+		setComparer(CONTENT_COMPARER);
 		setUseHashlookup(true);
 		setContentProvider(getNavigatorContentService().createCommonContentProvider());
 		setLabelProvider(new NavigatorDecoratingLabelProvider(

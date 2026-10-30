@@ -109,6 +109,8 @@ public class WrappedSyntacticContent extends VirtualContent<VirtualContent<?>>
 	 */
 	public ISyntacticElement getElement() { return element; }
 
+	public URI getURI() { return uri; }
+
 	@Override
 	public int compareTo(final WrappedSyntacticContent o) {
 		if (element == null || o.element == null) return -1;
