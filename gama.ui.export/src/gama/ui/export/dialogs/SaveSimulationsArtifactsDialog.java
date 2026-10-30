@@ -35,8 +35,8 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
     @Override
     public void create() {
         super.create();
-        setTitle("Save Simulations Artifacts");
-        setMessage("Please, set the desired path of the saved data", IMessageProvider.INFORMATION);
+        setTitle("Save experiment data");
+        setMessage("Choose where to copy the files created or modified by the experiments.", IMessageProvider.INFORMATION);
     }
 
     @Override

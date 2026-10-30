@@ -142,9 +142,14 @@ public final class SimulationPackage {
 	 */
 	public static Extracted extract(final Path archive, final Path sessions, final String runtimeVersion,
 			final Limits limits) throws IOException {
+		return extract(archive, sessions, runtimeVersion, limits, false);
+	}
+
+	static Extracted extract(final Path archive, final Path sessions, final String runtimeVersion,
+			final Limits limits, final boolean ignoreVersionRequirements) throws IOException {
 		try (var zip = new ZipFile(archive.toFile())) {
 			final Index index = index(zip, limits);
-			index.manifest().requireRuntime(runtimeVersion);
+			if (!ignoreVersionRequirements) index.manifest().requireRuntime(runtimeVersion);
 			Files.createDirectories(sessions);
 			final Path content = Files.createTempDirectory(sessions.toRealPath(), "gama-package-");
 			try {

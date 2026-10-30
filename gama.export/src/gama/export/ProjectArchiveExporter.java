@@ -47,7 +47,8 @@ public final class ProjectArchiveExporter {
 		final var dependencies = new ArrayList<SimulationPackageExporter.Dependency>();
 		for (final var d : SimulationPackageExporter.dependencies(plugins, monitor)) {
 			if (!d.standard() && d.file() != null && Files.isRegularFile(d.file())) {
-				ProjectPlugins.validate(d.file(), new SimulationPackageManifest.BundleRequirement(d.id(), d.version(), ""));
+				ProjectPlugins.validate(d.file(), new SimulationPackageManifest.BundleRequirement(d.id(), d.version(),
+						"plugins/" + d.id() + "_" + d.version() + ".jar"));
 				dependencies.add(new SimulationPackageExporter.Dependency(d.id(), d.version(), d.file(), true, false, ""));
 			} else {
 				dependencies.add(d);

@@ -31,7 +31,6 @@ public final class StartupModelHelper {
 	private String experiment;
 	private LauncherConfiguration configuration;
 	private List<String> selections = List.of();
-	private Path projectPath;
 	private boolean startupAttempted;
 	private SimulationLaunchContext context;
 
@@ -82,6 +81,7 @@ public final class StartupModelHelper {
 	public boolean initialize(final SimulationLaunchContext launchContext) throws IOException, CoreException {
 		if (context != null) throw new IllegalStateException("The simulation player is already initialized");
 		workspace.registerProjects(launchContext.workspace());
+		artifacts.initialize(launchContext.workspace());
 		context = launchContext;
 		selections = context.selections();
 		configuration = context.configuration();
@@ -120,19 +120,17 @@ public final class StartupModelHelper {
 			return;
 		}
 		GAMA.runGuiExperiment(experiment, compiled);
-		if (GAMA.getExperiment() == compiled.getExperiment(experiment)) {
-			projectPath = Path.of(compiled.getProjectPath());
-		} else {
+		if (GAMA.getExperiment() != compiled.getExperiment(experiment)) {
 			compiled.dispose();
 		}
 	}
 
 	public boolean areThereAnyArtifactsToSave() throws IOException {
-		return projectPath != null && artifacts.hasChanges(projectPath);
+		return context != null && artifacts.hasChanges(context.workspace());
 	}
 
 	public boolean saveSimulationArtifacts(final Path target, final IProgressMonitor monitor) throws IOException {
-		if (projectPath == null) throw new IOException("No simulation project is available");
-		return artifacts.save(projectPath, target, monitor);
+		if (context == null) throw new IOException("No simulation workspace is available");
+		return artifacts.save(context.workspace(), target, monitor);
 	}
 }

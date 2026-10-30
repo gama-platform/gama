@@ -41,6 +41,7 @@ public final class OpenSimulationPackage extends AbstractHandler {
 		}
 		try {
 			final var launch = SimulationPackageOpening.open(shell, Path.of(selected));
+			if (launch == null) return null;
 			final Display display = shell.getDisplay();
 			Thread.ofVirtual().name("gama-package-startup").start(() -> observeStartup(launch, display));
 		} catch (final InterruptedException e) {

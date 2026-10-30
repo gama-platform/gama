@@ -15,6 +15,7 @@ import java.util.jar.JarFile;
 public final class SimulationPackageLauncher {
 
 	public static final String CONTENT_PROPERTY = "gama.package.content";
+	public static final String IGNORE_VERSION_REQUIREMENTS_PROPERTY = "gama.package.ignoreVersionRequirements";
 	public static final String APPLICATION = "gama.export.PackageApplication";
 	private static final String INVENTORY = "org.eclipse.equinox.simpleconfigurator/bundles.info";
 
@@ -51,24 +52,31 @@ public final class SimulationPackageLauncher {
 	/** Successful sessions, including their logs and generated results, are retained for recovery. */
 	public static Prepared prepare(final Path archive, final Path sessions, final Path installation,
 			final Path launcher, final String runtimeVersion) throws IOException {
+		return prepare(archive, sessions, installation, launcher, runtimeVersion, false);
+	}
+
+	public static Prepared prepare(final Path archive, final Path sessions, final Path installation,
+			final Path launcher, final String runtimeVersion, final boolean ignoreVersionRequirements) throws IOException {
 		final Path install = installation.toRealPath();
 		final Path executable = launcher.toRealPath();
 		if (!Files.isExecutable(executable)) throw new IOException("The GAMA launcher is not executable: " + executable);
 		final var bundles = inventory(install);
 		bundle(bundles, "gama.export");
 		bundle(bundles, "gama.ui.export");
-		final var extracted = SimulationPackage.extract(archive, sessions, runtimeVersion);
+		final var extracted = SimulationPackage.extract(archive, sessions, runtimeVersion,
+				SimulationPackage.DEFAULT_LIMITS, ignoreVersionRequirements);
 		final Path content = extracted.content();
 		try {
 			SimulationLaunchContext.fromPackage(extracted);
 			for (final var required : extracted.manifest().bundles()) {
 				final var existing = bundles.values().stream().filter(bundle -> bundle.id().equals(required.symbolicName())).toList();
 				if (!existing.isEmpty()) {
-					if (existing.stream().noneMatch(bundle -> required.accepts(bundle.version())))
-						throw new IOException("Bundle " + required.symbolicName() + " requires " + required.version() + " or newer"
-								+ "; the host supplies " + existing.stream().map(Bundle::version).toList());
 					if (!required.artifact().isEmpty())
 						throw new IOException("A playable model cannot replace an installed bundle: " + required.symbolicName());
+					if (!ignoreVersionRequirements && existing.stream().noneMatch(bundle -> required.accepts(bundle.version())))
+						throw new SimulationPackageManifest.CompatibilityException("Bundle " + required.symbolicName()
+								+ " requires " + required.version() + " or newer"
+								+ "; the host supplies " + existing.stream().map(Bundle::version).toList());
 				} else {
 					if (required.artifact().isEmpty()) throw new IOException("Missing host bundle: " + required.symbolicName());
 					final Path file = content.resolve(required.artifact());
@@ -112,6 +120,7 @@ public final class SimulationPackageLauncher {
 					"-data", extracted.workspace().toString(), "-application", APPLICATION, "-clearPersistedState",
 					"-vmargs", "-D" + CONTENT_PROPERTY + "=" + content, "-Dexported_runner=true",
 					"-Dgama.package.runtime=" + runtimeVersion,
+					"-D" + IGNORE_VERSION_REQUIREMENTS_PROPERTY + "=" + ignoreVersionRequirements,
 					"-Duse_global_preference_store=false", "-Dpref_startup_model=true",
 					"-Dpref_enable_server=false",
 					"-Dpref_errors_in_editor=false", "-Dorg.eclipse.equinox.p2.reconciler.dropins.directory="

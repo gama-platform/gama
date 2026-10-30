@@ -121,9 +121,15 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 			if (!Boolean.getBoolean("gama.launcher.suppressErrors")) {
 				try {
 					final String message = "Unable to open the playable model:\n" + failure.getMessage();
-					if (System.getProperty("os.name").startsWith("Mac")) showError(message);
-					else if (!java.awt.GraphicsEnvironment.isHeadless())
+					if (System.getProperty("os.name").startsWith("Mac")) {
+						showError(message);
+					} else if (!java.awt.GraphicsEnvironment.isHeadless()) {
 						javax.swing.JOptionPane.showMessageDialog(null, message, "GAMA", javax.swing.JOptionPane.ERROR_MESSAGE);
+					} else {
+						return 1;
+					}
+					// The error was acknowledged; a failed native exit would show the entire launch command again.
+					return 0;
 				} catch (final RuntimeException | UnsatisfiedLinkError unavailable) {
 					System.err.println("Startup error dialog unavailable: " + unavailable);
 				}

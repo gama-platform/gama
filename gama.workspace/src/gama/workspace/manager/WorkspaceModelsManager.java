@@ -445,12 +445,13 @@ public class WorkspaceModelsManager {
 				final LibraryUpdateReport report = loadModelsLibrary(monitor);
 				GAMA.getGui().refreshNavigatorContents();
 				report.save();
-				if (report.needsAttention()) { GAMA.getGui().getDialogFactory().warning(report.getSummary()); }
 				return report.getStatus();
 			}
 
 		};
 		job.setUser(true);
+		job.setProperty(new org.eclipse.core.runtime.QualifiedName("org.eclipse.ui.workbench.progress",
+				"delayErrorPrompt"), Boolean.TRUE);
 		job.schedule();
 
 	}
@@ -468,7 +469,6 @@ public class WorkspaceModelsManager {
 	public void loadModelsLibrary() {
 		final LibraryUpdateReport report = loadModelsLibrary(new NullProgressMonitor());
 		report.save();
-		if (report.needsAttention()) { GAMA.getGui().getDialogFactory().warning(report.getSummary()); }
 	}
 
 	/**

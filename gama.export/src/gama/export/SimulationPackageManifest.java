@@ -14,6 +14,12 @@ public record SimulationPackageManifest(String id, String version, String runtim
 	public static final int FORMAT_VERSION = 1;
 	private static final int MAX_ITEMS = 10_000;
 
+	public static final class CompatibilityException extends IOException {
+		private static final long serialVersionUID = 1L;
+
+		public CompatibilityException(final String message) { super(message); }
+	}
+
 	public record Experiment(String model, String name) {
 		public Experiment {
 			if (model == null || !model.contains("/") || model.contains("@") || model.contains("#")
@@ -27,7 +33,7 @@ public record SimulationPackageManifest(String id, String version, String runtim
 		public String selection() { return name + "@" + model; }
 	}
 
-	/** Empty artifact means that this bundle version or newer must be supplied by the host. */
+	/** Empty artifact means a minimum host version; the development placeholder is not a build qualifier. */
 	public record BundleRequirement(String symbolicName, String version, String artifact) {
 		public BundleRequirement {
 			if (symbolicName == null || !symbolicName.matches("[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*"))
@@ -39,6 +45,8 @@ public record SimulationPackageManifest(String id, String version, String runtim
 				SimulationPackage.validatePath(artifact);
 				if (!artifact.startsWith("plugins/") || !artifact.endsWith(".jar"))
 					throw new IllegalArgumentException("Invalid bundle artifact: " + artifact);
+			} else if (version.endsWith(".qualifier")) {
+				version = version.substring(0, version.length() - ".qualifier".length());
 			}
 
 		}
@@ -74,7 +82,7 @@ public record SimulationPackageManifest(String id, String version, String runtim
 
 	public void requireRuntime(final String actualVersion) throws IOException {
 		if (!atLeast(actualVersion, runtimeVersion))
-			throw new IOException("This playable model requires GAMA " + runtimeVersion + " or newer; the host is " + actualVersion);
+			throw new CompatibilityException("This playable model requires GAMA " + runtimeVersion + " or newer; the host is " + actualVersion);
 	}
 
 	private static boolean atLeast(final String actual, final String required) {

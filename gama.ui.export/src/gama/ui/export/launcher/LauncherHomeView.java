@@ -4,7 +4,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -12,7 +11,6 @@ import org.eclipse.ui.part.ViewPart;
 
 import gama.api.GAMA;
 import gama.dev.DEBUG;
-import gama.ui.export.commands.SaveSimulationsArtifacts;
 import gama.ui.shared.utils.LaunchPresentation;
 
 public final class LauncherHomeView extends ViewPart {
@@ -80,17 +78,6 @@ public final class LauncherHomeView extends ViewPart {
 			}
 		});
 		presentation.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
-		final Button save = new Button(center, SWT.PUSH);
-		save.setText("Save Simulation Data...");
-		save.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
-		save.addListener(SWT.Selection, event -> {
-			try {
-				new SaveSimulationsArtifacts().execute(null);
-			} catch (final org.eclipse.core.commands.ExecutionException e) {
-				DEBUG.ERR("Unable to save simulation data", e);
-				GAMA.getGui().getDialogFactory().error(e.getMessage());
-			}
-		});
 		scroll.addListener(SWT.Resize, event -> {
 			final int width = Math.max(300, scroll.getClientArea().width);
 			scroll.setMinSize(content.computeSize(width, SWT.DEFAULT));

@@ -38,7 +38,10 @@ public final class PackageApplication implements IApplication {
 				|| !"false".equals(System.getProperty("use_global_preference_store")))
 			throw new IOException("Playable model players require a private, prepared launch configuration");
 		final var extracted = SimulationPackage.Extracted.open(Path.of(location));
-		extracted.manifest().requireRuntime(System.getProperty("gama.package.runtime", ""));
+		final boolean ignoreVersionRequirements =
+				Boolean.getBoolean(SimulationPackageLauncher.IGNORE_VERSION_REQUIREMENTS_PROPERTY);
+		if (!ignoreVersionRequirements)
+			extracted.manifest().requireRuntime(System.getProperty("gama.package.runtime", ""));
 		SimulationLaunchContext.fromPackage(extracted);
 		final var instance = Platform.getInstanceLocation();
 		final var configuration = Platform.getConfigurationLocation();
@@ -52,7 +55,8 @@ public final class PackageApplication implements IApplication {
 		for (final var required : extracted.manifest().bundles()) {
 			final var bundle = java.util.Arrays.stream(bundleContext.getBundles())
 					.filter(candidate -> required.symbolicName().equals(candidate.getSymbolicName())
-							&& required.accepts(candidate.getVersion().toString()))
+							&& (ignoreVersionRequirements && required.artifact().isEmpty()
+									|| required.accepts(candidate.getVersion().toString())))
 					.max(java.util.Comparator.comparing(Bundle::getVersion)).orElse(null);
 			if (bundle == null)
 				throw new IOException("Playable model bundle is missing or incompatible: " + required.symbolicName());

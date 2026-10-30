@@ -199,17 +199,12 @@ public class RefreshHandler implements IRefreshHandler {
 					monitor.done();
 				}
 				report[0].save();
-				if (report[0].needsAttention()) {
-					GAMA.getGui().getDialogFactory().warning(report[0].getSummary());
-				} else {
-					GAMA.getGui().getDialogFactory().inform(report[0].getSummary()
-							+ "\n\nFile metadata and workspace projects have been rebuilt.");
-				}
 				return report[0].getStatus();
 			}
 
 		};
 		job.setUser(true);
+		job.setProperty(org.eclipse.ui.progress.IProgressConstants.NO_IMMEDIATE_ERROR_PROMPT_PROPERTY, Boolean.TRUE);
 		job.schedule();
 	}
 

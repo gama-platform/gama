@@ -145,7 +145,8 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 				}
 				BufferingUtils.getInstance().flushAllBuffers();
 				if (StartupModelHelper.getInstance().areThereAnyArtifactsToSave() && GAMA.getGui().getDialogFactory()
-						.question("Save simulation data", "New simulation artifacts have been found. Save them before exiting?")) {
+						.question("Save experiment data",
+								"The experiment has produced some data files. Do you want to save them before closing?")) {
 					if (!Boolean.TRUE.equals(new SaveSimulationsArtifacts().execute(null))) return false;
 				}
 				proceed = true;

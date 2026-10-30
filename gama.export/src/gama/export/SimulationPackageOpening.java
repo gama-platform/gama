@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import gama.api.runtime.SystemInfo;
@@ -21,30 +22,45 @@ public final class SimulationPackageOpening {
 
 	private SimulationPackageOpening() {}
 
-	/** Starts the player directly; never loads package code in the calling process. */
+	/** Starts the player directly; returns null if the user declines a version override. */
 	public static Launch open(final Shell owner, final Path path) throws IOException, InterruptedException {
 		final Path archive = path.toRealPath();
-		final var manifest = SimulationPackage.inspect(archive);
-		manifest.requireRuntime(SystemInfo.VERSION_NUMBER);
+		SimulationPackage.inspect(archive);
 		final String executable = System.getProperty("eclipse.launcher");
 		if (executable == null || executable.isBlank())
 			throw new IOException("Playable model launching requires an installed GAMA native launcher; it is unavailable in this development launch");
 		final var result = new AtomicReference<SimulationPackageLauncher.Prepared>();
-		try {
-			new ProgressMonitorDialog(owner).run(true, false, monitor -> {
-				monitor.beginTask("Preparing playable model", IProgressMonitor.UNKNOWN);
-				try {
-					result.set(SimulationPackageLauncher.prepare(archive,
-							SimulationPackageSessions.directory(),
-							InstallationLocation.toPath(Platform.getInstallLocation().getURL()), Path.of(executable), SystemInfo.VERSION_NUMBER));
-				} catch (final IOException e) {
-					throw new InvocationTargetException(e);
-				} finally {
-					monitor.done();
+		boolean ignoreVersionRequirements = false;
+		while (true) {
+			final boolean ignoreVersions = ignoreVersionRequirements;
+			try {
+				new ProgressMonitorDialog(owner).run(true, false, monitor -> {
+					monitor.beginTask("Preparing playable model", IProgressMonitor.UNKNOWN);
+					try {
+						result.set(SimulationPackageLauncher.prepare(archive,
+								SimulationPackageSessions.directory(),
+								InstallationLocation.toPath(Platform.getInstallLocation().getURL()), Path.of(executable),
+								SystemInfo.VERSION_NUMBER, ignoreVersions));
+					} catch (final IOException e) {
+						throw new InvocationTargetException(e);
+					} finally {
+						monitor.done();
+					}
+				});
+			} catch (final InvocationTargetException e) {
+				if (!ignoreVersions && e.getCause() instanceof SimulationPackageManifest.CompatibilityException) {
+					final int answer = new MessageDialog(owner, "Playable model compatibility", null,
+							e.getCause().getMessage() + "\n\nOpen anyway will ignore GAMA and host plugin version requirements "
+									+ "for this launch only. The model may fail, behave incorrectly or crash. "
+									+ "Missing plugins and archive integrity checks cannot be bypassed.",
+							MessageDialog.WARNING, new String[] { "OK", "Open anyway..." }, 0).open();
+					if (answer != 1) return null;
+					ignoreVersionRequirements = true;
+					continue;
 				}
-			});
-		} catch (final InvocationTargetException e) {
-			throw new IOException("Unable to prepare playable model: " + e.getCause().getMessage(), e.getCause());
+				throw new IOException("Unable to prepare playable model: " + e.getCause().getMessage(), e.getCause());
+			}
+			break;
 		}
 		final var prepared = result.get();
 		return new Launch(prepared, prepared.start());

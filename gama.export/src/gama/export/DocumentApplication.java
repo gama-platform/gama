@@ -61,7 +61,7 @@ public final class DocumentApplication implements IApplication {
 				for (int i = 0; i < pending.size(); i++) {
 					try {
 						final var launch = SimulationPackageOpening.open(owner, Path.of(pending.get(i)));
-						waitForPlayer(owner, launch);
+						if (launch != null) waitForPlayer(owner, launch);
 					} catch (final IOException | RuntimeException e) {
 						Platform.getLog(DocumentApplication.class).log(new Status(org.eclipse.core.runtime.IStatus.ERROR,
 								"gama.export", "Unable to open playable model " + pending.get(i), e));

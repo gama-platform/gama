@@ -45,7 +45,7 @@ public final class LibraryUpdateReport {
 
 	public IStatus getStatus() { return status.isOK() ? Status.OK_STATUS : status; }
 
-	/** Keep the full diagnostics in workspace metadata; dialogs show a bounded preview. */
+	/** Keep diagnostics in workspace metadata and the Eclipse log, without prompting the user. */
 	public void save() {
 		final Path destination = Path.of(GAMA.getWorkspaceManager().getWorkspaceLocation(),
 				".metadata", "gama-library-repair.log");
@@ -55,6 +55,7 @@ public final class LibraryUpdateReport {
 		} catch (final IOException e) {
 			error("Could not save the library repair report to " + destination, e);
 		}
+		if (needsAttention()) { org.eclipse.core.runtime.Platform.getLog(LibraryUpdateReport.class).log(getStatus()); }
 	}
 
 	public String getSummary() { return summary(true); }
