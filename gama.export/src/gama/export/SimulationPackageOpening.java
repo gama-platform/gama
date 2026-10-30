@@ -36,8 +36,8 @@ public final class SimulationPackageOpening {
 				try {
 					result.set(SimulationPackageLauncher.prepare(archive,
 							SimulationPackageSessions.directory(),
-							Path.of(Platform.getInstallLocation().getURL().toURI()), Path.of(executable), SystemInfo.VERSION_NUMBER));
-				} catch (final IOException | java.net.URISyntaxException e) {
+							InstallationLocation.toPath(Platform.getInstallLocation().getURL()), Path.of(executable), SystemInfo.VERSION_NUMBER));
+				} catch (final IOException e) {
 					throw new InvocationTargetException(e);
 				} finally {
 					monitor.done();

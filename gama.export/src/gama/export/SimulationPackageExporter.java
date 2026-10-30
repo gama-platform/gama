@@ -92,7 +92,7 @@ public final class SimulationPackageExporter {
 			final Path realOutput = canonicalDestination(output);
 			final var installation = Platform.getInstallLocation().getURL();
 			if (installation.getProtocol().equals("file")
-					&& realOutput.startsWith(Path.of(java.net.URI.create(installation.toExternalForm())).toRealPath()))
+					&& realOutput.startsWith(InstallationLocation.toPath(installation).toRealPath()))
 				throw new IOException("The playable model destination must be outside the GAMA installation");
 			if (!configuration.image().isBlank() && Files.exists(output)
 					&& Files.isSameFile(output, Path.of(configuration.image())))

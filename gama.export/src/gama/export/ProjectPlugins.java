@@ -40,7 +40,7 @@ public final class ProjectPlugins {
 		final var install = Platform.getInstallLocation();
 		if (install == null || !"file".equals(install.getURL().getProtocol()))
 			throw new IOException("This GAMA installation has no local Dropins folder");
-		return Path.of(java.net.URI.create(install.getURL().toExternalForm())).resolve("dropins");
+		return InstallationLocation.toPath(install.getURL()).resolve("dropins");
 	}
 
 	public static final class Prepared implements AutoCloseable {

@@ -45,6 +45,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private final List<Button> defaultButtons = new ArrayList<>();
 	private Text destination;
 	private Table experiments;
+	private Button clearDefaultButton;
 	private Button includeJdkButton;
 	private Button oneFileButton;
 	private Button showHomeButton;
@@ -89,7 +90,8 @@ public class ExportModelDialog extends TitleAreaDialog {
 
 	private void updateHeading() {
 		setTitle(format == Format.PACKAGE ? "Export playable model" : "Export standalone application");
-		setMessage("Select experiments to export and optionally choose one to run by default.",
+		setMessage(availableExperiments.length == 1 ? "Export the experiment shown below."
+				: "Select experiments to export and optionally choose one to run by default.",
 				IMessageProvider.INFORMATION);
 	}
 
@@ -194,8 +196,15 @@ public class ExportModelDialog extends TitleAreaDialog {
 
 	private void createExperimentSection(final Composite container) {
 		final Label label = new Label(container, SWT.NONE);
-		label.setText("Experiments");
+		label.setText(availableExperiments.length == 1 ? "Experiment" : "Experiments");
 		label.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+		if (availableExperiments.length == 1) {
+			final Label experiment = new Label(container, SWT.NONE);
+			experiment.setText(availableExperiments[0]);
+			experiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			defaultExperiment = 0;
+			return;
+		}
 		final Composite row = new Composite(container, SWT.NONE);
 		row.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		final GridLayout layout = new GridLayout(2, false);
@@ -217,6 +226,8 @@ public class ExportModelDialog extends TitleAreaDialog {
 			final TableItem item = new TableItem(experiments, SWT.NONE);
 			item.setText(experiment);
 			final Composite cell = new Composite(experiments, SWT.NO_RADIO_GROUP);
+			cell.setBackground(experiments.getBackground());
+			cell.setBackgroundMode(SWT.INHERIT_FORCE);
 			final GridLayout cellLayout = new GridLayout();
 			cellLayout.marginWidth = cellLayout.marginHeight = 0;
 			cell.setLayout(cellLayout);
@@ -231,16 +242,12 @@ public class ExportModelDialog extends TitleAreaDialog {
 			radio.addListener(SWT.Selection, event -> {
 				defaultExperiment = radio.getSelection() ? index : -1;
 				if (defaultExperiment >= 0) experiments.select(index);
-				updateDefault();
+				updateExperimentSelection();
 			});
 		}
 		experiments.addListener(SWT.Resize, event ->
 				name.setWidth(Math.max(180, experiments.getClientArea().width - startup.getWidth())));
-		experiments.addListener(SWT.Selection, event -> {
-			if (defaultExperiment >= 0 && !experiments.isSelected(defaultExperiment)) defaultExperiment = -1;
-			updateDefault();
-		});
-		experiments.selectAll();
+		experiments.addListener(SWT.Selection, event -> updateExperimentSelection());
 		final Composite actions = new Composite(row, SWT.NONE);
 		actions.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 		final GridLayout actionsLayout = new GridLayout();
@@ -249,14 +256,34 @@ public class ExportModelDialog extends TitleAreaDialog {
 		final Button selectAll = new Button(actions, SWT.PUSH);
 		selectAll.setText("Select all");
 		selectAll.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		selectAll.addListener(SWT.Selection, event -> experiments.selectAll());
-		final Button clearDefault = new Button(actions, SWT.PUSH);
-		clearDefault.setText("No default");
-		clearDefault.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		clearDefault.addListener(SWT.Selection, event -> {
-			defaultExperiment = -1;
-			updateDefault();
+		selectAll.addListener(SWT.Selection, event -> {
+			experiments.selectAll();
+			updateExperimentSelection();
 		});
+		clearDefaultButton = new Button(actions, SWT.PUSH);
+		clearDefaultButton.setText("No default");
+		clearDefaultButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		clearDefaultButton.addListener(SWT.Selection, event -> {
+			defaultExperiment = -1;
+			updateExperimentSelection();
+		});
+	}
+
+	private int[] selectedExperimentIndices() {
+		return availableExperiments.length == 1 ? new int[] { 0 } : experiments.getSelectionIndices();
+	}
+
+	private void updateExperimentSelection() {
+		final int[] selected = selectedExperimentIndices();
+		if (selected.length == 1) {
+			defaultExperiment = selected[0];
+		} else if (defaultExperiment >= 0 && !experiments.isSelected(defaultExperiment)) {
+			defaultExperiment = -1;
+		}
+		if (clearDefaultButton != null) clearDefaultButton.setEnabled(selected.length > 1);
+		updateDefault();
+		final Button export = getButton(IDialogConstants.OK_ID);
+		if (export != null) export.setEnabled(selected.length > 0);
 	}
 
 	private void updateDefault() {
@@ -276,7 +303,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 		showHomeButton = new Button(row, SWT.CHECK);
 		showHomeButton.setText("Show Home at startup");
 		showHomeButton.setToolTipText("Required when no default experiment is selected");
-		updateDefault();
+		updateExperimentSelection();
 	}
 
 	private void createApplicationOptions(final Composite container) {
@@ -310,6 +337,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 		createButton(parent, IDialogConstants.CLIENT_ID, alternateFormatLabel(), false);
 		super.createButtonsForButtonBar(parent);
 		getButton(IDialogConstants.OK_ID).setText("Export");
+		updateExperimentSelection();
 	}
 
 	private String alternateFormatLabel() {
@@ -393,10 +421,10 @@ public class ExportModelDialog extends TitleAreaDialog {
 				if (!output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
 					throw new IllegalArgumentException("Playable model files must use the .gamx extension.");
 			}
-			selectedExperiments = Arrays.stream(experiments.getSelectionIndices())
+			selectedExperiments = Arrays.stream(selectedExperimentIndices())
 					.mapToObj(index -> availableExperiments[index]).toList();
 			if (selectedExperiments.isEmpty()) throw new IllegalArgumentException("Select at least one experiment.");
-			if (defaultExperiment >= 0 && !experiments.isSelected(defaultExperiment))
+			if (defaultExperiment >= 0 && Arrays.stream(selectedExperimentIndices()).noneMatch(index -> index == defaultExperiment))
 				throw new IllegalArgumentException("The default experiment must be selected for export.");
 			if (!image.getText().isBlank()) {
 				final Path path = Path.of(image.getText().trim());
