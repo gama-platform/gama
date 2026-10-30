@@ -109,6 +109,11 @@ public final class ProjectArchiveExporter {
 			collect(project, staging.resolve("workspace").resolve(project.getName()), resolveLinks, links,
 					new HashSet<>(), realOutput, monitor);
 			final var description = ProjectArchive.description(Files.newInputStream(source.resolve(".project")));
+			// External projects can be registered under a different name from their on-disk description.
+			final var children = description.getDocumentElement().getChildNodes();
+			ProjectArchive.projectName(description);
+			for (int i = 0; i < children.getLength(); i++)
+				if ("name".equals(children.item(i).getNodeName())) children.item(i).setTextContent(project.getName());
 			if (resolveLinks) {
 				for (final String tag : List.of("linkedResources", "variableList", "filteredResources")) {
 					final var nodes = description.getElementsByTagName(tag);

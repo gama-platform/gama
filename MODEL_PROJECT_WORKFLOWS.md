@@ -385,6 +385,10 @@ data, filesystem symlinks, directory-form plugins and arbitrary external project
 are not automatically collected. Workspace `.metadata` is always excluded.
 Whole-project resources can include generated outputs or local files: authors
 must review their project content before sharing it.
+For externally registered projects, the archive uses the workspace project name
+consistently in its manifest, project folder and staged `.project` description,
+even when the original on-disk description uses another name. The original
+description is not modified.
 
 ### Import, replace and rename
 

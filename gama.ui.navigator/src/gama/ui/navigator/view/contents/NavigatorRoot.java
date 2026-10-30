@@ -132,20 +132,17 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	}
 
 	/**
-	 * Reset virtual folders.
+	 * Rebuilds initialized virtual folders without replacing the elements whose expansion the viewer remembers.
 	 *
 	 * @param manager
 	 *            the manager
 	 */
 	public void resetVirtualFolders(final ResourceManager manager) {
 		if (manager != null) { this.setManager(manager); }
-		setUserFolder(null);
-		setTestFolder(null);
-		setLibraryFolder(null);
-		setTutorialsFolder(null);
-		setRecipesFolder(null);
-		dataFolder = null;
-		demosFolder = null;
+		for (final TopLevelFolder folder : new TopLevelFolder[] { dataFolder, demosFolder, libraryFolder,
+				recipesFolder, tutorialsFolder, testFolder, userFolder }) {
+			if (folder != null) { folder.initializeChildren(); }
+		}
 	}
 
 	/**
