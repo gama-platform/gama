@@ -62,7 +62,7 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 			@Override
 			public void preWindowOpen() {
 				super.preWindowOpen();
-				configurer.setTitle(StartupModelHelper.getInstance().getPresentation().title() + " powered by GAMA");
+				configurer.setTitle(StartupModelHelper.getInstance().getPresentation().title() + " (powered by GAMA)");
 			}
 
 			@Override
@@ -114,13 +114,15 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 					? helper.getSelections().getFirst() : helper.getConfiguration().startupExperiment();
 			window.getShell().setData(LaunchPresentation.SHELL_DATA_KEY,
 					new LaunchPresentation.State(helper.getPresentation(), selection, null));
-			window.getShell().setText(helper.getPresentation().title() + " powered by GAMA");
+			window.getShell().setText(helper.getPresentation().title() + " (powered by GAMA)");
 			if (!(window instanceof WorkbenchWindow internal)) continue;
 			configureHomeTrim(internal, true);
 			window.addPerspectiveListener(new PerspectiveAdapter() {
 				@Override
 				public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
-					configureHomeTrim(internal, LauncherHomePerspective.ID.equals(perspective.getId()));
+					final boolean homeVisible = LauncherHomePerspective.ID.equals(perspective.getId());
+					configureHomeTrim(internal, homeVisible);
+					if (homeVisible) window.getShell().setText(helper.getPresentation().title() + " (powered by GAMA)");
 				}
 			});
 			final var menu = internal.getMenuBarManager();

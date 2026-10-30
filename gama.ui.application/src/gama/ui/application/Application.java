@@ -139,6 +139,9 @@ public class Application implements IApplication {
 
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
+		final Display display = configureDisplay();
+		// Keep native document events queued while workspace selection pumps the event loop.
+		createProcessor(display);
 		configureCopilotStartup();
 		GAMA.setRegularGui(new TempSWTGui());
 		setDefaultUncaughtExceptionHandler((t, e) -> {
@@ -152,13 +155,11 @@ public class Application implements IApplication {
 			}
 
 		});
-		final Display display = configureDisplay();
 		try {
 			Object check = Display.getCurrent().syncCall(() -> checkWorkspace());
 
 
 			if (!EXIT_OK.equals(check)) {
-				createProcessor(display);
 				if (getInternalPreferenceStore().getBoolean(IWorkspaceManager.CLEAR_WORKSPACE)) {
 					setProperty(CLEAR_PERSISTED_STATE, "true");
 					GAMA.getWorkspaceManager().clearWorkspace(false);

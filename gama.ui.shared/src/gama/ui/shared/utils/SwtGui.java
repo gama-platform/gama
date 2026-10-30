@@ -652,8 +652,13 @@ public class SwtGui implements IGui {
 			final Boolean showNavigator, final Boolean showControls, final Boolean keepTray,
 			final Supplier<IColor> color, final boolean showEditors) {
 
-		if (!Boolean.getBoolean("exported_runner"))
+		if (Boolean.getBoolean("exported_runner")) {
+			final String model = java.nio.file.Path.of(exp.getModel().getFilePath()).getFileName().toString()
+					.replaceFirst("(?i)\\.gaml$", "");
+			WorkbenchHelper.setWorkbenchWindowTitle(model + " - " + exp.getName() + " (powered by GAMA)");
+		} else {
 			WorkbenchHelper.setWorkbenchWindowTitle(exp.getName() + " - " + exp.getModel().getFilePath());
+		}
 		// Capture all view-arrangement work as a Runnable rather than scheduling it as a UIJob.
 		// openAndApplyLayout() will drain and execute this inside its single setRedraw(false/true)
 		// syncExec, so console, navigator, toolbar and display views all appear in one paint.
