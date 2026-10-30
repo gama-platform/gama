@@ -1,30 +1,27 @@
 package gama.ui.export.dialogs;
 
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 
 import gama.api.runtime.SystemInfo;
@@ -38,20 +35,17 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private final String[] availableExperiments;
 	private final String defaultTitle;
 	private final String defaultDescription;
-	private Format format;
-	private Composite formatOptions;
-	private Composite packageOptions;
-	private Composite applicationOptions;
-	private final List<Button> defaultButtons = new ArrayList<>();
-	private Text destination;
-	private Table experiments;
-	private Button clearDefaultButton;
+	private final Format format;
+	private Path destinationDirectory = Path.of(System.getProperty("user.home"));
+	private Button[] experiments;
+	private Combo defaultChoice;
 	private Button includeJdkButton;
 	private Button oneFileButton;
 	private Button showHomeButton;
 	private Text title;
 	private Text description;
-	private Text image;
+	private String imagePath = "";
+	private Image imagePreview;
 	private Text pluginPaths;
 	private int defaultExperiment = -1;
 	private LauncherConfiguration homeConfiguration;
@@ -91,7 +85,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private void updateHeading() {
 		setTitle(format == Format.PACKAGE ? "Export playable model" : "Export standalone application");
 		setMessage(availableExperiments.length == 1 ? "Export the experiment shown below."
-				: "Select experiments to export and optionally choose one to run by default.",
+				: "Check experiments to export and optionally choose one to run by default.",
 				IMessageProvider.INFORMATION);
 	}
 
@@ -99,8 +93,9 @@ public class ExportModelDialog extends TitleAreaDialog {
 	protected Control createDialogArea(final Composite parent) {
 		final Composite area = (Composite) super.createDialogArea(parent);
 		final Composite container = new Composite(area, SWT.NONE);
-		container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		final GridLayout layout = new GridLayout(2, false);
+		container.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		container.setBackgroundMode(SWT.INHERIT_FORCE);
+		final GridLayout layout = new GridLayout(3, false);
 		layout.marginWidth = 18;
 		layout.marginHeight = 12;
 		layout.verticalSpacing = 10;
@@ -108,39 +103,39 @@ public class ExportModelDialog extends TitleAreaDialog {
 
 		title = textField(container, "Title", SWT.SINGLE);
 		title.setText(defaultTitle);
-		description = textField(container, "Description", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-		((GridData) description.getLayoutData()).heightHint = 70;
-		description.setText(defaultDescription);
 		createImageSection(container);
+		description = textField(container, "Description", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+		((GridData) description.getLayoutData()).heightHint = description.getLineHeight() * 4;
+		description.setText(defaultDescription);
 		createExperimentSection(container);
-		formatOptions = new Composite(container, SWT.NONE);
-		formatOptions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		final StackLayout formats = new StackLayout();
-		formatOptions.setLayout(formats);
-		packageOptions = new Composite(formatOptions, SWT.NONE);
-		packageOptions.setLayout(new GridLayout(2, false));
-		createPackageSection(packageOptions);
-		applicationOptions = new Composite(formatOptions, SWT.NONE);
-		applicationOptions.setLayout(new GridLayout(2, false));
-		createApplicationOptions(applicationOptions);
-		formats.topControl = format == Format.PACKAGE ? packageOptions : applicationOptions;
 		createOptionsSection(container);
-		createDestinationSection(container);
+		final Composite formatOptions = new Composite(container, SWT.NONE);
+		final GridData formatData = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
+		formatOptions.setLayoutData(formatData);
+		final GridLayout formatLayout = new GridLayout(2, false);
+		formatLayout.marginWidth = formatLayout.marginHeight = 0;
+		formatOptions.setLayout(formatLayout);
+		if (format == Format.PACKAGE) {
+			createPackageSection(formatOptions);
+		} else {
+			createApplicationOptions(formatOptions);
+		}
+		formatData.exclude = formatOptions.getChildren().length == 0;
+		formatOptions.setVisible(!formatData.exclude);
 		return area;
 	}
 
 	private void createPackageSection(final Composite container) {
 		final List<Dependency> extraDependencies = dependencies.stream().filter(dependency -> !dependency.standard()).toList();
 		if (!extraDependencies.isEmpty()) createDependencySection(container, extraDependencies);
-		final Label explanation = new Label(container, SWT.WRAP);
-		explanation.setText("The playable model includes your models and data and opens with the same or a newer version of GAMA. "
-				+ "Include any files referenced through dynamically constructed paths in your project before exporting.");
-		if (dependencyError != null)
+		if (dependencyError != null) {
+			final Label explanation = new Label(container, SWT.WRAP);
 			explanation.setText("Model dependencies could not be resolved: " + dependencyError
-					+ "\nThe application exporter is still available using the button below.");
-		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-		data.widthHint = 500;
-		explanation.setLayoutData(data);
+					+ "\nUse the standalone application export instead.");
+			final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+			data.widthHint = 500;
+			explanation.setLayoutData(data);
+		}
 	}
 
 	private void createDependencySection(final Composite container, final List<Dependency> extraDependencies) {
@@ -166,31 +161,65 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	private Text textField(final Composite parent, final String caption, final int style) {
+		final boolean multiline = (style & SWT.MULTI) != 0;
 		final Label label = new Label(parent, SWT.NONE);
 		label.setText(caption);
-		label.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+		final GridData labelData = new GridData(SWT.LEFT, multiline ? SWT.TOP : SWT.CENTER, false, false);
+		labelData.verticalIndent = multiline ? 3 : 0;
+		label.setLayoutData(labelData);
 		final Text field = new Text(parent, SWT.BORDER | style);
-		field.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		final GridData fieldData = new GridData(SWT.FILL, multiline ? SWT.TOP : SWT.CENTER, true, false);
+		fieldData.widthHint = convertWidthInCharsToPixels(38);
+		field.setLayoutData(fieldData);
 		return field;
 	}
 
 	private void createImageSection(final Composite container) {
-		final Label label = new Label(container, SWT.NONE);
-		label.setText("Image (optional)");
-		final Composite row = new Composite(container, SWT.NONE);
-		row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		final GridLayout layout = new GridLayout(2, false);
-		layout.marginWidth = layout.marginHeight = 0;
-		row.setLayout(layout);
-		image = new Text(row, SWT.BORDER);
-		image.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		final Button browse = new Button(row, SWT.PUSH);
-		browse.setText("Browse...");
+		final Button browse = new Button(container, SWT.PUSH);
+		browse.setText("Image (optional)");
+		final GridData data = new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 2);
+		data.widthHint = data.heightHint = 104;
+		browse.setLayoutData(data);
+		browse.setToolTipText("Choose an image for the Home screen");
+		browse.addDisposeListener(event -> {
+			if (imagePreview != null) imagePreview.dispose();
+		});
+		final Menu menu = new Menu(browse);
+		browse.setMenu(menu);
+		final MenuItem remove = new MenuItem(menu, SWT.PUSH);
+		remove.setText("Remove image");
+		remove.setEnabled(false);
+		remove.addListener(SWT.Selection, event -> {
+			browse.setImage(null);
+			if (imagePreview != null) imagePreview.dispose();
+			imagePreview = null;
+			imagePath = "";
+			browse.setText("Image (optional)");
+			browse.setToolTipText("Choose an image for the Home screen");
+			remove.setEnabled(false);
+		});
 		browse.addListener(SWT.Selection, event -> {
 			final FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
 			dialog.setFilterExtensions(new String[] { "*.png;*.jpg;*.jpeg;*.gif;*.bmp", "*.*" });
 			final String selected = dialog.open();
-			if (selected != null) image.setText(selected);
+			if (selected == null) return;
+			try {
+				final ImageData original = new ImageData(selected);
+				final double scale = 80d / Math.max(original.width, original.height);
+				final Image preview = new Image(browse.getDisplay(), original.scaledTo(
+						Math.max(1, (int) Math.round(original.width * scale)),
+						Math.max(1, (int) Math.round(original.height * scale))));
+				browse.setImage(preview);
+				browse.setText("");
+				browse.setToolTipText(selected + "\nClick to change; right-click to remove.");
+				if (imagePreview != null) imagePreview.dispose();
+				imagePreview = preview;
+				imagePath = selected;
+				remove.setEnabled(true);
+				setErrorMessage(null);
+			} catch (final IllegalArgumentException | org.eclipse.swt.SWTException e) {
+				setErrorMessage("Unable to load image: " + e.getMessage());
+			}
 		});
 	}
 
@@ -201,107 +230,87 @@ public class ExportModelDialog extends TitleAreaDialog {
 		if (availableExperiments.length == 1) {
 			final Label experiment = new Label(container, SWT.NONE);
 			experiment.setText(availableExperiments[0]);
-			experiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			experiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 			defaultExperiment = 0;
 			return;
 		}
 		final Composite row = new Composite(container, SWT.NONE);
-		row.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		final GridLayout layout = new GridLayout(2, false);
+		row.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
+		final GridLayout layout = new GridLayout(3, true);
 		layout.marginWidth = layout.marginHeight = 0;
 		row.setLayout(layout);
-		experiments = new Table(row, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL);
-		experiments.setHeaderVisible(true);
-		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.heightHint = 170;
-		data.widthHint = 420;
-		experiments.setLayoutData(data);
-		final TableColumn name = new TableColumn(experiments, SWT.LEFT);
-		name.setText("Experiment");
-		final TableColumn startup = new TableColumn(experiments, SWT.CENTER);
-		startup.setText("Default");
-		startup.setWidth(75);
-		for (final String experiment : availableExperiments) {
-			final int index = defaultButtons.size();
-			final TableItem item = new TableItem(experiments, SWT.NONE);
-			item.setText(experiment);
-			final Composite cell = new Composite(experiments, SWT.NO_RADIO_GROUP);
-			cell.setBackground(experiments.getBackground());
-			cell.setBackgroundMode(SWT.INHERIT_FORCE);
-			final GridLayout cellLayout = new GridLayout();
-			cellLayout.marginWidth = cellLayout.marginHeight = 0;
-			cell.setLayout(cellLayout);
-			final Button radio = new Button(cell, SWT.RADIO);
-			radio.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-			radio.setToolTipText("Run " + experiment + " by default");
-			defaultButtons.add(radio);
-			final TableEditor editor = new TableEditor(experiments);
-			editor.grabHorizontal = editor.grabVertical = true;
-			editor.setEditor(cell, item, 1);
-			experiments.addDisposeListener(event -> editor.dispose());
-			radio.addListener(SWT.Selection, event -> {
-				defaultExperiment = radio.getSelection() ? index : -1;
-				if (defaultExperiment >= 0) experiments.select(index);
-				updateExperimentSelection();
-			});
+		experiments = new Button[availableExperiments.length];
+		final int rows = (availableExperiments.length + 2) / 3;
+		for (int column = 0; column < 3; column++) {
+			final Composite choices = new Composite(row, SWT.NONE);
+			choices.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+			final GridLayout columnLayout = new GridLayout();
+			columnLayout.marginWidth = columnLayout.marginHeight = 0;
+			choices.setLayout(columnLayout);
+			for (int index = column * rows; index < Math.min((column + 1) * rows, experiments.length); index++) {
+				final Button experiment = new Button(choices, SWT.CHECK | SWT.WRAP);
+				experiment.setText(availableExperiments[index]);
+				final GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
+				data.widthHint = convertWidthInCharsToPixels(18);
+				experiment.setLayoutData(data);
+				experiment.addListener(SWT.Selection, event -> updateExperimentSelection());
+				experiments[index] = experiment;
+			}
 		}
-		experiments.addListener(SWT.Resize, event ->
-				name.setWidth(Math.max(180, experiments.getClientArea().width - startup.getWidth())));
-		experiments.addListener(SWT.Selection, event -> updateExperimentSelection());
-		final Composite actions = new Composite(row, SWT.NONE);
-		actions.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-		final GridLayout actionsLayout = new GridLayout();
-		actionsLayout.marginWidth = actionsLayout.marginHeight = 0;
-		actions.setLayout(actionsLayout);
-		final Button selectAll = new Button(actions, SWT.PUSH);
-		selectAll.setText("Select all");
-		selectAll.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		selectAll.addListener(SWT.Selection, event -> {
-			experiments.selectAll();
-			updateExperimentSelection();
-		});
-		clearDefaultButton = new Button(actions, SWT.PUSH);
-		clearDefaultButton.setText("No default");
-		clearDefaultButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		clearDefaultButton.addListener(SWT.Selection, event -> {
-			defaultExperiment = -1;
-			updateExperimentSelection();
-		});
 	}
 
 	private int[] selectedExperimentIndices() {
-		return availableExperiments.length == 1 ? new int[] { 0 } : experiments.getSelectionIndices();
+		return availableExperiments.length == 1 ? new int[] { 0 }
+				: java.util.stream.IntStream.range(0, experiments.length)
+						.filter(index -> experiments[index].getSelection()).toArray();
 	}
 
 	private void updateExperimentSelection() {
 		final int[] selected = selectedExperimentIndices();
 		if (selected.length == 1) {
 			defaultExperiment = selected[0];
-		} else if (defaultExperiment >= 0 && !experiments.isSelected(defaultExperiment)) {
+		} else if (defaultExperiment >= 0 && !experiments[defaultExperiment].getSelection()) {
 			defaultExperiment = -1;
 		}
-		if (clearDefaultButton != null) clearDefaultButton.setEnabled(selected.length > 1);
+		if (defaultChoice != null) {
+			defaultChoice.removeAll();
+			defaultChoice.add("None - show selector");
+			int choice = 0;
+			for (int index = 0; index < selected.length; index++) {
+				defaultChoice.add(availableExperiments[selected[index]]);
+				if (selected[index] == defaultExperiment) choice = index + 1;
+			}
+			defaultChoice.select(choice);
+			defaultChoice.setEnabled(selected.length > 1);
+		}
 		updateDefault();
 		final Button export = getButton(IDialogConstants.OK_ID);
 		if (export != null) export.setEnabled(selected.length > 0);
 	}
 
 	private void updateDefault() {
-		for (int index = 0; index < defaultButtons.size(); index++)
-			defaultButtons.get(index).setSelection(index == defaultExperiment);
 		showHomeButton.setEnabled(defaultExperiment >= 0);
 		if (defaultExperiment < 0) showHomeButton.setSelection(true);
 	}
 
 	private void createOptionsSection(final Composite container) {
-		new Label(container, SWT.NONE).setText("Options");
+		new Label(container, SWT.NONE).setText("Default experiment");
 		final Composite row = new Composite(container, SWT.NONE);
-		row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		final GridLayout layout = new GridLayout(2, false);
 		layout.marginWidth = layout.marginHeight = 0;
 		row.setLayout(layout);
+		defaultChoice = new Combo(row, SWT.DROP_DOWN | SWT.READ_ONLY);
+		final GridData defaultData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		defaultData.widthHint = convertWidthInCharsToPixels(24);
+		defaultChoice.setLayoutData(defaultData);
+		defaultChoice.addListener(SWT.Selection, event -> {
+			final int choice = defaultChoice.getSelectionIndex();
+			defaultExperiment = choice <= 0 ? -1 : selectedExperimentIndices()[choice - 1];
+			updateDefault();
+		});
 		showHomeButton = new Button(row, SWT.CHECK);
-		showHomeButton.setText("Show Home at startup");
+		showHomeButton.setText("Show selector at startup");
 		showHomeButton.setToolTipText("Required when no default experiment is selected");
 		updateExperimentSelection();
 	}
@@ -320,47 +329,14 @@ public class ExportModelDialog extends TitleAreaDialog {
 			oneFileButton = new Button(container, SWT.CHECK);
 			oneFileButton.setText("Export as a single-file executable");
 			oneFileButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			oneFileButton.addListener(SWT.Selection, event -> {
-				final String value = destination.getText();
-				final String extension = SystemInfo.isWindows() ? ".exe" : "";
-				if (oneFileButton.getSelection() && value.endsWith(".zip"))
-					destination.setText(value.substring(0, value.length() - 4) + extension);
-				else if (!oneFileButton.getSelection() && !value.endsWith(".zip"))
-					destination.setText((!extension.isEmpty() && value.endsWith(extension)
-							? value.substring(0, value.length() - extension.length()) : value) + ".zip");
-			});
 		}
 	}
 
 	@Override
 	protected void createButtonsForButtonBar(final Composite parent) {
-		createButton(parent, IDialogConstants.CLIENT_ID, alternateFormatLabel(), false);
-		super.createButtonsForButtonBar(parent);
-		getButton(IDialogConstants.OK_ID).setText("Export");
+		createButton(parent, IDialogConstants.OK_ID, "Choose destination...", true);
+		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 		updateExperimentSelection();
-	}
-
-	private String alternateFormatLabel() {
-		return format == Format.PACKAGE ? "Export application instead..." : "Export playable model instead...";
-	}
-
-	@Override
-	protected void buttonPressed(final int buttonId) {
-		if (buttonId != IDialogConstants.CLIENT_ID) {
-			super.buttonPressed(buttonId);
-			return;
-		}
-		final String previousSuffix = exportSuffix();
-		format = format == Format.PACKAGE ? Format.STANDALONE : Format.PACKAGE;
-		final String value = destination.getText();
-		if (value.toLowerCase(java.util.Locale.ROOT).endsWith(previousSuffix))
-			destination.setText(value.substring(0, value.length() - previousSuffix.length()) + exportSuffix());
-		((StackLayout) formatOptions.getLayout()).topControl = format == Format.PACKAGE ? packageOptions : applicationOptions;
-		formatOptions.layout(true, true);
-		getButton(IDialogConstants.CLIENT_ID).setText(alternateFormatLabel());
-		getButton(IDialogConstants.CLIENT_ID).getParent().layout(true, true);
-		setErrorMessage(null);
-		updateHeading();
 	}
 
 	private String exportSuffix() {
@@ -369,37 +345,11 @@ public class ExportModelDialog extends TitleAreaDialog {
 		return SystemInfo.isMac() ? ".app.zip" : ".zip";
 	}
 
-	private void createDestinationSection(final Composite container) {
-		new Label(container, SWT.NONE).setText("Save as");
-		final Composite row = new Composite(container, SWT.NONE);
-		row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		final GridLayout layout = new GridLayout(2, false);
-		layout.marginWidth = layout.marginHeight = 0;
-		row.setLayout(layout);
-		destination = new Text(row, SWT.BORDER);
-		destination.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		final String filename = defaultTitle.isBlank() ? "launcher"
-				: defaultTitle.replaceFirst("(?i)\\.gaml$", "").replaceAll("[\\\\/:*?\"<>|]", "_");
-		destination.setText(Path.of(System.getProperty("user.home"),
-				filename + (format == Format.PACKAGE ? ".gamx" : SystemInfo.isMac() ? ".app.zip" : ".zip")).toString());
-		final Button browse = new Button(row, SWT.PUSH);
-		browse.setText("Browse...");
-		browse.addListener(SWT.Selection, event -> {
-			final FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-			dialog.setText(format == Format.PACKAGE ? "Export playable model" : "Export standalone application");
-			if (format == Format.PACKAGE) dialog.setFilterExtensions(new String[] { "*.gamx" });
-			dialog.setOverwrite(true);
-			try {
-				final Path path = Path.of(destination.getText()).toAbsolutePath();
-				if (path.getParent() != null) dialog.setFilterPath(path.getParent().toString());
-				if (path.getFileName() != null) dialog.setFileName(path.getFileName().toString());
-			} catch (final InvalidPathException e) {
-				setErrorMessage("The destination is not a valid file path.");
-				return;
-			}
-			final String selected = dialog.open();
-			if (selected != null) destination.setText(selected);
-		});
+	private String suggestedFileName() {
+		final String filename = title.getText().trim()
+				.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_").replaceFirst("[. ]+$", "")
+				.replaceFirst("(?i)(?:\\.gaml|\\.gamx|\\.app\\.zip|\\.zip|\\.exe)+$", "");
+		return (filename.isBlank() ? "launcher" : filename) + exportSuffix();
 	}
 
 	@Override
@@ -408,26 +358,20 @@ public class ExportModelDialog extends TitleAreaDialog {
 	@Override
 	protected void okPressed() {
 		try {
-			if (destination.getText().isBlank()) throw new IllegalArgumentException("Choose a destination file.");
-			output = Path.of(destination.getText().trim()).toAbsolutePath().normalize();
-			if (output.getFileName() == null || Files.isDirectory(output))
-				throw new IllegalArgumentException("The destination must be a file, not a directory.");
 			if (format == Format.PACKAGE) {
 				if (dependencyError != null) throw new IllegalArgumentException("Model dependencies could not be resolved: " + dependencyError);
 				for (final Dependency dependency : dependencies) {
 					if (!dependency.standard() && !dependency.embeddable())
 						throw new IllegalArgumentException("Cannot include in the playable model " + dependency.id() + ": " + dependency.reason());
 				}
-				if (!output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
-					throw new IllegalArgumentException("Playable model files must use the .gamx extension.");
 			}
 			selectedExperiments = Arrays.stream(selectedExperimentIndices())
 					.mapToObj(index -> availableExperiments[index]).toList();
 			if (selectedExperiments.isEmpty()) throw new IllegalArgumentException("Select at least one experiment.");
 			if (defaultExperiment >= 0 && Arrays.stream(selectedExperimentIndices()).noneMatch(index -> index == defaultExperiment))
 				throw new IllegalArgumentException("The default experiment must be selected for export.");
-			if (!image.getText().isBlank()) {
-				final Path path = Path.of(image.getText().trim());
+			if (!imagePath.isBlank()) {
+				final Path path = Path.of(imagePath);
 				if (!Files.isRegularFile(path)) throw new IllegalArgumentException("Choose a readable image file.");
 				new ImageData(path.toString());
 			}
@@ -435,13 +379,42 @@ public class ExportModelDialog extends TitleAreaDialog {
 			setErrorMessage(e.getMessage());
 			return;
 		}
-		if (Files.exists(output) && !org.eclipse.jface.dialogs.MessageDialog.openQuestion(getShell(), "Replace existing export?",
-				"The file already exists:\n" + output + "\n\nReplace it?")) return;
+		final FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
+		dialog.setText(format == Format.PACKAGE ? "Export playable model" : "Export standalone application");
+		final String suffix = exportSuffix();
+		String filenameSuggestion = suggestedFileName();
+		if (!suffix.isEmpty()) {
+			// Cocoa supplies the final extension itself and only supports single-part filters.
+			final String filterSuffix = SystemInfo.isMac() ? suffix.substring(suffix.lastIndexOf('.')) : suffix;
+			dialog.setFilterExtensions(new String[] { "*" + filterSuffix });
+			if (SystemInfo.isMac())
+				filenameSuggestion = filenameSuggestion.substring(0, filenameSuggestion.length() - filterSuffix.length());
+		}
+		dialog.setFilterPath(destinationDirectory.toString());
+		dialog.setFileName(filenameSuggestion);
+		dialog.setOverwrite(true);
+		final String selected = dialog.open();
+		if (selected == null) return;
+		try {
+			final Path chosen = Path.of(selected).toAbsolutePath().normalize();
+			if (chosen.getFileName() == null || Files.isDirectory(chosen))
+				throw new IllegalArgumentException("The destination must be a file, not a directory.");
+			destinationDirectory = chosen.getParent();
+			final String filename = chosen.getFileName().toString();
+			output = suffix.isEmpty() || filename.toLowerCase(java.util.Locale.ROOT).endsWith(suffix)
+					? chosen : chosen.resolveSibling(filename + suffix);
+			if (!output.equals(chosen) && Files.exists(output)
+					&& !org.eclipse.jface.dialogs.MessageDialog.openQuestion(getShell(), "Replace existing export?",
+							"The file already exists:\n" + output + "\n\nReplace it?")) return;
+		} catch (final IllegalArgumentException e) {
+			setErrorMessage("Invalid export destination: " + e.getMessage());
+			return;
+		}
 		includeJdk = format == Format.STANDALONE && includeJdkButton.getSelection();
 		oneFile = format == Format.STANDALONE && oneFileButton != null && oneFileButton.getSelection();
 		startupLabel = defaultExperiment < 0 ? "" : availableExperiments[defaultExperiment];
 		homeConfiguration = new LauncherConfiguration(title.getText().trim(), description.getText(),
-				showHomeButton.getSelection(), startupLabel, image.getText().trim());
+				showHomeButton.getSelection(), startupLabel, imagePath);
 		super.okPressed();
 	}
 

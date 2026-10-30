@@ -10,7 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPageListener;
@@ -27,6 +31,7 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 
 import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.GraphicsInitializerRegistry;
 import gama.dev.DEBUG;
 
 /**
@@ -136,7 +141,28 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		final var shell = window.getShell();
 		// Window setup can still be rendering the status line when this callback runs.
 		shell.getDisplay().asyncExec(() -> {
-			if (!shell.isDisposed()) PerspectiveHelper.showBottomTray(window, false);
+			if (shell.isDisposed()) return;
+			PerspectiveHelper.showBottomTray(window, false);
+			final Job graphics = Job.create("Initializing graphics", monitor -> {
+				try {
+					for (final var task : GraphicsInitializerRegistry.initializers()) {
+						if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+						task.run();
+						task.get();
+					}
+					return Status.OK_STATUS;
+				} catch (final ExecutionException e) {
+					DEBUG.ERR("Unable to initialize graphics in the background", e.getCause());
+					return Status.error("Unable to initialize graphics in the background", e.getCause());
+				} catch (final InterruptedException e) {
+					Thread.currentThread().interrupt();
+					DEBUG.ERR("Background graphics initialization interrupted", e);
+					return Status.CANCEL_STATUS;
+				}
+			});
+			graphics.setSystem(true);
+			graphics.setPriority(Job.DECORATE);
+			graphics.schedule();
 		});
 		PerspectiveHelper.cleanPerspectives();
 	}

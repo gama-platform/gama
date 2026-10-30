@@ -30,6 +30,7 @@ import gama.export.ExportModels;
 import gama.export.GamaZipBuilder;
 import gama.export.SimulationPackageExporter;
 import gama.ui.export.dialogs.ExportModelDialog;
+import gama.ui.export.dialogs.ExportSuccessDialog;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;
 
 public final class ExportSimulation extends AbstractHandler {
@@ -126,9 +127,12 @@ public final class ExportSimulation extends AbstractHandler {
 					}
 				});
 			}
-			final boolean show = GAMA.getGui().getDialogFactory().question("Model export successful",
-					"The model was exported to:\n" + output.toAbsolutePath() + "\n\nDo you want to show the target directory?");
-			if (show) { Program.launch(output.toAbsolutePath().getParent().toString()); }
+			if (ExportSuccessDialog.show(window.getShell(), output, dialog.getFormat() == ExportModelDialog.Format.PACKAGE)
+					&& !Program.launch(output.toAbsolutePath().getParent().toString())) {
+				DEBUG.ERR("Unable to open export directory: " + output.toAbsolutePath().getParent());
+				GAMA.getGui().getDialogFactory().error(
+						"The export succeeded, but its directory could not be opened: " + output.toAbsolutePath().getParent());
+			}
 		} catch (final InterruptedException | OperationCanceledException e) {
 			// Cancellation leaves the destination unchanged.
 		} catch (final InvocationTargetException e) {

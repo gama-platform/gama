@@ -65,6 +65,7 @@ public class OpenGLActivator extends GamaBundleActivator {
 			});
 			// Complete before Java2D creates a view: later JOGL initialization can deadlock with AWT.
 			GLProfile.initSingleton();
+			GraphicsInitialization.await(CAPABILITIES);
 		});
 	}
 
