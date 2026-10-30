@@ -41,7 +41,7 @@ public class ProjectArchiveWizard extends Wizard implements IImportWizard, IExpo
 
 	protected ProjectArchiveWizard(final boolean importing) {
 		this.importing = importing;
-		setWindowTitle(importing ? "Import GAMA project" : "Export GAMA project");
+		setWindowTitle(importing ? "Import GAMA project (.gamp or .zip)" : "Export GAMA project");
 	}
 
 	@Override public void init(final IWorkbench workbench, final IStructuredSelection selection) {
@@ -53,7 +53,7 @@ public class ProjectArchiveWizard extends Wizard implements IImportWizard, IExpo
 	@Override public void addPages() {
 		addPage(new WizardPage("projectArchive") {
 			@Override public void createControl(final Composite parent) {
-				setTitle(importing ? "Import GAMA project" : "Export GAMA project");
+				setTitle(importing ? "Import GAMA project (.gamp or .zip)" : "Export GAMA project");
 				setDescription(importing ? "Choose a .gamp or ZIP archive. Import options follow."
 						: "Choose the whole project to save. No file selection is needed.");
 				final var content = new Composite(parent, SWT.NONE);

@@ -86,6 +86,17 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 		return content.length > 0;
 	}
 
+	/**
+	 * Returns the group of projects displayed in this folder at the given path, relative to the workspace root.
+	 *
+	 * @param relativePath
+	 *            the path of the group
+	 * @return the group, or {@code null} if it does not exist
+	 */
+	public UserGroupFolder getGroup(final org.eclipse.core.runtime.IPath relativePath) {
+		return groups.get(relativePath);
+	}
+
 	// @Override
 	// public Font getFont() {
 	// return GamaFonts.getNavigHeaderFont();

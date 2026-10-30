@@ -109,8 +109,11 @@ rebuilds documentation, then resumes automatic updates.
 ## Editable project archives
 
 **Export > Project** saves the entire selected project as `[Project Name].gamp`, without a file-selection
-tree. The compact save dialog offers two opt-ins: **Resolve and export linked resources**, and, when needed,
-**Export required GAMA plugins**. With linked-resource export unchecked, only the link definitions are
+tree. The compact options dialog has no wizard-style banner and offers two opt-ins:
+**Resolve and export linked resources**, and, when needed,
+**Export required GAMA plugins**. Its **Choose destination...** button opens the native save picker with
+`[Project Name].gamp` as the default filename; cancelling the picker returns to the options.
+With linked-resource export unchecked, only the link definitions are
 preserved: importing elsewhere may require repairing those external locations.
 
 A `.gamp` is a ZIP container with a versioned `gama-project.properties` manifest, complete project resources

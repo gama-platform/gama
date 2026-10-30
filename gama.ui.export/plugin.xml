@@ -66,7 +66,7 @@
    </extension>
    <extension point="org.eclipse.ui.commands">
       <command id="gama.ui.export.exportProject" name="Export as GAMA project" categoryId="gama.category"/>
-      <command id="gama.ui.export.importProject" name="Import GAMA project" categoryId="gama.category">
+      <command id="gama.ui.export.importProject" name="Import GAMA project (.gamp or .zip)" categoryId="gama.category">
          <commandParameter id="gama.ui.export.projectPath" name="Project archive path" optional="true"/>
          <commandParameter id="gama.ui.export.projectGroup" name="Navigator group" optional="true"/>
       </command>
@@ -81,6 +81,17 @@
       <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
    </extension>
    <extension point="org.eclipse.core.expressions.definitions">
+      <definition id="gama.ui.export.isProjectSelection">
+         <and>
+            <not><reference definitionId="gama.ui.export.isLauncher"/></not>
+            <with variable="selection">
+               <count value="1"/>
+               <iterate ifEmpty="false">
+                  <instanceof value="gama.ui.navigator.view.contents.WrappedProject"/>
+               </iterate>
+            </with>
+         </and>
+      </definition>
       <definition id="gama.ui.export.isProjectArchive">
          <with variable="selection"><count value="1"/><iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile"><or>
@@ -130,7 +141,9 @@
       </definition>
    </extension>
    <extension point="org.eclipse.ui.handlers">
-      <handler commandId="gama.ui.export.exportProject" class="gama.ui.export.commands.ExportProject"/>
+      <handler commandId="gama.ui.export.exportProject" class="gama.ui.export.commands.ExportProject">
+         <enabledWhen><reference definitionId="gama.ui.export.isProjectSelection"/></enabledWhen>
+      </handler>
       <handler commandId="gama.ui.export.importProject" class="gama.ui.export.commands.ImportProject"/>
       <handler commandId="gama.ui.export.playSelection" class="gama.ui.export.commands.OpenSimulationPackage">
          <enabledWhen><reference definitionId="gama.ui.export.isPlayableArchive"/></enabledWhen>
@@ -144,17 +157,8 @@
          <enabledWhen><reference definitionId="gama.ui.export.isModelSelection"/></enabledWhen>
       </handler>
       <handler commandId="gama.ui.navigator.commands.exportProjectAsSimulation" class="gama.ui.export.commands.ExportSimulation">
-         <activeWhen>
-            <and>
-               <not><reference definitionId="gama.ui.export.isLauncher"/></not>
-               <with variable="selection">
-                  <count value="1"/>
-                  <iterate ifEmpty="false">
-                     <adapt type="org.eclipse.core.resources.IContainer"/>
-                  </iterate>
-               </with>
-            </and>
-         </activeWhen>
+         <activeWhen><reference definitionId="gama.ui.export.isProjectSelection"/></activeWhen>
+         <enabledWhen><reference definitionId="gama.ui.export.isProjectSelection"/></enabledWhen>
       </handler>
       <handler commandId="gama.application.commands.SaveSimulationsArtifacts" class="gama.ui.export.commands.SaveSimulationsArtifacts">
          <activeWhen><reference definitionId="gama.ui.export.isLauncher"/></activeWhen>
@@ -165,7 +169,7 @@
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:file?after=additions">
-         <command commandId="gama.ui.export.importProject" label="Import GAMA project..."
+         <command commandId="gama.ui.export.importProject" label="Import GAMA project (.gamp or .zip)..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg">
             <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
          </command>
@@ -197,7 +201,7 @@
       <menuContribution locationURI="popup:menu.gama.export?after=additions">
          <command commandId="gama.ui.navigator.commands.exportProjectAsSimulation" label="As playable model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
-            <visibleWhen checkEnabled="true"/>
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isProjectSelection"/></visibleWhen>
          </command>
       </menuContribution>
       <menuContribution locationURI="toolbar:gama.ui.toolbar?after=additions">
@@ -222,7 +226,7 @@
    </extension>
    <extension point="org.eclipse.ui.importWizards">
       <wizard category="gama.ui.wizards.GAMA" class="gama.ui.export.dialogs.ProjectArchiveWizard$Import"
-            id="gama.ui.import.ExternalProject" name="GAMA project archive (.gamp or ZIP)"
+            id="gama.ui.import.ExternalProject" name="GAMA project archive (.gamp or .zip)"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"/>
    </extension>
    <extension point="org.eclipse.ui.exportWizards">

@@ -118,8 +118,8 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	/** The empty. */
 	public static final Object[] EMPTY = {};
 
-	/** The root. */
-	private final P root;
+	/** The root. Not final: cached wrappers of projects are reattached when the virtual folders are recreated. */
+	private P root;
 
 	/** The name. */
 	private final String name;
@@ -196,6 +196,14 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	 * @return the parent
 	 */
 	public P getParent() { return root; }
+
+	/**
+	 * Reattaches this element to a new parent.
+	 *
+	 * @param parent
+	 *            the new parent
+	 */
+	void setParent(final P parent) { root = parent; }
 
 	/**
 	 * Gets the color.

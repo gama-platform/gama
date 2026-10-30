@@ -217,7 +217,7 @@
             <command
                   commandId="gama.ui.export.importProject"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
-                  label="Project…"
+                  label="Project (.gamp or .zip)..."
                   style="push">
                <visibleWhen
                      checkEnabled="false">
@@ -306,17 +306,11 @@
                   checkEnabled="false">
                <with
                      variable="selection">
+                  <count value="1"/>
                   <iterate
-                        ifEmpty="true"
+                        ifEmpty="false"
                         operator="and">
-                     <or>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.WrappedProject">
-                        </instanceof>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.WrappedFolder">
-                        </instanceof>
-                     </or>
+                     <instanceof value="gama.ui.navigator.view.contents.WrappedProject"/>
                   </iterate>
                </with>
             </visibleWhen>

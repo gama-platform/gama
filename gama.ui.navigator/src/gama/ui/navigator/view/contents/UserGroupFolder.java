@@ -89,7 +89,7 @@ public class UserGroupFolder extends VirtualContent<VirtualContent<?>> {
 		for (final IProject p : projects) {
 			final IPath rel = ProjectCategory.groupOf(p.getLocation());
 			if (rel.isEmpty()) {
-				final WrappedProject wp = (WrappedProject) owner.getManager().wrap(owner, p);
+				final WrappedProject wp = attach(owner.getManager().wrap(owner, p), owner);
 				flat.add(wp);
 				ungrouped.add(wp);
 				continue;
@@ -110,7 +110,7 @@ public class UserGroupFolder extends VirtualContent<VirtualContent<?>> {
 					}
 				}
 			}
-			final WrappedProject wp = (WrappedProject) owner.getManager().wrap(group, p);
+			final WrappedProject wp = attach(owner.getManager().wrap(group, p), group);
 			flat.add(wp);
 			group.children.add(wp);
 		}
@@ -121,6 +121,17 @@ public class UserGroupFolder extends VirtualContent<VirtualContent<?>> {
 		known.putAll(groups);
 		top.addAll(ungrouped);
 		return top;
+	}
+
+	/**
+	 * Wrappers of projects are cached and survive the recreation of the virtual folders: they must be reattached to
+	 * the folder or group that now displays them, otherwise their parent is an element that is no longer in the tree
+	 * (which prevents revealing them).
+	 */
+	private static WrappedProject attach(final WrappedResource<?, ?> wrapped, final VirtualContent<?> parent) {
+		final WrappedProject wp = (WrappedProject) wrapped;
+		if (wp.getParent() != parent) { wp.setParent(parent); }
+		return wp;
 	}
 
 	/** Adds the directories of the workspace that are not projects and do not contain any project yet. */

@@ -345,10 +345,19 @@ a document, and make every cancellation terminate the request.
 
 ### Export and layout
 
-**Export > Project** now opens a compact save dialog with the default
-`[Project Name].gamp`. It exports the whole project, with no file-selection tree.
-SWT's native save picker cannot portably host custom checkboxes, so **Browse**
-uses that picker inside the compact dialog. Both options default unchecked:
+Navigator export actions are selection-based: a single project offers project
+archive and playable-model export; a model or experiment offers playable-model
+export. Empty selections, roots, groups and ordinary folders do not show Export.
+The generic workbench Export wizard retains its project chooser for global export.
+
+**Export > Project** opens a compact options dialog, with **Choose destination...**
+instead of OK and no destination field, Browse button or file-selection tree.
+It is a plain dialog without a wizard-style title banner. Dependency discovery
+uses the workbench's delayed progress display, avoiding a progress-window flash
+when preparation completes quickly.
+That button opens the native save picker with the default `[Project Name].gamp`.
+Cancelling the picker returns to the options dialog without exporting.
+It exports the whole project. Both options default unchecked:
 
 - **Resolve and export linked resources** materializes linked files/folders and
   removes their external link definitions from the exported copy. Otherwise the

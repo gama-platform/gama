@@ -22,6 +22,7 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.WrappedFile;
+import gama.ui.navigator.view.contents.WrappedResource;
 
 /**
  * The Class NavigatorLinkHelper.
@@ -31,8 +32,10 @@ public class NavigatorLinkHelper extends ResourceLinkHelper {
 	@Override
 	public IStructuredSelection findSelection(final IEditorInput anInput) {
 		final IFile file = ResourceUtil.getFile(anInput);
-		if (file != null) { return new StructuredSelection(ResourceManager.cache.getIfPresent(file)); }
-		return StructuredSelection.EMPTY;
+		if (file == null || ResourceManager.INSTANCE == null) return StructuredSelection.EMPTY;
+		// The wrapper may not exist yet if its parent folder has never been expanded: resolve (and create) it.
+		final WrappedResource<?, ?> wrapped = ResourceManager.INSTANCE.resolveWrappedInstanceOf(file);
+		return wrapped == null ? StructuredSelection.EMPTY : new StructuredSelection(wrapped);
 	}
 
 	@Override

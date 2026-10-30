@@ -47,7 +47,7 @@ public final class ImportProject extends AbstractHandler {
 		}
 		if (selected == null) {
 			final var dialog = new FileDialog(window.getShell(), SWT.OPEN);
-			dialog.setText("Import GAMA project");
+			dialog.setText("Import GAMA project (.gamp or .zip)");
 			dialog.setFilterExtensions(new String[] { "*.gamp;*.zip", "*.*" });
 			dialog.setFilterNames(new String[] { "GAMA projects and ZIP archives", "All files" });
 			selected = dialog.open();

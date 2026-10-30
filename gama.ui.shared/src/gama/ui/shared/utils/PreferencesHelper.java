@@ -113,6 +113,10 @@ public class PreferencesHelper {
 	public static final Pref<Boolean> KEEP_NAVIGATOR_STATE =
 			create("pref_keep_navigator_state", "Maintain the state of the navigator across sessions", true, IType.BOOL,
 					false).in(NAME, NAVIGATOR).hidden();
+	/** Whether the navigator stays in sync with the active editor. */
+	public static final Pref<Boolean> NAVIGATOR_LINK_WITH_EDITOR =
+			create("pref_navigator_link_with_editor", "Keep the navigator in sync with the editor", true, IType.BOOL,
+					false).in(NAME, NAVIGATOR).hidden();
 	/** The Constant NAVIGATOR_HIDDEN. */
 	public static final Pref<Boolean> NAVIGATOR_HIDDEN =
 			create("pref_navigator_display_hidden", "Display hidden files in navigator", false, IType.BOOL, false)

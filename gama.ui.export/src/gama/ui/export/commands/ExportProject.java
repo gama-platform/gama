@@ -39,7 +39,7 @@ public final class ExportProject extends AbstractHandler {
 		if (!window.getActivePage().saveAllEditors(true)) return false;
 		try {
 			final var plan = new AtomicReference<ProjectArchiveExporter.Plan>();
-			new ProgressMonitorDialog(window.getShell()).run(true, true, monitor -> {
+			window.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
 				try { plan.set(ProjectArchiveExporter.plan(project, monitor)); }
 				catch (final CoreException | IOException e) { throw new InvocationTargetException(e); }
 			});
