@@ -10,11 +10,14 @@
  ********************************************************************************************************/
 package gama.ui.shared.views;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -24,7 +27,10 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -54,6 +60,8 @@ import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
+import gama.ui.shared.utils.SyntaxHighlightingPreferences;
+import gama.ui.shared.utils.SyntaxHighlightingPreferences.Configuration;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.Selector;
 
@@ -107,11 +115,8 @@ public class GamaPreferencesView {
 		for (final IParameterEditor ed : instance.editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		for (final Pref<?> p : GAMA.getPreferenceStore().getPreferences()) {
 			instance.checkActivables(p, Cast.asBool(null, p.getValue()));
-			if (p.getKey().startsWith("pref_syntax_use_default_colors_")) {
-				instance.displaySyntaxColorPreferences(p.getKey(),
-						Boolean.TRUE.equals(Cast.asBool(null, p.getValue())));
-			}
 		}
+		instance.resetSyntaxConfiguration();
 		instance.open();
 	}
 
@@ -156,6 +161,9 @@ public class GamaPreferencesView {
 
 	/** The model values. */
 	final Map<String, Object> modelValues = new LinkedHashMap();
+
+	private final Map<String, Button> syntaxStyleButtons = new LinkedHashMap<>();
+	private Combo syntaxConfigurations;
 
 	/**
 	 * Instantiates a new gama preferences view.
@@ -264,6 +272,15 @@ public class GamaPreferencesView {
 	 *            the list
 	 */
 	private void buildGroupContents(final Composite compo, final List<Pref<?>> list) {
+		final String group = list.getFirst().getGroup();
+		if (SyntaxHighlightingPreferences.CONFIGURATION_GROUP.equals(group)) {
+			buildSyntaxConfigurationControls(compo);
+			return;
+		}
+		if (SyntaxHighlightingPreferences.isThemeGroup(group)) {
+			buildSyntaxStyleControls(compo, list);
+			return;
+		}
 		GridLayoutFactory.fillDefaults().numColumns(NB_DIVISIONS).spacing(5, 0).equalWidth(true).applyTo(compo);
 		final var comps = new EditorsGroup[NB_DIVISIONS];
 		for (var i = 0; i < NB_DIVISIONS; i++) { comps[i] = new EditorsGroup(compo, SWT.NONE); }
@@ -278,9 +295,6 @@ public class GamaPreferencesView {
 					Boolean b = Cast.asBool(GAMA.getPlatformAgent().getScope(), value);
 					checkActivables(e, b);
 					checkRefreshables(e);
-					if (e.getKey().startsWith("pref_syntax_use_default_colors_")) {
-						displaySyntaxColorPreferences(e.getKey(), Boolean.TRUE.equals(b));
-					}
 					if (e.isRestartRequired()) { setRestartRequired(); }
 				} else {
 					GamaPreferencesView.this.showError("" + value + " is not accepted for parameter " + e.getKey());
@@ -311,20 +325,143 @@ public class GamaPreferencesView {
 		compo.pack(true);
 	}
 
-	private void displaySyntaxColorPreferences(final String preferenceKey, final boolean useDefaults) {
-		final String theme = preferenceKey.substring("pref_syntax_use_default_colors_".length());
-		final String colorSuffix = "_color_" + theme;
-		final String colorGroup = "Syntax coloring (" + theme + " theme)";
-		for (final Pref<?> preference : GAMA.getPreferenceStore().getPreferences()) {
-			final String key = preference.getKey();
-			if (!colorGroup.equals(preference.getGroup()) || !key.startsWith("pref_")
-					|| !key.endsWith(colorSuffix)) continue;
-			final IParameterEditor editor = editors.get(key);
-			if (editor == null) continue;
-			final Object value = useDefaults ? preference.getDefaultValue()
-					: modelValues.getOrDefault(key, preference.getValue());
-			editor.displayValue(value);
+	private void buildSyntaxConfigurationControls(final Composite parent) {
+		GridLayoutFactory.fillDefaults().numColumns(4).margins(5, 5).applyTo(parent);
+		new Label(parent, SWT.NONE).setText("Configuration");
+		syntaxConfigurations = new Combo(parent, SWT.READ_ONLY);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(syntaxConfigurations);
+		syntaxConfigurations.addListener(SWT.Selection, event -> {
+			final String name = syntaxConfigurations.getText();
+			if (SyntaxHighlightingPreferences.BUILT_INS.contains(name)) {
+				SyntaxHighlightingPreferences.stage(SyntaxHighlightingPreferences.builtIn(name), modelValues);
+				refreshSyntaxControls();
+			}
+		});
+		final Button load = new Button(parent, SWT.PUSH);
+		load.setText("Load...");
+		load.addListener(SWT.Selection, event -> {
+			final FileDialog dialog = syntaxFileDialog(SWT.OPEN);
+			final String file = dialog.open();
+			if (file == null) return;
+			try {
+				final Configuration configuration = SyntaxHighlightingPreferences.load(Path.of(file));
+				SyntaxHighlightingPreferences.stage(configuration, modelValues);
+				refreshSyntaxControls();
+			} catch (final IOException | IllegalArgumentException e) {
+				MessageDialog.openError(shell, "Cannot load syntax configuration", e.getMessage());
+			}
+		});
+		final Button save = new Button(parent, SWT.PUSH);
+		save.setText("Save as...");
+		save.addListener(SWT.Selection, event -> {
+			final FileDialog dialog = syntaxFileDialog(SWT.SAVE);
+			dialog.setFileName("My syntax.gama-syntax");
+			dialog.setOverwrite(true);
+			final String file = dialog.open();
+			if (file == null) return;
+			final Path path = Path.of(file);
+			final String name = path.getFileName().toString().replaceFirst("\\.gama-syntax$", "");
+			final Configuration configuration =
+					new Configuration(name, SyntaxHighlightingPreferences.staged(modelValues).themes());
+			try {
+				SyntaxHighlightingPreferences.save(path, configuration);
+				modelValues.put(SyntaxHighlightingPreferences.CONFIGURATION_KEY, name);
+				refreshSyntaxControls();
+			} catch (final IOException e) {
+				MessageDialog.openError(shell, "Cannot save syntax configuration", e.getMessage());
+			}
+		});
+	}
+
+	private FileDialog syntaxFileDialog(final int style) {
+		final FileDialog dialog = new FileDialog(shell, style);
+		dialog.setFilterExtensions(new String[] { "*.gama-syntax", "*.properties", "*.*" });
+		dialog.setFilterNames(new String[] { "GAMA syntax configuration", "Properties files", "All files" });
+		return dialog;
+	}
+
+	private void buildSyntaxStyleControls(final Composite parent, final List<Pref<?>> preferences) {
+		GridLayoutFactory.fillDefaults().numColumns(NB_DIVISIONS).spacing(5, 0).equalWidth(true).applyTo(parent);
+		final EditorsGroup[] columns = new EditorsGroup[NB_DIVISIONS];
+		for (int i = 0; i < columns.length; i++) { columns[i] = new EditorsGroup(parent); }
+		for (int i = 0; i < preferences.size(); i++) {
+			final Pref<?> preference = preferences.get(i);
+			final String colorKey = preference.getKey();
+			final String theme = colorKey.endsWith("_light") ? "light" : "dark";
+			final String id = colorKey.substring("pref_".length(), colorKey.length() - ("_color_" + theme).length());
+			final AbstractEditor<?> editor = EditorFactory.create(GAMA.getPlatformAgent().getScope(),
+					columns[i * NB_DIVISIONS / preferences.size()], preference, value -> {
+						modelValues.put(colorKey, value);
+						markSyntaxCustom();
+					}, false);
+			editors.put(colorKey, editor);
+			final Composite row = editor.getEditor().getParent();
+			((GridLayout) row.getLayout()).numColumns = 3;
+			for (final String property : List.of("bold", "italic")) {
+				final String key = SyntaxHighlightingPreferences.key(id, property, theme);
+				final Button button = new Button(row, SWT.CHECK);
+				button.setText("bold".equals(property) ? "Bold" : "Italic");
+				button.addListener(SWT.Selection, event -> {
+					modelValues.put(key, button.getSelection());
+					markSyntaxCustom();
+				});
+				syntaxStyleButtons.put(key, button);
+			}
+			final Menu menu = editor.getLabel().createMenu();
+			final MenuItem revert = new MenuItem(menu, SWT.PUSH);
+			revert.setText("Restore GAMA 2026 style");
+			revert.addListener(SWT.Selection, event -> {
+				final var style = SyntaxHighlightingPreferences.builtIn("GAMA 2026").themes().get(theme).get(id);
+				modelValues.put(colorKey, style.color());
+				modelValues.put(SyntaxHighlightingPreferences.key(id, "bold", theme), style.bold());
+				modelValues.put(SyntaxHighlightingPreferences.key(id, "italic", theme), style.italic());
+				markSyntaxCustom();
+				refreshSyntaxControls();
+			});
+			editor.getLabel().setMenu(menu);
 		}
+		parent.layout();
+		parent.pack(true);
+	}
+
+	private void markSyntaxCustom() {
+		final Configuration configuration = SyntaxHighlightingPreferences.staged(modelValues);
+		SyntaxHighlightingPreferences.stage(new Configuration("Custom", configuration.themes()), modelValues);
+		refreshSyntaxConfigurationName();
+	}
+
+	private void resetSyntaxConfiguration() {
+		if (syntaxConfigurations == null) return;
+		SyntaxHighlightingPreferences.stage(SyntaxHighlightingPreferences.current(), modelValues);
+		refreshSyntaxControls();
+	}
+
+	private void refreshSyntaxControls() {
+		for (final String theme : SyntaxHighlightingPreferences.THEMES) {
+			for (final String id : SyntaxHighlightingPreferences.categories().keySet()) {
+				final String key = SyntaxHighlightingPreferences.key(id, "color", theme);
+				final IParameterEditor editor = editors.get(key);
+				if (editor != null) editor.displayValue(modelValues.get(key));
+			}
+		}
+		syntaxStyleButtons.forEach((key, button) -> button.setSelection(Boolean.TRUE.equals(modelValues.get(key))));
+		refreshSyntaxConfigurationName();
+	}
+
+	private void refreshSyntaxConfigurationName() {
+		if (syntaxConfigurations == null) return;
+		final Configuration configuration = SyntaxHighlightingPreferences.staged(modelValues);
+		String name = configuration.name();
+		for (final String builtIn : SyntaxHighlightingPreferences.BUILT_INS) {
+			if (configuration.themes().equals(SyntaxHighlightingPreferences.builtIn(builtIn).themes())) {
+				name = builtIn;
+				break;
+			}
+			if (builtIn.equals(name)) name = "Custom";
+		}
+		syntaxConfigurations.setItems(SyntaxHighlightingPreferences.BUILT_INS.toArray(String[]::new));
+		if (!SyntaxHighlightingPreferences.BUILT_INS.contains(name)) syntaxConfigurations.add(name);
+		syntaxConfigurations.setText(name);
 	}
 
 	/**
@@ -404,6 +541,7 @@ public class GamaPreferencesView {
 			if (path == null) return;
 			GAMA.getPreferenceStore().applyPreferencesFrom(path, modelValues);
 			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
+			resetSyntaxConfiguration();
 		});
 
 		final var buttonExportToGaml = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to GAML");

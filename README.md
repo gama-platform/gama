@@ -106,6 +106,23 @@ re-enabling automatic validation.
 Running an experiment still compiles the model. Rechecking **Automatic validation** immediately validates and
 rebuilds documentation, then resumes automatic updates.
 
+## Syntax highlighting configurations
+
+In **Preferences > Theme**, choose **GAMA 2026** (the default) or **GAMA 2025** under
+**Syntax highlighting configurations**. Each syntax category has a color and independent **Bold** and
+**Italic** checkboxes for the light and dark themes; font family and size still follow the editor font.
+Existing custom syntax colors are preserved.
+
+**Load...** stages a configuration for both themes. **Save as...** exports both themes, including unsaved
+edits, to a shareable `.gama-syntax` file named after the chosen filename. The preferences dialog's **Save**
+applies the staged configuration; **Cancel** discards it (but does not undo an explicitly exported file).
+Custom configurations can be restored with **Load...**.
+
+Configuration files are Java properties with `version=1`, a `name`, and one entry per category and theme:
+for example, `light.keyword=8e44ad,true,false` specifies an RGB hex color, bold, and italic.
+Both themes and all categories are required; invalid files are rejected before any settings are changed.
+The bundled presets live in `gama.ui.shared/syntax/` and use the same format as exported configurations.
+
 ## Editable project archives
 
 **Export > Project** saves the entire selected project as `[Project Name].gamp`, without a file-selection
