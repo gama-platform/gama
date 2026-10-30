@@ -283,6 +283,7 @@ public class GamaNavigator extends CommonNavigator
 			@Override
 			public void treeExpanded(final TreeExpansionEvent event) {
 				saveExpandedStateJob.schedule(500);
+				getCommonViewer().revealExpandedChildren(event.getElement());
 			}
 
 			@Override
@@ -515,11 +516,7 @@ public class GamaNavigator extends CommonNavigator
 		}
 		if (element instanceof WrappedContainer || element instanceof TopLevelFolder
 				|| element instanceof UserGroupFolder) {
-			final CommonViewer tree = getCommonViewer();
-			if (tree.getExpandedState(element)) {
-				final Object[] contents = ((VirtualContent<?>) element).getNavigatorChildren();
-				if (contents.length > 0) { tree.reveal(contents[contents.length - 1]); }
-			}
+			getCommonViewer().revealExpandedChildren(element);
 		}
 	}
 

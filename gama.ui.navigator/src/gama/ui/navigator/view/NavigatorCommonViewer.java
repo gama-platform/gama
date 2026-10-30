@@ -20,6 +20,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.internal.navigator.NavigatorDecoratingLabelProvider;
@@ -110,6 +111,40 @@ public class NavigatorCommonViewer extends CommonViewer {
 			}
 		});
 		initDragAndDrop();
+	}
+
+	/**
+	 * Scrolls after SWT has laid out an unfolded branch, keeping its parent visible for large branches.
+	 */
+	public void revealExpandedChildren(final Object element) {
+		getControl().getDisplay().asyncExec(() -> {
+			if (getControl().isDisposed()) return;
+			if (!(findItem(element) instanceof TreeItem item) || !item.getExpanded() || item.getItemCount() == 0)
+				return;
+			TreeItem last = item.getItem(item.getItemCount() - 1);
+			while (last.getExpanded() && last.getItemCount() > 0) {
+				last = last.getItem(last.getItemCount() - 1);
+			}
+			final var area = getTree().getClientArea();
+			// Leave the following branch visible too, if it fits together with the unfolded parent.
+			for (TreeItem current = item; current != null; current = current.getParentItem()) {
+				final TreeItem parent = current.getParentItem();
+				final int index = parent == null ? getTree().indexOf(current) : parent.indexOf(current);
+				final int count = parent == null ? getTree().getItemCount() : parent.getItemCount();
+				if (index + 1 >= count) continue;
+				final TreeItem next = parent == null ? getTree().getItem(index + 1) : parent.getItem(index + 1);
+				final var bounds = next.getBounds();
+				if (bounds.y + bounds.height - item.getBounds().y <= area.height) { last = next; }
+				break;
+			}
+			final int bottom = last.getBounds().y + last.getBounds().height;
+			if (bottom <= area.y + area.height) return;
+			if (bottom - item.getBounds().y > area.height) {
+				getTree().setTopItem(item);
+			} else {
+				getTree().showItem(last);
+			}
+		});
 	}
 
 	@Override
