@@ -76,7 +76,6 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 	/** The Constant TEMPLATES. */
 	static final Map<String, String> TEMPLATES = new HashMap<>() {
 		{
-			put(EXPERIMENT, "/templates/experiment.template.resource");
 			put(TEST_EXP, "/templates/test.experiment.template.resource");
 		}
 	};
@@ -102,9 +101,6 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 
 	/** The Constant HEADLESS. */
 	public static final String HEADLESS = "Headless";
-
-	/** The Constant EXPERIMENT. */
-	public static final String EXPERIMENT = "experiment";
 
 	/** The Constant TEST_EXP. */
 	public static final String TEST_EXP = "test_experiment";

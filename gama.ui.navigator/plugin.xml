@@ -149,21 +149,11 @@
             <command
                   commandId="org.eclipse.ui.newWizard"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-                  label="Model…"
+                  label="GAML file…"
                   style="push">
                <parameter
                      name="newWizardId"
                      value="gama.ui.wizards.NewFileWizard">
-               </parameter>
-            </command>
-            <command
-                  commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-                  label="Experiment…"
-                  style="push">
-               <parameter
-                     name="newWizardId"
-                     value="gama.ui.wizards.NewExperimentWizard">
                </parameter>
             </command>
             <command
@@ -460,21 +450,11 @@
          <command
                commandId="org.eclipse.ui.newWizard"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-               label="Model File…"
+               label="GAML file…"
                style="push">
             <parameter
                   name="newWizardId"
                   value="gama.ui.wizards.NewFileWizard">
-            </parameter>
-         </command>
-         <command
-               commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-               label="Experiment…"
-               style="push">
-            <parameter
-                  name="newWizardId"
-                  value="gama.ui.wizards.NewExperimentWizard">
             </parameter>
          </command>
          <command
@@ -798,15 +778,6 @@
             id="gama.ui.wizards.GAMA"
             name="GAMA">
       </category>
-       <wizard
-             category="gama.ui.wizards.GAMA"
-             class="gama.ui.navigator.wizards.NewExperimentWizard"
-             hasPages="true"
-             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-             id="gama.ui.wizards.NewExperimentWizard"
-             name="Experiment file"
-             project="false">
-      </wizard>
       <wizard
             category="gama.ui.wizards.GAMA"
             class="gama.ui.navigator.wizards.NewProjectWizard"
