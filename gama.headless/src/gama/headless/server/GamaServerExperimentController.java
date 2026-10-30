@@ -217,6 +217,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			case _START:
 				if (executionFinished || hasReachedStopCondition()) return false;
 				paused = false;
+				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.RUNNING);
 				lock.release();
 				return true;
 			case _PAUSE:

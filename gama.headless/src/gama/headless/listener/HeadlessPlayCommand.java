@@ -38,7 +38,7 @@ public class HeadlessPlayCommand implements ISocketCommand {
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		plan.getAgent().setAttribute("%%playCommand%%", map);
-		if (!plan.getController().processStart(false))
+		if (!plan.getController().processStart(true))
 			return new CommandResponse(MessageType.UnableToExecuteRequest, "Controller is full", map, false);
 		boolean hasEndCond = map.containsKey(UNTIL) && !map.get(UNTIL).toString().isBlank();
 		if ((hasEndCond || plan.isBatch()) && sync) return null;
