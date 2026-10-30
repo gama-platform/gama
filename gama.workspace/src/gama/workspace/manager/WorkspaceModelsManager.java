@@ -56,6 +56,8 @@ import com.google.common.base.Strings;
 
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
+import gama.api.constants.GamlFileExtension;
+import gama.api.utils.files.IGamlFileInfo;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.workspace.nature.GamaNatures;
@@ -109,8 +111,9 @@ public class WorkspaceModelsManager {
 	 * @param modelPath
 	 *            the path to the model file, optionally followed by '#experimentName' for direct experiment execution
 	 *
-	 *            Examples: - "/path/to/model.gaml" - opens the model in editor - "/path/to/model.gaml#myExperiment" -
-	 *            runs the specified experiment - "/path/to/model.experiment" - runs experiment "0" by default
+	 *            Examples: - "/path/to/model.gaml" - opens the model in editor, unless it has one experiment, in which
+	 *            case it runs that experiment - "/path/to/model.gaml#myExperiment" - runs the specified experiment -
+	 *            "/path/to/model.experiment" - runs experiment "0" by default
 	 */
 	public void openModelPassedAsArgument(final String modelPath) {
 		String filePath = modelPath;
@@ -131,7 +134,7 @@ public class WorkspaceModelsManager {
 		}
 		final IFile file = findAndLoadIFile(filePath);
 		if (file != null) {
-			final String en = expName;
+			String en = expName;
 			// final Runnable run = () -> {
 			try {
 				// DEBUG.OUT(Thread.currentThread().getName() + ": Rebuilding the model " + fp);
@@ -141,6 +144,13 @@ public class WorkspaceModelsManager {
 			} catch (final CoreException e1) {
 				DEBUG.OUT(Thread.currentThread().getName() + ": File " + file.getFullPath() + " cannot be built");
 				return;
+			}
+			if (en == null && GamlFileExtension.isGaml(filePath)) {
+				final var metadata = GAMA.getMetadataProvider().getMetaData(file, true, true);
+				if (metadata instanceof IGamlFileInfo info && info.getExperiments().size() == 1) {
+					final String onlyExperiment = info.getExperiments().iterator().next();
+					en = onlyExperiment.startsWith("***") ? onlyExperiment.substring(3) : onlyExperiment;
+				}
 			}
 			while (GAMA.getRegularGui() == null) {
 				THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");

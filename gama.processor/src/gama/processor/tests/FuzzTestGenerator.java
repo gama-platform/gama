@@ -241,7 +241,7 @@ public class FuzzTestGenerator {
 	 */
 	public void write(final ProcessorContext context) {
 		for (final Map.Entry<String, Map<String, Set<String>>> group : calls.entrySet()) {
-			try (Writer writer = context.createTestWriter(group.getKey() + " Fuzz Tests.experiment")) {
+			try (Writer writer = context.createTestWriter(group.getKey() + " Fuzz Tests.gaml")) {
 				if (writer != null) { writeExperiment(writer, group.getKey(), group.getValue()); }
 			} catch (final IOException e) {
 				context.emitWarning("An exception occured in the generation of fuzz tests: ", e);

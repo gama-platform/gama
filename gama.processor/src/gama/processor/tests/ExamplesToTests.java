@@ -145,7 +145,7 @@ public class ExamplesToTests implements XMLElements {
 			final String category = categoryElement.getAttribute(ATT_CAT_ID);
 			final String nameFileSpecies = categoryElement.getAttribute("id");
 			final Document tempDocument = context.getBuilder().newDocument();
-			String fileName = nameFileSpecies + ".experiment";
+			String fileName = nameFileSpecies + ".gaml";
 			context.emitWarning(fileName);
 			documents.put(fileName, tempDocument);
 			final org.w3c.dom.Element root = tempDocument.createElement(DOC);

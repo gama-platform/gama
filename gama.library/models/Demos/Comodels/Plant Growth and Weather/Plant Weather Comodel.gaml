@@ -11,8 +11,8 @@
 
 model coModel
 
-import "Experiment_comodel/weather_comodel.experiment" as weather
-import "Experiment_comodel/plant_comodel.experiment" as plantGrow
+import "Experiment_comodel/weather_comodel.gaml" as weather
+import "Experiment_comodel/plant_comodel.gaml" as plantGrow
 
 
 global {

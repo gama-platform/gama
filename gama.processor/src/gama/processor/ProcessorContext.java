@@ -711,13 +711,13 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	 *
 	 * <p>
 	 * Generates a test file name based on the current plugin name, following the convention of "{PluginName}
-	 * Tests.experiment".
+	 * Tests.gaml".
 	 *
 	 * @return the generated test file name
 	 */
 	private String getTestFileName() {
 		final String title = currentPlugin.substring(currentPlugin.lastIndexOf('.') + 1);
-		return Constants.capitalizeFirstLetter(title) + " Tests.experiment";
+		return Constants.capitalizeFirstLetter(title) + " Tests.gaml";
 	}
 
 	/**

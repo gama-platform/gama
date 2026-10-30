@@ -22,7 +22,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticElement;
-import gama.api.constants.GamlFileExtension;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.types.map.GamaMapFactory;
@@ -52,9 +51,6 @@ public class WrappedGamaFile extends WrappedFile {
 		return GamlAutoValidation.isEnabled(getResource()) ? super.getStatusTooltip()
 				: super.getStatusTooltip() + "\nAutomatic validation disabled; diagnostics may be outdated";
 	}
-
-	/** The is experiment. */
-	boolean isExperiment;
 
 	/** The uri problems. */
 	IMap<String, Integer> uriProblems;
@@ -115,19 +111,7 @@ public class WrappedGamaFile extends WrappedFile {
 
 	@Override
 	protected void computeFileImage() {
-		// final IFile f = getResource();
-		if (isExperiment) {
-			image = GamaIcon.named(IGamaIcons.FILE_EXPERIMENT).descriptor();
-		} else {
-			image = GamaIcon.named(IGamaIcons.FILE_MODEL).descriptor();
-		}
-
-	}
-
-	@Override
-	protected void computeFileType() {
-		final IFile f = getResource();
-		isExperiment = GamlFileExtension.isExperiment(f.getName());
+		image = GamaIcon.named(IGamaIcons.FILE_MODEL).descriptor();
 	}
 
 	/**
@@ -174,7 +158,7 @@ public class WrappedGamaFile extends WrappedFile {
 				final String path = getResource().getFullPath().toOSString();
 				final ISyntacticElement element = GAML.getContents(URI.createPlatformResourceURI(path, true));
 				if (element != null) {
-					if (!GamlFileExtension.isExperiment(path)) { l.add(new WrappedModelContent(this, element)); }
+					l.add(new WrappedModelContent(this, element));
 					element.visitExperiments(exp -> {
 						final IExpressionDescription d = exp.getExpressionAt(IKeyword.VIRTUAL);
 						if (d == null || !d.equalsString("true")) { l.add(new WrappedExperimentContent(this, exp)); }

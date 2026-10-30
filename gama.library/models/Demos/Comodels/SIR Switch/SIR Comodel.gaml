@@ -10,8 +10,8 @@
 */
 model Comodel_SIR_Switch
 
-import "Experiment_comodel/SIR_ebm_comodel.experiment" as SIR_EBM
-import "Experiment_comodel/SIR_abm_comodel.experiment" as SIR_ABM
+import "Experiment_comodel/SIR_ebm_comodel.gaml" as SIR_EBM
+import "Experiment_comodel/SIR_abm_comodel.gaml" as SIR_ABM
 
 global
 {

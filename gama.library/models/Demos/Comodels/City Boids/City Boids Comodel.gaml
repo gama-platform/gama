@@ -10,8 +10,8 @@
 */
 model city_boids
 
-import "Experiment_comodel/boids_comodel.experiment" as Boids
-import "Experiment_comodel/city_comodel.experiment" as City
+import "Experiment_comodel/boids_comodel.gaml" as Boids
+import "Experiment_comodel/city_comodel.gaml" as City
  
 
 global

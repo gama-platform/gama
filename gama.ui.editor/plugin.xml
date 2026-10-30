@@ -399,7 +399,7 @@
 	<extension point="org.eclipse.xtext.builder.participant">
 		<participant
 			class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant"
-			fileExtensions="gaml"/>
+			fileExtensions="gaml,experiment"/>
 	</extension>
 	<!-- Quick Outline -->
 	<!-- quickfix marker resolution generator for gaml.compiler.Gaml -->

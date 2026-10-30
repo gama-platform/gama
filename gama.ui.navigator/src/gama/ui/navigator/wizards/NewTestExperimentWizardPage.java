@@ -56,7 +56,7 @@ public class NewTestExperimentWizardPage extends AbstractNewModelWizardPage {
 
 	@Override
 	public String getExtension() {
-		return ".experiment";
+		return ".gaml";
 	}
 
 	@Override

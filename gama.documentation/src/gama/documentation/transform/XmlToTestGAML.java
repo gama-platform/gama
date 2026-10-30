@@ -210,7 +210,7 @@ public class XmlToTestGAML {
 			root.appendChild(rootOperators);
 			docTemp.appendChild(root);
 
-			XMLUtils.transformDocument(docTemp, xsl, targetFolder + File.separator + nameFileSpecies + ".experiment");
+			XMLUtils.transformDocument(docTemp, xsl, targetFolder + File.separator + nameFileSpecies + ".gaml");
 		}
 	}
 

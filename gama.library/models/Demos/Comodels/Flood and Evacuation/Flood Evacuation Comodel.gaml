@@ -11,8 +11,8 @@
 */
 model flood_evacuation_comodeling
 
-import "Experiment_comodel/hydro_comodel.experiment" as Flooding
-import "Experiment_comodel/move_comodel.experiment" as Evacuation
+import "Experiment_comodel/hydro_comodel.gaml" as Flooding
+import "Experiment_comodel/move_comodel.gaml" as Evacuation
  
 
 

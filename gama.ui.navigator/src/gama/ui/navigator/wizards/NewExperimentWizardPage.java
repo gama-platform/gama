@@ -156,7 +156,7 @@ public class NewExperimentWizardPage extends AbstractNewModelWizardPage {
 	public String getExperimentedModelPath() { return modelChooser.getText(); }
 
 	@Override
-	public String getExtension() { return ".experiment"; }
+	public String getExtension() { return ".gaml"; }
 
 	@Override
 	public String gamlType() {

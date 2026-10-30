@@ -8,8 +8,8 @@
 model modelCouplerAntPP
 
 // Import the sub-models as namespaces
-import "pp_comodel.experiment" as PP
-import "ant_comodel.experiment" as ANT
+import "pp_comodel.gaml" as PP
+import "ant_comodel.gaml" as ANT
 
 
 global

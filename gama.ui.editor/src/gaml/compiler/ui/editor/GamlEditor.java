@@ -124,7 +124,6 @@ import gama.api.compilation.IModelsManager;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.constants.GamlFileExtension;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.StringUtils;
 import gama.api.utils.prefs.GamaPreferences;
@@ -696,8 +695,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				// initialised or disposed; skip the update in that case to avoid a NullPointerException
 				// whose exception-handling overhead can cause a visible stutter on Windows.
 				final IFile editorFile = getDocument().getAdapter(IFile.class);
-				boolean showExperiments = editorFile != null
-						&& !GamlFileExtension.isExperiment(editorFile.getName()) && newState.showExperiments;
+				boolean showExperiments = editorFile != null && newState.showExperiments;
 				updateAddExperimentButton(showExperiments);
 				experimentToolbar.update(newState);
 

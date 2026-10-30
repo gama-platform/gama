@@ -11,8 +11,8 @@
 */
 model urbanization_and_traffic_comodeling
 
-import "Experiment_comodel/urban_comodel.experiment" as Urbanization
-import "Experiment_comodel/traffic_comodel.experiment" as Traffic
+import "Experiment_comodel/urban_comodel.gaml" as Urbanization
+import "Experiment_comodel/traffic_comodel.gaml" as Traffic
 
 
 global
