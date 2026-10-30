@@ -220,7 +220,8 @@ any embedded extra plugins. Inspection reads the archive's bounded manifest with
 invalid archives show an explicit error. Cached metadata is invalidated when the file changes.
 
 The OS artwork sources are the existing `Model.icns` and `Experiment.icns` in `gama.product/extraresources`;
-`StandaloneModel.icns` is an exact copy of `Experiment.icns`. The navigator uses a simple flat package outline with a G,
+`StandaloneModel.icns` is an exact copy of `Experiment.icns`. The navigator uses the standard GAML document shape with
+a green Play triangle instead of the G,
 with light/dark variants in `gama.ui.shared/icons_svg/{light,dark}/navigator/files/file.gamx.svg`.
 Regenerate Windows/Linux artwork from PNGs decoded from the original ICNS files (macOS example):
 
