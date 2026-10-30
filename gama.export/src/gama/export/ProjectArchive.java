@@ -9,11 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +49,7 @@ public final class ProjectArchive {
 							.map(p -> p.symbolicName() + " " + p.version()
 									+ (p.artifact().isEmpty() ? " (not included)" : " (included)")).toList()))
 					+ (warnings.isEmpty() ? "" : "\n\n" + String.join("\n", warnings))
-					+ (legacy ? "\nLegacy ZIP: no GAMA dependency manifest or checksums." : "");
+					+ (legacy ? "\nLegacy ZIP: no GAMA dependency manifest." : "");
 		}
 	}
 
@@ -60,8 +57,7 @@ public final class ProjectArchive {
 		@Override public void close() throws IOException { delete(directory); }
 	}
 
-	private record Fingerprint(long size, String hash) {}
-	private record Index(Info info, Map<String, Fingerprint> files, Map<String, String> projects, List<String> directories) {}
+	private record Index(Info info, Map<String, Long> files, Map<String, String> projects, List<String> directories) {}
 
 	private ProjectArchive() {}
 
@@ -84,7 +80,7 @@ public final class ProjectArchive {
 			throw new IOException("The archive cannot be inside its source");
 		final Path temporary = Files.createTempFile(output.getParent(), ".gamp-", ".tmp");
 		try {
-			final var fingerprints = new LinkedHashMap<String, Fingerprint>();
+			final var files = new LinkedHashMap<String, Long>();
 			final var names = new LinkedHashMap<String, String>();
 			long total = 0;
 			try (var zip = new ZipOutputStream(Files.newOutputStream(temporary)); var paths = Files.walk(root)) {
@@ -102,24 +98,17 @@ public final class ProjectArchive {
 					SimulationPackage.checkPortableName(name, names);
 					if (!name.startsWith("workspace/") && !name.startsWith("plugins/"))
 						throw new IOException("Unexpected project payload: " + name);
-					if (fingerprints.size() >= LIMITS.files()) throw new IOException("Too many archive files");
+					if (files.size() >= LIMITS.files()) throw new IOException("Too many archive files");
 					zip.putNextEntry(new ZipEntry(name));
-					final Fingerprint fingerprint;
+					final long size;
 					try (var input = Files.newInputStream(path, LinkOption.NOFOLLOW_LINKS)) {
-						fingerprint = copy(input, zip, Math.min(LIMITS.fileBytes(), LIMITS.totalBytes() - total), canceled);
+						size = copy(input, zip, Math.min(LIMITS.fileBytes(), LIMITS.totalBytes() - total), canceled);
 					}
 					zip.closeEntry();
-					fingerprints.put(name, fingerprint);
-					total += fingerprint.size();
+					files.put(name, size);
+					total += size;
 				}
 				final Properties metadata = properties(info);
-				metadata.setProperty("files.count", Integer.toString(fingerprints.size()));
-				int i = 0;
-				for (final var entry : fingerprints.entrySet()) {
-					metadata.setProperty("file." + i + ".path", entry.getKey());
-					metadata.setProperty("file." + i + ".size", Long.toString(entry.getValue().size()));
-					metadata.setProperty("file." + i++ + ".sha256", entry.getValue().hash());
-				}
 				final var writer = new StringWriter();
 				metadata.store(writer, "GAMA editable project archive");
 				final byte[] bytes = writer.toString().getBytes(StandardCharsets.UTF_8);
@@ -145,15 +134,12 @@ public final class ProjectArchive {
 					checkCanceled(canceled);
 					final Path target = directory.resolve(entry.getKey());
 					Files.createDirectories(target.getParent());
-					final Fingerprint actual;
+					final long actual;
 					try (var input = zip.getInputStream(zip.getEntry(entry.getKey()));
 							var output = Files.newOutputStream(target)) {
-						actual = copy(input, output, Math.min(entry.getValue().size(), LIMITS.totalBytes() - total), canceled);
+						actual = copy(input, output, Math.min(LIMITS.fileBytes(), LIMITS.totalBytes() - total), canceled);
 					}
-					if (actual.size() != entry.getValue().size()
-							|| !entry.getValue().hash().isEmpty() && !actual.equals(entry.getValue()))
-						throw new IOException("Archive checksum or size mismatch: " + entry.getKey());
-					total += actual.size();
+					total += actual;
 				}
 				final var projects = new LinkedHashMap<String, Path>();
 				for (final var entry : index.projects().entrySet())
@@ -173,7 +159,7 @@ public final class ProjectArchive {
 		if (metadata != null && (!"1".equals(metadata.getProperty("format.version"))
 				|| !"project".equals(metadata.getProperty("archive.kind"))))
 			throw new IOException("Unsupported GAMA project archive format");
-		final var files = new LinkedHashMap<String, Fingerprint>();
+		final var files = new LinkedHashMap<String, Long>();
 		final var names = new LinkedHashMap<String, String>();
 		final var seen = new java.util.HashSet<String>();
 		final var projectPaths = new LinkedHashMap<String, String>();
@@ -201,7 +187,7 @@ public final class ProjectArchive {
 					|| entry.getSize() > LIMITS.totalBytes() - total)
 				throw new IOException("Archive exceeds file or size limits: " + name);
 			total += entry.getSize();
-			files.put(name, new Fingerprint(entry.getSize(), ""));
+			files.put(name, entry.getSize());
 			if (name.equals(".project") || name.endsWith("/.project")) {
 				final var description = description(zip.getInputStream(entry));
 				final String project = projectName(description);
@@ -232,21 +218,6 @@ public final class ProjectArchive {
 			if (!"true".equals(linkStatus) && !"false".equals(linkStatus))
 				throw new IOException("Invalid linked-resource status");
 			resolved = Boolean.parseBoolean(linkStatus);
-			final int declared = count(metadata, "files.count");
-			if (declared != files.size()) throw new IOException("Project payload inventory mismatch");
-			final var declaredPaths = new java.util.HashSet<String>();
-			for (int i = 0; i < declared; i++) {
-				final String name = required(metadata, "file." + i + ".path");
-				if (!declaredPaths.add(name)) throw new IOException("Repeated payload: " + name);
-				final Fingerprint actual = files.get(name);
-				final String hash = required(metadata, "file." + i + ".sha256");
-				final long size;
-				try { size = Long.parseLong(required(metadata, "file." + i + ".size")); }
-				catch (final NumberFormatException e) { throw new IOException("Invalid payload size", e); }
-				if (actual == null || actual.size() != size || !hash.matches("[0-9a-f]{64}"))
-					throw new IOException("Invalid payload inventory: " + name);
-				files.put(name, new Fingerprint(size, hash));
-			}
 			final int projects = count(metadata, "projects.count");
 			if (projects != projectPaths.size()) throw new IOException("Project inventory mismatch");
 			final var declaredProjects = new java.util.HashSet<String>();
@@ -394,22 +365,18 @@ public final class ProjectArchive {
 		} catch (final NumberFormatException e) { throw new IOException("Invalid project metadata count: " + key, e); }
 	}
 
-	private static Fingerprint copy(final InputStream input, final java.io.OutputStream output, final long limit,
+	private static long copy(final InputStream input, final java.io.OutputStream output, final long limit,
 			final BooleanSupplier canceled) throws IOException {
-		try {
-			final var digest = MessageDigest.getInstance("SHA-256");
-			long size = 0;
-			final byte[] buffer = new byte[8192];
-			int n;
-			while ((n = input.read(buffer)) != -1) {
-				checkCanceled(canceled);
-				if (n > limit - size) throw new IOException("Project archive exceeds size limits");
-				output.write(buffer, 0, n);
-				digest.update(buffer, 0, n);
-				size += n;
-			}
-			return new Fingerprint(size, HexFormat.of().formatHex(digest.digest()));
-		} catch (final NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
+		long size = 0;
+		final byte[] buffer = new byte[8192];
+		int n;
+		while ((n = input.read(buffer)) != -1) {
+			checkCanceled(canceled);
+			if (n > limit - size) throw new IOException("Project archive exceeds size limits");
+			output.write(buffer, 0, n);
+			size += n;
+		}
+		return size;
 	}
 
 	public static void delete(final Path ownedDirectory) throws IOException {

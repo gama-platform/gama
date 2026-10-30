@@ -66,7 +66,7 @@ editing these sources does not update the current installation's registrations.
 | Open/double-click a workspace model | Navigator uses `IDE.openEditor` and the editor registry. | Edits the existing workspace resource. A workspace `.experiment` opens in the editor; this is different from the argument-opening route below. |
 | Open through OS events or GUI application arguments | Shared dispatch sends `.gamx` to playback, `.gamp`/project ZIPs to import, and model paths to `WorkspaceModelsManager`. | The model route may register a containing project or copy/link one file. `#experimentName` requests execution; `.experiment` without a selector requests experiment `"0"`. |
 | `FileOpen` handler class | Contains a `.gaml` / `.experiment` / All Files picker and calls the same model manager. | All Files also allows the recognized `.model` / `.species` extensions; unrelated extensions are ignored. No registration/reference for this class was found in the inspected UI wiring; do not assume there is a supported File > Open model dialog just because this class exists. |
-| Import > Project / File > Import GAMA project | Shared `.gamp`/legacy ZIP importer: preview, group, collision plan, validated staging, workspace copy. | `.gamp` verifies its manifest and payload checksums. Plugin installation is opt-in. Advanced project-folder import retains copy/register-in-place behavior. |
+| Import > Project / File > Import GAMA project | Shared `.gamp`/legacy ZIP importer: preview, group, collision plan, validated staging, workspace copy. | `.gamp` validates its manifest and payload paths, without hash or exact-size verification. Extraction limits remain enforced. Plugin installation is opt-in. Advanced project-folder import retains copy/register-in-place behavior. |
 | Import > From disk | Thin subclass of Eclipse's filesystem import wizard. | Resource transfer into a project/container, not model dependency discovery. |
 | Import > From archive | Thin subclass of Eclipse's ZIP import wizard. | Extracts selected resources; does not establish a runnable package environment. |
 | Export > Project | Compact whole-project save dialog, default `[Project Name].gamp`. | Optional resolved links and required non-standard plugins; no file tree or experiment requirement. Saves dirty editors with consent first. |
@@ -169,7 +169,7 @@ The version-1 layout is:
 ```text
 Example.gamx                         ZIP container
   manifest.properties                format, identity, runtime, experiments,
-                                     bundles, payload sizes and SHA-256 hashes
+                                     bundles (no per-file inventory)
   workspace/Project/.project
   workspace/Project/models/...
   workspace/Project/...              project resources and relocated data
@@ -297,7 +297,7 @@ Sources: [native launcher][native-launcher], [document classification][documents
 | First | Missing files/build failures can end without a useful user-facing error. | The model-opening route has null/debug-only exits; it does not share the package opener's explicit failure reporting. [Source][model-opening] |
 | Next | Copy/link/cancel/collision policies differ by entry point. | Loose-file opening, project import, root paste, group import and resource drop each own policy. A cancelled container selector can fall back to Unclassified Models rather than cancel. |
 | Partly addressed | Multiple file arguments and type routing differ by entry point. | Product startup now queues mixed documents once; direct development launches retain the legacy fallback, and generic resource transfers deliberately do not open/import documents. |
-| Implemented | Dependency-aware editable-project archives. | `.gamp` exports whole projects, optional links/plugins, manifest/checksums, and uses the same collision/group import workflow as legacy ZIPs. See below for limits. |
+| Implemented | Dependency-aware editable-project archives. | `.gamp` exports whole projects, optional links/plugins and a manifest without a per-file inventory, and uses the same collision/group import workflow as legacy ZIPs. See below for limits. |
 | Next | Export does not always snapshot every dirty participating editor. | Editor-triggered export saves the active editor, but saving all others depends on `EDITOR_SAVE`. Navigator-triggered export has only that optional Save All. Dependency discovery and staging can therefore use disk contents older than visible edits. [Source][simulation-export] |
 | Later | Runtime packaging still has two staging/dependency implementations. | `.gamx` uses `PackageProjectStager` and package dependency closure; application export uses `GamaZipBuilder` and `BundleDependencyAnalyzer`. Shared discovery does not imply identical portability guarantees. |
 | Later | "Save Simulation Data" sounds broader than its implementation. | Modification-time copying of the active project's files is neither a complete result inventory nor resumable simulation state. |
@@ -370,7 +370,7 @@ It exports the whole project. Both options default unchecked:
 Project.gamp                        ZIP container
   gama-project.properties          format.version=1, archive.kind=project,
                                     GAMA version, projects, links, requirements,
-                                    warnings, file sizes and SHA-256 hashes
+                                    warnings (no per-file inventory)
   workspace/Project/.project
   workspace/Project/...            whole project resources, including empty folders
   plugins/extra.plugin_version.jar optional non-standard plugins
@@ -396,7 +396,7 @@ Use **File > Import GAMA project**, navigator **Import**, or open/double-click
 `.gamp`. OS associations are packaged for macOS, Windows and Linux and take effect
 only in rebuilt/installed products, subject to default-application preferences.
 The same import dialog accepts old project ZIPs containing `.project` descriptions;
-they have no dependency manifest or checksums. Generic **Import from archive**
+they have no dependency manifest. Generic **Import from archive**
 still transfers selected files rather than importing a project.
 The archive option in the advanced project-import wizard also forwards `.gamp`
 and ZIP files to this shared importer; directory and other legacy archive routes
@@ -410,7 +410,7 @@ Replacement is limited to workspace-owned user projects: built-in library
 projects and externally registered projects must instead be renamed/copied.
 Originals are retained under `.metadata/gama-project-backups/<id>/`.
 
-Extraction validates bounded, portable paths and, for `.gamp`, payload checksums before any
+Extraction validates bounded, portable paths and enforces extraction byte limits before any
 workspace copy. The importer validates the complete plan first and rolls back
 failed project registration/replacement. Renaming adjusts `.project` references
 and static cross-project model/data literals while preserving comments and source

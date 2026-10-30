@@ -11,12 +11,9 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -57,8 +54,7 @@ public final class SimulationPackage {
 		}
 	}
 
-	private record Fingerprint(long size, String sha256) {}
-	private record Index(SimulationPackageManifest manifest, Map<String, Fingerprint> files) {}
+	private record Index(SimulationPackageManifest manifest, Map<String, Long> files) {}
 
 	private SimulationPackage() {}
 
@@ -81,7 +77,7 @@ public final class SimulationPackage {
 			throw new IOException("The playable model destination cannot be inside its source");
 		final Path staging = Files.createTempFile(output.getParent(), ".gama-package-", ".tmp");
 		try {
-			final var files = new LinkedHashMap<String, Fingerprint>();
+			final var files = new LinkedHashMap<String, Long>();
 			final var names = new LinkedHashMap<String, String>();
 			long total = 0;
 			try (var zip = new ZipOutputStream(Files.newOutputStream(staging)); var paths = Files.walk(root)) {
@@ -97,23 +93,16 @@ public final class SimulationPackage {
 					checkName(name, names);
 					if (files.size() >= DEFAULT_LIMITS.files()) throw new IOException("Too many playable model files");
 					zip.putNextEntry(new ZipEntry(name));
-					final Fingerprint fingerprint;
+					final long size;
 					try (var input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
-						fingerprint = transfer(input, zip, Math.min(DEFAULT_LIMITS.fileBytes(), DEFAULT_LIMITS.totalBytes() - total), canceled);
+						size = transfer(input, zip, Math.min(DEFAULT_LIMITS.fileBytes(), DEFAULT_LIMITS.totalBytes() - total), canceled);
 					}
 					zip.closeEntry();
-					files.put(name, fingerprint);
-					total += fingerprint.size();
+					files.put(name, size);
+					total += size;
 				}
 				validateContents(manifest, files);
 				final var properties = manifest.properties();
-				properties.setProperty("files.count", Integer.toString(files.size()));
-				int i = 0;
-				for (final var entry : files.entrySet()) {
-					properties.setProperty("file." + i + ".path", entry.getKey());
-					properties.setProperty("file." + i + ".size", Long.toString(entry.getValue().size()));
-					properties.setProperty("file." + i++ + ".sha256", entry.getValue().sha256());
-				}
 				final var writer = new StringWriter();
 				properties.store(writer, "GAMA playable model");
 				final byte[] metadata = writer.toString().getBytes(StandardCharsets.UTF_8);
@@ -129,7 +118,7 @@ public final class SimulationPackage {
 		}
 	}
 
-	/** Inspects structure and declared sizes, without extracting content or loading any GAMA classes. */
+	/** Inspects structure and ZIP size limits, without extracting content or loading any GAMA classes. */
 	public static SimulationPackageManifest inspect(final Path archive) throws IOException {
 		try (var zip = new ZipFile(archive.toFile())) {
 			return index(zip, DEFAULT_LIMITS).manifest();
@@ -138,7 +127,7 @@ public final class SimulationPackage {
 
 	/**
 	 * Creates a fresh, private content directory under an application-owned session directory. Every payload file is
-	 * checked against its declared size and SHA-256; no files from an existing session are reused.
+	 * subject to extraction limits; no files from an existing session are reused.
 	 */
 	public static Extracted extract(final Path archive, final Path sessions, final String runtimeVersion,
 			final Limits limits) throws IOException {
@@ -157,15 +146,13 @@ public final class SimulationPackage {
 				for (final var entry : index.files().entrySet()) {
 					final Path target = content.resolve(entry.getKey());
 					Files.createDirectories(target.getParent());
-					final Fingerprint actual;
+					final long actual;
 					try (var input = zip.getInputStream(zip.getEntry(entry.getKey()));
 							var output = Files.newOutputStream(target, StandardOpenOption.CREATE_NEW,
 									StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)) {
-						actual = transfer(input, output, Math.min(entry.getValue().size(), limits.totalBytes() - total));
+						actual = transfer(input, output, Math.min(limits.fileBytes(), limits.totalBytes() - total));
 					}
-					if (!entry.getValue().equals(actual))
-						throw new IOException("Playable model checksum or size mismatch: " + entry.getKey());
-					total += actual.size();
+					total += actual;
 				}
 				try (var input = zip.getInputStream(zip.getEntry(SimulationPackageManifest.FILE))) {
 					Files.copy(input, content.resolve(SimulationPackageManifest.FILE));
@@ -199,44 +186,40 @@ public final class SimulationPackage {
 			throw new IOException("Invalid GAMA playable model properties", e);
 		}
 		final var manifest = SimulationPackageManifest.read(properties);
-		final var files = new LinkedHashMap<String, Fingerprint>();
+		final var files = new LinkedHashMap<String, Long>();
 		final var names = new LinkedHashMap<String, String>();
-		try {
-			final int count = Integer.parseInt(SimulationPackageManifest.required(properties, "files.count"));
-			if (count < 1 || count > limits.files()) throw new IOException("Invalid playable model file count");
-			long total = 0;
-			for (int i = 0; i < count; i++) {
-				final String name = SimulationPackageManifest.required(properties, "file." + i + ".path");
-				checkName(name, names);
-				final long size = Long.parseLong(SimulationPackageManifest.required(properties, "file." + i + ".size"));
-				final String hash = SimulationPackageManifest.required(properties, "file." + i + ".sha256");
-				if (size < 0 || size > limits.fileBytes() || size > limits.totalBytes() - total
-						|| !hash.matches("[0-9a-f]{64}")) throw new IOException("Invalid package fingerprint: " + name);
-				files.put(name, new Fingerprint(size, hash));
-				total += size;
-			}
-		} catch (final IllegalArgumentException e) {
-			throw new IOException("Invalid playable model file inventory", e);
-		}
 		final var entries = zip.entries();
 		final var seen = new HashSet<String>();
 		int count = 0;
+		long total = 0;
 		while (entries.hasMoreElements()) {
 			final var entry = entries.nextElement();
-			final String name = entry.getName();
-			if (++count > limits.files() + 1L || !seen.add(name))
+			final String name = entry.isDirectory()
+					? entry.getName().substring(0, entry.getName().length() - 1) : entry.getName();
+			if (++count > limits.files() * 2L + 1 || !seen.add(name))
 				throw new IOException("Too many or duplicate ZIP entries: " + name);
+			if (entry.isDirectory()) {
+				try {
+					validatePath(name);
+				} catch (final IllegalArgumentException e) {
+					throw new IOException("Invalid ZIP directory: " + name, e);
+				}
+				continue;
+			}
 			if (SimulationPackageManifest.FILE.equals(name)) continue;
-			final var expected = files.get(name);
-			if (entry.isDirectory() || expected == null || entry.getSize() != expected.size())
-				throw new IOException("Undeclared or inconsistent ZIP entry: " + name);
+			checkName(name, names);
+			final long size = entry.getSize();
+			if (files.size() >= limits.files() || size < 0 || size > limits.fileBytes()
+					|| size > limits.totalBytes() - total)
+				throw new IOException("Playable model exceeds size limits: " + name);
+			files.put(name, size);
+			total += size;
 		}
-		if (seen.size() != files.size() + 1) throw new IOException("Playable model payload is incomplete");
 		validateContents(manifest, files);
 		return new Index(manifest, files);
 	}
 
-	private static void validateContents(final SimulationPackageManifest manifest, final Map<String, Fingerprint> files)
+	private static void validateContents(final SimulationPackageManifest manifest, final Map<String, Long> files)
 			throws IOException {
 		if (!files.containsKey(LauncherConfiguration.FILE)) throw new IOException("Missing launcher configuration");
 		for (final var experiment : manifest.experiments()) {
@@ -292,19 +275,13 @@ public final class SimulationPackage {
 		}
 	}
 
-	private static Fingerprint transfer(final InputStream input, final OutputStream output, final long limit)
+	private static long transfer(final InputStream input, final OutputStream output, final long limit)
 			throws IOException {
 		return transfer(input, output, limit, () -> false);
 	}
 
-	private static Fingerprint transfer(final InputStream input, final OutputStream output, final long limit,
+	private static long transfer(final InputStream input, final OutputStream output, final long limit,
 			final java.util.function.BooleanSupplier canceled) throws IOException {
-		final MessageDigest digest;
-		try {
-			digest = MessageDigest.getInstance("SHA-256");
-		} catch (final NoSuchAlgorithmException e) {
-			throw new IllegalStateException("SHA-256 is required by the Java runtime", e);
-		}
 		long size = 0;
 		final byte[] buffer = new byte[8192];
 		int read;
@@ -312,10 +289,9 @@ public final class SimulationPackage {
 			checkCanceled(canceled);
 			if (read > limit - size) throw new IOException("Playable model content exceeds its size limit");
 			output.write(buffer, 0, read);
-			digest.update(buffer, 0, read);
 			size += read;
 		}
-		return new Fingerprint(size, HexFormat.of().formatHex(digest.digest()));
+		return size;
 	}
 
 	private static void checkCanceled(final java.util.function.BooleanSupplier canceled) throws IOException {

@@ -117,7 +117,7 @@ With linked-resource export unchecked, only the link definitions are
 preserved: importing elsewhere may require repairing those external locations.
 
 A `.gamp` is a ZIP container with a versioned `gama-project.properties` manifest, complete project resources
-under `workspace/<project>/`, SHA-256 payload checksums, and optional non-standard plugin JARs under `plugins/`.
+under `workspace/<project>/` and optional non-standard plugin JARs under `plugins/`.
 No experiment is required. Non-compiling projects can be archived, but incomplete plugin discovery is reported
 and prevents plugin embedding. Referenced projects and dynamic external data are not automatically collected.
 
@@ -133,7 +133,7 @@ Included missing plugins are installed only with explicit consent into the insta
 followed by a restart prompt. Plugin permissions/conflicts are checked before projects are changed; installed
 incompatible bundles are not overwritten. Read-only installations require normal plugin provisioning instead.
 Declining installation still imports the editable projects, which may not compile until dependencies are
-available. Install plugins only from trusted sources: checksums are not signatures or a sandbox.
+available. Install plugins only from trusted sources: archives are neither signed nor sandboxed.
 
 The product registers `.gamp` as an import document on macOS, Windows and Linux; these associations and its
 package icons take effect with the rebuilt/installed product, subject to the OS's default-application settings.
@@ -168,7 +168,11 @@ Use `LauncherConfiguration.serialize()` to produce the launcher settings; packag
 reserved `@` and `#` separators in this initial format.
 
 The UTF-8 `manifest.properties` declares format version 1, package identity/version, a minimum GAMA runtime version,
-experiments, exact bundle requirements, and a generated SHA-256/size inventory of every payload file.
+experiments and exact bundle requirements. Ordinary project files can be added, changed or removed without
+updating the manifest. Required experiment models, project descriptions, launcher configuration and declared
+plugins must still exist. Plugin and project declarations must be updated when changing those structures.
+Neither `.gamx` nor `.gamp` generates or verifies a per-file inventory; inventory fields in older archives
+are ignored. File-count, path-safety and extraction byte limits remain enforced.
 An empty bundle artifact denotes a dependency supplied by the host at the recorded version or newer. Embedded
 plugin payloads still require an exact identity/version match. Eclipse `.metadata` and source symbolic links
 are excluded by rejecting such files, rather than copying author-specific workspace state.

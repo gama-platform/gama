@@ -138,19 +138,6 @@ public final class SimulationPackageTest {
 			final Path bad = root.resolve("bad.gamx");
 			rewrite(archive, bad, UnaryOperator.identity(), bytes -> changeProperty(bytes, "format.version", "99"), UnaryOperator.identity());
 			rejects(() -> SimulationPackage.inspect(bad), "Reject future formats");
-			rewrite(archive, bad, UnaryOperator.identity(), bytes -> changeProperty(bytes, "file.0.path", "workspace/../escape"),
-					UnaryOperator.identity());
-			rejects(() -> SimulationPackage.inspect(bad), "Reject traversal in the manifest inventory");
-			rewrite(archive, bad, UnaryOperator.identity(), bytes -> {
-				byte[] changed = changeProperty(bytes, "file.0.path", "workspace/Example/first");
-				return changeProperty(changed, "file.1.path", "workspace/example/second");
-			}, UnaryOperator.identity());
-			rejects(() -> SimulationPackage.inspect(bad), "Reject differently cased ancestor directories on every OS");
-			rewrite(archive, bad, UnaryOperator.identity(), bytes -> {
-				byte[] changed = changeProperty(bytes, "file.0.path", "workspace/Example/caf\u00e9");
-				return changeProperty(changed, "file.1.path", "workspace/Example/cafe\u0301");
-			}, UnaryOperator.identity());
-			rejects(() -> SimulationPackage.inspect(bad), "Reject Unicode normalization collisions");
 			rewrite(archive, bad, name -> name.equals("plugins/extension.jar") ? "plugins/undeclared.jar" : name,
 					UnaryOperator.identity(), UnaryOperator.identity());
 			rejects(() -> SimulationPackage.inspect(bad), "Reject undeclared ZIP payload");
@@ -160,19 +147,8 @@ public final class SimulationPackageTest {
 			check(!Files.exists(root.resolve("escaped.jar")), "No path escapes");
 			rewrite(archive, bad, name -> name.equals("plugins/extension.jar") ? null : name, UnaryOperator.identity(), UnaryOperator.identity());
 			rejects(() -> SimulationPackage.inspect(bad), "Reject missing payload");
-			rewrite(archive, bad, UnaryOperator.identity(), bytes -> changeProperty(bytes, "files.count", "999999999"),
-					UnaryOperator.identity());
-			rejects(() -> SimulationPackage.inspect(bad), "Reject excessive declared file counts");
-			rewrite(archive, bad, UnaryOperator.identity(), bytes -> changeProperty(bytes, "file.0.size", "-1"), UnaryOperator.identity());
-			rejects(() -> SimulationPackage.inspect(bad), "Reject negative sizes");
 			rewrite(archive, bad, UnaryOperator.identity(), bytes -> new byte[1024 * 1024 + 1], UnaryOperator.identity());
 			rejects(() -> SimulationPackage.inspect(bad), "Enforce actual decompressed manifest size");
-			rewrite(archive, bad, UnaryOperator.identity(), UnaryOperator.identity(), bytes -> {
-				final byte[] changed = bytes.clone();
-				if (changed.length > 0) changed[0] ^= 1;
-				return changed;
-			});
-			rejects(() -> SimulationPackage.extract(bad, sessions, "test-runtime"), "Reject same-length checksum corruption");
 			check(children(sessions) == sessionsBefore, "Failed extraction must remove its own temporary directory");
 			rejects(() -> SimulationPackage.extract(archive, sessions, "test-runtime", new SimulationPackage.Limits(4, 1000, 10000)),
 					"Enforce file-count threshold");
