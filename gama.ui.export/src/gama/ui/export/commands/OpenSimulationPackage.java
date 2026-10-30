@@ -27,7 +27,7 @@ public final class OpenSimulationPackage extends AbstractHandler {
 		String selected = event.getParameter(PATH_PARAMETER);
 		if (selected == null) {
 			final var dialog = new FileDialog(shell, SWT.OPEN);
-			dialog.setText("Open playable model");
+			dialog.setText("Play exported model");
 			dialog.setFilterExtensions(new String[] { "*.gamx" });
 			selected = dialog.open();
 			if (selected == null) return null;
@@ -51,19 +51,19 @@ public final class OpenSimulationPackage extends AbstractHandler {
 			notifyFailure(display, e.getMessage());
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
-			DEBUG.ERR("Exported model startup monitoring was interrupted", e);
+			DEBUG.ERR("Playable model startup monitoring was interrupted", e);
 		}
 	}
 
 	private static void notifyFailure(final Display display, final String message) {
 		DEBUG.ERR(message);
 		if (!display.isDisposed()) display.asyncExec(() -> {
-			if (!display.isDisposed()) MessageDialog.openError(display.getActiveShell(), "Exported model startup", message);
+			if (!display.isDisposed()) MessageDialog.openError(display.getActiveShell(), "Playable model startup", message);
 		});
 	}
 
 	private static void reportFailure(final Throwable error) {
-		DEBUG.ERR("Unable to open the exported model", error);
-		MessageDialog.openError(Display.getDefault().getActiveShell(), "Unable to open exported model", error.getMessage());
+		DEBUG.ERR("Unable to open the playable model", error);
+		MessageDialog.openError(Display.getDefault().getActiveShell(), "Unable to open playable model", error.getMessage());
 	}
 }

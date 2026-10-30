@@ -27,7 +27,7 @@ import org.osgi.framework.wiring.BundleWiring;
 
 import gama.api.runtime.SystemInfo;
 
-/** Bridges Eclipse resource discovery to the runtime-independent simulation package format. */
+/** Bridges Eclipse resource discovery to the runtime-independent playable model format. */
 public final class SimulationPackageExporter {
 
 	public record Dependency(String id, String version, Path file, boolean embeddable, boolean standard, String reason) {
@@ -66,7 +66,7 @@ public final class SimulationPackageExporter {
 			}
 		}
 		return new Dependency(bundle.getSymbolicName(), bundle.getVersion().toString(), file,
-				reason.isEmpty(), false, reason.isEmpty() ? "Required non-standard plugin; automatically included in the package" : reason);
+				reason.isEmpty(), false, reason.isEmpty() ? "Required non-standard plugin; automatically included in the playable model" : reason);
 	}
 
 	public static void export(final ExportModels models, final List<ExportModels.Experiment> experiments,
@@ -84,24 +84,24 @@ public final class SimulationPackageExporter {
 			final var data = new LinkedHashMap<String, Set<Path>>();
 			final Path output = destination.toAbsolutePath().normalize();
 			if (output.getParent() == null || !output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
-				throw new IOException("Choose a package destination file with the .gamx extension");
+				throw new IOException("Choose a playable model destination file with the .gamx extension");
 			final Path realOutput = canonicalDestination(output);
 			final var installation = Platform.getInstallLocation().getURL();
 			if (installation.getProtocol().equals("file")
 					&& realOutput.startsWith(Path.of(java.net.URI.create(installation.toExternalForm())).toRealPath()))
-				throw new IOException("The package destination must be outside the GAMA installation");
+				throw new IOException("The playable model destination must be outside the GAMA installation");
 			if (!configuration.image().isBlank() && Files.exists(output)
 					&& Files.isSameFile(output, Path.of(configuration.image())))
-				throw new IOException("The package destination cannot replace its presentation image");
+				throw new IOException("The playable model destination cannot replace its presentation image");
 			for (final var project : models.projects()) {
 				checkCanceled(monitor);
 				if (project.getLocation() == null) throw new IOException("The project has no local location: " + project.getName());
 				if (realOutput.startsWith(project.getLocation().toFile().toPath().toRealPath()))
-					throw new IOException("The package destination must be outside the exported projects");
+					throw new IOException("The playable model destination must be outside the exported projects");
 				collect(project, sources, new HashSet<>(), realOutput, monitor);
 				final var files = new LinkedHashSet<Path>();
 				for (final String path : models.dataFiles().getOrDefault(project, Set.of())) {
-					if (path == null || path.isBlank()) throw new IOException("An exported model has an empty data dependency");
+					if (path == null || path.isBlank()) throw new IOException("A playable model has an empty data dependency");
 					Path dataFile = Path.of(path).toAbsolutePath().normalize();
 					final Path projectPath = project.getLocation().toFile().toPath().toAbsolutePath().normalize();
 					if (dataFile.startsWith(projectPath)) {
@@ -111,14 +111,14 @@ public final class SimulationPackageExporter {
 					}
 					if ((Files.isDirectory(dataFile) && realOutput.startsWith(dataFile.toRealPath()))
 							|| (Files.exists(output) && Files.exists(dataFile) && Files.isSameFile(output, dataFile)))
-						throw new IOException("The package destination must not replace or be inside model data");
+						throw new IOException("The playable model destination must not replace or be inside model data");
 					files.add(dataFile);
 				}
 				data.put(project.getName(), files);
 			}
 			for (final var source : sources) {
 				if (Files.exists(output) && Files.isSameFile(output, source.file()))
-					throw new IOException("The package destination would overwrite a project resource: " + source.file());
+					throw new IOException("The playable model destination would overwrite a project resource: " + source.file());
 			}
 			monitor.subTask("Resolving plugin dependencies");
 			final Set<String> standard = StandardDistribution.bundles();
@@ -157,7 +157,7 @@ public final class SimulationPackageExporter {
 					throw new IOException("Standard GAMA plugins must be supplied by the host: " + bundle.getSymbolicName());
 				final Dependency dependency = dependency(bundle, standard);
 				if (!dependency.standard() && !dependency.embeddable())
-					throw new IOException("Cannot package required non-standard plugin " + dependency.id() + ": " + dependency.reason());
+					throw new IOException("Cannot include required non-standard plugin " + dependency.id() + " in the playable model: " + dependency.reason());
 				if (dependency.automatic()) embedded.putIfAbsent(dependency.id(), dependency.file().toRealPath());
 				final String artifact = embedded.containsKey(bundle.getSymbolicName())
 						? "plugins/" + bundle.getSymbolicName() + "_" + bundle.getVersion() + ".jar" : "";
@@ -186,7 +186,7 @@ public final class SimulationPackageExporter {
 				PackageProjectStager.copy(embedded.get(requirement.symbolicName()), staging.resolve(requirement.artifact()),
 						monitor::isCanceled);
 			}
-			monitor.subTask("Writing exported model");
+			monitor.subTask("Writing playable model");
 			SimulationPackage.write(staging, output, manifest, monitor::isCanceled);
 		} catch (final java.io.InterruptedIOException e) {
 			throw new OperationCanceledException(e.getMessage());
@@ -215,7 +215,7 @@ public final class SimulationPackageExporter {
 			if (bundle.getBundleId() == 0 || !visited.add(bundle)) continue;
 			if (!identities.add(bundle.getSymbolicName()))
 				throw new IOException("Export requires multiple versions of " + bundle.getSymbolicName()
-						+ "; this package format currently declares one version per bundle");
+						+ "; this playable model format currently declares one version per bundle");
 			result.add(bundle);
 			if (standard.contains(bundle.getSymbolicName())) continue;
 			final var wiring = bundle.adapt(BundleWiring.class);
@@ -232,7 +232,7 @@ public final class SimulationPackageExporter {
 		if (location != null && (!ancestors.add(location.toRealPath()) || Files.isSymbolicLink(location)))
 			throw new IOException("Project resources contain a linked directory cycle or symbolic link: " + container.getFullPath());
 		if (location != null && output.startsWith(location.toRealPath()))
-			throw new IOException("The package destination must be outside project resource folders: " + container.getFullPath());
+			throw new IOException("The playable model destination must be outside project resource folders: " + container.getFullPath());
 		try {
 			for (final IResource resource : container.members()) {
 				checkCanceled(monitor);

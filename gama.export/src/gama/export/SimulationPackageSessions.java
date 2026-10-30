@@ -95,7 +95,7 @@ public final class SimulationPackageSessions {
 		final Path content = requested.getParent().toRealPath().resolve(requested.getFileName());
 		if (!root.equals(content.getParent()) || Files.isSymbolicLink(content)
 				|| !content.getFileName().toString().startsWith("gama-package-"))
-			throw new IOException("Only a direct, application-owned package session can be removed");
+			throw new IOException("Only a direct, application-owned playable model session can be removed");
 		read(content);
 		try (var lease = acquire(content)) {
 			if (isRunning(read(content))) throw new IOException("Close the simulation player before removing its session");

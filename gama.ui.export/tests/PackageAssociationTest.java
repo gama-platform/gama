@@ -18,10 +18,10 @@ public final class PackageAssociationTest {
 		final String windows = Files.readString(installer.resolve("windows/windows_installer_script.iss"));
 		check(windows.contains("Software\\Classes\\.gamx\\OpenWithProgids")
 				&& windows.contains("#define PackageAssocKey \"Gama.SimulationPackage\""),
-				"Windows installer must register a package-specific Open With entry");
+				"Windows installer must register a playable model-specific Open With entry");
 		check(windows.contains("--launcher.openFile \"\"%1\"\"\"")
 				&& windows.contains("ValueName: \".gamx\"; ValueData: \"\"; Flags: uninsdeletevalue"),
-				"Quote package document paths and clean up registration on uninstall");
+				"Quote playable model document paths and clean up registration on uninstall");
 		check(windows.contains("ValueData: \"\"\"{app}\\StandaloneModel.ico\"\",0\""),
 				"Windows playable models use their own document icon");
 		check(!windows.contains("UserChoice"), "Do not overwrite the user's selected default application");
@@ -88,7 +88,7 @@ public final class PackageAssociationTest {
 		check((Boolean) XPathFactory.newInstance().newXPath().evaluate(
 				"/plist/dict/key[text()='UTExportedTypeDeclarations']/following-sibling::*[1]/dict"
 						+ "/key[text()='UTTypeIdentifier']/following-sibling::string[1][text()='org.gama.simulation-package']",
-				plist, XPathConstants.BOOLEAN), "Declare the package UTI at the top level, not inside another document type");
-		System.out.println("macOS/Windows/Linux package association packaging checks passed");
+				plist, XPathConstants.BOOLEAN), "Declare the playable model UTI at the top level, not inside another document type");
+		System.out.println("macOS/Windows/Linux playable model association packaging checks passed");
 	}
 }

@@ -63,8 +63,8 @@ public final class DocumentApplication implements IApplication {
 						waitForPlayer(owner, launch);
 					} catch (final IOException | RuntimeException e) {
 						Platform.getLog(DocumentApplication.class).log(new Status(org.eclipse.core.runtime.IStatus.ERROR,
-								"gama.export", "Unable to open exported model " + pending.get(i), e));
-						MessageDialog.openError(owner, "Unable to open exported model", e.getMessage());
+								"gama.export", "Unable to open playable model " + pending.get(i), e));
+						MessageDialog.openError(owner, "Unable to open playable model", e.getMessage());
 					}
 					pending.addAll(documents);
 					documents.clear();

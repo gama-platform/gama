@@ -35,7 +35,7 @@ public final class SimulationPackage {
 	public record Limits(int files, long fileBytes, long totalBytes) {
 		public Limits {
 			if (files < 1 || fileBytes < 1 || totalBytes < 1)
-				throw new IllegalArgumentException("Package limits must be positive");
+				throw new IllegalArgumentException("Playable model limits must be positive");
 		}
 	}
 
@@ -48,10 +48,10 @@ public final class SimulationPackage {
 			final Properties properties = new Properties();
 			try (var input = Files.newInputStream(file)) {
 				final byte[] bytes = input.readNBytes(MAX_MANIFEST_BYTES + 1);
-				if (bytes.length > MAX_MANIFEST_BYTES) throw new IOException("Package manifest is too large");
+				if (bytes.length > MAX_MANIFEST_BYTES) throw new IOException("Playable model manifest is too large");
 				properties.load(new StringReader(new String(bytes, StandardCharsets.UTF_8)));
 			} catch (final IllegalArgumentException e) {
-				throw new IOException("Invalid extracted package manifest", e);
+				throw new IOException("Invalid extracted playable model manifest", e);
 			}
 			return new Extracted(SimulationPackageManifest.read(properties), root);
 		}
@@ -75,10 +75,10 @@ public final class SimulationPackage {
 			final java.util.function.BooleanSupplier canceled) throws IOException {
 		final Path root = source.toRealPath();
 		final Path output = destination.toAbsolutePath().normalize();
-		if (output.getParent() == null) throw new IOException("A package destination directory is required");
+		if (output.getParent() == null) throw new IOException("A playable model destination directory is required");
 		Files.createDirectories(output.getParent());
 		if (output.getParent().toRealPath().resolve(output.getFileName()).startsWith(root))
-			throw new IOException("The package destination cannot be inside its source");
+			throw new IOException("The playable model destination cannot be inside its source");
 		final Path staging = Files.createTempFile(output.getParent(), ".gama-package-", ".tmp");
 		try {
 			final var files = new LinkedHashMap<String, Fingerprint>();
@@ -89,13 +89,13 @@ public final class SimulationPackage {
 				while (iterator.hasNext()) {
 					checkCanceled(canceled);
 					final Path file = iterator.next();
-					if (Files.isSymbolicLink(file)) throw new IOException("Package sources cannot contain links: " + file);
+					if (Files.isSymbolicLink(file)) throw new IOException("Playable model sources cannot contain links: " + file);
 					if (Files.isDirectory(file, LinkOption.NOFOLLOW_LINKS)) continue;
 					if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS))
-						throw new IOException("Not a regular package file: " + file);
+						throw new IOException("Not a regular playable model file: " + file);
 					final String name = root.relativize(file).toString().replace(file.getFileSystem().getSeparator(), "/");
 					checkName(name, names);
-					if (files.size() >= DEFAULT_LIMITS.files()) throw new IOException("Too many package files");
+					if (files.size() >= DEFAULT_LIMITS.files()) throw new IOException("Too many playable model files");
 					zip.putNextEntry(new ZipEntry(name));
 					final Fingerprint fingerprint;
 					try (var input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
@@ -115,9 +115,9 @@ public final class SimulationPackage {
 					properties.setProperty("file." + i++ + ".sha256", entry.getValue().sha256());
 				}
 				final var writer = new StringWriter();
-				properties.store(writer, "GAMA simulation package");
+				properties.store(writer, "GAMA playable model");
 				final byte[] metadata = writer.toString().getBytes(StandardCharsets.UTF_8);
-				if (metadata.length > MAX_MANIFEST_BYTES) throw new IOException("Package manifest is too large");
+				if (metadata.length > MAX_MANIFEST_BYTES) throw new IOException("Playable model manifest is too large");
 				zip.putNextEntry(new ZipEntry(SimulationPackageManifest.FILE));
 				zip.write(metadata);
 				zip.closeEntry();
@@ -159,7 +159,7 @@ public final class SimulationPackage {
 						actual = transfer(input, output, Math.min(entry.getValue().size(), limits.totalBytes() - total));
 					}
 					if (!entry.getValue().equals(actual))
-						throw new IOException("Package checksum or size mismatch: " + entry.getKey());
+						throw new IOException("Playable model checksum or size mismatch: " + entry.getKey());
 					total += actual.size();
 				}
 				try (var input = zip.getInputStream(zip.getEntry(SimulationPackageManifest.FILE))) {
@@ -184,21 +184,21 @@ public final class SimulationPackage {
 
 	private static Index index(final ZipFile zip, final Limits limits) throws IOException {
 		final var metadata = zip.getEntry(SimulationPackageManifest.FILE);
-		if (metadata == null || metadata.isDirectory()) throw new IOException("Missing GAMA package manifest");
+		if (metadata == null || metadata.isDirectory()) throw new IOException("Missing GAMA playable model manifest");
 		final Properties properties = new Properties();
 		try (var input = zip.getInputStream(metadata)) {
 			final byte[] bytes = input.readNBytes(MAX_MANIFEST_BYTES + 1);
-			if (bytes.length > MAX_MANIFEST_BYTES) throw new IOException("Package manifest is too large");
+			if (bytes.length > MAX_MANIFEST_BYTES) throw new IOException("Playable model manifest is too large");
 			properties.load(new StringReader(new String(bytes, StandardCharsets.UTF_8)));
 		} catch (final IllegalArgumentException e) {
-			throw new IOException("Invalid GAMA package properties", e);
+			throw new IOException("Invalid GAMA playable model properties", e);
 		}
 		final var manifest = SimulationPackageManifest.read(properties);
 		final var files = new LinkedHashMap<String, Fingerprint>();
 		final var names = new LinkedHashMap<String, String>();
 		try {
 			final int count = Integer.parseInt(SimulationPackageManifest.required(properties, "files.count"));
-			if (count < 1 || count > limits.files()) throw new IOException("Invalid package file count");
+			if (count < 1 || count > limits.files()) throw new IOException("Invalid playable model file count");
 			long total = 0;
 			for (int i = 0; i < count; i++) {
 				final String name = SimulationPackageManifest.required(properties, "file." + i + ".path");
@@ -211,7 +211,7 @@ public final class SimulationPackage {
 				total += size;
 			}
 		} catch (final IllegalArgumentException e) {
-			throw new IOException("Invalid package file inventory", e);
+			throw new IOException("Invalid playable model file inventory", e);
 		}
 		final var entries = zip.entries();
 		final var seen = new HashSet<String>();
@@ -226,7 +226,7 @@ public final class SimulationPackage {
 			if (entry.isDirectory() || expected == null || entry.getSize() != expected.size())
 				throw new IOException("Undeclared or inconsistent ZIP entry: " + name);
 		}
-		if (seen.size() != files.size() + 1) throw new IOException("Package payload is incomplete");
+		if (seen.size() != files.size() + 1) throw new IOException("Playable model payload is incomplete");
 		validateContents(manifest, files);
 		return new Index(manifest, files);
 	}
@@ -259,7 +259,7 @@ public final class SimulationPackage {
 		}
 		if (!name.startsWith("workspace/") && !name.startsWith("plugins/")
 				&& !LauncherConfiguration.FILE.equals(name) && !LauncherConfiguration.IMAGE.equals(name))
-			throw new IOException("Unsupported package content: " + name);
+			throw new IOException("Unsupported playable model content: " + name);
 		int end = 0;
 		do {
 			end = name.indexOf('/', end + 1);
@@ -267,19 +267,19 @@ public final class SimulationPackage {
 			final String canonical = Normalizer.normalize(prefix, Normalizer.Form.NFC).toLowerCase(Locale.ROOT);
 			final String previous = names.putIfAbsent(canonical, prefix);
 			if (previous != null && (!previous.equals(prefix) || end < 0))
-				throw new IOException("Conflicting package paths: " + name);
+				throw new IOException("Conflicting playable model paths: " + name);
 		} while (end >= 0);
 	}
 
 	static void validatePath(final String name) {
 		if (name == null || name.isEmpty() || name.startsWith("/") || name.contains("\\"))
-			throw new IllegalArgumentException("Invalid package path: " + name);
+			throw new IllegalArgumentException("Invalid playable model path: " + name);
 		for (final String component : name.split("/", -1)) {
 			if (component.isEmpty() || component.equals(".") || component.equals("..") || component.equalsIgnoreCase(".metadata")
 					|| component.endsWith(".") || component.endsWith(" ")
 					|| component.chars().anyMatch(c -> c < 32 || "<>:\"|?*".indexOf(c) >= 0)
 					|| component.matches("(?i)(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?"))
-				throw new IllegalArgumentException("Non-portable package path: " + name);
+				throw new IllegalArgumentException("Non-portable playable model path: " + name);
 		}
 	}
 
@@ -301,7 +301,7 @@ public final class SimulationPackage {
 		int read;
 		while ((read = input.read(buffer)) != -1) {
 			checkCanceled(canceled);
-			if (read > limit - size) throw new IOException("Package content exceeds its size limit");
+			if (read > limit - size) throw new IOException("Playable model content exceeds its size limit");
 			output.write(buffer, 0, read);
 			digest.update(buffer, 0, read);
 			size += read;

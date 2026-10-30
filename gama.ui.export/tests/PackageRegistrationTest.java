@@ -32,21 +32,22 @@ public final class PackageRegistrationTest {
 				"OS document routing and the file dialog share a parameterized command");
 		check((Boolean) xpath.evaluate("//handler[@commandId='gama.ui.export.openPackage'"
 				+ " and @class='gama.ui.export.commands.OpenSimulationPackage']", ui, XPathConstants.BOOLEAN),
-				"Register the package-open handler");
+				"Register the playable model-open handler");
 		check((Boolean) xpath.evaluate("//menuContribution[@locationURI='menu:file?after=additions']"
-				+ "/command[@commandId='gama.ui.export.openPackage' and @label='Open playable model...']",
-				ui, XPathConstants.BOOLEAN), "Make package opening available from the File menu");
+				+ "/command[@commandId='gama.ui.export.openPackage' and @label='Play exported model...'"
+				+ " and @icon='platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.play.svg']",
+				ui, XPathConstants.BOOLEAN), "Make playable model opening available from the File menu");
 		for (final String command : java.util.List.of("gama.ui.export.model", "gama.ui.export.selectedModel",
 				"gama.ui.navigator.commands.exportProjectAsSimulation")) {
 			check((Boolean) xpath.evaluate("//command[@id='" + command + "']", ui, XPathConstants.BOOLEAN),
 					"Keep existing export commands");
 			check((Boolean) xpath.evaluate("//handler[@commandId='" + command
 					+ "' and @class='gama.ui.export.commands.ExportSimulation']", ui, XPathConstants.BOOLEAN),
-					"Reuse common model discovery for package export");
+					"Reuse common model discovery for playable model export");
 		}
 		check(!(Boolean) xpath.evaluate("//command[@id='gama.ui.export.package' or @id='gama.ui.export.selectedPackage'"
 				+ " or @commandId='gama.ui.export.package' or @commandId='gama.ui.export.selectedPackage']",
-				ui, XPathConstants.BOOLEAN), "Do not add duplicate package export commands or menu items");
+				ui, XPathConstants.BOOLEAN), "Do not add duplicate playable model export commands or menu items");
 		final var bootstrap = parser.parse(root.resolve("gama.export/plugin.xml").toFile());
 		check((Boolean) xpath.evaluate("//content-type[@id='gama.exported.model.type' and @file-extensions='gamx,GAMX']",
 				bootstrap, XPathConstants.BOOLEAN), "Recognize .gamx as a distinct content type");
@@ -70,6 +71,6 @@ public final class PackageRegistrationTest {
 		final String applicationDependencies = Files.readString(root.resolve("gama.ui.application/META-INF/MANIFEST.MF"));
 		check(!applicationDependencies.contains("gama.export") && !applicationDependencies.contains("gama.ui.export"),
 				"Document routing must not introduce a circular bundle dependency");
-		System.out.println("Package command and bootstrap registration checks passed");
+		System.out.println("Playable model command and bootstrap registration checks passed");
 	}
 }

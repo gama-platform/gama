@@ -57,13 +57,13 @@ public final class ExportedModelInfoTest {
 				check(before.equals(paths.sorted().toList()), "Reading metadata must not extract files");
 			}
 			Files.writeString(archive, "Not a ZIP");
-			check(new ExportedModelInfo(file(archive)).getSuffix().startsWith("Invalid exported model:"),
+			check(new ExportedModelInfo(file(archive)).getSuffix().startsWith("Invalid playable model:"),
 					"Corrupt archives must report an explicit failure");
 		} finally {
 			try (var paths = Files.walk(root)) {
 				for (final Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.delete(path);
 			}
 		}
-		System.out.println("Exported model metadata, safe inspection, error and cache checks passed");
+		System.out.println("Playable model metadata, safe inspection, error and cache checks passed");
 	}
 }

@@ -156,7 +156,7 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 				}
 			}
 		} catch (final Exception e) {
-			DEBUG.ERR("Unable to prepare the simulation launcher for shutdown", e);
+			DEBUG.ERR("Unable to prepare the playable model for shutdown", e);
 			GAMA.getGui().getDialogFactory().error("Unable to prepare shutdown: " + e.getMessage());
 			return false;
 		}

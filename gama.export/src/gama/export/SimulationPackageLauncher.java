@@ -68,7 +68,7 @@ public final class SimulationPackageLauncher {
 						throw new IOException("Bundle " + required.symbolicName() + " requires " + required.version() + " or newer"
 								+ "; the host supplies " + existing.stream().map(Bundle::version).toList());
 					if (!required.artifact().isEmpty())
-						throw new IOException("A package cannot replace an installed bundle: " + required.symbolicName());
+						throw new IOException("A playable model cannot replace an installed bundle: " + required.symbolicName());
 				} else {
 					if (required.artifact().isEmpty()) throw new IOException("Missing host bundle: " + required.symbolicName());
 					final Path file = content.resolve(required.artifact());
@@ -104,7 +104,7 @@ public final class SimulationPackageLauncher {
 			if (compatibility != null)
 				properties.setProperty("osgi.framework.extensions", "reference:" + location(compatibility.file()));
 			try (var writer = Files.newBufferedWriter(configuration.resolve("config.ini"))) {
-				properties.store(writer, "Private GAMA simulation package configuration");
+				properties.store(writer, "Private GAMA playable model configuration");
 			}
 			final var command = new ArrayList<>(List.of(executable.toString(),
 					"--launcher.appendVmargs", "--launcher.suppressErrors", "-consoleLog",
@@ -171,7 +171,7 @@ public final class SimulationPackageLauncher {
 				|| required.symbolicName().equals("gama.workspace") || required.symbolicName().equals("gama.dev")
 				|| required.symbolicName().equals("gama.export") || required.symbolicName().equals("gama.ui.application")
 				|| required.symbolicName().equals("gama.ui.export"))
-			throw new IOException("Packages cannot supply platform bundles: " + required.symbolicName());
+			throw new IOException("Playable models cannot supply platform bundles: " + required.symbolicName());
 		try (var jar = new JarFile(file.toFile())) {
 			final var manifest = jar.getManifest();
 			if (manifest == null) throw new IOException("Missing plugin manifest: " + file.getFileName());
@@ -179,17 +179,17 @@ public final class SimulationPackageLauncher {
 			final String id = attributes.getValue("Bundle-SymbolicName");
 			if (id == null || !required.symbolicName().equals(id.split(";", 2)[0].trim())
 					|| !required.version().equals(attributes.getValue("Bundle-Version")))
-				throw new IOException("Plugin identity does not match package metadata: " + file.getFileName());
+				throw new IOException("Plugin identity does not match playable model metadata: " + file.getFileName());
 			if (jar.getJarEntry("plugin.xml") != null && !id.matches(".*;\\s*singleton\\s*:=\\s*\"?true\"?(?:\\s*;.*|\\s*)"))
 				throw new IOException("Plugins contributing Eclipse extensions must be singleton bundles: " + required.symbolicName());
 			if (attributes.getValue("Fragment-Host") != null || attributes.getValue("Bundle-NativeCode") != null)
-				throw new IOException("Package fragments and native plugins are not supported yet: " + required.symbolicName());
+				throw new IOException("Playable model fragments and native plugins are not supported yet: " + required.symbolicName());
 			final var entries = jar.entries();
 			while (entries.hasMoreElements()) {
 				final String name = entries.nextElement().getName().toLowerCase(java.util.Locale.ROOT);
 				if (name.endsWith(".dylib") || name.endsWith(".jnilib") || name.endsWith(".so") || name.endsWith(".dll")
 						|| name.endsWith(".exe") || name.endsWith(".jar"))
-					throw new IOException("Native code and nested JARs are not supported in package plugins: " + required.symbolicName());
+					throw new IOException("Native code and nested JARs are not supported in playable model plugins: " + required.symbolicName());
 			}
 		}
 	}

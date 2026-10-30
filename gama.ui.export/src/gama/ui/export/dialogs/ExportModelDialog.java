@@ -131,7 +131,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 		final List<Dependency> extraDependencies = dependencies.stream().filter(dependency -> !dependency.standard()).toList();
 		if (!extraDependencies.isEmpty()) createDependencySection(container, extraDependencies);
 		final Label explanation = new Label(container, SWT.WRAP);
-		explanation.setText("The exported model includes your models and data and opens with the same or a newer version of GAMA. "
+		explanation.setText("The playable model includes your models and data and opens with the same or a newer version of GAMA. "
 				+ "Include any files referenced through dynamically constructed paths in your project before exporting.");
 		if (dependencyError != null)
 			explanation.setText("Model dependencies could not be resolved: " + dependencyError
@@ -281,7 +281,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 
 	private void createApplicationOptions(final Composite container) {
 		final Label explanation = new Label(container, SWT.WRAP);
-		explanation.setText("Export a complete application instead of an exported model. Application signing and notarization "
+		explanation.setText("Export a complete application instead of a playable model. Application signing and notarization "
 				+ "remain your responsibility when distributing it.");
 		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		data.widthHint = 500;
@@ -388,10 +388,10 @@ public class ExportModelDialog extends TitleAreaDialog {
 				if (dependencyError != null) throw new IllegalArgumentException("Model dependencies could not be resolved: " + dependencyError);
 				for (final Dependency dependency : dependencies) {
 					if (!dependency.standard() && !dependency.embeddable())
-						throw new IllegalArgumentException("Cannot package " + dependency.id() + ": " + dependency.reason());
+						throw new IllegalArgumentException("Cannot include in the playable model " + dependency.id() + ": " + dependency.reason());
 				}
 				if (!output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
-					throw new IllegalArgumentException("Exported model files must use the .gamx extension.");
+					throw new IllegalArgumentException("Playable model files must use the .gamx extension.");
 			}
 			selectedExperiments = Arrays.stream(experiments.getSelectionIndices())
 					.mapToObj(index -> availableExperiments[index]).toList();

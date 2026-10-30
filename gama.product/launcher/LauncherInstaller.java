@@ -82,7 +82,7 @@ public final class LauncherInstaller {
 		properties.setProperty("osgi", install.relativize(osgi).toString().replace('\\', '/'));
 		properties.setProperty("runtime", runtime);
 		try (var writer = Files.newBufferedWriter(install.resolve("configuration/gama-bootstrap.properties"))) {
-			properties.store(writer, "Pre-Equinox simulation package bootstrap");
+			properties.store(writer, "Pre-Equinox playable model bootstrap");
 		}
 		final Path ini = install.resolve("Gama.ini");
 		String text = Files.readString(ini, StandardCharsets.UTF_8);

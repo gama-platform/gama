@@ -106,7 +106,7 @@ re-enabling automatic validation.
 Running an experiment still compiles the model. Rechecking **Automatic validation** immediately validates and
 rebuilds documentation, then resumes automatic updates.
 
-## Exported models
+## Playable models
 
 Playable models use `.gamx` (GAMA executable model) and open in GAMA's player rather than the modeling
 workspace. The `.gamp` extension is reserved for future editable project archives and is not registered as a
@@ -149,8 +149,8 @@ player, without changing installation files or global preferences.
 Authors use the existing **File > Export as playable model...** command from a model editor or the corresponding
 navigator export commands. These open the model export wizard by default; there is no separate package export
 menu item. **Export application instead...** switches the same wizard to the full application exporter (including
-its JDK/executable options), without losing the experiment selection or presentation settings. **Export package
-instead...** switches back. The package dialog reuses the standalone export's experiment
+its JDK/executable options), without losing the experiment selection or presentation settings. **Export playable model
+instead...** switches back. The playable model dialog reuses the application export's experiment
 selection, presentation image, title/description, Home option and default experiment, with a `.gamx` destination.
 Package identity and version are internal metadata generated automatically; users do not need to enter them.
 The default title omits the model's `.gaml` extension. Home and the launch overlay label experiments as
@@ -194,7 +194,7 @@ Player splashes do not draw Eclipse's startup progress bar or "Starting GAMA..."
 normal modeling startup retains its standard splash progress display.
 The usual GAMA splash is not shown first. Home and automatic experiment startup retain the package's existing settings.
 
-When GAMA is already running, **File > Open playable model...**, application arguments and open-document events
+When GAMA is already running, **File > Play exported model...**, application arguments and open-document events
 prepare one additional isolated player; the running modeler is not converted into a player.
 The same archive validation and preparation run without a confirmation dialog. Multiple/mixed startup documents and
 document events received after the early collection window retain the pre-core router as a safe fallback.

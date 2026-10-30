@@ -3,7 +3,7 @@ package gama.ui.export.launcher;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
-/** The idle workbench page of an exported simulation launcher. */
+/** The idle workbench page of an exported playable model. */
 public final class LauncherHomePerspective implements IPerspectiveFactory {
 
 	public static final String ID = "gama.ui.export.perspectives.Home";

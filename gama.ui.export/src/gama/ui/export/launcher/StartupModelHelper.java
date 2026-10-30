@@ -43,7 +43,7 @@ public final class StartupModelHelper {
 
 	public LaunchPresentation.Content getPresentation() {
 		return new LaunchPresentation.Content(
-				configuration.title().isBlank() ? "GAMA simulation launcher" : configuration.title(),
+				configuration.title().isBlank() ? "GAMA playable model" : configuration.title(),
 				configuration.description(), configuration.image().isBlank() ? null : getContentRoot().resolve(configuration.image()),
 				selections.stream().map(selection -> new ExperimentMenu.Entry(selection, label(selection), "gui")).toList());
 	}

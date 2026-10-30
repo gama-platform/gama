@@ -17,7 +17,7 @@ public final class SingleProcessSmokeTest {
 		final Path fixture;
 		try (var children = Files.list(scratch)) { fixture = children.findFirst().orElseThrow(); }
 		final Path overlay = fixture.resolve("installation");
-		final Path archive = fixture.resolve("A simulation package \u00e9.gamx");
+		final Path archive = fixture.resolve("A playable model \u00e9.gamx");
 		Files.move(fixture.resolve("smoke.gamx"), archive);
 		final boolean invalid = Boolean.getBoolean("gama.smoke.invalid");
 		if (invalid) Files.writeString(archive, "Not a ZIP archive");
@@ -111,7 +111,7 @@ public final class SingleProcessSmokeTest {
 				final String output = Files.readString(log);
 				if (!output.contains("Unable to start GAMA") || output.contains("Building metamodel"))
 					throw new AssertionError("Invalid archive did not fail before GAMA initialization; see " + log);
-				System.out.println("Invalid package rejected before framework/GAMA startup without a second process");
+				System.out.println("Invalid playable model rejected before framework/GAMA startup without a second process");
 				return;
 			}
 			if (normal) {
@@ -122,12 +122,12 @@ public final class SingleProcessSmokeTest {
 				if (!Files.exists(scratch.resolve("modeler.ready")))
 					throw new AssertionError("Modeler did not start; see " + log);
 				if (Files.exists(home.resolve(".gama/package-sessions")))
-					throw new AssertionError("Ordinary startup prepared a package");
+					throw new AssertionError("Ordinary startup prepared a playable model");
 				System.out.println("Normal startup retained the modeler in the original native process");
 				if (Boolean.getBoolean("gama.smoke.live")) {
 					final Process open = new ProcessBuilder("open", "-a", app.toString(), archive.toString()).start();
 					if (!open.waitFor(30, TimeUnit.SECONDS) || open.exitValue() != 0)
-						throw new AssertionError("Unable to deliver a package to the running modeler");
+						throw new AssertionError("Unable to deliver a playable model to the running modeler");
 					Path session = null;
 					final Path sessions = home.resolve(".gama/package-sessions");
 					for (int i = 0; i < 120; i++) {
@@ -137,7 +137,7 @@ public final class SingleProcessSmokeTest {
 						if (session != null && Files.exists(session.resolve("player.ready"))) break;
 						Thread.sleep(1000);
 					}
-					if (session == null) throw new AssertionError("Running modeler did not open the package; see " + log);
+					if (session == null) throw new AssertionError("Running modeler did not open the playable model; see " + log);
 					final var metadata = new java.util.Properties();
 					try (var input = Files.newInputStream(session.resolve("player-session.properties"))) { metadata.load(input); }
 					final var player = ProcessHandle.of(Long.parseLong(metadata.getProperty("pid"))).orElseThrow();
@@ -146,8 +146,8 @@ public final class SingleProcessSmokeTest {
 					try {
 						if (!process.isAlive() || !Files.readString(session.resolve("bootstrap.ready")).contains("in-process=false")
 								|| !Files.exists(session.resolve("plugin.ready")) || !Files.exists(session.resolve("splash.ready")))
-							throw new AssertionError("Live modeler/player isolation or package presentation failed");
-						System.out.println("Running modeler remained active; one isolated player opened with its package splash");
+							throw new AssertionError("Live modeler/player isolation or playable model presentation failed");
+						System.out.println("Running modeler remained active; one isolated player opened with its playable model splash");
 					} finally {
 						player.destroy();
 						try { player.onExit().get(15, TimeUnit.SECONDS); }
@@ -182,7 +182,7 @@ public final class SingleProcessSmokeTest {
 				throw new AssertionError("Missing embedded plugin or personalized splash");
 			if (Boolean.getBoolean("gama.smoke.home")) {
 				if (Files.exists(session.resolve("workspace/Example/simulation.ready")))
-					throw new AssertionError("Home-first package auto-ran its experiment");
+					throw new AssertionError("Home-first playable model auto-ran its experiment");
 				for (int i = 0; i < 30 && !Files.exists(session.resolve("home-ui.ready")); i++) Thread.sleep(1000);
 				if (!Files.exists(session.resolve("home-ui.ready")))
 					throw new AssertionError("Actual Home perspective, Home view and hidden editor were not verified");

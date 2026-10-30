@@ -26,7 +26,7 @@ public final class ExportMenuTest {
 		final var document = factory.newDocumentBuilder().parse(root.resolve("gama.ui.export/plugin.xml").toFile());
 		final String label = "Export as playable model...";
 		check(!matches(document, "//*[@commandId='gama.ui.export.sessions' or @id='gama.ui.export.sessions']"),
-				"Do not expose a package history or session management command");
+				"Do not expose a playable model history or session management command");
 		for (String command : new String[] { "gama.ui.export.model", "gama.ui.export.selectedModel" }) {
 			check(matches(document, "//command[@id='" + command + "' and @name='Export as playable model']"),
 					"Both export commands must use the playable model name");
@@ -52,6 +52,13 @@ public final class ExportMenuTest {
 				"Only model files and experiment nodes enable model export");
 		check(matches(document, "//handler[@commandId='gama.ui.navigator.commands.exportProjectAsSimulation']"),
 				"Retain the existing project/folder export");
+		check(matches(document, "//command[@id='gama.ui.navigator.commands.exportProjectAsSimulation'"
+				+ " and @name='Export as playable model']"),
+				"Use playable model terminology for project export");
+		check(matches(document, "//menuContribution[@locationURI='popup:menu.gama.export?after=additions']"
+				+ "/command[@commandId='gama.ui.navigator.commands.exportProjectAsSimulation'"
+				+ " and @label='As playable model...']"),
+				"Use playable model terminology in the navigator export submenu");
 
 		final var shared = factory.newDocumentBuilder().parse(root.resolve("gama.ui.shared/plugin.xml").toFile());
 		for (String command : new String[] { "gama.ui.install.graphical", "gama.ui.install.copilot", "gama.ui.install" }) {

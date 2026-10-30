@@ -52,9 +52,9 @@ public record SimulationPackageManifest(String id, String version, String runtim
 
 	public SimulationPackageManifest {
 		if (id == null || !id.matches("[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*"))
-			throw new IllegalArgumentException("Invalid package identifier: " + id);
+			throw new IllegalArgumentException("Invalid playable model identifier: " + id);
 		if (version == null || version.isBlank() || runtimeVersion == null || runtimeVersion.isBlank())
-			throw new IllegalArgumentException("Package and runtime versions are required");
+			throw new IllegalArgumentException("Playable model and runtime versions are required");
 		experiments = List.copyOf(experiments);
 		bundles = List.copyOf(bundles);
 		if (experiments.isEmpty() || experiments.size() > MAX_ITEMS || bundles.size() > MAX_ITEMS)
@@ -74,7 +74,7 @@ public record SimulationPackageManifest(String id, String version, String runtim
 
 	public void requireRuntime(final String actualVersion) throws IOException {
 		if (!atLeast(actualVersion, runtimeVersion))
-			throw new IOException("This package requires GAMA " + runtimeVersion + " or newer; the host is " + actualVersion);
+			throw new IOException("This playable model requires GAMA " + runtimeVersion + " or newer; the host is " + actualVersion);
 	}
 
 	private static boolean atLeast(final String actual, final String required) {
@@ -119,7 +119,7 @@ public record SimulationPackageManifest(String id, String version, String runtim
 	static SimulationPackageManifest read(final Properties properties) throws IOException {
 		try {
 			if (!Integer.toString(FORMAT_VERSION).equals(required(properties, "format.version")))
-				throw new IOException("Unsupported GAMA package format: " + properties.getProperty("format.version"));
+				throw new IOException("Unsupported GAMA playable model format: " + properties.getProperty("format.version"));
 			final var experiments = new ArrayList<Experiment>();
 			for (int i = 0, count = count(properties, "experiments.count"); i < count; i++) {
 				experiments.add(new Experiment(required(properties, "experiment." + i + ".model"),
@@ -134,19 +134,19 @@ public record SimulationPackageManifest(String id, String version, String runtim
 			return new SimulationPackageManifest(required(properties, "package.id"),
 					required(properties, "package.version"), required(properties, "runtime.version"), experiments, bundles);
 		} catch (final IllegalArgumentException e) {
-			throw new IOException("Invalid GAMA package manifest: " + e.getMessage(), e);
+			throw new IOException("Invalid GAMA playable model manifest: " + e.getMessage(), e);
 		}
 	}
 
 	static String required(final Properties properties, final String key) throws IOException {
 		final String value = properties.getProperty(key);
-		if (value == null) throw new IOException("Missing GAMA package field: " + key);
+		if (value == null) throw new IOException("Missing GAMA playable model field: " + key);
 		return value;
 	}
 
 	private static int count(final Properties properties, final String key) throws IOException {
 		final int count = Integer.parseInt(required(properties, key));
-		if (count < 0 || count > MAX_ITEMS) throw new IOException("Invalid GAMA package count: " + key);
+		if (count < 0 || count > MAX_ITEMS) throw new IOException("Invalid GAMA playable model count: " + key);
 		return count;
 	}
 }

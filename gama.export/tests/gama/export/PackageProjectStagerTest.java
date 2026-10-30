@@ -141,7 +141,7 @@ public final class PackageProjectStagerTest {
 			check(GamlExportPaths.rewrite("'..\\\\nested\\\\file.csv'", original, target,
 					Map.of(root.resolve("nested/file.csv"), Path.of("workspace/Example/data/file.csv")))
 					.equals("'../data/file.csv'"), "Decode escaped Windows separators without confusing them with control escapes");
-			System.out.println("Package project staging, path rewriting, encoding and cancellation checks passed");
+			System.out.println("Playable model project staging, path rewriting, encoding and cancellation checks passed");
 		} finally {
 			try (var paths = Files.walk(root)) {
 				for (final Path path : paths.sorted(Comparator.reverseOrder()).toList()) { Files.delete(path); }

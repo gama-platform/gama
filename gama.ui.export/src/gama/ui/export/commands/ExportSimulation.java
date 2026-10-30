@@ -83,7 +83,7 @@ public final class ExportSimulation extends AbstractHandler {
 			if (dependencyFailure.get() == null) {
 				dialog.setDependencies(dependencies.get());
 			} else {
-				DEBUG.ERR("Unable to resolve exported model dependencies", dependencyFailure.get());
+				DEBUG.ERR("Unable to resolve playable model dependencies", dependencyFailure.get());
 				dialog.setDependencyError(dependencyFailure.get().getMessage());
 			}
 			if (dialog.open() != IDialogConstants.OK_ID) return null;

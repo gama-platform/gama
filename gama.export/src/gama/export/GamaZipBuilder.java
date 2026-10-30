@@ -143,7 +143,7 @@ public class GamaZipBuilder {
     }
 
     /**
-     * Data files referenced by the exported models, as absolute, normalized
+     * Data files referenced by the playable models, as absolute, normalized
      * paths. Those that live outside the exported project are rerouted into the
      * project's <code>include</code> directory and the path is rewritten in
      * every GAML file that references them.
@@ -363,9 +363,9 @@ public class GamaZipBuilder {
 
             Files.copy(GamaZipBuilder.pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationPluginFileName),gamaUiApplicationJarTmpPath);
             final Bundle uiBundle = org.eclipse.core.runtime.Platform.getBundle("gama.ui.export");
-            if (uiBundle == null) throw new IOException("The simulation launcher UI bundle is not installed");
+            if (uiBundle == null) throw new IOException("The playable model UI bundle is not installed");
             final URL splash = uiBundle.getEntry("splash_simulation_launcher.png");
-            if (splash == null) throw new IOException("The simulation launcher splash is missing");
+            if (splash == null) throw new IOException("The playable model splash is missing");
             try (var jar = FileSystems.newFileSystem(gamaUiApplicationJarTmpPath);
                     var input = splash.openStream()) {
                 Files.move(jar.getPath("/splash.png"), jar.getPath("/old_splash.png"),

@@ -32,7 +32,7 @@
             splashId="gama.ui.export.playerSplash"/>
    </extension>
    <extension point="org.eclipse.ui.activities">
-      <activity id="gama.ui.export.homeActivity" name="Simulation launcher home">
+      <activity id="gama.ui.export.homeActivity" name="Playable model home">
          <enabledWhen><systemTest property="exported_runner" value="true"/></enabledWhen>
       </activity>
       <activityPatternBinding activityId="gama.ui.export.homeActivity"
@@ -46,18 +46,18 @@
       <view id="gama.ui.export.views.Home" name="Home" restorable="false"
             class="gama.ui.export.launcher.LauncherHomeView"/>
    </extension>
-   <extension point="org.eclipse.core.runtime.applications" id="SimulationApplication" name="GAMA Simulation Launcher">
+   <extension point="org.eclipse.core.runtime.applications" id="SimulationApplication" name="GAMA Playable Model">
       <application>
          <run class="gama.ui.export.launcher.SimulationApplication"/>
       </application>
    </extension>
    <extension point="org.eclipse.ui.commands">
-      <command id="gama.ui.export.openPackage" name="Open playable model" categoryId="gama.category">
-         <commandParameter id="gama.ui.export.packagePath" name="Exported model path" optional="true"/>
+      <command id="gama.ui.export.openPackage" name="Play exported model" categoryId="gama.category">
+         <commandParameter id="gama.ui.export.packagePath" name="Playable model path" optional="true"/>
       </command>
       <command id="gama.ui.export.model" name="Export as playable model" categoryId="gama.category"/>
       <command id="gama.ui.export.selectedModel" name="Export as playable model" categoryId="gama.category"/>
-      <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
+      <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as playable model" categoryId="gama.category"/>
       <command id="gama.application.commands.SaveSimulationsArtifacts" name="Save Simulation Data" categoryId="gama.category"/>
       <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
    </extension>
@@ -124,7 +124,9 @@
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:file?after=additions">
-         <command commandId="gama.ui.export.openPackage" label="Open playable model...">
+         <command commandId="gama.ui.export.openPackage" label="Play exported model..."
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.play.svg"
+               tooltip="Choose an external .gamx file to play without importing it into the workspace">
             <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
          </command>
          <command commandId="gama.ui.export.model" label="Export as playable model..."
@@ -140,13 +142,13 @@
          </command>
       </menuContribution>
       <menuContribution locationURI="popup:menu.gama.export?after=additions">
-         <command commandId="gama.ui.navigator.commands.exportProjectAsSimulation" label="As simulation launcher..."
+         <command commandId="gama.ui.navigator.commands.exportProjectAsSimulation" label="As playable model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
             <visibleWhen checkEnabled="true"/>
          </command>
       </menuContribution>
       <menuContribution locationURI="toolbar:gama.ui.toolbar?after=additions">
-         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page"
+         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the playable model home page"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
          </command>
@@ -156,7 +158,7 @@
          </command>
       </menuContribution>
       <menuContribution locationURI="menu:simulationMenu?after=additions">
-         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page">
+         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the playable model home page">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
          </command>
          <command commandId="gama.application.commands.SaveSimulationsArtifacts" label="Save Simulation Data"

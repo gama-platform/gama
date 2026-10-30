@@ -35,8 +35,8 @@ public final class ColdStartSmokeTest {
 							public void run() {
 								if (display.isDisposed()) return;
 								for (var shell : display.getShells()) {
-									if (shell.getText().equals("Run simulation package?")) {
-										throw new AssertionError("Package opening must not ask for confirmation");
+									if (shell.getText().equals("Run playable model?")) {
+										throw new AssertionError("Playable model opening must not ask for confirmation");
 									}
 									if (!lateSent && Boolean.getBoolean("gama.router.late") && shell.isVisible()) {
 										lateSent = true;
@@ -48,7 +48,7 @@ public final class ColdStartSmokeTest {
 												send.invoke(display, org.eclipse.swt.SWT.OpenDocument, event);
 											} catch (ReflectiveOperationException e) { throw new IllegalStateException(e); }
 									}
-									if (shell.getText().equals("Unable to open exported model")) {
+									if (shell.getText().equals("Unable to open playable model")) {
 										try { java.nio.file.Files.writeString(root.resolve("error.seen"), "yes"); }
 										catch (java.io.IOException e) { throw new IllegalStateException(e); }
 										click(shell, "OK");
@@ -77,7 +77,7 @@ public final class ColdStartSmokeTest {
 						});
 						Object result = new DocumentApplication().start(context);
 						if (!normal && core.getState() == org.osgi.framework.Bundle.ACTIVE)
-							throw new AssertionError("Package routing initialized GAMA core");
+							throw new AssertionError("Playable model routing initialized GAMA core");
 						java.nio.file.Files.writeString(root.resolve("router.ready"), "No modeler for package launch");
 						return result;
 					}
@@ -94,7 +94,7 @@ public final class ColdStartSmokeTest {
 						if (Boolean.getBoolean("gama.router.late") &&
 							(!java.util.List.of(System.getProperty("gama.router.ordinary")).equals(pending)
 								|| !Boolean.TRUE.equals(org.eclipse.swt.widgets.Display.getCurrent().getData("gama.startupArgumentsConsumed"))))
-							throw new AssertionError("Late fallback must forward only unhandled documents and consume package arguments");
+							throw new AssertionError("Late fallback must forward only unhandled documents and consume playable model arguments");
 						if (Boolean.getBoolean("gama.router.event") && !java.util.List.of(System.getProperty("gama.router.archive")).equals(pending))
 							throw new AssertionError("Lost native documents when delegating to the modeler: " + pending);
 						java.nio.file.Files.writeString(root.resolve("modeler.ready"), "Normal startup delegated");
@@ -160,7 +160,7 @@ public final class ColdStartSmokeTest {
 				if (Files.exists(fixture.resolve("modeler.ready")) != fallback)
 					throw new AssertionError("Wrong modeling fallback in " + mode);
 				if (mode.equals("invalid") != Files.exists(fixture.resolve("error.seen")))
-					throw new AssertionError("Invalid packages must report failure without starting the modeler");
+					throw new AssertionError("Invalid playable models must report failure without starting the modeler");
 				final Path sessions = fixture.resolve(".gama/package-sessions");
 				if (normal || mode.equals("invalid")) {
 					if (Files.exists(sessions)) throw new AssertionError("Ordinary/invalid launches must not create sessions");
@@ -178,7 +178,7 @@ public final class ColdStartSmokeTest {
 				if (process.isAlive()) { process.destroyForcibly(); process.waitFor(15, TimeUnit.SECONDS); }
 			}
 		}
-		System.out.println("Cold routing passed without opening the modeler for packages; scratch: " + root);
+		System.out.println("Cold routing passed without opening the modeler for playable models; scratch: " + root);
 	}
 
 	private static void stopPlayer(final Path content) {

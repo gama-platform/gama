@@ -23,7 +23,7 @@ public final class ExportedModelPropertyPage extends PropertyPage {
 		final IFile file = Adapters.adapt(getElement(), IFile.class);
 		final var metadata = FileMetaDataProvider.getInstance().getMetaData(file, false, true);
 		details.setText(metadata instanceof ExportedModelInfo info ? info.getDescription()
-				: "Unable to read exported model information.");
+				: "Unable to read playable model information.");
 		return content;
 	}
 }

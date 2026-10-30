@@ -217,7 +217,7 @@ public final class SimulationPackageTest {
 				for (final Path path : paths.sorted(Comparator.reverseOrder()).toList()) { Files.delete(path); }
 			}
 		}
-		System.out.println("Simulation package manifest, archive and isolation checks passed");
+		System.out.println("Playable model manifest, archive and isolation checks passed");
 	}
 
 	private static long children(final Path directory) throws IOException {

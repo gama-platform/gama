@@ -24,7 +24,7 @@ public final class StandaloneModelLauncher implements IEditorLauncher {
 			new OpenSimulationPackage().execute(new ExecutionEvent(command,
 					Map.of(OpenSimulationPackage.PATH_PARAMETER, file.toOSString()), null, handlers.getCurrentState()));
 		} catch (final ExecutionException e) {
-			throw new IllegalStateException("Unable to open exported model " + file, e);
+			throw new IllegalStateException("Unable to open playable model " + file, e);
 		}
 	}
 }

@@ -23,7 +23,7 @@ public final class ExportedModelInfo extends AbstractFileMetaData {
 		String summary;
 		String details;
 		try {
-			if (file.getLocation() == null) throw new IOException("The exported model is not a local file");
+			if (file.getLocation() == null) throw new IOException("The playable model is not a local file");
 			final var manifest = SimulationPackage.inspect(file.getLocation().toFile().toPath());
 			final var models = manifest.experiments().stream().map(SimulationPackageManifest.Experiment::model)
 					.distinct().toList();
@@ -37,9 +37,9 @@ public final class ExportedModelInfo extends AbstractFileMetaData {
 					.map(b -> b.symbolicName() + " " + b.version()).collect(Collectors.joining(", "));
 			if (!plugins.isEmpty()) details += "\nIncluded plugins: " + plugins;
 		} catch (final IOException e) {
-			summary = "Invalid exported model: " + e.getMessage();
+			summary = "Invalid playable model: " + e.getMessage();
 			details = summary;
-			DEBUG.ERR("Unable to read exported model " + file.getName() + ": " + e.getMessage());
+			DEBUG.ERR("Unable to read playable model " + file.getName() + ": " + e.getMessage());
 		}
 		suffix = summary;
 		documentation = details;

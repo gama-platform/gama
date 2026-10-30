@@ -41,7 +41,7 @@ public final class SimulationPackageSmokeTest {
 		if (image) Files.copy(Path.of(args[3]).resolve("gama.ui.application/splash.png"),
 				staging.resolve(LauncherConfiguration.IMAGE));
 		Files.writeString(staging.resolve(LauncherConfiguration.FILE),
-				new LauncherConfiguration("Package smoke test", "A portable simulation package", home, "Run@Example/model.gaml",
+				new LauncherConfiguration("Playable model smoke test", "A portable playable model", home, "Run@Example/model.gaml",
 						image ? LauncherConfiguration.IMAGE : "").serialize());
 		final Path javaSource = Files.createDirectories(root.resolve("src/gaml/additions/packageprobe")).resolve("GamlAdditions.java");
 		Files.writeString(javaSource, """
@@ -55,13 +55,13 @@ public final class SimulationPackageSmokeTest {
 						try {
 							var root = java.nio.file.Path.of(System.getProperty("gama.package.content"));
 							if (!java.nio.file.Files.isRegularFile(root.resolve("bootstrap.ready")))
-								throw new IllegalStateException("GAML initialized before package bootstrap");
-							if (!example.packagehelper.Helper.ready()) throw new IllegalStateException("Missing transitive package helper");
+								throw new IllegalStateException("GAML initialized before playable model bootstrap");
+							if (!example.packagehelper.Helper.ready()) throw new IllegalStateException("Missing transitive playable model helper");
 							if (Boolean.getBoolean("gama.smoke.cold")) {
 								String splash = System.getProperty("org.eclipse.equinox.launcher.splash.location", "");
 								String handle = System.getProperty("org.eclipse.equinox.launcher.splash.handle", "0");
 								if (!splash.equals(root.resolve("player-splash.png").toString()) || handle.equals("0") || handle.equals("-1"))
-									throw new IllegalStateException("The native launcher did not display the package splash: " + splash);
+									throw new IllegalStateException("The native launcher did not display the playable model splash: " + splash);
 								java.nio.file.Files.writeString(root.resolve("splash.ready"), splash);
 							}
 							java.nio.file.Files.writeString(root.resolve("plugin.ready"), "Package language contribution loaded");
@@ -119,7 +119,7 @@ public final class SimulationPackageSmokeTest {
 												|| page.findView("gama.ui.export.views.Home") == null || page.isEditorAreaVisible())
 											throw new AssertionError("Home-first startup must show the real Home perspective, not the modeling workbench");
 										var window = (org.eclipse.ui.internal.WorkbenchWindow) page.getWorkbenchWindow();
-										var expectedTitle = "Package smoke test powered by GAMA";
+										var expectedTitle = "Playable model smoke test powered by GAMA";
 										if (!window.getShell().getText().equals(expectedTitle))
 											throw new AssertionError("Unexpected player window title: " + window.getShell().getText());
 										if (window.isToolbarVisible() || window.getTopTrim().getChildren().stream()
@@ -181,7 +181,7 @@ public final class SimulationPackageSmokeTest {
 									if (choices.stream().noneMatch(choice -> choice.id().equals("gama.api") && choice.standard() && !choice.embeddable() && !choice.reason().isBlank()))
 										throw new AssertionError("Discover transitive host-only platform dependencies");
 									var output = root.resolve("authored.gamx");
-									var config = new gama.export.LauncherConfiguration("Authored package", "Round trip", false, "Run@Example/model.gaml", "");
+									var config = new gama.export.LauncherConfiguration("Authored playable model", "Round trip", false, "Run@Example/model.gaml", "");
 									var forbidden = project.getLocation().toFile().toPath().resolve("new-folder/forbidden.gamx");
 									try {
 										gama.export.SimulationPackageExporter.export(discovered, discovered.experiments(), config,
@@ -248,7 +248,7 @@ public final class SimulationPackageSmokeTest {
 										} catch (java.io.IOException expected) {
 											if (!expected.getMessage().contains("file.simulation")) throw expected;
 										}
-										if (java.nio.file.Files.exists(missingInputArchive)) throw new AssertionError("Do not write an incomplete package");
+										if (java.nio.file.Files.exists(missingInputArchive)) throw new AssertionError("Do not write an incomplete playable model");
 									} finally {
 										model.setContents(new java.io.ByteArrayInputStream(text.getBytes(java.nio.charset.StandardCharsets.UTF_8)), true, false, null);
 									}
@@ -370,7 +370,7 @@ public final class SimulationPackageSmokeTest {
 						|| Files.exists(prepared.content().resolve("player.ready"))
 						|| Files.readString(prepared.content().resolve("player.log")).contains("Building metamodel"))
 					throw new AssertionError("Unresolved plugins must fail before GAML and UI startup");
-				System.out.println("Unresolved package dependencies rejected before GAML initialization");
+				System.out.println("Unresolved playable model dependencies rejected before GAML initialization");
 				return;
 			}
 			final Path simulation = prepared.workspace().resolve("Example/simulation.ready");
@@ -382,10 +382,10 @@ public final class SimulationPackageSmokeTest {
 					prepared.content().resolve("plugin.ready"), prepared.content().resolve("player.ready"))) {
 				if (!Files.isRegularFile(marker)) throw new AssertionError("Missing smoke marker: " + marker);
 			}
-			if (home && Files.exists(simulation)) throw new AssertionError("Home-first packages must not auto-run");
+			if (home && Files.exists(simulation)) throw new AssertionError("Home-first playable models must not auto-run");
 			if (!home && !Files.exists(simulation)) throw new AssertionError("Default experiment was not initialized");
-			System.out.println(home ? "Package bootstrap, language plugin and Home-first startup passed"
-					: "Package bootstrap, language plugin, workbench, compilation and experiment init passed");
+			System.out.println(home ? "Playable model bootstrap, language plugin and Home-first startup passed"
+					: "Playable model bootstrap, language plugin, workbench, compilation and experiment init passed");
 			if (authoring) {
 				if (home) {
 					for (int i = 0; i < 60 && !Files.exists(prepared.content().resolve("home-ui.ready")); i++) {
@@ -421,7 +421,7 @@ public final class SimulationPackageSmokeTest {
 						if (player.waitFor(1, TimeUnit.SECONDS)) throw new AssertionError("Exported player exited: "
 								+ Files.readString(exported.content().resolve("player.log")));
 					}
-					if (!Files.exists(ready)) throw new AssertionError("Authored package failed to initialize: "
+					if (!Files.exists(ready)) throw new AssertionError("Authored playable model failed to initialize: "
 							+ Files.readString(exported.content().resolve("player.log")));
 					System.out.println("Workbench export, automatic non-standard plugin closure, unsupported plugin rejection and player round-trip passed");
 				} finally {

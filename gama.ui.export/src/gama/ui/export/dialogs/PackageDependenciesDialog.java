@@ -33,7 +33,7 @@ public final class PackageDependenciesDialog extends TitleAreaDialog {
 	public void create() {
 		super.create();
 		setTitle("Additional plugins");
-		setMessage("These extra Java plugins are included automatically. Unsupported plugins prevent package export.");
+		setMessage("These extra Java plugins are included automatically. Unsupported plugins prevent playable model export.");
 	}
 
 	@Override
@@ -60,11 +60,11 @@ public final class PackageDependenciesDialog extends TitleAreaDialog {
 			item.setChecked(dependency.automatic());
 			item.setGrayed(true);
 			item.setText(new String[] { dependency.id(), dependency.version(),
-					item.getChecked() ? "Package (automatic)" : dependency.standard() ? "Standard GAMA" : "Unsupported extra" });
+					item.getChecked() ? "Playable model (automatic)" : dependency.standard() ? "Standard GAMA" : "Unsupported extra" });
 		}
 		detail = new Label(content, SWT.WRAP);
-		detail.setText("Unsupported extra dependencies prevent package export; build/install Java plugin JARs or use application export. "
-				+ "A package cannot replace an already installed plugin, even at the same version.");
+		detail.setText("Unsupported extra dependencies prevent playable model export; build/install Java plugin JARs or use application export. "
+				+ "A playable model cannot replace an already installed plugin, even at the same version.");
 		final var detailData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		detailData.widthHint = 700;
 		detailData.heightHint = 65;

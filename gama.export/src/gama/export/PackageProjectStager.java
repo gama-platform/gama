@@ -43,7 +43,7 @@ public final class PackageProjectStager {
 			final BooleanSupplier canceled) throws IOException {
 		Files.createDirectories(target);
 		try (var children = Files.list(target)) {
-			if (children.findAny().isPresent()) throw new IOException("Package staging requires an empty directory");
+			if (children.findAny().isPresent()) throw new IOException("Playable model staging requires an empty directory");
 		}
 		final var targets = new LinkedHashMap<Path, Source>();
 		final var relocated = new LinkedHashMap<Path, Path>();

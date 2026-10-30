@@ -28,11 +28,11 @@ public final class SimulationPackageOpening {
 		manifest.requireRuntime(SystemInfo.VERSION_NUMBER);
 		final String executable = System.getProperty("eclipse.launcher");
 		if (executable == null || executable.isBlank())
-			throw new IOException("Package launching requires an installed GAMA native launcher; it is unavailable in this development launch");
+			throw new IOException("Playable model launching requires an installed GAMA native launcher; it is unavailable in this development launch");
 		final var result = new AtomicReference<SimulationPackageLauncher.Prepared>();
 		try {
 			new ProgressMonitorDialog(owner).run(true, false, monitor -> {
-				monitor.beginTask("Preparing exported model", IProgressMonitor.UNKNOWN);
+				monitor.beginTask("Preparing playable model", IProgressMonitor.UNKNOWN);
 				try {
 					result.set(SimulationPackageLauncher.prepare(archive,
 							SimulationPackageSessions.directory(),
@@ -44,7 +44,7 @@ public final class SimulationPackageOpening {
 				}
 			});
 		} catch (final InvocationTargetException e) {
-			throw new IOException("Unable to prepare exported model: " + e.getCause().getMessage(), e.getCause());
+			throw new IOException("Unable to prepare playable model: " + e.getCause().getMessage(), e.getCause());
 		}
 		final var prepared = result.get();
 		return new Launch(prepared, prepared.start());

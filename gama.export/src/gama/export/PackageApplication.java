@@ -20,7 +20,7 @@ public final class PackageApplication implements IApplication {
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
 		final String content = System.getProperty(SimulationPackageLauncher.CONTENT_PROPERTY);
-		if (content == null) throw new IOException("Package players require a prepared launch configuration");
+		if (content == null) throw new IOException("Playable model players require a prepared launch configuration");
 		SimulationPackageSessions.Lease lease = null;
 		for (int i = 0; i < 50 && lease == null; i++) {
 			try { lease = SimulationPackageSessions.acquire(Path.of(content)); }
@@ -36,7 +36,7 @@ public final class PackageApplication implements IApplication {
 		final String location = System.getProperty(SimulationPackageLauncher.CONTENT_PROPERTY);
 		if (location == null || !Boolean.getBoolean("exported_runner")
 				|| !"false".equals(System.getProperty("use_global_preference_store")))
-			throw new IOException("Package players require a private, prepared launch configuration");
+			throw new IOException("Playable model players require a private, prepared launch configuration");
 		final var extracted = SimulationPackage.Extracted.open(Path.of(location));
 		extracted.manifest().requireRuntime(System.getProperty("gama.package.runtime", ""));
 		SimulationLaunchContext.fromPackage(extracted);
@@ -46,7 +46,7 @@ public final class PackageApplication implements IApplication {
 				|| !Path.of(instance.getURL().toURI()).toRealPath().equals(extracted.workspace().toRealPath())
 				|| !Path.of(configuration.getURL().toURI()).toRealPath()
 						.equals(extracted.content().resolve("runtime-configuration").toRealPath()))
-			throw new IOException("Package player workspace or configuration is not isolated");
+			throw new IOException("Playable model player workspace or configuration is not isolated");
 		final var requiredBundles = new ArrayList<Bundle>();
 		final var bundleContext = FrameworkUtil.getBundle(PackageApplication.class).getBundleContext();
 		for (final var required : extracted.manifest().bundles()) {
@@ -55,22 +55,22 @@ public final class PackageApplication implements IApplication {
 							&& required.accepts(candidate.getVersion().toString()))
 					.max(java.util.Comparator.comparing(Bundle::getVersion)).orElse(null);
 			if (bundle == null)
-				throw new IOException("Package bundle is missing or incompatible: " + required.symbolicName());
+				throw new IOException("Playable model bundle is missing or incompatible: " + required.symbolicName());
 			requiredBundles.add(bundle);
 		}
 		final var core = Platform.getBundle("gama.core");
 		if (core == null || core.getState() == Bundle.ACTIVE)
-			throw new IOException("Package bootstrap must run before GAMA core initialization");
+			throw new IOException("Playable model bootstrap must run before GAMA core initialization");
 		final var framework = bundleContext.getBundle(0).adapt(FrameworkWiring.class);
 		if (!framework.resolveBundles(requiredBundles))
-			throw new IOException("Cannot resolve package dependencies: " + requiredBundles.stream()
+			throw new IOException("Cannot resolve playable model dependencies: " + requiredBundles.stream()
 					.filter(bundle -> bundle.getState() == Bundle.INSTALLED).map(Bundle::getSymbolicName).toList());
 		final var extension = Platform.getExtensionRegistry()
 				.getExtension("org.eclipse.core.runtime.applications", "gama.ui.export.SimulationApplication");
 		if (extension == null) throw new IOException("The simulation player application is not installed");
 		final String bootstrapPid = System.getProperty("gama.package.bootstrap.pid");
 		if (bootstrapPid != null && !bootstrapPid.equals(Long.toString(ProcessHandle.current().pid())))
-			throw new IOException("The pre-framework package bootstrap changed processes");
+			throw new IOException("The pre-framework playable model bootstrap changed processes");
 		Files.writeString(extracted.content().resolve("bootstrap.ready"), "Package dependencies resolved before GAMA initialization\n"
 				+ "pid=" + ProcessHandle.current().pid() + "\n"
 				+ "in-process=" + (bootstrapPid != null) + "\n");

@@ -23,16 +23,16 @@ public record SimulationLaunchContext(Path content, Path workspace, LauncherConf
 		final Path root = extracted.content().toRealPath();
 		final Path settings = root.resolve(LauncherConfiguration.FILE);
 		if (!Files.isRegularFile(settings) || Files.size(settings) > 1024 * 1024)
-			throw new IOException("Package launcher settings are missing or exceed 1 MiB");
+			throw new IOException("Playable model launcher settings are missing or exceed 1 MiB");
 		try {
 			final var configuration = LauncherConfiguration.load(root);
 			if (!configuration.image().isEmpty() && (!LauncherConfiguration.IMAGE.equals(configuration.image())
 					|| !Files.isRegularFile(root.resolve(LauncherConfiguration.IMAGE))))
-				throw new IOException("The package home image is missing or has an invalid path");
+				throw new IOException("The playable model home image is missing or has an invalid path");
 			return new SimulationLaunchContext(root, extracted.workspace(), configuration,
 					extracted.manifest().experiments().stream().map(SimulationPackageManifest.Experiment::selection).toList(), "");
 		} catch (final IllegalArgumentException e) {
-			throw new IOException("Invalid package launch configuration: " + e.getMessage(), e);
+			throw new IOException("Invalid playable model launch configuration: " + e.getMessage(), e);
 		}
 	}
 }

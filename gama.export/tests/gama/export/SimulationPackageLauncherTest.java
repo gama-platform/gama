@@ -98,7 +98,7 @@ public final class SimulationPackageLauncherTest {
 			check(prepared.configuration().startsWith(prepared.content()), "Configuration is private");
 			final String info = Files.readString(prepared.configuration().resolve("org.eclipse.equinox.simpleconfigurator/bundles.info"));
 			check(info.contains("example.extension,1.2.3," + prepared.content().resolve("plugins/example.jar").toUri()),
-					"Provision the package bundle from its private location");
+					"Provision the playable model bundle from its private location");
 			check(info.contains("gama.core,1.0.0," + install.resolve("plugins/gama.core.jar").toUri().toASCIIString().replace(",", "%2C")),
 					"Installed bundle URLs must be absolute and escaped");
 			check(info.contains("gama.core,2.0.0," + install.resolve("plugins/second-version.jar").toUri().toASCIIString().replace(",", "%2C")),
@@ -121,7 +121,7 @@ public final class SimulationPackageLauncherTest {
 			check(prepared.command().contains("-Duse_global_preference_store=false")
 					&& prepared.command().contains("-Dexported_runner=true"), "Player flags are process-local");
 			check(prepared.command().contains("-Dpref_enable_server=false"),
-					"Package players must not compete with the modeler's default WebSocket port");
+					"Playable model players must not compete with the modeler's default WebSocket port");
 			check(java.util.Arrays.equals(originalInventory, Files.readAllBytes(inventory))
 					&& java.util.Arrays.equals(originalConfig, Files.readAllBytes(install.resolve("configuration/config.ini"))),
 					"Host configuration must not change");
@@ -166,6 +166,6 @@ public final class SimulationPackageLauncherTest {
 				for (final var path : paths.sorted(Comparator.reverseOrder()).toList()) { Files.delete(path); }
 			}
 		}
-		System.out.println("Package player provisioning checks passed");
+		System.out.println("Playable model player provisioning checks passed");
 	}
 }

@@ -100,7 +100,7 @@ public final class LauncherHomeTest {
 			tableField.setAccessible(true);
 			final Table table = (Table) tableField.get(dialog);
 			check(table.getItemCount() == 3 && table.getItem(0).getChecked()
-					&& table.getItem(0).getText(2).equals("Package (automatic)")
+					&& table.getItem(0).getText(2).equals("Playable model (automatic)")
 					&& table.getItem(1).getText(2).equals("Standard GAMA")
 					&& table.getItem(2).getText(2).equals("Unsupported extra"), "Distinguish standard, packaged and unsupported extra dependencies");
 			final var host = table.getItem(1);
@@ -134,8 +134,8 @@ public final class LauncherHomeTest {
 			check(field(dialog, "pluginPaths", Text.class) == null, "No dependency controls when no extras are required");
 			check(java.util.Arrays.stream(field(dialog, "packageOptions", Composite.class).getChildren())
 					.noneMatch(control -> control instanceof Label label
-							&& (label.getText().equals("Package identifier") || label.getText().equals("Package version"))),
-					"Technical package metadata is not exposed as form fields");
+							&& (label.getText().equals("Playable model identifier") || label.getText().equals("Playable model version"))),
+					"Technical playable model metadata is not exposed as form fields");
 			field(dialog, "title", Text.class).setText("Preserve my title");
 			field(dialog, "experiments", Table.class).setSelection(0);
 			dialog.buttonPressed(org.eclipse.jface.dialogs.IDialogConstants.CLIENT_ID);
@@ -149,15 +149,15 @@ public final class LauncherHomeTest {
 					&& field(dialog, "title", Text.class).getText().equals("Preserve my title")
 					&& dialog.getPackageId().equals(identifier)
 					&& field(dialog, "experiments", Table.class).getSelectionCount() == 1,
-					"Switching formats must preserve presentation, package metadata and experiment selection");
+					"Switching formats must preserve presentation, playable model metadata and experiment selection");
 			field(dialog, "destination", Text.class).setText(java.nio.file.Path.of(System.getProperty("java.io.tmpdir"),
 					"package-dialog-" + java.util.UUID.randomUUID() + ".gamx").toString());
 			dialog.okPressed();
-			check(dialog.getShell() == null || dialog.getShell().isDisposed(), "Package OK must close the dialog");
+			check(dialog.getShell() == null || dialog.getShell().isDisposed(), "Playable model OK must close the dialog");
 			check(dialog.getPackageId().equals(identifier) && identifier.matches("simulation\\.[a-f0-9-]+")
 					&& dialog.getPackageVersion().equals("1.0.0")
-					&& dialog.getEmbeddedPlugins().isEmpty(), "Capture package settings before widget disposal");
-			check(!dialog.getIncludeJdk() && !dialog.getOneFile(), "Never embed an application runtime in a package");
+					&& dialog.getEmbeddedPlugins().isEmpty(), "Capture playable model settings before widget disposal");
+			check(!dialog.getIncludeJdk() && !dialog.getOneFile(), "Never embed an application runtime in a playable model");
 		} finally {
 			dialog.close();
 		}
@@ -292,7 +292,7 @@ public final class LauncherHomeTest {
 					"Default experiment must survive SWT disposal");
 			check(dialog.getSelectedExperiments().length == 1
 					&& dialog.getSelectedExperiments()[0].equals("Second"), "Export only the selected rows");
-			check(dialog.getIncludeJdk(), "Preserve application exporter options after switching from a package");
+			check(dialog.getIncludeJdk(), "Preserve application exporter options after switching from a playable model");
 			check(java.nio.file.Path.of(dialog.getOutputPath(), dialog.getOutputFileName()).toString()
 					.equals(destination), "Destination combines filename and path");
 		} finally {

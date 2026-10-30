@@ -7,7 +7,7 @@
       plugin="gama.export">
 
    <description url="http://gama-platform.org">
-      The export engine and UI for packaging GAMA models as simulation launchers.
+      The export engine and UI for packaging GAMA models as playable models.
    </description>
 
    <copyright url="http://www.example.com/copyright">

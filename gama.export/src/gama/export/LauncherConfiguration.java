@@ -33,7 +33,7 @@ public record LauncherConfiguration(String title, String description, boolean sh
 		properties.setProperty("startupExperiment", startupExperiment);
 		properties.setProperty("image", image.isBlank() ? "" : IMAGE);
 		final StringWriter writer = new StringWriter();
-		properties.store(writer, "GAMA simulation launcher");
+		properties.store(writer, "GAMA playable model");
 		return writer.toString();
 	}
 

@@ -10,7 +10,7 @@ import gama.ui.application.Application;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
 import gama.ui.application.workbench.PerspectiveHelper;
 
-/** Entry point selected only in exported simulation launchers. */
+/** Entry point selected only in exported playable models. */
 public final class SimulationApplication extends Application {
 
 	@Override
@@ -25,12 +25,12 @@ public final class SimulationApplication extends Application {
 		final String content = System.getProperty(SimulationPackageLauncher.CONTENT_PROPERTY);
 		if (content != null) {
 			if (gama.api.additions.GamaBundleLoader.ERRORED)
-				throw new java.io.IOException("GAMA language contributions could not be initialized for this package");
+				throw new java.io.IOException("GAMA language contributions could not be initialized for this playable model");
 			final var extracted = SimulationPackage.Extracted.open(Path.of(content));
 			return StartupModelHelper.getInstance().initialize(SimulationLaunchContext.fromPackage(extracted)) ? null : EXIT_OK;
 		}
 		if (!GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
-			throw new IllegalStateException("The simulation launcher requires a startup model");
+			throw new IllegalStateException("The playable model requires a startup model");
 		return StartupModelHelper.getInstance().initialize() ? null : EXIT_OK;
 	}
 

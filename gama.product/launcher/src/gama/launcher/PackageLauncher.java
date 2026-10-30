@@ -120,7 +120,7 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 			failure.printStackTrace(System.err);
 			if (!Boolean.getBoolean("gama.launcher.suppressErrors")) {
 				try {
-					final String message = "Unable to open the exported model:\n" + failure.getMessage();
+					final String message = "Unable to open the playable model:\n" + failure.getMessage();
 					if (System.getProperty("os.name").startsWith("Mac")) showError(message);
 					else if (!java.awt.GraphicsEnvironment.isHeadless())
 						javax.swing.JOptionPane.showMessageDialog(null, message, "GAMA", javax.swing.JOptionPane.ERROR_MESSAGE);
