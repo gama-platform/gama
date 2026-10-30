@@ -49,7 +49,7 @@ there is no automatic legacy-suffix playback alias.
 | Run a received playable model | Open `.gamx` / navigator Play | Starts the player; does not install its plugins into the modeler. |
 | Work directly on an existing external project folder | Existing project folder (advanced) | Can register the original location instead of copying it; saves may modify those original files. |
 | Transfer individual files | Import from disk/archive, or resource copy/link | Transfers resources without collecting a model's dependencies. |
-| Recover generated simulation output | Save Simulation Data | Copies selected recent outputs, not the complete project or a resumable checkpoint. |
+| Recover generated simulation output | Save prompt when closing the player | Saves new or modified workspace files as ZIP, not the complete project or a resumable checkpoint. |
 
 **Implementation status:** the affected archive and UI bundles compile, and product
 descriptors have been checked. No tests were created or run. Live import/export
@@ -74,7 +74,7 @@ editing these sources does not update the current installation's registrations.
 | Export as playable model | Shared simulation-export handler/dialog, defaulting to `.gamx`. | Compiles models, discovers projects/data/plugins, selects experiments, stages a portable payload. Does not include GAMA or a JDK. |
 | Export application instead | Switches the same dialog to the full application exporter. | Builds an application distribution with runtime and optional JDK/executable options. Uses a different archive-building implementation. |
 | Open playable model / navigator `.gamx` double-click | Validates and prepares an isolated player. | Does not import into the modeling workspace or install plugins into the running modeler. |
-| Save Simulation Data | Copies recently modified files from the active simulation's project to a destination directory. | Output recovery, not Save Project, Save Package or a complete simulation checkpoint. |
+| Save data when closing the player | Native Save dialog with a model-title/date ZIP name; saves new or modified files across the player workspace, excluding internal metadata. | Output recovery, not Save Project, Save Package or a complete simulation checkpoint. Canceling keeps the player open. |
 | GAML `save` and serialized simulations | Runtime data writers and serialization delegates. | Different contracts again: output data or agent/simulation state, not portable source-project distribution. |
 
 Primary sources: [editor saving][editor-save], [navigator opening][navigator-open],
@@ -227,9 +227,9 @@ document-router fallback rather than changing the running modeler's plugins.
 Each package opening uses fresh content, workspace, preference and runtime
 configuration directories under `~/.gama/package-sessions/`. The source archive
 is not edited. Sessions and generated results are retained, but there is no
-session-history/recovery UI. Save Simulation Data uses modification times and
-only the active model's project; it does not collect every output from every
-participating project or arbitrary external output path.
+session-history/recovery UI. On closing, the player detects content changes across
+its workspace and offers a native Save dialog to export them as ZIP. Files outside
+the workspace are not collected.
 
 There is **no supported Import package for editing action**. A ZIP utility can
 recover source projects, and a legacy project importer may recognize `.project`
@@ -300,7 +300,7 @@ Sources: [native launcher][native-launcher], [document classification][documents
 | Implemented | Dependency-aware editable-project archives. | `.gamp` exports whole projects, optional links/plugins and a manifest without a per-file inventory, and uses the same collision/group import workflow as legacy ZIPs. See below for limits. |
 | Next | Export does not always snapshot every dirty participating editor. | Editor-triggered export saves the active editor, but saving all others depends on `EDITOR_SAVE`. Navigator-triggered export has only that optional Save All. Dependency discovery and staging can therefore use disk contents older than visible edits. [Source][simulation-export] |
 | Later | Runtime packaging still has two staging/dependency implementations. | `.gamx` uses `PackageProjectStager` and package dependency closure; application export uses `GamaZipBuilder` and `BundleDependencyAnalyzer`. Shared discovery does not imply identical portability guarantees. |
-| Later | "Save Simulation Data" sounds broader than its implementation. | Modification-time copying of the active project's files is neither a complete result inventory nor resumable simulation state. |
+| Implemented | Shutdown-only generated data saving. | New or modified workspace files are offered as a ZIP export on closing; internal metadata is ignored. This is not resumable simulation state. |
 
 These are source findings, not claims that each scenario was reproduced through
 all OS dialogs. The closed-project branch warrants a focused reproduction in a
@@ -456,7 +456,7 @@ project-only archives, dirty editors, old playable `.gamp` files renamed to
 
 The practical rule is: **Save for edits, `.gamp` for editable project exchange
 (legacy ZIP import remains supported), `.gamx` for runnable distribution, and
-Save Simulation Data for selected player outputs.
+the shutdown save prompt for generated player outputs.
 Do not promise that opening, dropping and importing are synonyms.**
 
 ## Source index

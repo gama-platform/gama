@@ -13,6 +13,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -91,5 +93,45 @@ public final class SimulationArtifacts {
 			monitor.done();
 		}
 		return saved;
+	}
+
+	public void saveZip(final Path workspace, final Path destination, final IProgressMonitor monitor) throws IOException {
+		final Path source = workspace.toRealPath();
+		final Path target = destination.toAbsolutePath().normalize();
+		if (target.getParent() == null) throw new IOException("Choose a destination file");
+		final Path parent = target.getParent().toRealPath();
+		if (parent.startsWith(source) || Files.exists(target) && target.toRealPath().startsWith(source))
+			throw new IOException("The destination must be outside the simulation workspace");
+		final Path staging = Files.createTempFile(parent, ".gama-data-", ".zip");
+		monitor.beginTask("Saving experiment data", IProgressMonitor.UNKNOWN);
+		try {
+			final var current = snapshot(source, monitor);
+			try (var zip = new ZipOutputStream(Files.newOutputStream(staging))) {
+				final byte[] buffer = new byte[8192];
+				for (final var entry : current.entrySet()) {
+					if (monitor.isCanceled()) throw new OperationCanceledException();
+					if (entry.getValue().equals(baseline.get(entry.getKey()))) continue;
+					zip.putNextEntry(new ZipEntry(entry.getKey().toString().replace('\\', '/')));
+					try (var input = Files.newInputStream(source.resolve(entry.getKey()))) {
+						int read;
+						while ((read = input.read(buffer)) != -1) {
+							if (monitor.isCanceled()) throw new OperationCanceledException();
+							zip.write(buffer, 0, read);
+						}
+					}
+					zip.closeEntry();
+					monitor.worked(1);
+				}
+			}
+			if (monitor.isCanceled()) throw new OperationCanceledException();
+			Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+			baseline = current;
+		} finally {
+			try {
+				Files.deleteIfExists(staging);
+			} finally {
+				monitor.done();
+			}
+		}
 	}
 }

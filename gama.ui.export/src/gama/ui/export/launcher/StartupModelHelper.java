@@ -129,8 +129,8 @@ public final class StartupModelHelper {
 		return context != null && artifacts.hasChanges(context.workspace());
 	}
 
-	public boolean saveSimulationArtifacts(final Path target, final IProgressMonitor monitor) throws IOException {
+	public void saveSimulationArtifacts(final Path target, final IProgressMonitor monitor) throws IOException {
 		if (context == null) throw new IOException("No simulation workspace is available");
-		return artifacts.save(context.workspace(), target, monitor);
+		artifacts.saveZip(context.workspace(), target, monitor);
 	}
 }

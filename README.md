@@ -290,7 +290,10 @@ Leaving Home restores the global controls according to the experiment's controls
 
 Private runtime folders, including `player.log`, are retained internally to avoid losing generated results.
 There is no package history or session-management screen: users export archives wherever they choose and open them
-directly. The player retains its existing **Save Simulation Data** action. Running players are protected by a lifetime
+directly. On closing, the player offers to save new or modified workspace data in a ZIP archive using a native Save
+dialog, with an editable name based on the model title and date. Internal workspace metadata is excluded; canceling
+the save keeps the player open. This is output recovery, not a resumable simulation checkpoint.
+Running players are protected by a lifetime
 file lease and process identity; internal cleanup never follows symbolic links or removes unrelated/legacy unregistered
 directories. Existing results are not deleted automatically.
 Launching from an Eclipse development configuration without a native launcher is not supported.

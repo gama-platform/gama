@@ -146,7 +146,9 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 				BufferingUtils.getInstance().flushAllBuffers();
 				if (StartupModelHelper.getInstance().areThereAnyArtifactsToSave() && GAMA.getGui().getDialogFactory()
 						.question("Save experiment data",
-								"The experiment has produced some data files. Do you want to save them before closing?")) {
+								"The experiment has produced some data files. Do you want to save them before closing?"
+										+ "\n\nNew or modified files will be saved in a ZIP archive. "
+										+ "This does not save a resumable simulation state.")) {
 					if (!Boolean.TRUE.equals(new SaveSimulationsArtifacts().execute(null))) return false;
 				}
 				proceed = true;

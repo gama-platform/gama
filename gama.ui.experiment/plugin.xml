@@ -429,6 +429,9 @@
                <visibleWhen
                      checkEnabled="false">
                   <and>
+                     <not>
+                        <systemTest property="exported_runner" value="true"/>
+                     </not>
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
@@ -558,6 +561,9 @@
                <visibleWhen
                      checkEnabled="false">
                   <and>
+                     <not>
+                        <systemTest property="exported_runner" value="true"/>
+                     </not>
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
@@ -883,6 +889,9 @@
             commandId="gama.application.goto.simulation">
          <activeWhen>
             <and>
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
                <reference
                      definitionId="isInModelingPerspective">
                </reference>
