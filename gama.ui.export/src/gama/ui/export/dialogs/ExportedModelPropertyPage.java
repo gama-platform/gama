@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 import gama.export.ExportedModelInfo;
+import gama.export.ProjectArchiveInfo;
 import gama.workspace.metadata.FileMetaDataProvider;
 
 public final class ExportedModelPropertyPage extends PropertyPage {
@@ -22,8 +23,11 @@ public final class ExportedModelPropertyPage extends PropertyPage {
 		final var details = new Text(content, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
 		final IFile file = Adapters.adapt(getElement(), IFile.class);
 		final var metadata = FileMetaDataProvider.getInstance().getMetaData(file, false, true);
-		details.setText(metadata instanceof ExportedModelInfo info ? info.getDescription()
-				: "Unable to read playable model information.");
+		details.setText(switch (metadata) {
+			case ExportedModelInfo info -> info.getDescription();
+			case ProjectArchiveInfo info -> info.getDescription();
+			case null, default -> "Unable to read archive information.";
+		});
 		return content;
 	}
 }

@@ -215,14 +215,10 @@
                label="Import..."
                mnemonic=" ">
             <command
-                  commandId="org.eclipse.ui.file.import"
+                  commandId="gama.ui.export.importProject"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
                   label="Project…"
                   style="push">
-               <parameter
-                     name="importWizardId"
-                     value="gama.ui.import.ExternalProject">
-               </parameter>
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -234,6 +230,7 @@
                            <instanceof
                                  value="gama.ui.navigator.view.contents.UserProjectsFolder">
                            </instanceof>
+                           <instanceof value="gama.ui.navigator.view.contents.UserGroupFolder"/>
                         </or>
                      </iterate>
                   </with>
@@ -300,14 +297,10 @@
                id="menu.gama.export"
                label="Export...">
             <command
-                  commandId="org.eclipse.ui.file.export"
+                  commandId="gama.ui.export.exportProject"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
                   label="Project…"
                   style="push">
-               <parameter
-                     name="exportWizardId"
-                     value="gama.ui.export.ExternalProject">
-               </parameter>
             </command>
             <visibleWhen
                   checkEnabled="false">
@@ -864,8 +857,8 @@ type="java.lang.Object">
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.ImportProjectWizard"
              icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
-             id="gama.ui.import.ExternalProject"
-             name="GAMA Project">
+             id="gama.ui.import.DirectoryProject"
+             name="Existing project folder (advanced)">
        </wizard>
        <wizard
              category="gama.ui.wizards.GAMA"
@@ -927,13 +920,6 @@ type="java.lang.Object">
     </extension>
     <extension
           point="org.eclipse.ui.exportWizards">
-       <wizard
-             category="gama.ui.wizards.GAMA"
-             class="gama.ui.navigator.wizards.ExportProjectWizard"
-             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
-             id="gama.ui.export.ExternalProject"
-             name="GAMA Project">
-       </wizard>
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.ZipExportWizard"

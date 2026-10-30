@@ -50,7 +50,8 @@ public final class DocumentApplication implements IApplication {
 			for (final String path : documents) if (!initial.contains(path)) initial.add(path);
 			if (!PackageDocuments.packagesOnly(initial)) {
 				display.removeListener(SWT.OpenDocument, listener);
-				display.setData(PackageDocuments.PENDING_DOCUMENTS, List.copyOf(documents));
+				display.setData(PackageDocuments.PENDING_DOCUMENTS, List.copyOf(initial));
+				display.setData(PackageDocuments.ARGUMENTS_CONSUMED, !initial.isEmpty());
 				return startModeler(context);
 			}
 			final Shell owner = new Shell(display);

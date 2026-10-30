@@ -374,7 +374,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 
 	/** The Constant FILE_IMPORT_MASK. */
 	// constant from WizardArchiveFileResourceImportPage1
-	static final String[] FILE_IMPORT_MASK = { "*.jar;*.zip;*.tar;*.tar.gz;*.tgz", "*.*" }; //$NON-NLS-1$ //$NON-NLS-2$
+	static final String[] FILE_IMPORT_MASK = { "*.gamp;*.jar;*.zip;*.tar;*.tar.gz;*.tgz", "*.*" }; //$NON-NLS-1$ //$NON-NLS-2$
 
 	/** The initial path. */
 	// The initial path to set
@@ -832,6 +832,15 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		// We can't access the radio button from the inner class so get the
 		// status beforehand
 		final boolean dirSelected = this.projectFromDirectoryRadio.getSelection();
+		if (!dirSelected && isProjectArchive(path)) {
+			selectedProjects = new ProjectRecord[0];
+			projectsList.refresh(true);
+			setErrorMessage(null);
+			setMessage("Choose Finish to preview and import this project archive, including group, collision and plugin options.");
+			setPageComplete(new File(path).isFile());
+			lastPath = path;
+			return;
+		}
 		try {
 			getContainer().run(true, true, monitor -> {
 
@@ -1124,8 +1133,30 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 *
 	 * @return boolean <code>true</code> if all project creations were successful.
 	 */
+	private static boolean isProjectArchive(final String path) {
+		final String lower = path.toLowerCase(java.util.Locale.ROOT);
+		return lower.endsWith(".gamp") || lower.endsWith(".zip");
+	}
+
 	public boolean createProjects() {
 		saveWidgetValues();
+		if (projectFromArchiveRadio.getSelection() && isProjectArchive(archivePathField.getText().trim())) {
+			final var workbench = org.eclipse.ui.PlatformUI.getWorkbench();
+			final var commands = workbench.getService(org.eclipse.ui.commands.ICommandService.class);
+			final var handlers = workbench.getService(org.eclipse.ui.handlers.IHandlerService.class);
+			try {
+				final var command = org.eclipse.core.commands.ParameterizedCommand.generateCommand(
+						commands.getCommand("gama.ui.export.importProject"),
+						java.util.Map.of("gama.ui.export.projectPath", archivePathField.getText().trim(),
+								"gama.ui.export.projectGroup", groupField == null ? "" : groupField.getText().trim()));
+				if (command == null) throw new IllegalStateException("The GAMA project importer is not available");
+				return Boolean.TRUE.equals(handlers.executeCommand(command, null));
+			} catch (final org.eclipse.core.commands.common.CommandException | RuntimeException e) {
+				gama.dev.DEBUG.ERR("Unable to open project archive importer", e);
+				displayErrorDialog(e.getMessage());
+				return false;
+			}
+		}
 
 		final Object[] selected = projectsList.getCheckedElements();
 		getProjectRecords();
@@ -1140,6 +1171,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 			record.projectName = newName;
 			record.renamed = true;
 		}
+
 		createdProjects = new ArrayList<>();
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 			@Override

@@ -90,7 +90,15 @@ public class Application implements IApplication {
 
 	/** Routes package documents through their handler without introducing a dependency on the export UI bundle. */
 	public static void openDocument(final String path) {
-		if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".gamx")) {
+		final String extension = path.toLowerCase(java.util.Locale.ROOT);
+		if (extension.endsWith(".gamr")) {
+			for (final var delegate : gama.api.additions.registries.GamaAdditionRegistry.getEventLayerDelegates()) {
+				if (delegate.acceptSource(null, "launcher")) delegate.createFrom(null, path, null);
+			}
+			return;
+		}
+		final boolean project = extension.endsWith(".gamp") || extension.endsWith(".zip");
+		if (!project && !extension.endsWith(".gamx")) {
 			WorkspaceModelsManager.instance.openModelPassedAsArgument(path);
 			return;
 		}
@@ -99,13 +107,14 @@ public class Application implements IApplication {
 		final var handlers = workbench.getService(org.eclipse.ui.handlers.IHandlerService.class);
 		try {
 			final var command = org.eclipse.core.commands.ParameterizedCommand.generateCommand(
-					commands.getCommand("gama.ui.export.openPackage"), java.util.Map.of("gama.ui.export.packagePath", path));
+					commands.getCommand(project ? "gama.ui.export.importProject" : "gama.ui.export.openPackage"),
+					java.util.Map.of(project ? "gama.ui.export.projectPath" : "gama.ui.export.packagePath", path));
 			if (command == null) throw new IllegalStateException("The exported model command is not available");
 			handlers.executeCommand(command, null);
 		} catch (final org.eclipse.core.commands.common.CommandException | RuntimeException e) {
-			DEBUG.ERR("Unable to open exported model " + path, e);
+			DEBUG.ERR("Unable to open GAMA document " + path, e);
 			org.eclipse.jface.dialogs.MessageDialog.openError(workbench.getActiveWorkbenchWindow().getShell(),
-					"Unable to open exported model", e.getMessage());
+					"Unable to open GAMA document", e.getMessage());
 		}
 	}
 

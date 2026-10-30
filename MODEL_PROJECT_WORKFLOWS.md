@@ -1,15 +1,14 @@
 # Models, projects, packages and file workflows
 
-Source audit dated 2026-10-30, updated against `6313ef172` and the local working tree.
-This includes the `.gamx` playable-model rename, standard-plugin classification
-and automatic dependency packaging changes. Those changes are described as observed in the source,
+Source audit dated 2026-10-30, updated after the editable-project archive implementation.
+This includes `.gamx` playable models and the new `.gamp` editable-project archive implementation,
+standard-plugin classification and dependency packaging. Those changes are described as observed in the source,
 not as features verified in an already published release.
 
 This is a code-path audit, not a cross-platform execution report. Inherited
 Eclipse dialogs are identified as such; OS associations depend on the installed
-product and the user's selected default application. No runtime behavior is
-changed by this document. Sections explicitly marked **Proposal** are not
-implemented features.
+product and the user's selected default application. This document distinguishes implemented
+working-tree behavior from remaining proposals; it is not an installed-product acceptance report.
 
 ## Summary
 
@@ -23,10 +22,12 @@ There are three main systems:
 There is useful sharing inside the third system: package and application export
 share model discovery, experiment selection, presentation configuration and some
 path rewriting. Package opening also shares validation and player preparation.
-That sharing does not extend to ordinary project import/export or navigator drops.
+Editable project archives now reuse package path validation and plugin dependency discovery,
+but keep their own project-only manifest and workspace-import transaction. Ordinary file transfers
+and loose-model opening remain separate.
 
 **`.gamx` (GAMA executable model) is the runnable simulation package.
-`.gamp` is reserved for future editable project archives, not yet implemented.**
+`.gamp` is the editable project archive, with a default preview/import action.**
 A `.gamx` contains source projects, but its supported Open action
 starts a player rather than importing those projects into the modeling workspace.
 The missing distinction is not ZIP versus another compression format: `.gamx`
@@ -34,9 +35,27 @@ itself is ZIP-based. It is the document contract, metadata and opening action.
 
 Previously exported playable `.gamp` archives can be renamed to `.gamx`: the
 internal version-1 archive format is unchanged. Current export dialogs, document
-routing, navigator associations and OS registrations use `.gamx`, not `.gamp`;
-there is no automatic legacy-suffix playback alias. Reserving `.gamp` does not
-yet provide project export/import or double-click handling for that extension.
+routing and registrations distinguish playback (`.gamx`) from project import (`.gamp`);
+there is no automatic legacy-suffix playback alias.
+
+### Which operation should I use?
+
+| What you want | Use | What happens |
+|---|---|---|
+| Keep edits to your current model | Save / Save All | Writes current resources; linked or externally registered resources can modify originals outside the workspace. |
+| Share a complete editable project | Export > Project (`.gamp`) | Saves the whole project, with optional linked-resource targets and non-standard plugins. |
+| Bring an editable project into your workspace | Import GAMA project (`.gamp` or project ZIP) | Previews contents, chooses a group, resolves name conflicts, and copies projects into the workspace. |
+| Share experiments for playback | Export as playable model (`.gamx`) | Builds an isolated-player package rather than a normal workspace import. |
+| Run a received playable model | Open `.gamx` / navigator Play | Starts the player; does not install its plugins into the modeler. |
+| Work directly on an existing external project folder | Existing project folder (advanced) | Can register the original location instead of copying it; saves may modify those original files. |
+| Transfer individual files | Import from disk/archive, or resource copy/link | Transfers resources without collecting a model's dependencies. |
+| Recover generated simulation output | Save Simulation Data | Copies selected recent outputs, not the complete project or a resumable checkpoint. |
+
+**Implementation status:** the affected archive and UI bundles compile, and product
+descriptors have been checked. No tests were created or run. Live import/export
+dialogs, plugin activation after restart and native OS double-click behavior have
+not been exercised. OS icons and associations require a rebuilt/installed product;
+editing these sources does not update the current installation's registrations.
 
 ## 1. Current operations
 
@@ -45,13 +64,13 @@ yet provide project export/import or double-click handling for that extension.
 | Save / Save All | Standard workbench/editor saving. GAML Save optionally formats the document first. | Saves editor resources, not a portable project or dependency manifest. Saving a linked resource writes its external target. |
 | Save As | GAML calls the inherited Xtext Save As implementation after the same optional formatting. | A document operation, not a project clone, dependency relocation or package export. Destination UI is inherited from Xtext/Eclipse. |
 | Open/double-click a workspace model | Navigator uses `IDE.openEditor` and the editor registry. | Edits the existing workspace resource. A workspace `.experiment` opens in the editor; this is different from the argument-opening route below. |
-| Open a model through OS events or GUI application arguments | `Application.openDocument` delegates non-`.gamx` paths to `WorkspaceModelsManager`. | May register a containing project, or import one file as a copy/link. `#experimentName` requests execution; `.experiment` without a selector requests experiment `"0"`. |
+| Open through OS events or GUI application arguments | Shared dispatch sends `.gamx` to playback, `.gamp`/project ZIPs to import, and model paths to `WorkspaceModelsManager`. | The model route may register a containing project or copy/link one file. `#experimentName` requests execution; `.experiment` without a selector requests experiment `"0"`. |
 | `FileOpen` handler class | Contains a `.gaml` / `.experiment` / All Files picker and calls the same model manager. | All Files also allows the recognized `.model` / `.species` extensions; unrelated extensions are ignored. No registration/reference for this class was found in the inspected UI wiring; do not assume there is a supported File > Open model dialog just because this class exists. |
-| Import > Project | Custom project-import wizard searches a directory or archive for `.project` descriptions. | Directory projects can be copied or registered at their existing location. The copy setting is remembered and initially false. Archive projects are extracted into the workspace. No package/plugin manifest processing. |
+| Import > Project / File > Import GAMA project | Shared `.gamp`/legacy ZIP importer: preview, group, collision plan, validated staging, workspace copy. | `.gamp` verifies its manifest and payload checksums. Plugin installation is opt-in. Advanced project-folder import retains copy/register-in-place behavior. |
 | Import > From disk | Thin subclass of Eclipse's filesystem import wizard. | Resource transfer into a project/container, not model dependency discovery. |
 | Import > From archive | Thin subclass of Eclipse's ZIP import wizard. | Extracts selected resources; does not establish a runnable package environment. |
-| Export > Project | GAMA wrapper around Eclipse's archive-resource export page. | An archive of selected resources, not a GAMA dependency-aware project format. Project completeness depends on selection; no automatic plugin closure. |
-| External files to archive | Thin subclass of Eclipse's ZIP export wizard. | Generic archive export; substantially overlaps the project-export implementation. |
+| Export > Project | Compact whole-project save dialog, default `[Project Name].gamp`. | Optional resolved links and required non-standard plugins; no file tree or experiment requirement. Saves dirty editors with consent first. |
+| External files to archive | Thin subclass of Eclipse's ZIP export wizard. | Advanced selected-resource export; unlike `.gamp`, it does not provide project metadata or dependency handling. |
 | Export as playable model | Shared simulation-export handler/dialog, defaulting to `.gamx`. | Compiles models, discovers projects/data/plugins, selects experiments, stages a portable payload. Does not include GAMA or a JDK. |
 | Export application instead | Switches the same dialog to the full application exporter. | Builds an application distribution with runtime and optional JDK/executable options. Uses a different archive-building implementation. |
 | Open playable model / navigator `.gamx` double-click | Validates and prepares an isolated player. | Does not import into the modeling workspace or install plugins into the running modeler. |
@@ -72,7 +91,7 @@ individual file creates a workspace resource referring to the original file.
 These are not interchangeable, particularly when the original is later moved,
 deleted or saved through GAMA.
 
-The project-import wizard offers a destination group and asks for another project
+The advanced directory-project import wizard offers a destination group and asks for another project
 name on conflicts. A renamed directory import is forced to copy rather than
 rename the original. It is not a general cross-project-reference migration tool.
 Project-name changes need special care when models use workspace-relative paths.
@@ -124,12 +143,12 @@ The drop target changes the meaning of the operation:
 
 | Target / route | Current meaning |
 |---|---|
-| Navigator root | `NavigatorDropAssistant` calls `PasteAction.handlePaste`. A recognized project directory is copied into a project named after the directory, excluding the source `.project`; other directories/files are copied into a selected/fallback container. |
+| Navigator root | Project archives (`.gamp`/ZIP) enter the shared importer. A recognized project directory is copied into a project named after the directory, excluding the source `.project`; other inputs retain the existing copy behavior. |
 | Existing navigator project/folder | `NavigatorResourceDropAssistant` uses Eclipse copy/link operations according to the requested drop operation. |
 | Paste filesystem directories into a user group | `UserGroups.importDirectories` copies recognized project directories, asks about name conflicts and registers the copies. Non-project inputs are skipped by this helper. |
 | GAML editor text area | External files are reused if already registered, otherwise linked under the editor project's `external/` folder. Model resources generate import statements; other file resources generate file declarations. This edits the current model rather than opening/importing a project. |
 
-These routes do not implement a common archive classifier. In particular,
+Existing project/folder and editor drops remain resource transfers. In particular,
 dropping a `.gamx` onto an existing project/folder transfers the archive as a
 resource; it does not invoke the player or import its projects. Opening that
 resource afterwards uses the `.gamx` player association.
@@ -225,29 +244,29 @@ Sources: [model discovery][discovery], [package export][package-export],
 ## 5. OS associations, arguments and installation drop-ins
 
 macOS declares `.gaml` and `.experiment` as editor documents and `.gamx` as a
-viewer document. Windows registers Open With handlers; Linux's Debian packaging
+viewer document, and `.gamp` as an editable-project import document. Windows registers Open With handlers; Linux's Debian packaging
 installs a desktop handler and MIME descriptions. User-selected defaults still
 apply. These registrations require an assembled/installed product; an Eclipse
 development launch or an old installation does not acquire them from source edits.
 Package launching through the UI explicitly requires an installed native launcher.
 The current UI labels are **Open playable model...**, **Export as playable
-model...** and **Properties > Playable model**. The reserved `.gamp` extension
-has no playable-model registration; old playable archives need the `.gamx` suffix.
+model...** and **Properties > Playable model**. Navigator archives additionally offer
+**Play** (`.gamx`) or **Import** (`.gamp`), cached content summaries and properties.
+Old playable archives need the `.gamx` suffix.
 
 Argument parsing is only partly unified:
 
 - The pre-Equinox launcher and `PackageDocuments` each parse document arguments.
   They have different option-value lists.
-- `Application.openDocument` is a useful shared package/model dispatch point,
-  but ordinary `ApplicationWorkbenchAdvisor.postStartup` still reads raw
-  application arguments and opens only the last one.
-- Thus `Gama A.gamx B.gaml` can reach the modeler and open only `B.gaml` on this
-  route; the initially classified package list is not universally dispatched.
-  Native document events, by contrast, are queued and processed individually.
+- Normal product startup forwards every classified document to the modeler's
+  document queue when the request is not exclusively playable models. The advisor
+  does not process those arguments a second time. Direct development launches
+  that bypass the document-router application still retain the advisor's legacy
+  last-argument fallback.
 - `model.gaml#experimentName` is handled by the model manager. Its `#` parsing is
   not a structured document-request representation.
-- The advisor retains a special `.gamr` launcher-delegate branch. It is separate
-  from package handling; the inspected serialization implementation uses saved
+- `.gamr` retains its launcher-delegate behavior, also through shared document dispatch.
+  The inspected serialization implementation uses saved
   agent/simulation formats, including `.gsim`, rather than treating `.gamr` as
   a general project archive.
 - Headless startup has its own XML/batch/`-gaml`/server argument processing. It
@@ -258,6 +277,10 @@ The regular product includes the p2 drop-ins reconciler and plugin-install
 commands. This is installation-level provisioning. A package carries `plugins/`
 and builds an explicit private bundle inventory; player preparation disables
 drop-ins reconciliation instead of copying package plugins into the installation.
+Project-archive import can, with explicit consent, stage included missing plugins
+as a complete Dropins contribution and offer to restart. It does not activate them
+in the current framework, overwrite installed conflicting bundles, or install
+anything just by inspecting an archive.
 
 Sources: [native launcher][native-launcher], [document classification][documents],
 [document router][router], [workbench arguments][arguments], [OS declarations][os-mac],
@@ -273,8 +296,8 @@ Sources: [native launcher][native-launcher], [document classification][documents
 | First | The external-name-conflict fallback discards its returned resource. | It calls `createUnclassifiedModelsProjectAndAdd`, returns only from the workspace operation, then tries to locate the file in the original project handle. Import can therefore succeed without the requested file being opened. [Source][external-project] |
 | First | Missing files/build failures can end without a useful user-facing error. | The model-opening route has null/debug-only exits; it does not share the package opener's explicit failure reporting. [Source][model-opening] |
 | Next | Copy/link/cancel/collision policies differ by entry point. | Loose-file opening, project import, root paste, group import and resource drop each own policy. A cancelled container selector can fall back to Unclassified Models rather than cancel. |
-| Next | Multiple file arguments and type routing differ by entry point. | Startup's last-argument handling, native event queues, package routing, file-picker filtering and navigator editor associations are not one contract. |
-| Next | No dependency-aware editable-project archive workflow. | Legacy project ZIP export has no dependency closure; `.gamx` has no supported modeling import and requires runnable experiments. `.gamp` is reserved, not implemented. |
+| Partly addressed | Multiple file arguments and type routing differ by entry point. | Product startup now queues mixed documents once; direct development launches retain the legacy fallback, and generic resource transfers deliberately do not open/import documents. |
+| Implemented | Dependency-aware editable-project archives. | `.gamp` exports whole projects, optional links/plugins, manifest/checksums, and uses the same collision/group import workflow as legacy ZIPs. See below for limits. |
 | Next | Export does not always snapshot every dirty participating editor. | Editor-triggered export saves the active editor, but saving all others depends on `EDITOR_SAVE`. Navigator-triggered export has only that optional Save All. Dependency discovery and staging can therefore use disk contents older than visible edits. [Source][simulation-export] |
 | Later | Runtime packaging still has two staging/dependency implementations. | `.gamx` uses `PackageProjectStager` and package dependency closure; application export uses `GamaZipBuilder` and `BundleDependencyAnalyzer`. Shared discovery does not imply identical portability guarantees. |
 | Later | "Save Simulation Data" sounds broader than its implementation. | Modification-time copying of the active project's files is neither a complete result inventory nor resumable simulation state. |
@@ -318,57 +341,87 @@ warning, or cancelling. A temporary project for a truly loose file is a possible
 convenience, not an implemented behavior. Never delete existing content to open
 a document, and make every cancellation terminate the request.
 
-### A standard editable project archive
+## 8. Implemented: editable `.gamp` project archives
 
-**Recommendation: implement the reserved `.gamp` editable-project format using
-the `.gamx` package infrastructure, rather than introduce another unrelated ZIP
-importer. Keep the two document intents explicit.**
+### Export and layout
 
-The v1 schema cannot simply be relabeled: it requires experiments and launcher
-settings. Define a versioned project schema/profile that can represent a
-project-only package, while continuing to read existing v1 `.gamx` packages as
-runnable simulations:
+**Export > Project** now opens a compact save dialog with the default
+`[Project Name].gamp`. It exports the whole project, with no file-selection tree.
+SWT's native save picker cannot portably host custom checkboxes, so **Browse**
+uses that picker inside the compact dialog. Both options default unchecked:
 
-| Profile | Default double-click action | Additional action |
-|---|---|---|
-| Playable model, `.gamx` including existing v1 archives | Run in isolated player | Import source projects for editing |
-| Editable project, reserved `.gamp` | Preview and import/copy projects | Run an available experiment after import |
+- **Resolve and export linked resources** materializes linked files/folders and
+  removes their external link definitions from the exported copy. Otherwise the
+  definitions remain and targets are omitted, with a portability warning.
+- **Export required GAMA plugins** appears only for required non-standard plugins.
+  Standard plugins remain host requirements; plugin dependency closure shares
+  the playable exporter. Optional plugins must be installed as distributable JARs.
 
-The extension split is now established: `.gamx` means play, `.gamp` means an
-editable project archive once implemented. Reuse shared validation and archive
-primitives, with explicit schema/profile checks, rather than duplicate the codec.
-Do not register `.gamp` as a player alias. Existing `.gamx` double-click behavior
-must remain unchanged; migration of old playable `.gamp` files is by renaming.
+```text
+Project.gamp                        ZIP container
+  gama-project.properties          format.version=1, archive.kind=project,
+                                    GAMA version, projects, links, requirements,
+                                    warnings, file sizes and SHA-256 hashes
+  workspace/Project/.project
+  workspace/Project/...            whole project resources, including empty folders
+  plugins/extra.plugin_version.jar optional non-standard plugins
+```
 
-A project profile should support one or more complete source projects, including
-non-compiling work in progress or model libraries without experiments. It needs
-an explicit content-selection policy for generated outputs and author-local files.
-Reuse portable path validation, payload inventory, safe staging, dependency
-declarations and archive inspection; adapt experiment requirements and compilation-
-based dependency discovery instead of imposing them on every project backup.
-For uncompiled projects, dependencies must be declared or reported unresolved,
-not presented as successfully inferred.
+The exporter writes one selected project; the format and importer support multiple
+projects. Models need no experiments and need not compile to preserve project
+files. Failed compilation makes dependency discovery explicitly incomplete and
+blocks plugin embedding; it is not reported as a complete dependency inventory.
+Referenced projects are reported but not recursively exported. Dynamic external
+data, filesystem symlinks, directory-form plugins and arbitrary external projects
+are not automatically collected. Workspace `.metadata` is always excluded.
+Whole-project resources can include generated outputs or local files: authors
+must review their project content before sharing it.
 
-Import should validate into staging, preview projects and requirements, establish
-a collision/rename plan, and only then copy/register projects. Renaming requires
-consistent updates to project references, workspace-relative model imports and
-entry-point paths; changing only `.project` names is insufficient. Archives
-must never supply Eclipse `.metadata` or overwrite existing projects implicitly.
+### Import, replace and rename
 
-Package Java plugins must **not** be silently installed into a running modeling
-session. Offer source-only import with explicit missing-dependency diagnostics,
-deliberate installation through normal provisioning when compatible, or an
-isolated authoring process using the package runtime. The last option is needed
-when host and package plugins conflict; player isolation does not automatically
-provide an authoring UI.
+Use **File > Import GAMA project**, navigator **Import**, or open/double-click
+`.gamp`. OS associations are packaged for macOS, Windows and Linux and take effect
+only in rebuilt/installed products, subject to default-application preferences.
+The same import dialog accepts old project ZIPs containing `.project` descriptions;
+they have no dependency manifest or checksums. Generic **Import from archive**
+still transfers selected files rather than importing a project.
+The archive option in the advanced project-import wizard also forwards `.gamp`
+and ZIP files to this shared importer; directory and other legacy archive routes
+retain their existing behavior.
 
-The early launcher currently recognizes `.gamx` as runnable and excludes `.gamp`
-from package classification. Future `.gamp` handling must route to modeling import,
-not the player, and validate the project schema/profile before modifying the
-workspace. Add consistent cold-start, running-modeler, dialog and OS handlers
-together; merely adding an Import wizard would leave double-click unsupported.
+Import previews content, link portability and plugin requirements, then asks for
+an optional navigator group. Existing project names offer **Cancel / Replace
+existing model / Rename and import**. An occupied but unregistered directory can
+only be preserved by cancellation or renaming, not implicitly overwritten.
+Replacement is limited to workspace-owned user projects: built-in library
+projects and externally registered projects must instead be renamed/copied.
+Originals are retained under `.metadata/gama-project-backups/<id>/`.
 
-### Delivery order
+Extraction validates bounded, portable paths and, for `.gamp`, payload checksums before any
+workspace copy. The importer validates the complete plan first and rolls back
+failed project registration/replacement. Renaming adjusts `.project` references
+and static cross-project model/data literals while preserving comments and source
+encodings; dynamically constructed paths, scripts and arbitrary data formats are
+not migrated. Choosing a different group does not collect or repair references
+to projects that are outside the archive.
+
+### Optional plugin installation
+
+Importing is not consent to execute additional Java code. An unchecked install
+option appears for included missing plugins, with a trust warning. If selected,
+the importer checks plugin identity/version, installed/pending conflicts and
+Dropins permissions, and stages the contribution before changing projects.
+After import, it publishes the complete contribution and offers a restart.
+Installation failures are reported explicitly; no incompatible installed bundle
+is overwritten. Read-only installations require normal plugin provisioning.
+Declining installation still imports editable sources, which may not compile
+until requirements are installed. Checksums prove consistency, not authenticity.
+
+`.gamx` still opens the isolated player, not this importer. Old playable `.gamp`
+files must be renamed to `.gamx`. Editable import of playable packages remains a
+separate future feature.
+
+## 9. Remaining delivery priorities
 
 1. Fix external-opening correctness first: non-destructive reopen, canonical
    identity checks, preserved fallback results, meaningful errors and real cancel.
@@ -376,9 +429,8 @@ together; merely adding an Import wizard would leave double-click unsupported.
    document arguments once; distinguish Edit from Run for `.experiment`.
 3. Add validated **Import source projects** for existing runnable `.gamx` files,
    with an explicit plugin strategy. Preserve existing player opening.
-4. Implement the reserved `.gamp` editable-project profile, versioned schema,
-   export and default import action, then make it the primary project-export
-   choice. Keep legacy ZIP import.
+4. Extend `.gamp` dependency declarations for broken projects and explicit
+   multi-project export where needed; retain the simple whole-project save flow.
 5. Consolidate portable staging/dependency planning where application and package
    export can actually share it; define dirty-editor snapshot policy and clearer
    result-export/recovery behavior.
@@ -389,10 +441,9 @@ multiple/mixed arguments, model/data relative paths, missing/conflicting plugins
 project-only archives, dirty editors, old playable `.gamp` files renamed to
 `.gamx`, reserved-suffix routing, and cold/running GAMA on each supported OS.
 
-Until that work is implemented, the practical rule is: **Save for edits, legacy
-project archives for editable exchange with separately managed dependencies,
-`.gamx` for runnable distribution, and Save Simulation Data for selected player
-outputs. `.gamp` remains reserved for future editable project archives.
+The practical rule is: **Save for edits, `.gamp` for editable project exchange
+(legacy ZIP import remains supported), `.gamx` for runnable distribution, and
+Save Simulation Data for selected player outputs.
 Do not promise that opening, dropping and importing are synonyms.**
 
 ## Source index
@@ -407,8 +458,10 @@ anchors, not a substitute for the status/proposal distinction above.
 [file-picker]: gama.ui.navigator/src/gama/ui/navigator/commands/FileOpen.java#L27-L44
 [file-store]: gama.ui.shared/src/gama/ui/shared/utils/FileOpener.java#L44-L108
 [wizards]: gama.ui.navigator/plugin.xml#L861-L944
-[project-export]: gama.ui.navigator/src/gama/ui/navigator/wizards/ExportProjectWizardPage.java#L109-L123
-[project-import]: gama.ui.navigator/src/gama/ui/navigator/wizards/ImportProjectWizardPage.java#L1127-L1320
+[project-export]: gama.ui.export/src/gama/ui/export/commands/ExportProject.java
+[project-import]: gama.ui.export/src/gama/ui/export/commands/ImportProject.java
+[project-archive]: gama.export/src/gama/export/ProjectArchive.java
+[project-import-transaction]: gama.ui.export/src/gama/ui/export/ProjectArchiveImport.java
 [simulation-export]: gama.ui.export/src/gama/ui/export/commands/ExportSimulation.java#L35-L145
 [root-drop]: gama.ui.navigator/src/gama/ui/navigator/view/NavigatorDropAssistant.java#L37-L59
 [paste]: gama.ui.navigator/src/gama/ui/navigator/view/actions/PasteAction.java#L289-L335

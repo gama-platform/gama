@@ -289,6 +289,11 @@ public class PasteAction extends SelectionListenerAction {
 	public static void handlePaste(final String[] selection) {
 		for (final String name : selection) {
 			final File f = new File(name);
+			if (f.isFile() && (name.toLowerCase(java.util.Locale.ROOT).endsWith(".gamp")
+					|| name.toLowerCase(java.util.Locale.ROOT).endsWith(".zip"))) {
+				gama.ui.application.Application.openDocument(name);
+				continue;
+			}
 			IContainer container;
 			// Necessary as the shell can be null from outside Eclipse when dragging resource
 			final Shell shell = WorkbenchHelper.getWorkbench().getActiveWorkbenchWindow().getShell();

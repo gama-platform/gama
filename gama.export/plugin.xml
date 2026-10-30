@@ -5,10 +5,13 @@
    </extension>
 
    <extension point="org.eclipse.core.contenttype.contentTypes">
+      <content-type id="gama.project.archive.type" name="GAMA project archive"
+            file-extensions="gamp,GAMP" priority="high"/>
       <content-type id="gama.exported.model.type" name="GAMA playable model"
             file-extensions="gamx,GAMX" priority="high"/>
    </extension>
    <extension point="gama.metadata">
+      <implementation content_type="gama.project.archive.type" class="gama.export.ProjectArchiveInfo"/>
       <implementation content_type="gama.exported.model.type" class="gama.export.ExportedModelInfo"/>
    </extension>
    <extension point="org.eclipse.core.runtime.applications" id="DocumentApplication" name="GAMA Document Router">

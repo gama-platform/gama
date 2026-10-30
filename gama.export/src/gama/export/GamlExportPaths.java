@@ -14,6 +14,56 @@ public final class GamlExportPaths {
 
 	private GamlExportPaths() {}
 
+	/** Adjusts static resource paths when projects in the same archive are renamed. */
+	public static String renameProjects(final String content, final String project, final Path model,
+			final Map<String, String> renamed) {
+		final Matcher matcher = TOKENS.matcher(content);
+		final var result = new StringBuilder();
+		final Path original = Path.of("/" + project).resolve(model).getParent();
+		final Path destination = Path.of("/" + renamed.getOrDefault(project, project)).resolve(model).getParent();
+		while (matcher.find()) {
+			final String token = matcher.group();
+			String replacement = token;
+			if (token.charAt(0) == '"' || token.charAt(0) == '\'') {
+				final String decoded = fileLiteral(token.substring(1, token.length() - 1));
+				if (decoded != null) {
+					String value = decoded;
+					boolean explicit = false;
+					for (final var entry : renamed.entrySet()) {
+						for (final String prefix : java.util.List.of("/resource/", "platform:/resource/")) {
+							final String from = prefix + entry.getKey() + "/";
+							if (value.startsWith(from)) {
+								value = prefix + entry.getValue() + "/" + value.substring(from.length());
+								explicit = true;
+								break;
+							}
+						}
+						if (explicit) break;
+					}
+					if (!explicit && value.startsWith("../")) {
+						try {
+							final Path target = original.resolve(value).normalize();
+							if (target.getNameCount() > 1) {
+								final String source = target.getName(0).toString();
+								final String name = renamed.get(source);
+								if (name != null && !name.equals(source))
+									value = destination.relativize(Path.of("/" + name).resolve(
+											target.subpath(1, target.getNameCount()))).toString().replace('\\', '/');
+							}
+						} catch (final InvalidPathException e) {
+							// Non-path strings are deliberately left unchanged.
+						}
+					}
+					if (!value.equals(decoded)) replacement = token.charAt(0) + value.replace("\\", "\\\\")
+							.replace(String.valueOf(token.charAt(0)), "\\" + token.charAt(0)) + token.charAt(0);
+				}
+			}
+			matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+		}
+		matcher.appendTail(result);
+		return result.toString();
+	}
+
 	public static String rewrite(final String content, final Path sourceModel, final Path packagedModel,
 			final Map<Path, Path> relocated) {
 		final Matcher matcher = TOKENS.matcher(content);

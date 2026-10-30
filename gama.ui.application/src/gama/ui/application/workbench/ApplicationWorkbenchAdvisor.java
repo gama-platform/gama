@@ -111,6 +111,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		warnIfWaylandUnstable();
 
+		if (Boolean.TRUE.equals(Display.getCurrent().getData("gama.startupArgumentsConsumed"))) return;
+
 		if (shouldOpenCommandLineModels() && args.length > 0) {
 			int i = 0;
 			if (args[0].contains("--launcher.defaultAction")) { i += 2; }

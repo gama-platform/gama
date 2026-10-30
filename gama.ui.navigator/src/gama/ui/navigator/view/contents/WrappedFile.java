@@ -77,7 +77,9 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	 */
 	protected void computeFileImage() {
 		final IFile f = getResource();
-		if ("gamx".equalsIgnoreCase(f.getFileExtension())) {
+		if ("gamp".equalsIgnoreCase(f.getFileExtension())) {
+			image = GamaIcon.named("navigator/files/file.gamp").descriptor();
+		} else if ("gamx".equalsIgnoreCase(f.getFileExtension())) {
 			image = GamaIcon.named("navigator/files/file.gamx").descriptor();
 		} else if (GamaBundleLoader.HANDLED_FILE_EXTENSIONS.containsValue(f.getFileExtension())) {
 			if (isShapeFileSupport) {

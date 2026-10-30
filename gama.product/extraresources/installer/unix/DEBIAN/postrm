@@ -3,6 +3,8 @@
 rm /usr/sbin/gama-headless
 rm -fr /opt/gama-platform
 
+rm -f /usr/share/icons/hicolor/512x512/mimetypes/application-x-gama-model-project.png
+
 if command -v update-mime-database >/dev/null 2>&1; then
     update-mime-database /usr/share/mime || exit $?
 fi

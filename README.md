@@ -106,17 +106,47 @@ re-enabling automatic validation.
 Running an experiment still compiles the model. Rechecking **Automatic validation** immediately validates and
 rebuilds documentation, then resumes automatic updates.
 
+## Editable project archives
+
+**Export > Project** saves the entire selected project as `[Project Name].gamp`, without a file-selection
+tree. The compact save dialog offers two opt-ins: **Resolve and export linked resources**, and, when needed,
+**Export required GAMA plugins**. With linked-resource export unchecked, only the link definitions are
+preserved: importing elsewhere may require repairing those external locations.
+
+A `.gamp` is a ZIP container with a versioned `gama-project.properties` manifest, complete project resources
+under `workspace/<project>/`, SHA-256 payload checksums, and optional non-standard plugin JARs under `plugins/`.
+No experiment is required. Non-compiling projects can be archived, but incomplete plugin discovery is reported
+and prevents plugin embedding. Referenced projects and dynamic external data are not automatically collected.
+
+Open/double-click a `.gamp`, use **File > Import GAMA project**, or choose **Import** in its navigator menu.
+The same importer accepts legacy project ZIPs containing `.project` descriptions. It previews projects,
+links and dependencies, lets you choose a navigator group, and resolves project-name collisions with
+**Cancel**, **Replace existing model**, or **Rename and import**. Replacement retains the original under
+the workspace's `.metadata/gama-project-backups/`; built-in and externally registered projects cannot be
+replaced. Renaming updates project references and static cross-project resource paths, not dynamically
+constructed paths or external programs.
+
+Included missing plugins are installed only with explicit consent into the installation's Dropins folder,
+followed by a restart prompt. Plugin permissions/conflicts are checked before projects are changed; installed
+incompatible bundles are not overwritten. Read-only installations require normal plugin provisioning instead.
+Declining installation still imports the editable projects, which may not compile until dependencies are
+available. Install plugins only from trusted sources: checksums are not signatures or a sandbox.
+
+The product registers `.gamp` as an import document on macOS, Windows and Linux; these associations and its
+package icons take effect with the rebuilt/installed product, subject to the OS's default-application settings.
+Generic file/ZIP transfer tools and advanced directory-project import remain separate operations.
+
 ## Playable models
 
 Playable models use `.gamx` (GAMA executable model) and open in GAMA's player rather than the modeling
-workspace. The `.gamp` extension is reserved for future editable project archives and is not registered as a
-playable-model document. Previously exported `.gamp` playable models can be renamed to `.gamx`; the archive
+workspace. The `.gamp` extension now identifies editable project archives, not playable-model documents.
+Previously exported `.gamp` playable models must be renamed to `.gamx`; their archive
 format is unchanged.
 
 For an audit of editor saving, project/archive transfer, external model opening,
 drag-and-drop, file arguments and playable-model playback, see
 [Models, projects, packages and file workflows](MODEL_PROJECT_WORKFLOWS.md).
-It distinguishes current behavior from a proposal for a unified editable-project archive workflow.
+It distinguishes implemented project-archive workflows from the remaining rationalisation proposals.
 
 `GamaBundleLoader` builds the standard plugin inventory at startup from `gama.standard.distribution` extensions,
 identically in PDE development launches and installed releases. Stock GAMA plugins mark themselves with

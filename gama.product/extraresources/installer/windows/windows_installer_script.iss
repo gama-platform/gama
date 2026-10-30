@@ -18,6 +18,7 @@
 #define MyAppAssocExt ".gaml"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 #define PackageAssocKey "Gama.SimulationPackage"
+#define ProjectAssocKey "Gama.ModelProject"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -95,6 +96,11 @@ Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}"; ValueType: string; Val
 Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\StandaloneModel.ico"",0"
 Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExeName}"" --launcher.openFile ""%1"""
 Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}\SupportedTypes"; ValueType: string; ValueName: ".gamx"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.gamp\OpenWithProgids"; ValueType: string; ValueName: "{#ProjectAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\{#ProjectAssocKey}"; ValueType: string; ValueName: ""; ValueData: "GAMA model project"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\{#ProjectAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\ModelProject.ico"",0"
+Root: HKA; Subkey: "Software\Classes\{#ProjectAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExeName}"" --launcher.openFile ""%1"""
+Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}\SupportedTypes"; ValueType: string; ValueName: ".gamp"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}"; ValueType: string; ValueName: ""; ValueData: ""; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: none; ValueName: "{app}\{#AppExeName}"; ValueData: ""; Flags: deletekey uninsdeletevalue
 

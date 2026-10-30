@@ -63,6 +63,8 @@
 								x64 -->
 								<copy file="./extraresources/StandaloneModel.icns"
 									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/"/>
+								<copy file="./extraresources/ModelProject.icns"
+									todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/"/>
 								<copy
                                     file="./extraresources/Model.icns"
                                     todir="./target/products/gama.ui.application.product/macosx/cocoa/x86_64/Gama.app/Contents/Resources/"
@@ -99,6 +101,8 @@
 
 								<!-- aarch64 -->
 								<copy file="./extraresources/StandaloneModel.icns"
+									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Resources/"/>
+								<copy file="./extraresources/ModelProject.icns"
 									todir="./target/products/gama.ui.application.product/macosx/cocoa/aarch64/Gama.app/Contents/Resources/"/>
 								<copy
                                     file="./extraresources/Model.icns"
@@ -139,6 +143,8 @@
 								-->
 								<copy file="./extraresources/StandaloneModel.ico"
 									todir="./target/products/gama.ui.application.product/win32/win32/x86_64/"/>
+								<copy file="./extraresources/ModelProject.ico"
+									todir="./target/products/gama.ui.application.product/win32/win32/x86_64/"/>
 								<copy file="./extraresources/Model.ico"
 									todir="./target/products/gama.ui.application.product/win32/win32/x86_64/"/>
 								<copy
@@ -166,6 +172,8 @@
 								Linux
 								-->
 								<copy file="./extraresources/StandaloneModel.png"
+									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/"/>
+								<copy file="./extraresources/ModelProject.png"
 									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/"/>
 								<copy file="./extraresources/Model.png"
 									todir="./target/products/gama.ui.application.product/linux/gtk/x86_64/"/>

@@ -7,6 +7,9 @@ chmod a+x -R /opt/gama-platform/headless/gama-headless.sh
 # Add gama-headless.sh shortcut in PATH
 ln -s /opt/gama-platform/headless/gama-headless.sh /usr/sbin/gama-headless
 
+install -Dm644 /opt/gama-platform/ModelProject.png \
+    /usr/share/icons/hicolor/512x512/mimetypes/application-x-gama-model-project.png || exit $?
+
 if command -v update-mime-database >/dev/null 2>&1; then
     update-mime-database /usr/share/mime || exit $?
 else

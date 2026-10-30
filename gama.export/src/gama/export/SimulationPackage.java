@@ -252,14 +252,18 @@ public final class SimulationPackage {
 	}
 
 	static void checkName(final String name, final Map<String, String> names) throws IOException {
+		checkPortableName(name, names);
+		if (!name.startsWith("workspace/") && !name.startsWith("plugins/")
+				&& !LauncherConfiguration.FILE.equals(name) && !LauncherConfiguration.IMAGE.equals(name))
+			throw new IOException("Unsupported playable model content: " + name);
+	}
+
+	static void checkPortableName(final String name, final Map<String, String> names) throws IOException {
 		try {
 			validatePath(name);
 		} catch (final IllegalArgumentException e) {
 			throw new IOException(e.getMessage(), e);
 		}
-		if (!name.startsWith("workspace/") && !name.startsWith("plugins/")
-				&& !LauncherConfiguration.FILE.equals(name) && !LauncherConfiguration.IMAGE.equals(name))
-			throw new IOException("Unsupported playable model content: " + name);
 		int end = 0;
 		do {
 			end = name.indexOf('/', end + 1);

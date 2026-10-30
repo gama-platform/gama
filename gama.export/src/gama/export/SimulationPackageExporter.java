@@ -37,10 +37,14 @@ public final class SimulationPackageExporter {
 	private SimulationPackageExporter() {}
 
 	public static List<Dependency> dependencies(final ExportModels models, final IProgressMonitor monitor) throws IOException {
+		return dependencies(models.plugins(), monitor);
+	}
+
+	public static List<Dependency> dependencies(final Set<String> plugins, final IProgressMonitor monitor) throws IOException {
 		final var result = new ArrayList<Dependency>();
 		final Set<String> standard = StandardDistribution.bundles();
 		final var roots = new ArrayList<Bundle>();
-		for (final String name : models.plugins().stream().sorted().toList()) {
+		for (final String name : plugins.stream().sorted().toList()) {
 			final Bundle bundle = Platform.getBundle(name);
 			if (bundle == null) throw new IOException("Required plugin is not installed: " + name);
 			roots.add(bundle);

@@ -25,6 +25,13 @@ public final class OpenSimulationPackage extends AbstractHandler {
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final var shell = HandlerUtil.getActiveShellChecked(event);
 		String selected = event.getParameter(PATH_PARAMETER);
+		if (selected == null && event.getCommand().getId().equals("gama.ui.export.playSelection")) {
+			final var selection = HandlerUtil.getCurrentSelection(event);
+			if (selection instanceof org.eclipse.jface.viewers.IStructuredSelection structured) {
+				final var file = org.eclipse.core.runtime.Adapters.adapt(structured.getFirstElement(), org.eclipse.core.resources.IFile.class);
+				if (file != null && file.getLocation() != null) selected = file.getLocation().toOSString();
+			}
+		}
 		if (selected == null) {
 			final var dialog = new FileDialog(shell, SWT.OPEN);
 			dialog.setText("Play exported model");
