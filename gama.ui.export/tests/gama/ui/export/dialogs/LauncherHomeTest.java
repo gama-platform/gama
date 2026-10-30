@@ -130,7 +130,7 @@ public final class LauncherHomeTest {
 			dialog.create();
 			check(dialog.getFormat() == ExportModelDialog.Format.PACKAGE
 					&& !field(dialog, "applicationOptions", Composite.class).getVisible(), "Default to packages and hide application options");
-			check(field(dialog, "destination", Text.class).getText().endsWith("Model.gamp"), "Use the package suffix");
+			check(field(dialog, "destination", Text.class).getText().endsWith("Model.gamx"), "Use the package suffix");
 			check(field(dialog, "pluginPaths", Text.class) == null, "No dependency controls when no extras are required");
 			check(java.util.Arrays.stream(field(dialog, "packageOptions", Composite.class).getChildren())
 					.noneMatch(control -> control instanceof Label label
@@ -141,17 +141,17 @@ public final class LauncherHomeTest {
 			dialog.buttonPressed(org.eclipse.jface.dialogs.IDialogConstants.CLIENT_ID);
 			check(dialog.getFormat() == ExportModelDialog.Format.STANDALONE
 					&& field(dialog, "applicationOptions", Composite.class).getVisible()
-					&& !field(dialog, "destination", Text.class).getText().endsWith(".gamp"),
+					&& !field(dialog, "destination", Text.class).getText().endsWith(".gamx"),
 					"Application button must reveal the legacy options and change the destination suffix");
 			dialog.buttonPressed(org.eclipse.jface.dialogs.IDialogConstants.CLIENT_ID);
 			check(dialog.getFormat() == ExportModelDialog.Format.PACKAGE
-					&& field(dialog, "destination", Text.class).getText().endsWith(".gamp")
+					&& field(dialog, "destination", Text.class).getText().endsWith(".gamx")
 					&& field(dialog, "title", Text.class).getText().equals("Preserve my title")
 					&& dialog.getPackageId().equals(identifier)
 					&& field(dialog, "experiments", Table.class).getSelectionCount() == 1,
 					"Switching formats must preserve presentation, package metadata and experiment selection");
 			field(dialog, "destination", Text.class).setText(java.nio.file.Path.of(System.getProperty("java.io.tmpdir"),
-					"package-dialog-" + java.util.UUID.randomUUID() + ".gamp").toString());
+					"package-dialog-" + java.util.UUID.randomUUID() + ".gamx").toString());
 			dialog.okPressed();
 			check(dialog.getShell() == null || dialog.getShell().isDisposed(), "Package OK must close the dialog");
 			check(dialog.getPackageId().equals(identifier) && identifier.matches("simulation\\.[a-f0-9-]+")

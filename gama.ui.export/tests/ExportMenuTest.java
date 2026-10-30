@@ -24,12 +24,12 @@ public final class ExportMenuTest {
 		final var factory = DocumentBuilderFactory.newInstance();
 		factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		final var document = factory.newDocumentBuilder().parse(root.resolve("gama.ui.export/plugin.xml").toFile());
-		final String label = "Export as standalone model...";
+		final String label = "Export as playable model...";
 		check(!matches(document, "//*[@commandId='gama.ui.export.sessions' or @id='gama.ui.export.sessions']"),
 				"Do not expose a package history or session management command");
 		for (String command : new String[] { "gama.ui.export.model", "gama.ui.export.selectedModel" }) {
-			check(matches(document, "//command[@id='" + command + "' and @name='Export as standalone model']"),
-					"Both export commands must use the standalone model name");
+			check(matches(document, "//command[@id='" + command + "' and @name='Export as playable model']"),
+					"Both export commands must use the playable model name");
 			check(matches(document, "//handler[@commandId='" + command
 					+ "' and @class='gama.ui.export.commands.ExportSimulation']"),
 					"Both commands must open the existing export dialog");

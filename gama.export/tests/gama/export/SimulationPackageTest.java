@@ -94,7 +94,7 @@ public final class SimulationPackageTest {
 			Files.write(source.resolve(LauncherConfiguration.IMAGE), new byte[] { 1, 2, 3 });
 			Files.createDirectories(source.resolve("plugins"));
 			Files.write(source.resolve("plugins/extension.jar"), new byte[] { 4, 5, 6 });
-			final Path archive = root.resolve("Example.gamp");
+			final Path archive = root.resolve("Example.gamx");
 			SimulationPackage.write(source, archive, manifest());
 			check(SimulationPackage.inspect(archive).equals(manifest()), "Manifest round trip");
 			final Path sessions = Files.createDirectories(root.resolve("sessions"));
@@ -135,7 +135,7 @@ public final class SimulationPackageTest {
 				invalid(() -> SimulationPackage.validatePath(path));
 			}
 
-			final Path bad = root.resolve("bad.gamp");
+			final Path bad = root.resolve("bad.gamx");
 			rewrite(archive, bad, UnaryOperator.identity(), bytes -> changeProperty(bytes, "format.version", "99"), UnaryOperator.identity());
 			rejects(() -> SimulationPackage.inspect(bad), "Reject future formats");
 			rewrite(archive, bad, UnaryOperator.identity(), bytes -> changeProperty(bytes, "file.0.path", "workspace/../escape"),
@@ -199,7 +199,7 @@ public final class SimulationPackageTest {
 			Files.writeString(source.resolve("unexpected.ini"), "do not execute");
 			rejects(() -> SimulationPackage.write(source, archive, manifest()), "Reject arbitrary runtime configuration");
 			Files.delete(source.resolve("unexpected.ini"));
-			rejects(() -> SimulationPackage.write(source, source.resolve("nested.gamp"), manifest()), "Reject output inside source");
+			rejects(() -> SimulationPackage.write(source, source.resolve("nested.gamx"), manifest()), "Reject output inside source");
 			Files.delete(source.resolve("plugins/extension.jar"));
 			rejects(() -> SimulationPackage.write(source, archive, manifest()), "Reject missing declared plugin");
 			check(java.util.Arrays.equals(previousArchive, Files.readAllBytes(archive)), "All failed exports preserve output");

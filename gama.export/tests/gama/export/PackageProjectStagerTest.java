@@ -95,7 +95,7 @@ public final class PackageProjectStagerTest {
 			check(!materialized.contains("linkedResources") && !materialized.contains("variableList")
 					&& !materialized.contains("filteredResources") && materialized.contains("gaml.compiler.gamlBuilder"),
 					"Remove author-only metadata but retain builders and natures");
-			final Path archive = root.resolve("result.gamp");
+			final Path archive = root.resolve("result.gamx");
 			Files.createDirectories(staged.resolve("configuration"));
 			Files.writeString(staged.resolve(LauncherConfiguration.FILE), LauncherConfiguration.defaults().serialize());
 			final var manifest = new SimulationPackageManifest("example.test", "1.0", "test",

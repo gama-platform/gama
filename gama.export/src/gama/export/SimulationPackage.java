@@ -28,7 +28,7 @@ import java.util.zip.ZipOutputStream;
 /** A data-only archive codec. It never installs or executes the plugins it carries. */
 public final class SimulationPackage {
 
-	public static final String EXTENSION = ".gamp";
+	public static final String EXTENSION = ".gamx";
 	private static final int MAX_MANIFEST_BYTES = 1024 * 1024;
 	public static final Limits DEFAULT_LIMITS = new Limits(10_000, 2L * 1024 * 1024 * 1024, 8L * 1024 * 1024 * 1024);
 

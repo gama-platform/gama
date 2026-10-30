@@ -5,22 +5,22 @@
    </extension>
 
    <extension point="org.eclipse.ui.propertyPages">
-      <page id="gama.ui.export.standaloneModel.properties" name="Standalone model"
+      <page id="gama.ui.export.standaloneModel.properties" name="Playable model"
             class="gama.ui.export.dialogs.ExportedModelPropertyPage">
          <enabledWhen>
             <adapt type="org.eclipse.core.resources.IFile">
                <or>
-                  <test property="org.eclipse.core.resources.extension" value="gamp"/>
-                  <test property="org.eclipse.core.resources.extension" value="GAMP"/>
+                  <test property="org.eclipse.core.resources.extension" value="gamx"/>
+                  <test property="org.eclipse.core.resources.extension" value="GAMX"/>
                </or>
             </adapt>
          </enabledWhen>
       </page>
    </extension>
    <extension point="org.eclipse.ui.editors">
-      <editor id="gama.ui.export.standaloneModel" name="Standalone model player"
-            extensions="gamp,GAMP" default="true"
-            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.gamp.svg"
+      <editor id="gama.ui.export.standaloneModel" name="Playable model player"
+            extensions="gamx,GAMX" default="true"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.gamx.svg"
             launcher="gama.ui.export.commands.StandaloneModelLauncher">
          <contentTypeBinding contentTypeId="gama.exported.model.type"/>
       </editor>
@@ -52,11 +52,11 @@
       </application>
    </extension>
    <extension point="org.eclipse.ui.commands">
-      <command id="gama.ui.export.openPackage" name="Open standalone model" categoryId="gama.category">
+      <command id="gama.ui.export.openPackage" name="Open playable model" categoryId="gama.category">
          <commandParameter id="gama.ui.export.packagePath" name="Exported model path" optional="true"/>
       </command>
-      <command id="gama.ui.export.model" name="Export as standalone model" categoryId="gama.category"/>
-      <command id="gama.ui.export.selectedModel" name="Export as standalone model" categoryId="gama.category"/>
+      <command id="gama.ui.export.model" name="Export as playable model" categoryId="gama.category"/>
+      <command id="gama.ui.export.selectedModel" name="Export as playable model" categoryId="gama.category"/>
       <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
       <command id="gama.application.commands.SaveSimulationsArtifacts" name="Save Simulation Data" categoryId="gama.category"/>
       <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
@@ -124,17 +124,17 @@
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:file?after=additions">
-         <command commandId="gama.ui.export.openPackage" label="Open standalone model...">
+         <command commandId="gama.ui.export.openPackage" label="Open playable model...">
             <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
          </command>
-         <command commandId="gama.ui.export.model" label="Export as standalone model..."
+         <command commandId="gama.ui.export.model" label="Export as playable model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isModelEditor"/></visibleWhen>
          </command>
       </menuContribution>
       <menuContribution locationURI="popup:navigator.menu?endof=additions">
          <separator name="gama.ui.export.standalone" visible="true"/>
-         <command commandId="gama.ui.export.selectedModel" label="Export as standalone model..."
+         <command commandId="gama.ui.export.selectedModel" label="Export as playable model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
             <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
          </command>

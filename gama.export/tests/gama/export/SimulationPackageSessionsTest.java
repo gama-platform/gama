@@ -25,7 +25,7 @@ public final class SimulationPackageSessionsTest {
 			final Path content = Files.createDirectory(root.resolve("gama-package-test"));
 			final var manifest = new SimulationPackageManifest("example.test", "1.0", "test",
 					List.of(new SimulationPackageManifest.Experiment("Example/model.gaml", "Run")), List.of());
-			SimulationPackageSessions.register(content, root.resolve("source.gamp"), manifest);
+			SimulationPackageSessions.register(content, root.resolve("source.gamx"), manifest);
 			Files.createDirectories(content.resolve("workspace/Example"));
 			Files.writeString(content.resolve("workspace/Example/results.csv"), "results");
 			Files.createDirectory(root.resolve("unrelated"));
@@ -50,7 +50,7 @@ public final class SimulationPackageSessionsTest {
 			if (SimulationPackageSessions.list(root).size() != 1) throw new AssertionError("Ignore symlinked session roots");
 			Files.delete(alias);
 			if (!Files.exists(content.resolve("workspace/Example/results.csv"))) throw new AssertionError("Refused cleanup changed results");
-			SimulationPackageSessions.register(content, root.resolve("source.gamp"), manifest);
+			SimulationPackageSessions.register(content, root.resolve("source.gamx"), manifest);
 			final Path outside = Files.writeString(root.resolve("outside.csv"), "preserve");
 			Files.createSymbolicLink(content.resolve("external.csv"), outside);
 			SimulationPackageSessions.delete(root, content);

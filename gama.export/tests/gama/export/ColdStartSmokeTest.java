@@ -123,7 +123,7 @@ public final class ColdStartSmokeTest {
 		Files.createDirectories(root.resolve("staging/configuration"));
 		Files.writeString(root.resolve("staging").resolve(LauncherConfiguration.FILE),
 				new LauncherConfiguration("Cold route", "", false, "Run@Example/model.gaml", "").serialize());
-		final Path archive = root.resolve("model with spaces.gamp");
+		final Path archive = root.resolve("model with spaces.gamx");
 		SimulationPackage.write(root.resolve("staging"), archive, new SimulationPackageManifest("example.cold", "1",
 				"0.0.0-SNAPSHOT", List.of(new SimulationPackageManifest.Experiment("Example/model.gaml", "Run")), List.of()));
 		for (final String mode : List.of("argument", "event", "invalid", "normal", "normal-event", "late-document")) {
@@ -135,7 +135,7 @@ public final class ColdStartSmokeTest {
 			command.removeIf(argument -> argument.startsWith("-Dgama.package.") || argument.startsWith("-Dexported_runner="));
 			final boolean normal = mode.startsWith("normal");
 			final boolean fallback = normal || mode.equals("late-document");
-			final Path document = mode.equals("invalid") ? root.resolve("missing.gamp")
+			final Path document = mode.equals("invalid") ? root.resolve("missing.gamx")
 					: normal ? root.resolve("ordinary.gaml") : archive;
 			if (mode.equals("argument") || mode.equals("invalid") || mode.equals("late-document"))
 				command.addAll(command.indexOf("-vmargs"), List.of("--", document.toString()));

@@ -180,9 +180,9 @@ public final class SimulationPackageSmokeTest {
 										throw new AssertionError("Include Import-Package provider automatically");
 									if (choices.stream().noneMatch(choice -> choice.id().equals("gama.api") && choice.standard() && !choice.embeddable() && !choice.reason().isBlank()))
 										throw new AssertionError("Discover transitive host-only platform dependencies");
-									var output = root.resolve("authored.gamp");
+									var output = root.resolve("authored.gamx");
 									var config = new gama.export.LauncherConfiguration("Authored package", "Round trip", false, "Run@Example/model.gaml", "");
-									var forbidden = project.getLocation().toFile().toPath().resolve("new-folder/forbidden.gamp");
+									var forbidden = project.getLocation().toFile().toPath().resolve("new-folder/forbidden.gamx");
 									try {
 										gama.export.SimulationPackageExporter.export(discovered, discovered.experiments(), config,
 											"example.authored", "1.0", java.util.List.of(), forbidden, new org.eclipse.core.runtime.NullProgressMonitor());
@@ -192,7 +192,7 @@ public final class SimulationPackageSmokeTest {
 									gama.export.SimulationPackageExporter.export(discovered, discovered.experiments(), config,
 										"example.authored", "1.0", java.util.List.of(), output, new org.eclipse.core.runtime.NullProgressMonitor());
 									var packaged = gama.export.SimulationPackage.inspect(output);
-									var standalone = project.getFile("exported.gamp");
+									var standalone = project.getFile("exported.gamx");
 									standalone.createLink(output.toUri(), 0, null);
 									var metadata = gama.api.GAMA.getMetadataProvider().getMetaData(standalone, false, true);
 									if (!(metadata instanceof gama.export.ExportedModelInfo)
@@ -200,7 +200,7 @@ public final class SimulationPackageSmokeTest {
 											|| !metadata.getDocumentation().getContents().contains("example.packageprobe"))
 										throw new AssertionError("Navigator metadata contribution was not loaded: " + metadata);
 									var editor = org.eclipse.ui.PlatformUI.getWorkbench().getEditorRegistry()
-										.getDefaultEditor("exported.gamp");
+										.getDefaultEditor("exported.gamx");
 									if (editor == null || !editor.getId().equals("gama.ui.export.standaloneModel")
 											|| editor.getImageDescriptor() == null)
 										throw new AssertionError("Missing standalone player/icon association");
@@ -226,7 +226,7 @@ public final class SimulationPackageSmokeTest {
 										}
 										if (!propertyText.toString().contains("Example/model.gaml")
 												|| !propertyText.toString().contains("Included plugins:"))
-											throw new AssertionError("Standalone model properties are not visible");
+											throw new AssertionError("Playable model properties are not visible");
 									} finally { propertyPage.dispose(); propertyShell.dispose(); }
 									standalone.delete(true, null);
 									var embedded = packaged.bundles().stream().filter(required -> !required.artifact().isEmpty())
@@ -240,7 +240,7 @@ public final class SimulationPackageSmokeTest {
 										if (sharedPath.dataFiles().values().stream().flatMap(java.util.Collection::stream)
 												.noneMatch(path -> path.endsWith("file.simulation")))
 											throw new AssertionError("Keep a save destination that is also referenced as input");
-										var missingInputArchive = root.resolve("missing-input.gamp");
+										var missingInputArchive = root.resolve("missing-input.gamx");
 										try {
 											gama.export.SimulationPackageExporter.export(sharedPath, sharedPath.experiments(), config,
 												"example.missing", "1.0", java.util.List.of(), missingInputArchive, new org.eclipse.core.runtime.NullProgressMonitor());
@@ -270,7 +270,7 @@ public final class SimulationPackageSmokeTest {
 										if (!framework.resolveBundles(java.util.List.of(unsupported))) throw new AssertionError("Resolve unsupported fixture");
 										var unsupportedModels = new gama.export.ExportModels(discovered.roots(), discovered.experiments(),
 											discovered.projects(), java.util.Set.of("example.unsupported"), discovered.dataFiles());
-										var blocked = root.resolve("blocked.gamp");
+										var blocked = root.resolve("blocked.gamx");
 										java.nio.file.Files.writeString(blocked, "preserve previous archive");
 										try {
 											gama.export.SimulationPackageExporter.export(unsupportedModels, discovered.experiments(), config,
@@ -341,7 +341,7 @@ public final class SimulationPackageSmokeTest {
 				List.of(new SimulationPackageManifest.BundleRequirement("example.packageprobe", "1.0.0", "plugins/probe.jar"),
 						new SimulationPackageManifest.BundleRequirement("example.packagehelper", "1.0.0", "plugins/helper.jar"),
 						new SimulationPackageManifest.BundleRequirement("gama.api", "0.0.0", "")));
-		final Path archive = root.resolve("smoke.gamp");
+		final Path archive = root.resolve("smoke.gamx");
 		SimulationPackage.write(staging, archive, manifest);
 		if (Boolean.getBoolean("gama.smoke.prepareOnly")) {
 			System.out.println("Prepared smoke archive: " + archive);

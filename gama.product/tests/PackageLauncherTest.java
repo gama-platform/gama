@@ -15,10 +15,10 @@ public final class PackageLauncherTest {
 				"--launcher.overrideVmargs", "-data", "@noDefault", "-vm", "/jdk/libjvm.dylib");
 		check(PackageLauncher.documents(nativeArgs).isEmpty(), "Native launcher options are not document paths");
 		final var command = new java.util.ArrayList<>(nativeArgs);
-		command.addAll(List.of("--launcher.openFile", "/Models/Ants.gamp", "-vmargs", "-Dtitle=ignored.gamp"));
-		check(PackageLauncher.documents(command).equals(List.of("/Models/Ants.gamp")), "Ignore VM flags after document paths");
-		check(PackageLauncher.documents(List.of("-data", "/workspace", "/A model.gamp", "/model.gaml"))
-				.equals(List.of("/A model.gamp", "/model.gaml")), "Preserve mixed and multiple documents for fallback routing");
+		command.addAll(List.of("--launcher.openFile", "/Models/Ants.gamx", "-vmargs", "-Dtitle=ignored.gamx"));
+		check(PackageLauncher.documents(command).equals(List.of("/Models/Ants.gamx")), "Ignore VM flags after document paths");
+		check(PackageLauncher.documents(List.of("-data", "/workspace", "/A model.gamx", "/model.gaml"))
+				.equals(List.of("/A model.gamx", "/model.gaml")), "Preserve mixed and multiple documents for fallback routing");
 		final var root = Files.createTempDirectory("package-splash-test-");
 		try {
 			final var image = new java.awt.image.BufferedImage(120, 80, java.awt.image.BufferedImage.TYPE_INT_RGB);

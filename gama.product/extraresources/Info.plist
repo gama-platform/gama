@@ -11,10 +11,10 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>gamp</string>
+				<string>gamx</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>GAMA Exported Model</string>
+			<string>GAMA playable model</string>
 			<key>CFBundleTypeIconFile</key>
 			<string>StandaloneModel.icns</string>
 			<key>CFBundleTypeRole</key>
@@ -69,7 +69,7 @@
 			<key>UTTypeIdentifier</key>
 			<string>org.gama.simulation-package</string>
 			<key>UTTypeDescription</key>
-			<string>GAMA Exported Model</string>
+			<string>GAMA playable model</string>
 			<key>UTTypeIconFile</key>
 			<string>StandaloneModel.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -80,7 +80,7 @@
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>gamp</string>
+					<string>gamx</string>
 				</array>
 				<key>public.mime-type</key>
 				<string>application/vnd.gama.simulation-package</string>

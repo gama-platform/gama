@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-gama-simulation-package">
-    <comment>GAMA Exported Model</comment>
+    <comment>GAMA playable model</comment>
     <icon name="application-x-gama-simulation-package"/>
     <sub-class-of type="application/zip"/>
-    <glob pattern="*.gamp"/>
+    <glob pattern="*.gamx"/>
   </mime-type>
   <mime-type type="text/x-gama-model">
     <comment>GAMA Model</comment>

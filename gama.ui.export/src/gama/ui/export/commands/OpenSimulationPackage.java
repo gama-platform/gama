@@ -27,8 +27,8 @@ public final class OpenSimulationPackage extends AbstractHandler {
 		String selected = event.getParameter(PATH_PARAMETER);
 		if (selected == null) {
 			final var dialog = new FileDialog(shell, SWT.OPEN);
-			dialog.setText("Open standalone model");
-			dialog.setFilterExtensions(new String[] { "*.gamp" });
+			dialog.setText("Open playable model");
+			dialog.setFilterExtensions(new String[] { "*.gamx" });
 			selected = dialog.open();
 			if (selected == null) return null;
 		}

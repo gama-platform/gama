@@ -87,7 +87,7 @@ public final class SimulationPackageLauncherTest {
 			Files.createDirectories(source.resolve("plugins"));
 			final Path plugin = source.resolve("plugins/example.jar");
 			plugin(plugin, "example.extension", "1.2.3", null, null);
-			final Path archive = root.resolve("example.gamp");
+			final Path archive = root.resolve("example.gamx");
 			SimulationPackage.write(source, archive, manifest("example.extension", "1.2.3", "plugins/example.jar"));
 			final Path sessions = Files.createDirectories(root.resolve("sessions"));
 			final Path launcher = Path.of(System.getProperty("java.home"), "bin", "java");

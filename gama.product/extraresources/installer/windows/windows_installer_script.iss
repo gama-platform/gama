@@ -90,11 +90,11 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\DefaultIcon"; ValueType: s
 Root: HKA; Subkey: "Software\Classes\.experiment\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExeName}"" ""%1"""
 Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}\SupportedTypes"; ValueType: string; ValueName: ".gaml"; ValueData: ""
-Root: HKA; Subkey: "Software\Classes\.gamp\OpenWithProgids"; ValueType: string; ValueName: "{#PackageAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}"; ValueType: string; ValueName: ""; ValueData: "GAMA Exported Model"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\.gamx\OpenWithProgids"; ValueType: string; ValueName: "{#PackageAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}"; ValueType: string; ValueName: ""; ValueData: "GAMA playable model"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\StandaloneModel.ico"",0"
 Root: HKA; Subkey: "Software\Classes\{#PackageAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExeName}"" --launcher.openFile ""%1"""
-Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}\SupportedTypes"; ValueType: string; ValueName: ".gamp"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}\SupportedTypes"; ValueType: string; ValueName: ".gamx"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\Applications\{#AppExeName}"; ValueType: string; ValueName: ""; ValueData: ""; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: none; ValueName: "{app}\{#AppExeName}"; ValueData: ""; Flags: deletekey uninsdeletevalue
 

@@ -22,11 +22,11 @@ public final class PackageRegistrationTest {
 		check((Boolean) xpath.evaluate("//editor[@id='gama.ui.export.standaloneModel'"
 				+ " and @launcher='gama.ui.export.commands.StandaloneModelLauncher' and @default='true']"
 				+ "/contentTypeBinding[@contentTypeId='gama.exported.model.type']", ui, XPathConstants.BOOLEAN),
-				"Navigator opens standalone models through the player, not a text editor");
+				"Navigator opens playable models through the player, not a text editor");
 		check((Boolean) xpath.evaluate("//page[@id='gama.ui.export.standaloneModel.properties']"
 				+ "/enabledWhen/adapt[@type='org.eclipse.core.resources.IFile']/or"
-				+ "/test[@value='gamp']", ui, XPathConstants.BOOLEAN),
-				"Expose standalone model details in file properties");
+				+ "/test[@value='gamx']", ui, XPathConstants.BOOLEAN),
+				"Expose playable model details in file properties");
 		check((Boolean) xpath.evaluate("//command[@id='gama.ui.export.openPackage']"
 				+ "/commandParameter[@id='gama.ui.export.packagePath' and @optional='true']", ui, XPathConstants.BOOLEAN),
 				"OS document routing and the file dialog share a parameterized command");
@@ -34,7 +34,7 @@ public final class PackageRegistrationTest {
 				+ " and @class='gama.ui.export.commands.OpenSimulationPackage']", ui, XPathConstants.BOOLEAN),
 				"Register the package-open handler");
 		check((Boolean) xpath.evaluate("//menuContribution[@locationURI='menu:file?after=additions']"
-				+ "/command[@commandId='gama.ui.export.openPackage' and @label='Open standalone model...']",
+				+ "/command[@commandId='gama.ui.export.openPackage' and @label='Open playable model...']",
 				ui, XPathConstants.BOOLEAN), "Make package opening available from the File menu");
 		for (final String command : java.util.List.of("gama.ui.export.model", "gama.ui.export.selectedModel",
 				"gama.ui.navigator.commands.exportProjectAsSimulation")) {
@@ -48,8 +48,8 @@ public final class PackageRegistrationTest {
 				+ " or @commandId='gama.ui.export.package' or @commandId='gama.ui.export.selectedPackage']",
 				ui, XPathConstants.BOOLEAN), "Do not add duplicate package export commands or menu items");
 		final var bootstrap = parser.parse(root.resolve("gama.export/plugin.xml").toFile());
-		check((Boolean) xpath.evaluate("//content-type[@id='gama.exported.model.type' and @file-extensions='gamp,GAMP']",
-				bootstrap, XPathConstants.BOOLEAN), "Recognize .gamp as a distinct content type");
+		check((Boolean) xpath.evaluate("//content-type[@id='gama.exported.model.type' and @file-extensions='gamx,GAMX']",
+				bootstrap, XPathConstants.BOOLEAN), "Recognize .gamx as a distinct content type");
 		check((Boolean) xpath.evaluate("//implementation[@class='gama.export.ExportedModelInfo'"
 				+ " and @content_type='gama.exported.model.type']", bootstrap, XPathConstants.BOOLEAN),
 				"Contribute safe archive metadata to the navigator");

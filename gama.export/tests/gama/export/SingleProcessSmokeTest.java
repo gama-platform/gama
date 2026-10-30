@@ -17,8 +17,8 @@ public final class SingleProcessSmokeTest {
 		final Path fixture;
 		try (var children = Files.list(scratch)) { fixture = children.findFirst().orElseThrow(); }
 		final Path overlay = fixture.resolve("installation");
-		final Path archive = fixture.resolve("A simulation package \u00e9.gamp");
-		Files.move(fixture.resolve("smoke.gamp"), archive);
+		final Path archive = fixture.resolve("A simulation package \u00e9.gamx");
+		Files.move(fixture.resolve("smoke.gamx"), archive);
 		final boolean invalid = Boolean.getBoolean("gama.smoke.invalid");
 		if (invalid) Files.writeString(archive, "Not a ZIP archive");
 		final boolean normal = Boolean.getBoolean("gama.smoke.normal");

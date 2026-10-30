@@ -16,14 +16,14 @@ public final class PackageAssociationTest {
 		final Path root = Path.of(args.length == 0 ? "." : args[0]);
 		final Path installer = root.resolve("gama.product/extraresources/installer");
 		final String windows = Files.readString(installer.resolve("windows/windows_installer_script.iss"));
-		check(windows.contains("Software\\Classes\\.gamp\\OpenWithProgids")
+		check(windows.contains("Software\\Classes\\.gamx\\OpenWithProgids")
 				&& windows.contains("#define PackageAssocKey \"Gama.SimulationPackage\""),
 				"Windows installer must register a package-specific Open With entry");
 		check(windows.contains("--launcher.openFile \"\"%1\"\"\"")
-				&& windows.contains("ValueName: \".gamp\"; ValueData: \"\"; Flags: uninsdeletevalue"),
+				&& windows.contains("ValueName: \".gamx\"; ValueData: \"\"; Flags: uninsdeletevalue"),
 				"Quote package document paths and clean up registration on uninstall");
 		check(windows.contains("ValueData: \"\"\"{app}\\StandaloneModel.ico\"\",0\""),
-				"Windows standalone models use their own document icon");
+				"Windows playable models use their own document icon");
 		check(!windows.contains("UserChoice"), "Do not overwrite the user's selected default application");
 		final String desktop = Files.readString(installer.resolve("unix/gama-platform.desktop"));
 		check(desktop.contains("--launcher.openFile %F")
@@ -34,8 +34,8 @@ public final class PackageAssociationTest {
 		final var xml = factory.newDocumentBuilder().parse(installer.resolve("unix/gama-simulation-package.xml").toFile());
 		check((Boolean) XPathFactory.newInstance().newXPath().evaluate(
 				"//*[local-name()='mime-type' and @type='application/x-gama-simulation-package']"
-						+ "/*[local-name()='glob' and @pattern='*.gamp']", xml, XPathConstants.BOOLEAN),
-				"Ship a shared MIME database definition for .gamp");
+						+ "/*[local-name()='glob' and @pattern='*.gamx']", xml, XPathConstants.BOOLEAN),
+				"Ship a shared MIME database definition for .gamx");
 		check((Boolean) XPathFactory.newInstance().newXPath().evaluate(
 				"//*[local-name()='icon' and @name='application-x-gama-simulation-package']",
 				xml, XPathConstants.BOOLEAN), "Linux MIME icon name must match the installed hicolor asset");
@@ -53,9 +53,9 @@ public final class PackageAssociationTest {
 		final var plist = plistFactory.newDocumentBuilder().parse(root.resolve("gama.product/extraresources/Info.plist").toFile());
 		check((Boolean) XPathFactory.newInstance().newXPath().evaluate(
 				"/plist/dict/key[text()='CFBundleDocumentTypes']/following-sibling::*[1]/dict"
-						+ "[array/string='gamp']/key[text()='CFBundleTypeIconFile']"
+						+ "[array/string='gamx']/key[text()='CFBundleTypeIconFile']"
 						+ "/following-sibling::*[1][text()='StandaloneModel.icns']", plist, XPathConstants.BOOLEAN),
-				"Finder must associate standalone models with the new document icon");
+				"Finder must associate playable models with the new document icon");
 		final var product = factory.newDocumentBuilder().parse(root.resolve("gama.product/pom.xml").toFile());
 		final String packaging = Files.readString(root.resolve("gama.product/pom.xml"));
 		check(packaging.contains("extraresources/StandaloneModel.icns")

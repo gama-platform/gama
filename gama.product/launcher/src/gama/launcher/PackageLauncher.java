@@ -49,7 +49,7 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 			if (Boolean.getBoolean("gama.launcher.debug"))
 				System.err.println("Pre-framework startup documents: " + documents);
 			if (!alreadyPrepared && (documents.size() != 1
-					|| !documents.getFirst().toLowerCase(java.util.Locale.ROOT).endsWith(".gamp")))
+					|| !documents.getFirst().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx")))
 				return super.run(arguments.toArray(String[]::new));
 			final URL[] classpath = {
 					install.resolve(settings.getProperty("export")).toUri().toURL(),

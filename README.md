@@ -108,8 +108,13 @@ rebuilds documentation, then resumes automatic updates.
 
 ## Exported models
 
+Playable models use `.gamx` (GAMA executable model) and open in GAMA's player rather than the modeling
+workspace. The `.gamp` extension is reserved for future editable project archives and is not registered as a
+playable-model document. Previously exported `.gamp` playable models can be renamed to `.gamx`; the archive
+format is unchanged.
+
 For an audit of editor saving, project/archive transfer, external model opening,
-drag-and-drop, file arguments and `.gamp` playback, see
+drag-and-drop, file arguments and playable-model playback, see
 [Models, projects, packages and file workflows](MODEL_PROJECT_WORKFLOWS.md).
 It distinguishes current behavior from a proposal for a unified editable-project archive workflow.
 
@@ -121,7 +126,7 @@ Only plugins shipped by regular GAMA should be marked; installing an optional ex
 Development export reads these two features directly from sibling source projects without a Maven build;
 releases include copies of the same feature files. Product metadata is not read during export.
 
-The export bundle now provides a runtime-independent `.gamp` archive API, separate from the existing standalone
+The export bundle now provides a runtime-independent `.gamx` archive API, separate from the existing standalone
 application exporter. `SimulationPackage.write(stagingDirectory, destination, manifest)` packages staged
 `workspace/<project>/...` files, optional `plugins/*.jar`, and the existing
 `configuration/gama-launcher.properties` / `configuration/gama-launcher-image` presentation assets.
@@ -141,12 +146,12 @@ failed extraction cleans up only its newly created directory.
 `SimulationLaunchContext.fromPackage()` supplies explicit content/workspace paths and experiment choices to the
 player, without changing installation files or global preferences.
 
-Authors use the existing **File > Export as standalone model...** command from a model editor or the corresponding
+Authors use the existing **File > Export as playable model...** command from a model editor or the corresponding
 navigator export commands. These open the model export wizard by default; there is no separate package export
 menu item. **Export application instead...** switches the same wizard to the full application exporter (including
 its JDK/executable options), without losing the experiment selection or presentation settings. **Export package
 instead...** switches back. The package dialog reuses the standalone export's experiment
-selection, presentation image, title/description, Home option and default experiment, with a `.gamp` destination.
+selection, presentation image, title/description, Home option and default experiment, with a `.gamx` destination.
 Package identity and version are internal metadata generated automatically; users do not need to enter them.
 The default title omits the model's `.gaml` extension. Home and the launch overlay label experiments as
 "Experiment Classic", for example, without showing internal project/model paths.
@@ -179,7 +184,7 @@ JARs or use the application exporter in those cases. A package cannot replace an
 the same version. Dependency information survives switching export formats; the application exporter remains available
 when package dependency resolution fails.
 
-In an installed product, opening a single `.gamp` while GAMA is closed prepares its private runtime **before
+In an installed product, opening a single `.gamx` while GAMA is closed prepares its private runtime **before
 Equinox starts**, then runs the player in the original native launcher's JVM/process. The startup JAR delegates to
 the standard Eclipse launcher after preparation; it does not fork another Java process or modify the installed app.
 On macOS, a small Cocoa bridge collects Finder's initial open-document event before framework startup.
@@ -189,13 +194,13 @@ Player splashes do not draw Eclipse's startup progress bar or "Starting GAMA..."
 normal modeling startup retains its standard splash progress display.
 The usual GAMA splash is not shown first. Home and automatic experiment startup retain the package's existing settings.
 
-When GAMA is already running, **File > Open standalone model...**, application arguments and open-document events
+When GAMA is already running, **File > Open playable model...**, application arguments and open-document events
 prepare one additional isolated player; the running modeler is not converted into a player.
 The same archive validation and preparation run without a confirmation dialog. Multiple/mixed startup documents and
 document events received after the early collection window retain the pre-core router as a safe fallback.
 Ordinary launches still use the modeling application; a late ordinary document is forwarded without reopening an
 already handled package.
-The macOS product declares the `.gamp` document type. The Windows installer registers an Open With entry and the
+The macOS product declares the `.gamx` document type. The Windows installer registers an Open With entry and the
 Linux Debian package ships a desktop handler and shared MIME definition, without overriding user-selected defaults.
 These associations require a newly packaged installation; changing the source does not register an existing app.
 Product assembly installs `gama-launcher.jar` and its build-generated bundle locations into GUI products only.
@@ -203,20 +208,20 @@ Local macOS assembly builds the universal Cocoa bridge with Clang. When products
 release workflow builds it before signing, so the resulting library is signed with the rest of GAMA. The installed
 application's OS identity and icon remain GAMA's; package-specific assets are generated only in the private session.
 
-Standalone model documents reuse the existing green Play document artwork. Editable `.gaml` and `.experiment` files
+Playable model documents reuse the existing green Play document artwork. Editable `.gaml` and `.experiment` files
 share the blue-G document artwork. The product includes `.icns` for Finder, multi-resolution `.ico` for Windows
 Explorer, and PNG Linux MIME icons installed by the Debian package. OS registrations are applied when the new application is installed;
 the running/installed application is not modified by exporting a model.
 
-In GAMA's navigator, `.gamp` files have their own content type, document icon and player association. Open/double-click
+In GAMA's navigator, `.gamx` files have their own content type, document icon and player association. Open/double-click
 starts the standalone player rather than a text editor. With navigator metadata enabled, the suffix lists the included
-model paths and experiment count. **Properties > Standalone model** shows the experiments, required GAMA version and
+model paths and experiment count. **Properties > Playable model** shows the experiments, required GAMA version and
 any embedded extra plugins. Inspection reads the archive's bounded manifest without extracting files or loading code;
 invalid archives show an explicit error. Cached metadata is invalidated when the file changes.
 
 The OS artwork sources are the existing `Model.icns` and `Experiment.icns` in `gama.product/extraresources`;
 `StandaloneModel.icns` is an exact copy of `Experiment.icns`. The navigator uses a simple flat package outline with a G,
-with light/dark variants in `gama.ui.shared/icons_svg/{light,dark}/navigator/files/file.gamp.svg`.
+with light/dark variants in `gama.ui.shared/icons_svg/{light,dark}/navigator/files/file.gamx.svg`.
 Regenerate Windows/Linux artwork from PNGs decoded from the original ICNS files (macOS example):
 
 ```sh

@@ -188,7 +188,7 @@ public class EditorToolbar {
 						separate();
 						final var parameters = new CommandContributionItemParameter(editor.getSite(), null,
 								export.getId(), CommandContributionItem.STYLE_PUSH);
-						parameters.label = "Export as standalone model...";
+						parameters.label = "Export as playable model...";
 						parameters.icon = GamaIcon.named("navigator/menu.export").descriptor();
 						final var contribution = new CommandContributionItem(parameters);
 						contribution.fill(mainMenu, -1);

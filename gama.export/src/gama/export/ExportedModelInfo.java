@@ -29,7 +29,7 @@ public final class ExportedModelInfo extends AbstractFileMetaData {
 					.distinct().toList();
 			summary = String.join(", ", models) + SUFFIX_DEL + manifest.experiments().size() + " experiment"
 					+ (manifest.experiments().size() == 1 ? "" : "s");
-			details = "Standalone model\n\nModels: " + String.join(", ", models)
+			details = "Playable model\n\nModels: " + String.join(", ", models)
 					+ "\nExperiments: " + manifest.experiments().stream()
 							.map(e -> e.name() + " (" + e.model() + ")").collect(Collectors.joining(", "))
 					+ "\nRequires: GAMA " + manifest.runtimeVersion() + " or newer";

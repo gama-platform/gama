@@ -25,7 +25,7 @@ public final class ExportedModelInfoTest {
 	}
 
 	public static void main(final String[] args) throws Exception {
-		final Path root = Files.createTempDirectory("gamp-metadata-test-");
+		final Path root = Files.createTempDirectory("gamx-metadata-test-");
 		try {
 			final Path source = Files.createDirectories(root.resolve("source"));
 			Files.createDirectories(source.resolve("workspace/Example/models"));
@@ -40,7 +40,7 @@ public final class ExportedModelInfoTest {
 							new SimulationPackageManifest.Experiment("Example/models/Ants.gaml", "Explore")),
 					List.of(new SimulationPackageManifest.BundleRequirement("gama.core", "1.0.0", ""),
 							new SimulationPackageManifest.BundleRequirement("example.extra", "1.2.3", "plugins/example.jar")));
-			final Path archive = root.resolve("Ants.gamp");
+			final Path archive = root.resolve("Ants.gamx");
 			SimulationPackage.write(source, archive, manifest, () -> false);
 			final List<Path> before;
 			try (var paths = Files.walk(root)) { before = paths.sorted().toList(); }

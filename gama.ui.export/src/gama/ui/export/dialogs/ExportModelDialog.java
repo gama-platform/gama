@@ -88,7 +88,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	private void updateHeading() {
-		setTitle(format == Format.PACKAGE ? "Export model" : "Export standalone application");
+		setTitle(format == Format.PACKAGE ? "Export playable model" : "Export standalone application");
 		setMessage("Select experiments to export and optionally choose one to run by default.",
 				IMessageProvider.INFORMATION);
 	}
@@ -313,7 +313,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	private String alternateFormatLabel() {
-		return format == Format.PACKAGE ? "Export application instead..." : "Export model instead...";
+		return format == Format.PACKAGE ? "Export application instead..." : "Export playable model instead...";
 	}
 
 	@Override
@@ -336,7 +336,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	private String exportSuffix() {
-		if (format == Format.PACKAGE) return ".gamp";
+		if (format == Format.PACKAGE) return ".gamx";
 		if (oneFileButton != null && oneFileButton.getSelection()) return SystemInfo.isWindows() ? ".exe" : "";
 		return SystemInfo.isMac() ? ".app.zip" : ".zip";
 	}
@@ -353,13 +353,13 @@ public class ExportModelDialog extends TitleAreaDialog {
 		final String filename = defaultTitle.isBlank() ? "launcher"
 				: defaultTitle.replaceFirst("(?i)\\.gaml$", "").replaceAll("[\\\\/:*?\"<>|]", "_");
 		destination.setText(Path.of(System.getProperty("user.home"),
-				filename + (format == Format.PACKAGE ? ".gamp" : SystemInfo.isMac() ? ".app.zip" : ".zip")).toString());
+				filename + (format == Format.PACKAGE ? ".gamx" : SystemInfo.isMac() ? ".app.zip" : ".zip")).toString());
 		final Button browse = new Button(row, SWT.PUSH);
 		browse.setText("Browse...");
 		browse.addListener(SWT.Selection, event -> {
 			final FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-			dialog.setText(format == Format.PACKAGE ? "Export model" : "Export standalone model");
-			if (format == Format.PACKAGE) dialog.setFilterExtensions(new String[] { "*.gamp" });
+			dialog.setText(format == Format.PACKAGE ? "Export playable model" : "Export standalone application");
+			if (format == Format.PACKAGE) dialog.setFilterExtensions(new String[] { "*.gamx" });
 			dialog.setOverwrite(true);
 			try {
 				final Path path = Path.of(destination.getText()).toAbsolutePath();
@@ -390,8 +390,8 @@ public class ExportModelDialog extends TitleAreaDialog {
 					if (!dependency.standard() && !dependency.embeddable())
 						throw new IllegalArgumentException("Cannot package " + dependency.id() + ": " + dependency.reason());
 				}
-				if (!output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamp"))
-					throw new IllegalArgumentException("Exported model files must use the .gamp extension.");
+				if (!output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
+					throw new IllegalArgumentException("Exported model files must use the .gamx extension.");
 			}
 			selectedExperiments = Arrays.stream(experiments.getSelectionIndices())
 					.mapToObj(index -> availableExperiments[index]).toList();

@@ -90,7 +90,7 @@ public class Application implements IApplication {
 
 	/** Routes package documents through their handler without introducing a dependency on the export UI bundle. */
 	public static void openDocument(final String path) {
-		if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".gamp")) {
+		if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".gamx")) {
 			WorkspaceModelsManager.instance.openModelPassedAsArgument(path);
 			return;
 		}

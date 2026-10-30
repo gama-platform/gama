@@ -83,8 +83,8 @@ public final class SimulationPackageExporter {
 			final var sources = new ArrayList<PackageProjectStager.Source>();
 			final var data = new LinkedHashMap<String, Set<Path>>();
 			final Path output = destination.toAbsolutePath().normalize();
-			if (output.getParent() == null || !output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamp"))
-				throw new IOException("Choose a package destination file with the .gamp extension");
+			if (output.getParent() == null || !output.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
+				throw new IOException("Choose a package destination file with the .gamx extension");
 			final Path realOutput = canonicalDestination(output);
 			final var installation = Platform.getInstallLocation().getURL();
 			if (installation.getProtocol().equals("file")
