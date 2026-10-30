@@ -243,6 +243,25 @@ Re-enabling **Automatic validation** immediately performs the same refresh, then
 Both actions update error annotations without requiring an edit or save. Running an experiment still compiles
 the model, and stale error markers do not prevent launching a file whose automatic validation is disabled.
 
+### GAML file creation
+
+The global and navigator **New** menus now offer one **GAML file** wizard instead of separate model and
+experiment entries. Its **Model** tab opens by default; a **Standalone experiment** tab creates an
+experiment-only `.gaml` file, with optional model import and GUI or headless type selection. The separate
+test-experiment wizard remains available.
+
+### Model and package file formats
+
+Standalone experiment files, bundled library examples and generated test models now use the `.gaml`
+extension. A `.gaml` file can contain a model with experiments or a standalone experiment; the legacy
+`.experiment` extension remains supported for existing files and compatibility.
+
+The archive extensions now distinguish two different workflows: `.gamp` is an editable project archive
+that can be imported into a modeling workspace, while `.gamx` is a playable model package that opens in
+GAMA's isolated player. Both are ZIP-based, but opening them has different effects. Playable packages
+previously exported with the `.gamp` suffix must be renamed to `.gamx`; the playable archive contents
+remain compatible. Legacy project ZIP import remains supported.
+
 ### Co-model imports: preserve aliases while editing
 
 Adding, renaming, or removing `as` on an existing import now preserves the import's dependency-graph entry
@@ -796,7 +815,7 @@ It is supplied by `gama.extension.dataframe`, with loading/saving examples and a
   ([`3106d98aa`](https://github.com/gama-platform/gama/commit/3106d98aa), #1167;
   [`73a0a1c6c`](https://github.com/gama-platform/gama/commit/73a0a1c6c), #838).
 - Experiment agents expose `is_gui`. Co-modeling repairs aliased-model type resolution and
-  experiment/simulation population lookup; updated examples use standalone `.experiment`
+  experiment/simulation population lookup; updated examples use standalone experiment
   adapters instead of requiring coupling-specific experiments in base models
   ([`c32f8820a`](https://github.com/gama-platform/gama/commit/c32f8820a),
   [`0a8fe4f0c`](https://github.com/gama-platform/gama/commit/0a8fe4f0c),
