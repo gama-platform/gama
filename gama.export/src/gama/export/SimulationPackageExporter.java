@@ -45,7 +45,7 @@ public final class SimulationPackageExporter {
 			if (bundle == null) throw new IOException("Required plugin is not installed: " + name);
 			roots.add(bundle);
 		}
-		for (final Bundle bundle : closure(roots, monitor)) result.add(dependency(bundle, standard));
+		for (final Bundle bundle : closure(roots, standard, monitor)) result.add(dependency(bundle, standard));
 		return result.stream().sorted(Comparator.comparing(Dependency::automatic).reversed().thenComparing(Dependency::id)).toList();
 	}
 
@@ -151,7 +151,7 @@ public final class SimulationPackageExporter {
 				roots.add(bundle);
 			}
 			final var requirements = new ArrayList<SimulationPackageManifest.BundleRequirement>();
-			for (final Bundle bundle : closure(roots, monitor)) {
+			for (final Bundle bundle : closure(roots, standard, monitor)) {
 				checkCanceled(monitor);
 				if (standard.contains(bundle.getSymbolicName()) && embedded.containsKey(bundle.getSymbolicName()))
 					throw new IOException("Standard GAMA plugins must be supplied by the host: " + bundle.getSymbolicName());
@@ -203,7 +203,8 @@ public final class SimulationPackageExporter {
 		}
 	}
 
-	private static List<Bundle> closure(final List<Bundle> input, final IProgressMonitor monitor) throws IOException {
+	private static List<Bundle> closure(final List<Bundle> input, final Set<String> standard,
+			final IProgressMonitor monitor) throws IOException {
 		final var pending = new ArrayList<>(input);
 		final var result = new ArrayList<Bundle>();
 		final var visited = new HashSet<Bundle>();
@@ -215,10 +216,11 @@ public final class SimulationPackageExporter {
 			if (!identities.add(bundle.getSymbolicName()))
 				throw new IOException("Export requires multiple versions of " + bundle.getSymbolicName()
 						+ "; this package format currently declares one version per bundle");
+			result.add(bundle);
+			if (standard.contains(bundle.getSymbolicName())) continue;
 			final var wiring = bundle.adapt(BundleWiring.class);
 			if (wiring == null) throw new IOException("Plugin is not resolved: " + bundle.getSymbolicName());
 			for (final var wire : wiring.getRequiredWires(null)) pending.add(wire.getProviderWiring().getBundle());
-			result.add(bundle);
 		}
 		return result;
 	}

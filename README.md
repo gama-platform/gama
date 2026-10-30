@@ -108,6 +108,19 @@ rebuilds documentation, then resumes automatic updates.
 
 ## Exported models
 
+For an audit of editor saving, project/archive transfer, external model opening,
+drag-and-drop, file arguments and `.gamp` playback, see
+[Models, projects, packages and file workflows](MODEL_PROJECT_WORKFLOWS.md).
+It distinguishes current behavior from a proposal for a unified editable-project archive workflow.
+
+`GamaBundleLoader` builds the standard plugin inventory at startup from `gama.standard.distribution` extensions,
+identically in PDE development launches and installed releases. Stock GAMA plugins mark themselves with
+`<extension point="gama.standard.distribution"/>` in `plugin.xml`. Stock third-party bundle IDs come only from
+the existing `gama.feature.dependencies` and `gama.feature.ui.dependencies` feature declarations, without a duplicate list.
+Only plugins shipped by regular GAMA should be marked; installing an optional extension does not make it standard.
+Development export reads these two features directly from sibling source projects without a Maven build;
+releases include copies of the same feature files. Product metadata is not read during export.
+
 The export bundle now provides a runtime-independent `.gamp` archive API, separate from the existing standalone
 application exporter. `SimulationPackage.write(stagingDirectory, destination, manifest)` packages staged
 `workspace/<project>/...` files, optional `plugins/*.jar`, and the existing
@@ -155,9 +168,10 @@ Dependency controls are hidden for models that only use standard GAMA plugins. W
 bundle and package wiring. Discovery errors remain visible. Required non-standard Java plugin JARs and their non-standard dependencies are included
 automatically under `plugins/`, even when the exporter API is called without manually selected plugins. Only the required
 dependency closure is included, not every optional plugin installed by the author. Standard GAMA plugins remain host
-requirements. Standard membership comes from a build-time copy of the product's feature graph, not the author's
-potentially extended installation; stock transitive libraries are explicitly declared in the standard dependency features.
-Maven generates this metadata when building `gama.export`, so build that bundle before using package export in a development launch.
+requirements. Dependency traversal stops at standard plugins: their dependencies are supplied by GAMA.
+Standard membership comes from the markers gathered by `GamaBundleLoader` and the existing dependency features,
+not the author's potentially extended installation. The product feature graph is checked against these declarations
+as a development consistency check, rather than read during export.
 The review distinguishes standard requirements, automatically packaged plugins, and unsupported extras. Required
 non-standard plugins that are directories, fragments, contain native code or nested JARs currently block package
 export with an explicit reason, rather than silently requiring the recipient to install them. Build/install Java plugin
@@ -255,8 +269,8 @@ Set `-Dgama.smoke.unresolved=true` to check rejection of unresolved plugin depen
 Set `-Dgama.smoke.export=true` to discover and export a model inside the running workbench, including linked resources,
 external data and automatically embedded plugins (including an Import-Package provider), and reopen the resulting package
 in another isolated player whose stock installation lacks those plugins. Unsupported extra dependencies must fail
-without changing an existing destination archive. `StandardDistributionTest` optionally takes the repository root and
-a stock installed Eclipse directory to check that its bundle inventory contains no undeclared standard dependencies.
+without changing an existing destination archive. `StandardDistributionTest` optionally takes the repository root
+and checks that standard-distribution markers match the product's feature graph exactly.
 `PackageCompatibilityTest` covers minimum runtime/host versions, numeric version ordering and exact embedded payload identities.
 Also set `-Dgama.smoke.ui=true` after compiling `LauncherHomeTest` and `LaunchPresentationTest` onto the smoke runner's
 classpath to exercise the wizard's format switch and shared Home/launch geometry, typography, images and cancellation

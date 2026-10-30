@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension point="gama.standard.distribution">
+   </extension>
+
+   <extension-point id="gama.standard.distribution" name="Standard GAMA distribution"
+         schema="schema/gama.standard.distribution.exsd"/>
    <extension-point id="gama.display" name="Implementations of IDisplaySurface" schema="schema/gama.display.exsd"/>
    <extension-point id="gama.create" name="Implementations of ICreateDelegate" schema="schema/gama.create.exsd"/>
    <extension-point id="gama.save" name="Implementations of ISaveDelegate" schema="schema/gama.save.exsd"/>

@@ -17,18 +17,18 @@
         <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <execution>
-            <id>standard-distribution-metadata</id>
+            <id>standard-dependency-features</id>
             <phase>generate-resources</phase>
             <goals><goal>copy-resources</goal></goals>
             <configuration>
-              <outputDirectory>${project.build.outputDirectory}/standard-distribution</outputDirectory>
+              <outputDirectory>${project.build.outputDirectory}/standard-dependencies</outputDirectory>
               <resources>
                 <resource>
                   <directory>${project.basedir}/..</directory>
                   <filtering>false</filtering>
                   <includes>
-                    <include>gama.product/gama.product</include>
-                    <include>gama.feature.*/feature.xml</include>
+                    <include>gama.feature.dependencies/feature.xml</include>
+                    <include>gama.feature.ui.dependencies/feature.xml</include>
                   </includes>
                 </resource>
               </resources>

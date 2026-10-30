@@ -1,56 +1,73 @@
 package gama.export;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
-/** Checks immutable product membership independently of installed optional plugins. */
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Element;
+
+/** Source consistency check; product files are not used by runtime export. */
 public final class StandardDistributionTest {
 
-	public static void main(final String[] args) throws Exception {
-		final Map<String, String> resources = Map.of(
-				"gama.product/gama.product", "<product><features><feature id='gama.feature.root'/></features></product>",
-				"gama.feature.root/feature.xml", """
-						<feature id='gama.feature.root'>
-						<plugin id='gama.core'/><includes id='gama.feature.child'/>
-						<requires><import plugin='standard.library'/><import feature='gama.feature.required'/></requires>
-						</feature>
-						""",
-				"gama.feature.child/feature.xml", """
-						<feature id='gama.feature.child'><plugin id='standard.child'/>
-						<includes id='gama.feature.root'/></feature>
-						""",
-				"gama.feature.required/feature.xml",
-				"<feature id='gama.feature.required'><plugin id='standard.required'/></feature>",
-				"gama.feature.optional/feature.xml",
-				"<feature id='gama.feature.optional'><plugin id='extra.optional'/></feature>");
-		final var standard = StandardDistribution.bundles(path -> {
-			final String xml = resources.get(path);
-			return xml == null ? null : new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-		});
-		if (!standard.equals(Set.of("gama.core", "standard.child", "standard.library", "standard.required")))
-			throw new AssertionError("Follow standard product feature graph, not unrelated features: " + standard);
-		try {
-			StandardDistribution.bundles(path -> null);
-			throw new AssertionError("Missing build metadata must not classify every plugin as an extra");
-		} catch (final IOException expected) {}
-		final var built = StandardDistribution.bundles();
-		final Path repository = Path.of(args.length == 0 ? "." : args[0]);
-		final var source = StandardDistribution.bundles(path -> Files.newInputStream(repository.resolve(path)));
-		if (!built.equals(source) || !built.containsAll(Set.of("gama.core", "gama.api", "gama.extension.bdi", "org.eclipse.osgi"))
-				|| built.contains("example.packageprobe"))
-			throw new AssertionError("Bundle the current standard product metadata, not the extended host inventory");
-		if (args.length > 1) {
-			for (final String line : Files.readAllLines(Path.of(args[1]).resolve(
-					"configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"))) {
-				if (!line.isBlank() && !line.startsWith("#") && !built.contains(line.split(",")[0]))
-					throw new AssertionError("Stock product contains an undeclared transitive standard dependency: " + line);
+	private static Element read(final Path path) throws Exception {
+		final var factory = DocumentBuilderFactory.newInstance();
+		factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		return factory.newDocumentBuilder().parse(path.toFile()).getDocumentElement();
+	}
+
+	private static void feature(final Path root, final String id, final Set<String> visited,
+			final Set<String> stock) throws Exception {
+		if (!visited.add(id)) return;
+		final var xml = read(root.resolve(id + "/feature.xml"));
+		for (final String tag : new String[] { "plugin", "includes", "import" }) {
+			final var entries = xml.getElementsByTagName(tag);
+			for (int i = 0; i < entries.getLength(); i++) {
+				final var entry = (Element) entries.item(i);
+				if (tag.equals("plugin")) stock.add(entry.getAttribute("id"));
+				if (tag.equals("includes")) feature(root, entry.getAttribute("id"), visited, stock);
+				if (tag.equals("import")) {
+					if (entry.hasAttribute("plugin")) stock.add(entry.getAttribute("plugin"));
+					if (entry.hasAttribute("feature")) feature(root, entry.getAttribute("feature"), visited, stock);
+				}
 			}
 		}
-		System.out.println("Standard distribution membership, feature traversal and generated metadata checks passed");
+	}
+
+	public static void main(final String[] args) throws Exception {
+		final Path root = Path.of(args.length == 0 ? "." : args[0]);
+		final var stock = new HashSet<String>();
+		final var visited = new HashSet<String>();
+		final var features = read(root.resolve("gama.product/gama.product")).getElementsByTagName("feature");
+		for (int i = 0; i < features.getLength(); i++)
+			feature(root, ((Element) features.item(i)).getAttribute("id"), visited, stock);
+		final var declared = new HashSet<String>();
+		try (var projects = Files.list(root)) {
+			for (final Path project : projects.filter(Files::isDirectory).toList()) {
+				if (!Files.isRegularFile(project.resolve("plugin.xml"))) continue;
+				final var entries = read(project.resolve("plugin.xml")).getElementsByTagName("extension");
+				for (int i = 0; i < entries.getLength(); i++) {
+					final var extension = (Element) entries.item(i);
+					if (!extension.getAttribute("point").equals("gama.standard.distribution")) continue;
+					declared.add(project.getFileName().toString());
+					if (extension.getElementsByTagName("bundle").getLength() != 0)
+						throw new AssertionError("Do not duplicate third-party inventory in plugin.xml");
+				}
+				for (final String feature : new String[] { "gama.feature.dependencies", "gama.feature.ui.dependencies" }) {
+					final var plugins = read(root.resolve(feature + "/feature.xml")).getElementsByTagName("plugin");
+					for (int i = 0; i < plugins.getLength(); i++)
+						declared.add(((Element) plugins.item(i)).getAttribute("id"));
+				}
+			}
+		}
+		if (!stock.equals(declared)) {
+			final var missing = new HashSet<>(stock);
+			missing.removeAll(declared);
+			declared.removeAll(stock);
+			throw new AssertionError("Standard markers differ from product: missing=" + missing + ", extra=" + declared);
+		}
+		System.out.println("Standard distribution markers match all " + stock.size() + " stock bundles");
 	}
 }

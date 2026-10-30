@@ -452,8 +452,11 @@ public final class SimulationPackageSmokeTest {
 			final String[] parts = line.split(",");
 			final var uri = java.net.URI.create(parts[2]);
 			Path bundle = uri.isAbsolute() ? Path.of(uri) : install.resolve(parts[2]);
-			if (List.of("gama.api", "gama.export", "gama.ui.export", "gama.ui.application", "gama.ui.shared",
-					"gama.ui.navigator").contains(parts[0])) {
+			final Path sourcePlugin = repository.resolve(parts[0]).resolve("plugin.xml");
+			final boolean compiledOverlay = List.of("gama.api", "gama.dev", "gama.export", "gama.ui.export",
+					"gama.ui.application", "gama.ui.shared", "gama.ui.navigator").contains(parts[0]);
+			if (compiledOverlay || Files.isRegularFile(sourcePlugin)
+					&& Files.readString(sourcePlugin).contains("point=\"gama.standard.distribution\"")) {
 				final Path source = repository.resolve(parts[0]);
 				final var contents = new java.util.LinkedHashMap<String, byte[]>();
 				final boolean directory = Files.isDirectory(bundle);
@@ -474,7 +477,7 @@ public final class SimulationPackageSmokeTest {
 						}
 					}
 				}
-				try (var paths = Files.walk(source.resolve("target/classes"))) {
+				if (compiledOverlay) try (var paths = Files.walk(source.resolve("target/classes"))) {
 					for (final Path path : paths.filter(Files::isRegularFile).toList()) {
 						final String name = source.resolve("target/classes").relativize(path).toString();
 						// Keep the installed API/core pair; exercise only the changed extension loader.

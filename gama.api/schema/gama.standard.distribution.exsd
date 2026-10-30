@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="gama.api" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appinfo>
+         <meta.schema plugin="gama.api" id="gama.standard.distribution" name="Standard GAMA distribution"/>
+      </appinfo>
+      <documentation>
+         Declares bundles shipped by regular GAMA. An empty extension marks its contributor.
+         Optional extensions must not mark themselves merely because they are installed or official.
+      </documentation>
+   </annotation>
+   <element name="extension">
+      <complexType>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+</schema>

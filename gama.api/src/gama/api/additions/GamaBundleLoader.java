@@ -228,6 +228,21 @@ public class GamaBundleLoader {
 	/** The Constant GAMA_PLUGINS_NAMES. */
 	private static final Set<String> GAMA_PLUGINS_NAMES = new LinkedHashSet<>(50);
 
+	private static volatile Set<String> standardDistributionBundles = Set.of();
+
+	/** Stock host requirements, independent of optional plugins installed by the author. */
+	public static Set<String> getStandardDistributionBundles() { return standardDistributionBundles; }
+
+	private static void loadStandardDistribution(final IExtensionRegistry registry) {
+		final var bundles = new java.util.HashSet<String>();
+		for (final IExtension extension : registry.getExtensionPoint("gama.standard.distribution").getExtensions()) {
+			bundles.add(extension.getContributor().getName());
+		}
+		if (!bundles.contains("gama.api") || !bundles.contains("gama.core"))
+			throw new IllegalStateException("Missing standard GAMA distribution declarations");
+		standardDistributionBundles = Set.copyOf(bundles);
+	}
+
 	/** The Constant GAMA_PLUGINS_NAMES. */
 	private static final Set<String> GAMA_DISPLAY_PLUGINS_NAMES = new LinkedHashSet<>(10);
 
@@ -282,6 +297,7 @@ public class GamaBundleLoader {
 
 		TIMER(BANNER_CATEGORY.GAML, "Plugins with language additions", "loaded in", () -> {
 			final IExtensionRegistry registry = Platform.getExtensionRegistry();
+			loadStandardDistribution(registry);
 			// We retrieve the elements declared as extensions to the GAML language,
 			// either with the new or the deprecated extension, and add their contributor plugin to GAMA_PLUGINS
 			try {
