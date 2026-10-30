@@ -133,4 +133,13 @@ public final class StartupModelHelper {
 		if (context == null) throw new IOException("No simulation workspace is available");
 		artifacts.saveZip(context.workspace(), target, monitor);
 	}
+
+	public void discardSimulationArtifacts() throws IOException {
+		if (context == null) throw new IOException("No simulation workspace is available");
+		artifacts.discard(context.workspace());
+	}
+
+	public void releaseOriginalInputs() throws IOException {
+		artifacts.releaseOriginals();
+	}
 }

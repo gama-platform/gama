@@ -2,6 +2,7 @@ package gama.export;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.FileVisitResult;
@@ -23,9 +24,75 @@ import org.eclipse.core.runtime.OperationCanceledException;
 public final class SimulationArtifacts {
 
 	private Map<Path, String> baseline = Map.of();
+	private Map<Path, String> original = Map.of();
+	private Path originals;
+	private Path workspaceRoot;
 
 	public void initialize(final Path workspace) throws IOException {
-		baseline = snapshot(workspace, new org.eclipse.core.runtime.NullProgressMonitor());
+		if (workspaceRoot != null) throw new IllegalStateException("Simulation artifacts are already initialized");
+		final Path source = workspace.toRealPath();
+		final var initial = snapshot(source, new org.eclipse.core.runtime.NullProgressMonitor());
+		final Path backup = Files.createTempDirectory("gama-player-inputs-");
+		try {
+			for (final Path relative : initial.keySet()) {
+				final Path target = backup.resolve(relative);
+				Files.createDirectories(target.getParent());
+				Files.copy(source.resolve(relative), target);
+			}
+		} catch (final IOException | RuntimeException e) {
+			try { deleteBackup(backup); } catch (final IOException cleanup) { e.addSuppressed(cleanup); }
+			throw e;
+		}
+		workspaceRoot = source;
+		originals = backup;
+		original = baseline = initial;
+	}
+
+	/** Discards generated files and restores inputs from before the player started. */
+	public void discard(final Path workspace) throws IOException {
+		if (workspaceRoot == null || !workspace.toRealPath().equals(workspaceRoot) || originals == null)
+			throw new IOException("No original inputs are available for this simulation workspace");
+		final var current = snapshot(workspaceRoot, new org.eclipse.core.runtime.NullProgressMonitor());
+		final var paths = new java.util.HashSet<>(current.keySet());
+		paths.addAll(original.keySet());
+		for (final Path relative : paths) {
+			if (java.util.Objects.equals(current.get(relative), original.get(relative))) continue;
+			final Path target = workspaceRoot.resolve(relative);
+			for (Path parent = target.getParent(); !parent.equals(workspaceRoot); parent = parent.getParent()) {
+				if (Files.exists(parent, LinkOption.NOFOLLOW_LINKS) && Files.isSymbolicLink(parent))
+					throw new IOException("Cannot discard data through a symbolic link: " + parent);
+			}
+			if (original.containsKey(relative)) {
+				Files.createDirectories(target.getParent());
+				Files.copy(originals.resolve(relative), target, StandardCopyOption.REPLACE_EXISTING);
+			} else {
+				Files.delete(target);
+			}
+		}
+		baseline = original;
+	}
+
+	public void releaseOriginals() throws IOException {
+		if (originals == null) return;
+		deleteBackup(originals);
+		originals = null;
+	}
+
+	private static void deleteBackup(final Path backup) throws IOException {
+		Files.walkFileTree(backup, new SimpleFileVisitor<>() {
+			@Override
+			public FileVisitResult visitFile(final Path file, final BasicFileAttributes attributes) throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(final Path directory, final IOException error) throws IOException {
+				if (error != null) throw error;
+				Files.delete(directory);
+				return FileVisitResult.CONTINUE;
+			}
+		});
 	}
 
 	private Map<Path, String> snapshot(final Path workspace, final IProgressMonitor monitor) throws IOException {
@@ -64,8 +131,7 @@ public final class SimulationArtifacts {
 	}
 
 	public boolean hasChanges(final Path workspace) throws IOException {
-		return snapshot(workspace, new org.eclipse.core.runtime.NullProgressMonitor()).entrySet().stream()
-				.anyMatch(entry -> !entry.getValue().equals(baseline.get(entry.getKey())));
+		return !snapshot(workspace, new org.eclipse.core.runtime.NullProgressMonitor()).equals(baseline);
 	}
 
 	public boolean save(final Path workspace, final Path destination, final IProgressMonitor monitor) throws IOException {

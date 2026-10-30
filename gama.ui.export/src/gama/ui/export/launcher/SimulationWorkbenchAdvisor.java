@@ -146,12 +146,15 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 					experiment.pauseAllOutputs();
 				}
 				BufferingUtils.getInstance().flushAllBuffers();
-				if (StartupModelHelper.getInstance().areThereAnyArtifactsToSave() && GAMA.getGui().getDialogFactory()
-						.question("Save experiment data",
+				if (StartupModelHelper.getInstance().areThereAnyArtifactsToSave()) {
+					if (GAMA.getGui().getDialogFactory().question("Save experiment data",
 								"The experiment has produced some data files. Do you want to save them before closing?"
 										+ "\n\nNew or modified files will be saved in a ZIP archive. "
-										+ "This does not save a resumable simulation state.")) {
-					if (!Boolean.TRUE.equals(new SaveSimulationsArtifacts().execute(null))) return false;
+										+ "This does not save a resumable simulation state."
+										+ "\n\nGenerated files will be deleted and original inputs restored when closing, "
+										+ "whether or not you save a ZIP archive.")) {
+						if (!Boolean.TRUE.equals(new SaveSimulationsArtifacts().execute(null))) return false;
+					}
 				}
 				proceed = true;
 			} finally {
@@ -166,6 +169,21 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 			return false;
 		}
 		return super.preShutdown();
+	}
+
+	@Override
+	public void postShutdown() {
+		super.postShutdown();
+		try {
+			BufferingUtils.getInstance().flushAllBuffers();
+			final var helper = StartupModelHelper.getInstance();
+			helper.discardSimulationArtifacts();
+			helper.releaseOriginalInputs();
+		} catch (final java.io.IOException | RuntimeException e) {
+			DEBUG.ERR("Unable to clean up experiment data", e);
+			org.eclipse.jface.dialogs.MessageDialog.openError(null, "Experiment data cleanup",
+					"Unable to clean up experiment data: " + e.getMessage());
+		}
 	}
 
 	@Override
