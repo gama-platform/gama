@@ -306,18 +306,6 @@
                </visibleWhen>
             </command>
             <command
-                  commandId="gama.application.commands.ShowHideConsoleView"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.console.svg"
-                  label="Console"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="false"> 
-                  <reference
-                        definitionId="isSimulationReady">
-                  </reference>
-               </visibleWhen>
-            </command>
-            <command
                   commandId="gama.application.commands.AddMonitor"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.monitor.svg"
                   label="Add Monitor"
@@ -489,12 +477,6 @@
                      class="gama.ui.shared.commands.ShowViewContributionItem"
                      id="gama.application.showView">
                </dynamic>
-               <visibleWhen
-                     checkEnabled="false">
-                  <reference
-                        definitionId="isInModelingPerspective">
-                  </reference>
-               </visibleWhen>
             </menu>
             <separator
                   name="gama.application.separator5"

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocumentListener;
@@ -94,8 +95,33 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	/** The temps. */
 	private final Map<String, Object> temps = new LinkedHashMap<>();
 
+	private final ThreadLocal<ITopLevelAgent> evaluationAgent = new ThreadLocal<>();
+
+	/** Last agent whose bindings were visible to the console. */
+	private ITopLevelAgent lastTopLevelAgent;
+
+	/** Invalidates queued commands when the active top-level agent changes. */
+	private long evaluationGeneration;
+
+	/** Whether a command is waiting for or performing simulation-safe evaluation. */
+	private boolean evaluationPending;
+
+	/** Whether the action has started and may still be using the persistent bindings. */
+	private boolean evaluationRunning;
+
+	private boolean clearVarsWhenEvaluationCompletes;
+
+	/** Suppresses stale result output when the console is explicitly reset. */
+	private boolean resettingConsole;
+
+	private long outputGeneration;
+
+	private int inputStartOffset;
+
 	/** The species description currently exposing this console's temporary variables. */
 	private IDescription alternateVarDescription;
+
+	private final List<IDescription> deferredProviderDetaches = new ArrayList<>();
 
 	/**
 	 * Tracks the declared type of each persistent console variable. Populated the first time {@link #getVarExpr} is
@@ -114,8 +140,6 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	private final IExecutionContext consoleContext = new IExecutionContext() {
 
-		private ITopLevelAgent lastTopLevelAgent;
-
 		/**
 		 * Intentionally a no-op: {@link ExecutionScope#pop(ISymbol)} calls {@code previous.dispose()} on the context
 		 * after every statement execution. Because {@link #getOuterContext()} returns {@code this}, {@code previous} IS
@@ -128,10 +152,13 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 		@Override
 		public IScope getScope() {
-			final ITopLevelAgent a = GAMA.getCurrentTopLevelAgent();
-			if (a != lastTopLevelAgent) {
-				clearLocalVars();
-				lastTopLevelAgent = a;
+			ITopLevelAgent a = evaluationAgent.get();
+			if (a == null) { a = GAMA.getCurrentTopLevelAgent(); }
+			synchronized (InteractiveConsoleView.this) {
+				if (a != lastTopLevelAgent) {
+					if (!evaluationRunning) { clearLocalVars(); }
+					lastTopLevelAgent = a;
+				}
 			}
 			return a != null ? a.getScope() : GAMA.getRuntimeScope();
 		}
@@ -237,7 +264,11 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	}
 
 	@Override
-	public IScope getScope() { return GAMA.getCurrentTopLevelAgent().getScope(); }
+	public IScope getScope() {
+		final ITopLevelAgent agent = evaluationAgent.get();
+		final ITopLevelAgent current = agent == null ? GAMA.getCurrentTopLevelAgent() : agent;
+		return current == null ? GAMA.getRuntimeScope() : current.getScope();
+	}
 
 	@Override
 	public void ownCreatePartControl(final Composite p) {
@@ -258,6 +289,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 				"Enter a GAML expression and press Enter. Type ?keyword for documentation. Use Up/Down to browse history.");
 		ConsoleContextMenuHelper.install(viewer.getTextWidget(), () -> {
 			msgConsole.clearConsole();
+			inputStartOffset = 0;
 			showPrompt();
 		}, true);
 
@@ -275,9 +307,11 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 					}
 					processInput(textEntered);
 				} else if (endsWithPrompt(event.getDocument())) {
+					inputStartOffset = event.getDocument().getLength();
 					// Output (incl. the prompt) is appended asynchronously by the console: place the caret once the
 					// prompt actually lands in the document
 					moveCaretToEnd();
+					if (!isEvaluationPending()) { viewer.getTextWidget().setEditable(true); }
 				}
 			}
 
@@ -290,6 +324,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		// Prepended so that it runs before the viewer's own key handling
 		viewer.prependVerifyKeyListener(e -> {
 			final StyledText text = viewer.getTextWidget();
+			if (!text.getEditable()) return;
 			final int caret = text.getCaretOffset();
 			final int start = getInputStartOffset();
 			if (caret < start) return;
@@ -370,13 +405,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	private int getInputStartOffset() {
 		final var doc = viewer.getDocument();
-		try {
-			final int lineStart = doc.getLineOffset(doc.getNumberOfLines() - 1);
-			final String line = doc.get(lineStart, doc.getLength() - lineStart);
-			return line.startsWith(PROMPT) ? lineStart + PROMPT.length() : lineStart;
-		} catch (final org.eclipse.jface.text.BadLocationException e) {
-			return doc.getLength();
-		}
+		return Math.min(inputStartOffset, doc.getLength());
 	}
 
 	/**
@@ -450,9 +479,15 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public void reset() {
+		synchronized (this) {
+			outputGeneration++;
+			resettingConsole = true;
+		}
 		if (msgConsole != null) { msgConsole.clearConsole(); }
+		inputStartOffset = 0;
 		topLevelAgentChanged(null);
 		showPrompt();
+		synchronized (this) { resettingConsole = false; }
 	}
 
 	@Override
@@ -528,14 +563,42 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent agent) {
-		if (alternateVarDescription != null && alternateVarDescription.getAlternateVarProvider() == this) {
-			alternateVarDescription.attachAlternateVarDescriptionProvider(null);
+		final IDescription previousDescription;
+		boolean cancelledPendingEvaluation = false;
+		boolean suppressCancellationOutput;
+		synchronized (this) {
+			previousDescription = alternateVarDescription;
+			alternateVarDescription = null;
+			if (previousDescription != null && previousDescription.getAlternateVarProvider() == this) {
+				if (evaluationRunning) {
+					if (!deferredProviderDetaches.contains(previousDescription)) {
+						deferredProviderDetaches.add(previousDescription);
+					}
+				} else {
+					previousDescription.attachAlternateVarDescriptionProvider(null);
+				}
+			}
+			evaluationGeneration++;
+			lastTopLevelAgent = agent;
+			if (agent != null && !(agent instanceof PlatformAgent)) {
+				alternateVarDescription = agent.getSpecies().getDescription();
+				alternateVarDescription.attachAlternateVarDescriptionProvider(this);
+			}
+			if (evaluationPending && evaluationRunning) {
+				clearVarsWhenEvaluationCompletes = true;
+			} else {
+				if (evaluationPending) {
+					evaluationPending = false;
+					cancelledPendingEvaluation = true;
+				}
+				clearVarsWhenEvaluationCompletes = false;
+				clearLocalVars();
+			}
+			suppressCancellationOutput = resettingConsole;
 		}
-		alternateVarDescription = null;
-		// Clear persistent console variables when the top-level agent changes so that
-		// bindings from a previous experiment/model do not leak into the new session.
-		temps.clear();
-		tempTypes.clear();
+		if (cancelledPendingEvaluation && !suppressCancellationOutput) {
+			publishResult("> Command cancelled because the active experiment changed.", true, null, -1);
+		}
 		if (agent == null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
@@ -547,10 +610,6 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			});
 		} else {
 			DEBUG.OUT("Changing top level agent to " + agent.getName());
-			if (!(agent instanceof PlatformAgent)) {
-				alternateVarDescription = agent.getSpecies().getDescription();
-				alternateVarDescription.attachAlternateVarDescriptionProvider(this);
-			}
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {
 					toolbar.status(GamaIcon.ofColor(agent.getColor()).getCode(),
@@ -576,36 +635,134 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		indexInHistory = history.size();
 		historyDraft = "";
 		final var agent = GAMA.getCurrentTopLevelAgent();
-		if (agent == null || agent.dead()) {
+		if (entered.startsWith("?")) {
+			final String result = GamlIdiomsProvider.getDocumentationOn(entered.substring(1));
+			append(result == null ? "nil" : result, false, true);
+		} else if (agent == null || agent instanceof PlatformAgent || agent.dead()) {
 			topLevelAgentChanged(null);
 			append("> No active experiment. Start an experiment before evaluating a command.", true, true);
 		} else {
-			String result = null;
-			var error = false;
-			if (entered.startsWith("?")) {
-				result = GamlIdiomsProvider.getDocumentationOn(entered.substring(1));
-			} else {
-				IScope scope = agent.getScope().copy("In interactive console");
-				// Install the persistent console context so that variable declarations
-				// (e.g. "int i <- 0") survive across commands and are accessible in later
-				// commands (e.g. "i <- 1" or just "i").
-				scope.setExecutionContext(consoleContext);
-				try {
-					final IExpression expr = GAML.compileExpression(s, agent, this, false);
-					if (expr != null) { result = StringUtils.toGaml(scope.evaluate(expr, agent).getValue(), true); }
-				} catch (final Exception e) {
-					error = true;
-					result = "> Error: " + (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
-				} finally {
-					agent.getSpecies().removeTemporaryAction();
-					GAMA.releaseScope(scope);
-				}
+			final long generation;
+			final long currentOutputGeneration;
+			synchronized (this) {
+				evaluationPending = true;
+				evaluationRunning = false;
+				clearVarsWhenEvaluationCompletes = false;
+				generation = evaluationGeneration;
+				currentOutputGeneration = outputGeneration;
 			}
-			if (result == null) { result = "nil"; }
-			append(result, error, true);
-			if (!error && GAMA.getExperiment() != null) { GAMA.getExperiment().refreshAllOutputs(); }
+			viewer.getTextWidget().setEditable(false);
+			try {
+				CompletableFuture.runAsync(
+						() -> scheduleEvaluation(agent, entered, generation, currentOutputGeneration));
+			} catch (final RuntimeException e) {
+				finishEvaluation(generation, currentOutputGeneration, agent, "> Error: " + errorMessage(e), true);
+			}
 		}
 
+	}
+
+	private void scheduleEvaluation(final ITopLevelAgent agent, final String input, final long generation,
+			final long currentOutputGeneration) {
+		try {
+			agent.executeAction(scope -> {
+				if (!beginEvaluation(generation)) return null;
+				evaluationAgent.set(agent);
+				try {
+					if (agent.dead()) {
+						finishEvaluation(generation, currentOutputGeneration, agent,
+								"> The active experiment is no longer available.", true);
+					} else {
+						final InteractiveConsoleEvaluator.Result result =
+								InteractiveConsoleEvaluator.evaluate(input, agent, scope, consoleContext, this);
+						finishEvaluation(generation, currentOutputGeneration, agent, result.output(), result.error());
+					}
+				} catch (final RuntimeException e) {
+					finishEvaluation(generation, currentOutputGeneration, agent, "> Error: " + errorMessage(e), true);
+				} finally {
+					evaluationAgent.remove();
+				}
+				return null;
+			});
+		} catch (final RuntimeException e) {
+			finishEvaluation(generation, currentOutputGeneration, agent, "> Error: " + errorMessage(e), true);
+		}
+	}
+
+	private boolean beginEvaluation(final long generation) {
+		synchronized (this) {
+			if (!evaluationPending || generation != evaluationGeneration) return false;
+			evaluationRunning = true;
+			return true;
+		}
+	}
+
+	private void finishEvaluation(final long generation, final long currentOutputGeneration,
+			final ITopLevelAgent agent, String result, boolean error) {
+		boolean outputStillCurrent;
+		synchronized (this) {
+			if (!evaluationPending) return;
+			evaluationPending = false;
+			evaluationRunning = false;
+			if (clearVarsWhenEvaluationCompletes) {
+				clearLocalVars();
+				clearVarsWhenEvaluationCompletes = false;
+			}
+			if (generation != evaluationGeneration) {
+				result = "> Command cancelled because the active experiment changed.";
+				error = true;
+			}
+			for (final IDescription description : deferredProviderDetaches) {
+				if (description != alternateVarDescription && description.getAlternateVarProvider() == this) {
+					description.attachAlternateVarDescriptionProvider(null);
+				}
+			}
+			deferredProviderDetaches.clear();
+			outputStillCurrent = currentOutputGeneration == outputGeneration;
+		}
+		if (outputStillCurrent) {
+			publishResult(result, error, agent, generation, currentOutputGeneration);
+		} else {
+			WorkbenchHelper.asyncRun(() -> {
+				if (viewer != null && viewer.getTextWidget() != null && !viewer.getTextWidget().isDisposed()) {
+					viewer.getTextWidget().setEditable(true);
+				}
+			});
+		}
+	}
+
+	private void publishResult(final String result, final boolean error, final ITopLevelAgent agent,
+			final long generation) {
+		final long currentOutputGeneration;
+		synchronized (this) { currentOutputGeneration = outputGeneration; }
+		publishResult(result, error, agent, generation, currentOutputGeneration);
+	}
+
+	private void publishResult(final String result, final boolean error, final ITopLevelAgent agent,
+			final long generation, final long currentOutputGeneration) {
+		WorkbenchHelper.asyncRun(() -> {
+			if (viewer == null || viewer.getTextWidget() == null || viewer.getTextWidget().isDisposed()) return;
+			if (!isCurrentOutputGeneration(currentOutputGeneration)) return;
+			append(result == null ? "nil" : result, error, true);
+			if (!error && isCurrentGeneration(generation) && agent == GAMA.getCurrentTopLevelAgent()
+					&& GAMA.getExperiment() != null) {
+				GAMA.getExperiment().refreshAllOutputs();
+			}
+		});
+	}
+
+	private synchronized boolean isCurrentGeneration(final long generation) {
+		return generation >= 0 && generation == evaluationGeneration;
+	}
+
+	private synchronized boolean isCurrentOutputGeneration(final long generation) {
+		return generation == outputGeneration;
+	}
+
+	private synchronized boolean isEvaluationPending() { return evaluationPending; }
+
+	private static String errorMessage(final Exception e) {
+		return e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
 	}
 
 	/**

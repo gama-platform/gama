@@ -64,6 +64,11 @@ public class SimulationPerspective implements IPerspectiveFactory {
 				layout.createPlaceholderFolder("monitor", IPageLayout.BOTTOM, 0.50f, "inspect");
 		monitor.addPlaceholder(IGui.MONITOR_VIEW_ID);
 
+		// Simulation perspectives are cloned with dynamic ids, so perspectiveExtensions targeting the base id do not
+		// apply: shortcuts listed in "Show View..." must be declared here.
+		layout.addShowViewShortcut(IGui.CONSOLE_VIEW_ID);
+		layout.addShowViewShortcut(IGui.INTERACTIVE_CONSOLE_VIEW_ID);
+
 	}
 
 }

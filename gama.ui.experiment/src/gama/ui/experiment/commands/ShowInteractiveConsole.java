@@ -11,7 +11,7 @@
 package gama.ui.experiment.commands;
 
 import static gama.api.ui.IGui.INTERACTIVE_CONSOLE_VIEW_ID;
-import static org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE;
+import static org.eclipse.ui.IWorkbenchPage.VIEW_ACTIVATE;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -26,7 +26,7 @@ public class ShowInteractiveConsole extends AbstractHandler {
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		return GAMA.getGui().showView(null, INTERACTIVE_CONSOLE_VIEW_ID, null, VIEW_VISIBLE);
+		return GAMA.getGui().showView(null, INTERACTIVE_CONSOLE_VIEW_ID, null, VIEW_ACTIVATE);
 	}
 
 }
