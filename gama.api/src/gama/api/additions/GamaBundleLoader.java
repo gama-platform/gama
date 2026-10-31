@@ -79,8 +79,8 @@ import one.util.streamex.StreamEx;
  *
  * <p>
  * The loading process is fault-tolerant: core plugins (gama.api and gama.core) must load successfully or the platform
- * exits, but failures in additional plugins are logged and the platform continues loading. This allows the user to
- * potentially fix issues or remove problematic plugins even when errors occur.
+ * exits with {@link #EXIT_GAML_INITIALIZATION_FAILED}, but failures in additional plugins are logged and the platform
+ * continues loading. This allows the user to potentially fix issues or remove problematic plugins even when errors occur.
  *
  * <p>
  * Key extension points processed by this loader:
@@ -127,6 +127,11 @@ public class GamaBundleLoader {
 	 *            the exception that caused the error
 	 */
 	public static void ERROR(final String message, final Exception e) {
+		ERROR(message, (Throwable) e);
+	}
+
+	/** Logs a loading failure, including linkage errors, and marks GAML initialization as errored. */
+	public static void ERROR(final String message, final Throwable e) {
 		DEBUG.ERR(ERROR_MESSAGE);
 		ERRORED = true;
 		DEBUG.ERR(message, e);
@@ -140,6 +145,13 @@ public class GamaBundleLoader {
 	public static final String ERROR_MESSAGE = LINE
 			+ "The initialization of GAML artifacts went wrong. If you use the developer version, please clean and recompile all plugins. \nOtherwise report an issue at https://github.com/gama-platform/gama/issues"
 			+ LINE;
+
+	/**
+	 * Process exit status for fatal loading failures of the mandatory {@code gama.api} or {@code gama.core} GAML
+	 * additions. Launchers can use this status to offer a clean/rebuild and relaunch without parsing console output.
+	 * Optional-plugin errors and unrelated startup failures do not use this status.
+	 */
+	public static final int EXIT_GAML_INITIALIZATION_FAILED = 42;
 
 	/** The loaded. */
 
@@ -282,8 +294,9 @@ public class GamaBundleLoader {
 	 * from loading to prevent UI dependencies.
 	 *
 	 * <p>
-	 * Error Handling: If core plugins fail to load, the platform exits immediately. For other plugins, errors are
-	 * logged and loading continues to allow potential recovery or plugin removal.
+	 * Error Handling: If core plugins fail to load, the process exits immediately with
+	 * {@link #EXIT_GAML_INITIALIZATION_FAILED}, including for linkage and class-initialization errors. For other plugins,
+	 * errors are logged and loading continues to allow potential recovery or plugin removal.
 	 *
 	 * @throws RuntimeException
 	 *             if a critical error occurs during plugin loading
@@ -326,19 +339,19 @@ public class GamaBundleLoader {
 
 			try {
 				loadGamlExtensions(API_PLUGIN);
-			} catch (final Exception e2) {
+			} catch (final Exception | LinkageError e2) {
 				ERROR("Error in loading GAML API. ", e2);
 				// We exit in case the core cannot be built, as there is no point in continuing past this point
-				System.exit(0);
+				System.exit(EXIT_GAML_INITIALIZATION_FAILED);
 				return;
 			}
 
 			try {
 				loadGamlExtensions(CORE_PLUGIN);
-			} catch (final Exception e2) {
+			} catch (final Exception | LinkageError e2) {
 				ERROR("Error in loading core GAML language definition. ", e2);
 				// We exit in case the core cannot be built, as there is no point in continuing past this point
-				System.exit(0);
+				System.exit(EXIT_GAML_INITIALIZATION_FAILED);
 				return;
 			}
 			// We then build the other extensions to the language
