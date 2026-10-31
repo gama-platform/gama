@@ -15,39 +15,55 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.types.color.IColor;
+import gama.api.ui.ConsoleEvent;
+import gama.api.ui.IConsoleSink;
 import gama.api.ui.IConsoleListener;
 
 /**
  * The listener interface for receiving console messages and dispatching them to console listeners
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
- * @see CompositeConsoleEvent
+ * @see ConsoleEvent
  * @date 2 nov. 2023
  */
 public class CompositeConsoleListener implements IConsoleListener {
 
-	/** The consoles. */
-	List<IConsoleListener> consoles = new CopyOnWriteArrayList<>();
+	private final List<IConsoleSink> sinks = new CopyOnWriteArrayList<>();
 
 	@Override
 	public void addConsoleListener(final IConsoleListener console) {
-		if (console == null || consoles.contains(console)) return;
-		consoles.add(console);
+		addConsoleSink(console);
+	}
+
+	@Override
+	public void addConsoleSink(final IConsoleSink console) {
+		if (console == null || console == this || sinks.contains(console)) return;
+		sinks.add(console);
 	}
 
 	@Override
 	public void removeConsoleListener(final IConsoleListener console) {
-		consoles.remove(console);
+		removeConsoleSink(console);
+	}
+
+	@Override
+	public void removeConsoleSink(final IConsoleSink console) {
+		sinks.remove(console);
 	}
 
 	@Override
 	public void informConsole(final String s, final ITopLevelAgent root, final IColor color) {
-		for (IConsoleListener console : consoles) { console.informConsole(s, root, color); }
+		accept(ConsoleEvent.info(s, root, color));
 	}
 
 	@Override
 	public void debugConsole(final int cycle, final String s, final ITopLevelAgent root, final IColor color) {
-		for (IConsoleListener console : consoles) { console.debugConsole(cycle, s, root, color); }
+		accept(ConsoleEvent.debug(cycle, s, root, color));
+	}
+
+	@Override
+	public void accept(final ConsoleEvent event) {
+		for (IConsoleSink sink : sinks) { sink.accept(event); }
 	}
 
 	/**
@@ -58,7 +74,9 @@ public class CompositeConsoleListener implements IConsoleListener {
 	 */
 	@Override
 	public void toggleConsoleViews(final ITopLevelAgent agent, final boolean show) {
-		for (IConsoleListener console : consoles) { console.toggleConsoleViews(agent, show); }
+		for (IConsoleSink sink : sinks) {
+			if (sink instanceof IConsoleListener listener) { listener.toggleConsoleViews(agent, show); }
+		}
 	}
 
 	/**
@@ -69,7 +87,9 @@ public class CompositeConsoleListener implements IConsoleListener {
 	 */
 	@Override
 	public void eraseConsole(final boolean setToNull) {
-		for (IConsoleListener console : consoles) { console.eraseConsole(setToNull); }
+		for (IConsoleSink sink : sinks) {
+			if (sink instanceof IConsoleListener listener) { listener.eraseConsole(setToNull); }
+		}
 	}
 
 }

@@ -26,6 +26,7 @@ import gama.api.GAMA;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
+import gama.api.ui.ConsoleEvent;
 import gama.api.ui.IConsoleListener;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
@@ -55,11 +56,25 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 		private int bufferedCharacters;
 		private String bufferTruncationMarker = "";
 		private boolean replayingBuffer;
+		private boolean openRequested;
+		private long lastFailedOpenAttempt;
+		private static final long OPEN_RETRY_DELAY = 1000L;
 
-		private record BufferedConsoleMessage(String text, IColor color) {}
+		private record BufferedConsoleMessage(ConsoleEvent event, String text) {}
 
 		@Override
 		public void informConsole(final String msg, final ITopLevelAgent root, final IColor color) {
+			accept(ConsoleEvent.info(msg, root, color));
+		}
+
+		@Override
+		public void debugConsole(final int cycle, final String msg, final ITopLevelAgent root, final IColor color) {
+			accept(ConsoleEvent.debug(cycle, msg, root, color));
+		}
+
+		@Override
+		public void accept(final ConsoleEvent event) {
+			final String msg = displayMessage(event);
 			if (msg == null || msg.isEmpty()) return;
 			// Forward the first non-empty line to the status bar so it is visible
 			// even before the console view has opened (e.g. during experiment launch).
@@ -72,7 +87,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 			}
 			synchronized (bufferLock) {
 				if (replayingBuffer) {
-					bufferConsoleMessage(msg, colorFor(root, color));
+					bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
 					return;
 				}
 			}
@@ -82,31 +97,63 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 			} catch (final ConcurrentModificationException e) {
 				// See Issue #2812. With concurrent views opening, the view might be impossible to find
 			}
-			if (console[0] == null) {
-				WorkbenchHelper.run(() -> {
-					if (!PerspectiveHelper.showConsoles()) return;
-					console[0] = (Console) GAMA.getGui().showView(null, IGui.CONSOLE_VIEW_ID, null,
-							IWorkbenchPage.VIEW_ACTIVATE);
-				});
-			}
 			synchronized (bufferLock) {
-				if (console[0] != null && !replayingBuffer) {
-					console[0].append(msg, root, color);
-				} else {
-					bufferConsoleMessage(msg, colorFor(root, color));
+				if (console[0] == null) {
+					// Never block the producing (simulation) thread on the UI thread: buffer the message and
+					// schedule at most one asynchronous attempt to open the console.
+					bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
+					if (!openRequested && System.currentTimeMillis() - lastFailedOpenAttempt >= OPEN_RETRY_DELAY) {
+						openRequested = true;
+						WorkbenchHelper.asyncRun(this::openConsoleAndReplay);
+					}
+					return;
+				}
+				if (replayingBuffer) {
+					bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
+					return;
+				}
+				if (consoleBuffer.isEmpty()) {
+					console[0].append(msg, event.agent(), event.color());
+					return;
+				}
+				// The console has been opened by other means while messages were buffered: replay them first
+				bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
+				replayingBuffer = true;
+			}
+			replayBufferedMessages(console[0]);
+		}
+
+		private void openConsoleAndReplay() {
+			IGamaView.Console console = null;
+			try {
+				if (PerspectiveHelper.showConsoles()) {
+					console = (Console) GAMA.getGui().showView(null, IGui.CONSOLE_VIEW_ID, null,
+							IWorkbenchPage.VIEW_ACTIVATE);
+				}
+			} finally {
+				synchronized (bufferLock) {
+					openRequested = false;
+					lastFailedOpenAttempt = console == null ? System.currentTimeMillis() : 0L;
+					if (console == null || replayingBuffer) return;
+					replayingBuffer = true;
 				}
 			}
+			replayBufferedMessages(console);
+		}
 
+		private static String displayMessage(final ConsoleEvent event) {
+			return event.level() == ConsoleEvent.Level.DEBUG && event.cycle() != null
+					? "(cycle: " + event.cycle() + ") " + event.message() : event.message();
 		}
 
 		private static IColor colorFor(final ITopLevelAgent root, final IColor color) {
 			return color == null ? root == null ? GamaColorFactory.get(0) : root.getColor() : color;
 		}
 
-		private void bufferConsoleMessage(final String text, final IColor color) {
+		private void bufferConsoleMessage(final ConsoleEvent event, final String text) {
 			final int limit = getBufferLimit();
 			if (limit == 0) return;
-			consoleBuffer.addLast(new BufferedConsoleMessage(text, color));
+			consoleBuffer.addLast(new BufferedConsoleMessage(event, text));
 			bufferedCharacters += text.length();
 			if (limit < 0) return;
 			if (bufferTruncationMarker.isEmpty() && bufferedCharacters <= limit) return;
@@ -117,7 +164,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				final int excess = bufferedCharacters - retainedLimit;
 				if (first.text().length() > excess) {
 					final String suffix = first.text().substring(excess);
-					consoleBuffer.addFirst(new BufferedConsoleMessage(suffix, first.color()));
+					consoleBuffer.addFirst(new BufferedConsoleMessage(first.event(), suffix));
 					bufferedCharacters -= excess;
 				} else {
 					bufferedCharacters -= first.text().length();
@@ -156,7 +203,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 					console.append(truncationMarker, null, GamaColorFactory.get(0));
 				}
 				for (final BufferedConsoleMessage message : batch) {
-					console.append(message.text(), null, message.color());
+					console.append(message.text(), message.event().agent(), message.event().color());
 				}
 			}
 		}

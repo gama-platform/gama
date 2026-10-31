@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jface.text.DocumentEvent;
@@ -37,19 +35,9 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
 
 import gama.api.GAMA;
-import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
-import gama.api.gaml.GAML;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.expressions.IVarExpression;
-import gama.api.gaml.symbols.ISymbol;
-import gama.api.gaml.types.GamaType;
-import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.PlatformAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
-import gama.api.runtime.scope.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IGamaView;
 import gama.api.utils.StringUtils;
@@ -71,7 +59,7 @@ import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
  * The Class InteractiveConsoleView.
  */
 public class InteractiveConsoleView extends GamaViewPart implements IToolbarDecoratedView.Sizable,
-		IToolbarDecoratedView.LogExportable, IExecutionContext, IVarDescriptionProvider, IGamaView.Interactive {
+		IToolbarDecoratedView.LogExportable, IGamaView.Interactive {
 
 	static {
 		DEBUG.OFF();
@@ -92,13 +80,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	/** The agent. */
 	// private ITopLevelAgent agent;
 
-	/** The temps. */
-	private final Map<String, Object> temps = new LinkedHashMap<>();
-
-	private final ThreadLocal<ITopLevelAgent> evaluationAgent = new ThreadLocal<>();
-
-	/** Last agent whose bindings were visible to the console. */
-	private ITopLevelAgent lastTopLevelAgent;
+	private final InteractiveConsoleSession consoleSession = new InteractiveConsoleSession();
 
 	/** Invalidates queued commands when the active top-level agent changes. */
 	private long evaluationGeneration;
@@ -109,111 +91,12 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	/** Whether the action has started and may still be using the persistent bindings. */
 	private boolean evaluationRunning;
 
-	private boolean clearVarsWhenEvaluationCompletes;
-
 	/** Suppresses stale result output when the console is explicitly reset. */
 	private boolean resettingConsole;
 
 	private long outputGeneration;
 
 	private int inputStartOffset;
-
-	/** The species description currently exposing this console's temporary variables. */
-	private IDescription alternateVarDescription;
-
-	private final List<IDescription> deferredProviderDetaches = new ArrayList<>();
-
-	/**
-	 * Tracks the declared type of each persistent console variable. Populated the first time {@link #getVarExpr} is
-	 * called for a variable and kept even if the runtime value later becomes {@code nil}, so that the original
-	 * declaration type is preserved across commands.
-	 */
-	private final Map<String, IType<?>> tempTypes = new LinkedHashMap<>();
-
-	/**
-	 * A persistent execution context for the interactive console. All variable declarations and assignments performed
-	 * in the console are stored directly in the {@link #temps} map so they survive across commands (similar to a Python
-	 * REPL session). The context is self-referential ({@code createChildContext} / {@code createCopy} / {@code
-	 * getOuterContext} all return {@code this}) so that it is never replaced when the underlying scope pushes and pops
-	 * statement contexts. Its lifecycle still clears the console bindings when the context is disposed or when the
-	 * active top-level agent changes, preventing variables from leaking across experiments/sessions.
-	 */
-	private final IExecutionContext consoleContext = new IExecutionContext() {
-
-		/**
-		 * Intentionally a no-op: {@link ExecutionScope#pop(ISymbol)} calls {@code previous.dispose()} on the context
-		 * after every statement execution. Because {@link #getOuterContext()} returns {@code this}, {@code previous} IS
-		 * the console context, so a normal {@code dispose()} implementation would wipe {@code temps} after every
-		 * command — preventing variables declared in one command from being visible in the next. Explicit cleanup is
-		 * handled by {@link InteractiveConsoleView#topLevelAgentChanged} and {@link InteractiveConsoleView#reset}.
-		 */
-		@Override
-		public void dispose() { /* no-op: persist variables across commands */ }
-
-		@Override
-		public IScope getScope() {
-			ITopLevelAgent a = evaluationAgent.get();
-			if (a == null) { a = GAMA.getCurrentTopLevelAgent(); }
-			synchronized (InteractiveConsoleView.this) {
-				if (a != lastTopLevelAgent) {
-					if (!evaluationRunning) { clearLocalVars(); }
-					lastTopLevelAgent = a;
-				}
-			}
-			return a != null ? a.getScope() : GAMA.getRuntimeScope();
-		}
-
-		@Override
-		public IExecutionContext getOuterContext() { return this; }
-
-		@Override
-		public IExecutionContext createCopy(final ISymbol command) { return this; }
-
-		@Override
-		public IExecutionContext createChildContext(final ISymbol command) { return this; }
-
-		/** Always returns 0 — avoids infinite recursion from the default {@code depth()} implementation. */
-		@Override
-		public int depth() { return 0; }
-
-		@Override
-		public void setTempVar(final String name, final Object value) { temps.put(name, value); }
-
-		@Override
-		public Object getTempVar(final String name) { return temps.get(name); }
-
-		@Override
-		public Map<? extends String, ? extends Object> getLocalVars() { return temps; }
-
-		@Override
-		public void clearLocalVars() {
-			temps.clear();
-			tempTypes.clear();
-		}
-
-		@Override
-		public void putLocalVar(final String varName, final Object val) { temps.put(varName, val); }
-
-		@Override
-		public Object getLocalVar(final String string) { return temps.get(string); }
-
-		@Override
-		public boolean hasLocalVar(final String name) { return temps.containsKey(name); }
-
-		/**
-		 * Intentionally a no-op: REPL variables declared in one command must persist into subsequent commands.
-		 * Removing a local var at block-scope exit would silently erase the user's declaration from the console
-		 * context. Use {@link #clearLocalVars()} (or {@link IExecutionContext#dispose()}) to wipe all bindings.
-		 */
-		@Override
-		public void removeLocalVar(final String name) { /* no-op: persist across commands */ }
-
-		@Override
-		public ISymbol getCurrentSymbol() { return null; }
-
-		@Override
-		public void setCurrentSymbol(final ISymbol statement) {}
-	};
 
 	/** The history. */
 	private final List<String> history = new ArrayList<>();
@@ -261,13 +144,6 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		super.init(site);
 		// Issue #2816
 		this.setTitleImage(GamaIcon.named(IGamaIcons.VIEW_INTERACTIVE).image());
-	}
-
-	@Override
-	public IScope getScope() {
-		final ITopLevelAgent agent = evaluationAgent.get();
-		final ITopLevelAgent current = agent == null ? GAMA.getCurrentTopLevelAgent() : agent;
-		return current == null ? GAMA.getRuntimeScope() : current.getScope();
 	}
 
 	@Override
@@ -467,6 +343,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public void dispose() {
 		GAMA.removeTopLevelAgentChangeListener(this);
+		consoleSession.close();
 		DEBUG.OUT("Console removed from GAMA listeners");
 		super.dispose();
 	}
@@ -563,39 +440,19 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent agent) {
-		final IDescription previousDescription;
 		boolean cancelledPendingEvaluation = false;
 		boolean suppressCancellationOutput;
 		synchronized (this) {
-			previousDescription = alternateVarDescription;
-			alternateVarDescription = null;
-			if (previousDescription != null && previousDescription.getAlternateVarProvider() == this) {
-				if (evaluationRunning) {
-					if (!deferredProviderDetaches.contains(previousDescription)) {
-						deferredProviderDetaches.add(previousDescription);
-					}
-				} else {
-					previousDescription.attachAlternateVarDescriptionProvider(null);
-				}
-			}
 			evaluationGeneration++;
-			lastTopLevelAgent = agent;
-			if (agent != null && !(agent instanceof PlatformAgent)) {
-				alternateVarDescription = agent.getSpecies().getDescription();
-				alternateVarDescription.attachAlternateVarDescriptionProvider(this);
-			}
-			if (evaluationPending && evaluationRunning) {
-				clearVarsWhenEvaluationCompletes = true;
-			} else {
+			if (!(evaluationPending && evaluationRunning)) {
 				if (evaluationPending) {
 					evaluationPending = false;
 					cancelledPendingEvaluation = true;
 				}
-				clearVarsWhenEvaluationCompletes = false;
-				clearLocalVars();
 			}
 			suppressCancellationOutput = resettingConsole;
 		}
+		consoleSession.setAgent(agent);
 		if (cancelledPendingEvaluation && !suppressCancellationOutput) {
 			publishResult("> Command cancelled because the active experiment changed.", true, null, -1);
 		}
@@ -647,7 +504,6 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			synchronized (this) {
 				evaluationPending = true;
 				evaluationRunning = false;
-				clearVarsWhenEvaluationCompletes = false;
 				generation = evaluationGeneration;
 				currentOutputGeneration = outputGeneration;
 			}
@@ -666,21 +522,20 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			final long currentOutputGeneration) {
 		try {
 			agent.executeAction(scope -> {
-				if (!beginEvaluation(generation)) return null;
-				evaluationAgent.set(agent);
+				if (!beginEvaluation(generation, agent)) return null;
 				try {
 					if (agent.dead()) {
 						finishEvaluation(generation, currentOutputGeneration, agent,
 								"> The active experiment is no longer available.", true);
 					} else {
 						final InteractiveConsoleEvaluator.Result result =
-								InteractiveConsoleEvaluator.evaluate(input, agent, scope, consoleContext, this);
+								InteractiveConsoleEvaluator.evaluate(input, agent, scope, consoleSession, consoleSession);
 						finishEvaluation(generation, currentOutputGeneration, agent, result.output(), result.error());
 					}
 				} catch (final RuntimeException e) {
 					finishEvaluation(generation, currentOutputGeneration, agent, "> Error: " + errorMessage(e), true);
 				} finally {
-					evaluationAgent.remove();
+					consoleSession.endEvaluation();
 				}
 				return null;
 			});
@@ -689,9 +544,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		}
 	}
 
-	private boolean beginEvaluation(final long generation) {
+	private boolean beginEvaluation(final long generation, final ITopLevelAgent agent) {
 		synchronized (this) {
 			if (!evaluationPending || generation != evaluationGeneration) return false;
+			consoleSession.beginEvaluation(agent);
 			evaluationRunning = true;
 			return true;
 		}
@@ -704,20 +560,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			if (!evaluationPending) return;
 			evaluationPending = false;
 			evaluationRunning = false;
-			if (clearVarsWhenEvaluationCompletes) {
-				clearLocalVars();
-				clearVarsWhenEvaluationCompletes = false;
-			}
 			if (generation != evaluationGeneration) {
 				result = "> Command cancelled because the active experiment changed.";
 				error = true;
 			}
-			for (final IDescription description : deferredProviderDetaches) {
-				if (description != alternateVarDescription && description.getAlternateVarProvider() == this) {
-					description.attachAlternateVarDescriptionProvider(null);
-				}
-			}
-			deferredProviderDetaches.clear();
 			outputStillCurrent = currentOutputGeneration == outputGeneration;
 		}
 		if (outputStillCurrent) {
@@ -783,93 +629,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	}
 
 	@Override
-	public void setTempVar(final String name, final Object value) {
-		temps.put(name, value);
-
-	}
-
-	@Override
-	public Object getTempVar(final String name) {
-		return temps.get(name);
-	}
-
-	@Override
-	public Map<? extends String, ? extends Object> getLocalVars() { return temps; }
-
-	@Override
-	public void clearLocalVars() {
-		temps.clear();
-		tempTypes.clear();
-	}
-
-	@Override
-	public void putLocalVar(final String name, final Object val) {
-		temps.put(name, val);
-
-	}
-
-	@Override
-	public Object getLocalVar(final String name) {
-		return temps.get(name);
-	}
-
-	@Override
-	public boolean hasLocalVar(final String name) {
-		return temps.containsKey(name);
-	}
-
-	/**
-	 * Intentionally a no-op: REPL variables must persist across commands. Removing a local var at block-scope exit
-	 * would silently erase the user's declaration from the persistent console context. All bindings are cleared at
-	 * once by {@link #clearLocalVars()} when the experiment/session ends.
-	 */
-	@Override
-	public void removeLocalVar(final String name) { /* no-op: persist across commands */ }
-
-	@Override
-	public IExecutionContext getOuterContext() { return this; }
-
-	@Override
-	public IExecutionContext createCopy(final ISymbol command) {
-		return this;
-	}
-
-	@Override
-	public IExecutionContext createChildContext(final ISymbol command) {
-		return this;
-	}
-
-	@Override
-	public IExpression getVarExpr(final String name, final boolean asField) {
-		if (temps.containsKey(name)) {
-			// Look up the cached type first (set at declaration time or on first non-nil access).
-			IType<?> t = tempTypes.get(name);
-			if (t == null) {
-				// No cached type yet: derive from the current runtime value.
-				t = GamaType.of(temps.get(name));
-				// Only cache meaningful types; if the value is currently nil the derived type
-				// is NO_TYPE / unknown, and we leave tempTypes empty so the next call can try
-				// again once the value is non-nil.
-				if (t != null && t != Types.NO_TYPE) { tempTypes.put(name, t); }
-			}
-			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.Category.TEMP, null);
-		}
-		return null;
-	}
-
-	@Override
-	public boolean hasAttribute(final String name) {
-		return temps.containsKey(name);
-	}
-
-	@Override
 	public String getContents() { return viewer.getDocument().get(); }
-
-	@Override
-	public ISymbol getCurrentSymbol() { return null; }
-
-	@Override
-	public void setCurrentSymbol(final ISymbol statement) {}
 
 	@Override
 	public void setFocus() {

@@ -44,7 +44,20 @@ import gama.api.types.color.IColor;
  * @since GAMA 1.0
  * @date 2 nov. 2023
  */
-public interface IConsoleListener {
+public interface IConsoleListener extends IConsoleSink {
+
+	/**
+	 * Delivers a structured event through the legacy listener methods.
+	 * Implementations can override this method to consume additional event metadata.
+	 */
+	@Override
+	default void accept(final ConsoleEvent event) {
+		if (event.level() == ConsoleEvent.Level.DEBUG && event.cycle() != null) {
+			debugConsole(event.cycle(), event.message(), event.agent(), event.color());
+		} else {
+			informConsole(event.message(), event.agent(), event.color());
+		}
+	}
 
 	/**
 	 * Adds a console listener to create a chain of listeners.
@@ -61,6 +74,13 @@ public interface IConsoleListener {
 	default void addConsoleListener(final IConsoleListener console) {}
 
 	/**
+	 * Adds a sink for structured console events.
+	 *
+	 * @param sink the sink to receive events
+	 */
+	default void addConsoleSink(final IConsoleSink sink) {}
+
+	/**
 	 * Removes a console listener from the chain.
 	 * 
 	 * <p>This method removes a previously added listener from the chain. If the listener
@@ -73,6 +93,13 @@ public interface IConsoleListener {
 	 * @date 2 nov. 2023
 	 */
 	default void removeConsoleListener(final IConsoleListener console) {}
+
+	/**
+	 * Removes a sink previously added with {@link #addConsoleSink(IConsoleSink)}.
+	 *
+	 * @param sink the sink to remove
+	 */
+	default void removeConsoleSink(final IConsoleSink sink) {}
 
 	/**
 	 * Displays a debug message in the console with cycle information and color.
