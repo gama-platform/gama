@@ -19,6 +19,8 @@ import static gama.ui.shared.resources.IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -44,6 +46,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.access.ConsoleContextMenuHelper;
 import gama.ui.shared.menus.GamaMenu;
@@ -90,12 +93,21 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	boolean paused = false;
 
 	/** The pause buffer. */
-	private final StringBuilder pauseBuffer =
-			new StringBuilder(GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue() == -1 ? 0
-					: GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue());
+	private final Deque<BufferedMessage> pauseBuffer = new ArrayDeque<>();
+
+	/** Number of buffered characters, excluding the truncation marker. */
+	private int pauseBufferLength;
+
+	/** Whether older paused output was discarded to respect the buffer limit. */
+	private boolean pauseBufferTruncated;
+
+	private static final String TRUNCATION_MARKER = "(...)\n";
+	private String pauseTruncationMarker = "";
 
 	/** The writers. */
 	private final HashMap<Color, BufferedWriter> writers = new HashMap<>();
+
+	private record BufferedMessage(String text, GamaUIColor color) {}
 
 	/**
 	 * Sets the character limit.
@@ -183,45 +195,80 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	 *            the color
 	 */
 	public void append(final String text, final ITopLevelAgent root, final GamaUIColor color) {
-
-		if (!paused) {
-			final BufferedWriter writer = getWriterFor(root, color);
-			try {
-				writer.append(text);
-				writer.flush();
-			} catch (final IOException e) {}
-		} else {
-			int maxMemorized = GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue();
-			final int maxDisplayed = GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue();
-			if (maxDisplayed > -1) {
-				// we limit the size of the buffer to the size of the displayed
-				// characters, as there is no need to buffer more than what can
-				// be displayed
-				if (maxMemorized == -1) {
-					maxMemorized = maxDisplayed;
-				} else {
-					maxMemorized = Math.min(maxMemorized, maxDisplayed);
-				}
-			}
-			if (maxMemorized > 0) {
-				pauseBuffer.append(text);
-				if (pauseBuffer.length() > maxMemorized) {
-					pauseBuffer.delete(0, pauseBuffer.length() - maxMemorized - 1);
-					pauseBuffer.insert(0, "(...)\n");
-				}
-			} else if (maxMemorized == -1) { pauseBuffer.append(text); }
-			if (!indicated) {
-				WorkbenchHelper.run(() -> {
-					if (toolbar != null && !toolbar.isDisposed()) {
-						newContentsStatus = toolbar.button(null, "New contents available",
-								GamaIcon.named("navigator/status.info").image(), null, 24, SWT.LEFT);
-						toolbar.requestLayout();
-					}
+		if (text == null || text.isEmpty()) return;
+		boolean indicate = false;
+		synchronized (this) {
+			if (!paused) {
+				writeToConsole(text, root, color);
+			} else {
+				bufferPausedMessage(text, color == null && root != null ? GamaColors.get(root.getColor()) : color);
+				if (!indicated) {
 					indicated = true;
-				});
+					indicate = true;
+				}
 			}
-
 		}
+		if (indicate) {
+			WorkbenchHelper.asyncRun(() -> {
+				synchronized (ConsoleView.this) {
+					if (!paused || !indicated || toolbar == null || toolbar.isDisposed()) return;
+					newContentsStatus = toolbar.button(null, "New contents available",
+							GamaIcon.named("navigator/status.info").image(), null, 24, SWT.LEFT);
+					toolbar.requestLayout();
+				}
+			});
+		}
+	}
+
+	private void writeToConsole(final String text, final ITopLevelAgent root, final GamaUIColor color) {
+		final BufferedWriter writer = getWriterFor(root, color);
+		try {
+			writer.append(text);
+			writer.flush();
+		} catch (final IOException e) {
+			DEBUG.ERR("Unable to write to the execution console", e);
+		}
+	}
+
+	private void writeToConsole(final String text, final GamaUIColor color) {
+		writeToConsole(text, null, color);
+	}
+
+	private void bufferPausedMessage(final String text, final GamaUIColor color) {
+		final int limit = getPauseBufferLimit();
+		if (limit == 0) return;
+		pauseBuffer.addLast(new BufferedMessage(text, color));
+		pauseBufferLength += text.length();
+		if (limit < 0) return;
+		if (!pauseBufferTruncated && pauseBufferLength <= limit) return;
+		if (!pauseBufferTruncated) {
+			pauseBufferTruncated = true;
+			pauseTruncationMarker = truncationMarker(limit);
+		}
+		final int markerLength = pauseTruncationMarker.length();
+		final int retainedLimit = Math.max(0, limit - markerLength);
+		while (pauseBufferLength > retainedLimit && !pauseBuffer.isEmpty()) {
+			final BufferedMessage first = pauseBuffer.removeFirst();
+			final int excess = pauseBufferLength - retainedLimit;
+			if (first.text().length() > excess) {
+				final String suffix = first.text().substring(excess);
+				pauseBuffer.addFirst(new BufferedMessage(suffix, first.color()));
+				pauseBufferLength -= excess;
+			} else {
+				pauseBufferLength -= first.text().length();
+			}
+		}
+	}
+
+	private static int getPauseBufferLimit() {
+		int limit = GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue();
+		final int displayLimit = GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue();
+		if (displayLimit > -1) { limit = limit == -1 ? displayLimit : Math.min(limit, displayLimit); }
+		return limit;
+	}
+
+	private static String truncationMarker(final int limit) {
+		return limit < TRUNCATION_MARKER.length() ? TRUNCATION_MARKER.substring(0, limit) : TRUNCATION_MARKER;
 	}
 
 	@Override
@@ -237,10 +284,24 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	}
 
 	@Override
-	public void reset() {
+	public synchronized void reset() {
+		for (final BufferedWriter writer : writers.values()) {
+			try {
+				writer.close();
+			} catch (final IOException e) {
+				DEBUG.ERR("Unable to close an execution console output stream", e);
+			}
+		}
 		writers.clear();
 		msgConsole.clearConsole();
-		pauseBuffer.setLength(0);
+		clearPauseBuffer();
+	}
+
+	private void clearPauseBuffer() {
+		pauseBuffer.clear();
+		pauseBufferLength = 0;
+		pauseBufferTruncated = false;
+		pauseTruncationMarker = "";
 	}
 
 	@Override
@@ -260,23 +321,30 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 
 	@Override
 	public void pauseChanged() {
-		if (paused) {
+		final boolean wasPaused;
+		synchronized (this) {
+			wasPaused = paused;
+			paused = !paused;
+			if (paused) {
+				clearPauseBuffer();
+			} else {
+				if (pauseBufferTruncated) { writeToConsole(pauseTruncationMarker, (GamaUIColor) null); }
+				for (final BufferedMessage message : pauseBuffer) {
+					writeToConsole(message.text(), message.color());
+				}
+				clearPauseBuffer();
+			}
+			if (wasPaused) { indicated = false; }
+		}
+		if (wasPaused) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (newContentsStatus != null && !newContentsStatus.isDisposed()) {
 					newContentsStatus.getControl().dispose();
 					newContentsStatus.dispose();
 					newContentsStatus = null;
-					toolbar.requestLayout();
+					if (toolbar != null && !toolbar.isDisposed()) { toolbar.requestLayout(); }
 				}
-				indicated = false;
 			});
-
-		}
-		paused = !paused;
-		if (paused) {
-			pauseBuffer.setLength(0);
-		} else {
-			append(pauseBuffer.toString(), null, (GamaUIColor) null);
 		}
 	}
 

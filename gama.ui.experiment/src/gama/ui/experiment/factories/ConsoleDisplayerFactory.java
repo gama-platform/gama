@@ -13,8 +13,10 @@ package gama.ui.experiment.factories;
 import static gama.ui.shared.utils.ViewsHelper.hideView;
 
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.services.AbstractServiceFactory;
@@ -29,6 +31,7 @@ import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
 import gama.api.ui.IGamaView.Console;
 import gama.api.ui.IStatusMessage;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -46,11 +49,18 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 	 */
 	static class ConsoleDisplayer implements IConsoleListener {
 
-		/** The console buffers. */
-		Map<IColor, StringBuilder> consoleBuffers = new HashMap<>();
+		private static final String TRUNCATION_MARKER = "(...)\n";
+		private final Object bufferLock = new Object();
+		private final Deque<BufferedConsoleMessage> consoleBuffer = new ArrayDeque<>();
+		private int bufferedCharacters;
+		private String bufferTruncationMarker = "";
+		private boolean replayingBuffer;
+
+		private record BufferedConsoleMessage(String text, IColor color) {}
 
 		@Override
 		public void informConsole(final String msg, final ITopLevelAgent root, final IColor color) {
+			if (msg == null || msg.isEmpty()) return;
 			// Forward the first non-empty line to the status bar so it is visible
 			// even before the console view has opened (e.g. during experiment launch).
 			if (msg != null && !msg.isBlank()) {
@@ -58,6 +68,12 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				if (firstLine != null) {
 					final var status = GAMA.getGui().getStatus();
 					if (status != null) { status.informStatus(firstLine, IStatusMessage.SIMULATION_ICON); }
+				}
+			}
+			synchronized (bufferLock) {
+				if (replayingBuffer) {
+					bufferConsoleMessage(msg, colorFor(root, color));
+					return;
 				}
 			}
 			IGamaView.Console[] console = new IGamaView.Console[1];
@@ -73,26 +89,87 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 							IWorkbenchPage.VIEW_ACTIVATE);
 				});
 			}
-			if (console[0] != null) {
-				console[0].append(msg, root, color);
-			} else { // DO WE KEEP THIS ? NOT HAVING BUFFERS MEANS THAT IF A CONSOLE IS OPENED AFTERWARDS, NOTHING WILL
-				// APPEAR ON IT
-				IColor c = color == null ? root == null ? GamaColorFactory.get(0) : root.getColor() : color;
-				StringBuilder sb = consoleBuffers.get(c);
-				if (sb == null) {
-					sb = new StringBuilder(2000);
-					consoleBuffers.put(c, sb);
+			synchronized (bufferLock) {
+				if (console[0] != null && !replayingBuffer) {
+					console[0].append(msg, root, color);
+				} else {
+					bufferConsoleMessage(msg, colorFor(root, color));
 				}
-				sb.append(msg);
 			}
 
+		}
+
+		private static IColor colorFor(final ITopLevelAgent root, final IColor color) {
+			return color == null ? root == null ? GamaColorFactory.get(0) : root.getColor() : color;
+		}
+
+		private void bufferConsoleMessage(final String text, final IColor color) {
+			final int limit = getBufferLimit();
+			if (limit == 0) return;
+			consoleBuffer.addLast(new BufferedConsoleMessage(text, color));
+			bufferedCharacters += text.length();
+			if (limit < 0) return;
+			if (bufferTruncationMarker.isEmpty() && bufferedCharacters <= limit) return;
+			if (bufferTruncationMarker.isEmpty()) { bufferTruncationMarker = truncationMarker(limit); }
+			final int retainedLimit = Math.max(0, limit - bufferTruncationMarker.length());
+			while (bufferedCharacters > retainedLimit && !consoleBuffer.isEmpty()) {
+				final BufferedConsoleMessage first = consoleBuffer.removeFirst();
+				final int excess = bufferedCharacters - retainedLimit;
+				if (first.text().length() > excess) {
+					final String suffix = first.text().substring(excess);
+					consoleBuffer.addFirst(new BufferedConsoleMessage(suffix, first.color()));
+					bufferedCharacters -= excess;
+				} else {
+					bufferedCharacters -= first.text().length();
+				}
+			}
+		}
+
+		private static int getBufferLimit() {
+			int limit = GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue();
+			final int displayLimit = GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue();
+			if (displayLimit > -1) { limit = limit == -1 ? displayLimit : Math.min(limit, displayLimit); }
+			return limit;
+		}
+
+		private static String truncationMarker(final int limit) {
+			return limit < TRUNCATION_MARKER.length() ? TRUNCATION_MARKER.substring(0, limit)
+					: TRUNCATION_MARKER;
+		}
+
+		private void replayBufferedMessages(final IGamaView.Console console) {
+			while (true) {
+				final List<BufferedConsoleMessage> batch;
+				final String truncationMarker;
+				synchronized (bufferLock) {
+					if (consoleBuffer.isEmpty()) {
+						replayingBuffer = false;
+						return;
+					}
+					batch = new ArrayList<>(consoleBuffer);
+					consoleBuffer.clear();
+					bufferedCharacters = 0;
+					truncationMarker = bufferTruncationMarker;
+					bufferTruncationMarker = "";
+				}
+				if (!truncationMarker.isEmpty()) {
+					console.append(truncationMarker, null, GamaColorFactory.get(0));
+				}
+				for (final BufferedConsoleMessage message : batch) {
+					console.append(message.text(), null, message.color());
+				}
+			}
 		}
 
 		@Override
 		public void eraseConsole(final boolean setToNull) {
 			final IGamaView console = (IGamaView) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, false);
 			if (console != null) { WorkbenchHelper.run(() -> console.reset()); }
-			consoleBuffers.clear();
+			synchronized (bufferLock) {
+				consoleBuffer.clear();
+				bufferedCharacters = 0;
+				bufferTruncationMarker = "";
+			}
 		}
 
 		/**
@@ -107,18 +184,18 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				hideView(IGui.CONSOLE_VIEW_ID);
 				hideView(IGui.INTERACTIVE_CONSOLE_VIEW_ID);
 			} else {
+				synchronized (bufferLock) { replayingBuffer = true; }
 				// Use VIEW_VISIBLE (not VIEW_ACTIVATE) for both console views so they are shown without being
 				// activated. VIEW_ACTIVATE causes an immediate render + focus switch that produces a visible
 				// flash before the display views have been placed by ArrangeDisplayViews.
 				GAMA.getGui().showView(null, IGui.INTERACTIVE_CONSOLE_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
 				final IGamaView.Console console = (Console) GAMA.getGui().showView(null, IGui.CONSOLE_VIEW_ID, null,
 						IWorkbenchPage.VIEW_VISIBLE);
-				consoleBuffers.forEach((c, sb) -> {
-					if (sb.length() > 0 && console != null) {
-						console.append(sb.toString(), agent, c);
-						sb.setLength(0);
-					}
-				});
+				if (console == null) {
+					synchronized (bufferLock) { replayingBuffer = false; }
+				} else {
+					replayBufferedMessages(console);
+				}
 			}
 		}
 
