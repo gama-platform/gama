@@ -2439,8 +2439,10 @@ public class Graphs {
 					isExecutable = false) },
 			special_cases = {
 					"Raises an error if the graph is nil or if spatial graph endpoints are not geometries or agents.",
+					"On spatial graphs, endpoints outside the vertex set attach to the nearest edges. If several edges are equally close, the least-weight reachable path among these attachments is returned; farther edges are not tried.",
+					"For moving agents, a valid current_edge remains the source attachment, with eligible reverse edges considered on directed graphs.",
 					"Returns nil if no path exists between the two nodes (e.g. the graph is disconnected and source/target belong to different components).",
-					"Returns nil if either the source or the target node is not present in the graph.",
+					"On non-spatial graphs, returns nil if either the source or the target node is not present in the graph.",
 					"On an empty graph (no vertices, no edges), always returns nil." })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " length((path_between (g, {10,5}, {50,50}))) = 1 ")
