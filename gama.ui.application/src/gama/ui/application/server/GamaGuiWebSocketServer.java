@@ -76,7 +76,8 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 			}
 		});
 		GamaPreferences.Runtime.CORE_SERVER_PORT.onChange(port -> control(() -> {
-			if (GAMA.getServer() instanceof GamaGuiWebSocketServer) {
+			if (GAMA.getServer() instanceof GamaGuiWebSocketServer server
+					&& server.getPort() != GamaPreferences.Runtime.CORE_SERVER_PORT.getValue()) {
 				GAMA.setServer(null);
 				createGuiServer();
 			}
@@ -99,6 +100,16 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 
 	public static CompletableFuture<Void> restartServer() {
 		return control(() -> {
+			GAMA.setServer(null);
+			createGuiServer();
+		});
+	}
+
+	/** Applies the toolbar's selected port and starts or restarts the server in one serialized operation. */
+	public static CompletableFuture<Void> restartServer(final int port) {
+		return control(() -> {
+			if (port < 1 || port > 65535) { throw new IllegalArgumentException("Server port must be between 1 and 65535"); }
+			GamaPreferences.setNewPreferences(Map.of(GamaPreferences.Runtime.CORE_SERVER_PORT.getKey(), port));
 			GAMA.setServer(null);
 			createGuiServer();
 		});

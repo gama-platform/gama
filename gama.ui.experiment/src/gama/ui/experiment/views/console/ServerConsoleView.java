@@ -24,7 +24,6 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
@@ -40,9 +39,11 @@ import gama.api.utils.server.GamaServerConsole;
 import gama.api.utils.server.GamaServerConsole.State;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.ui.shared.menus.GamaMenu;
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
+import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 
 /** A local control panel and console for the desktop WebSocket server, independent of experiments. */
 public class ServerConsoleView extends ConsoleView implements IConsoleSink {
@@ -58,8 +59,7 @@ public class ServerConsoleView extends ConsoleView implements IConsoleSink {
 	private long lastSequence;
 	private int configuredPort;
 	private Spinner port;
-	private Button applyPort, clients;
-	private ToolItem start, stop, restart;
+	private ToolItem start, stop, restart, clients;
 
 	public ServerConsoleView() {
 		super("GAMA Server Console");
@@ -68,41 +68,40 @@ public class ServerConsoleView extends ConsoleView implements IConsoleSink {
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		start = tb.button("toolbar/server.start", null, "Start the server",
-				e -> control(GamaGuiWebSocketServer::startServer), SWT.RIGHT);
+				e -> startOnSelectedPort(), SWT.LEFT);
 		stop = tb.button("toolbar/server.stop", null, "Stop the server and disconnect its clients",
-				e -> control(GamaGuiWebSocketServer::stopServer), SWT.RIGHT);
+				e -> control(GamaGuiWebSocketServer::stopServer), SWT.LEFT);
 		restart = tb.button("toolbar/server.restart", null, "Restart the server and disconnect its clients",
-				e -> control(GamaGuiWebSocketServer::restartServer), SWT.RIGHT);
+				e -> startOnSelectedPort(), SWT.LEFT);
+		final GamaToolbarSimple left = tb.getToolbar(SWT.LEFT);
+		left.space(8);
+		final Composite portControls = new Composite(left, SWT.NONE);
+		final GridLayout portLayout = new GridLayout(2, false);
+		portLayout.marginWidth = 0;
+		portLayout.marginHeight = 0;
+		portControls.setLayout(portLayout);
+		final Label portLabel = new Label(portControls, SWT.NONE);
+		portLabel.setText("Port");
+		portLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, true));
+		port = new Spinner(portControls, SWT.BORDER);
+		port.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, true));
+		port.setMinimum(1);
+		port.setMaximum(65535);
+		configuredPort = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
+		port.setSelection(configuredPort);
+		port.setToolTipText("Port to use when Start or Restart is clicked");
+		GamaColors.setBackground(left.getBackground(), portControls, portLabel);
+		left.control(portControls, SWT.DEFAULT);
+		left.space(8);
+		clients = left.button(null, null, "No connected clients", e -> showClients());
+		clients.setText("Clients (0)...");
+		clients.setEnabled(false);
 		super.createToolItems(tb);
 	}
 
 	@Override
 	public void ownCreatePartControl(final Composite parent) {
-		parent.setLayout(new GridLayout(1, false));
-		final Composite settings = new Composite(parent, SWT.NONE);
-		settings.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-		settings.setLayout(new GridLayout(4, false));
-		new Label(settings, SWT.NONE).setText("Port");
-		port = new Spinner(settings, SWT.BORDER);
-		port.setMinimum(1);
-		port.setMaximum(65535);
-		port.setSelection(GamaPreferences.Runtime.CORE_SERVER_PORT.getValue());
-		applyPort = new Button(settings, SWT.PUSH);
-		applyPort.setText("Apply");
-		applyPort.setToolTipText("Save this port and restart the server if it is active");
-		applyPort.addListener(SWT.Selection, e -> {
-			GamaPreferences.setNewPreferences(Map.of(GamaPreferences.Runtime.CORE_SERVER_PORT.getKey(),
-					port.getSelection()));
-			requestUpdate();
-		});
-		clients = new Button(settings, SWT.PUSH);
-		clients.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
-		clients.addListener(SWT.Selection, e -> showClients());
-
-		final Composite contents = new Composite(parent, SWT.NONE);
-		contents.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		contents.setLayout(new org.eclipse.swt.layout.FillLayout());
-		super.ownCreatePartControl(contents);
+		super.ownCreatePartControl(parent);
 		serverConsole.addConsoleSink(this);
 		refresh();
 	}
@@ -127,13 +126,16 @@ public class ServerConsoleView extends ConsoleView implements IConsoleSink {
 		final GamaServerConsole.Snapshot snapshot = serverConsole.snapshot();
 		final boolean active = snapshot.state() == State.RUNNING || snapshot.state() == State.STARTING;
 		final boolean transitioning = busy || snapshot.state() == State.STARTING || snapshot.state() == State.STOPPING;
-		clients.setText("Clients (" + snapshot.clients().size() + ")...");
+		final String clientLabel = "Clients (" + snapshot.clients().size() + ")...";
+		if (!clientLabel.equals(clients.getText())) {
+			clients.setText(clientLabel);
+			toolbar.requestLayout();
+		}
 		clients.setEnabled(!snapshot.clients().isEmpty());
 		clients.setToolTipText(clientDetails(snapshot));
 		start.setEnabled(!transitioning && !active);
 		stop.setEnabled(!transitioning && GAMA.getServer() instanceof GamaGuiWebSocketServer);
 		restart.setEnabled(!transitioning && active);
-		applyPort.setEnabled(!transitioning);
 		port.setEnabled(!transitioning);
 		final int preferencePort = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
 		if (configuredPort != preferencePort) {
@@ -157,7 +159,11 @@ public class ServerConsoleView extends ConsoleView implements IConsoleSink {
 			}
 		}
 		lastSequence = snapshot.sequence();
-		port.getParent().layout();
+	}
+
+	private void startOnSelectedPort() {
+		final int selectedPort = port.getSelection();
+		control(() -> GamaGuiWebSocketServer.restartServer(selectedPort));
 	}
 
 	private void control(final Supplier<CompletableFuture<Void>> command) {

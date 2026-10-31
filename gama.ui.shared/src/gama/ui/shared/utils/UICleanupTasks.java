@@ -77,6 +77,7 @@ import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.shared.GamlFieldDecorationRegistry;
+import gama.ui.shared.views.toolbar.TextSearchItem;
 
 /**
  * The Class UICleanupTasks. This class contains various static methods to clean up and customize the Eclipse UI.
@@ -544,6 +545,7 @@ public class UICleanupTasks {
 		 */
 		static void run() {
 			replaceFindOverlayImages();
+			TextSearchItem.installFindOverlayAlignment(WorkbenchHelper.getDisplay());
 			replace(Dialog.DLG_IMG_MESSAGE_ERROR, IGamaIcons.MARKER_ERROR);
 			replace(Dialog.DLG_IMG_MESSAGE_WARNING, IGamaIcons.MARKER_WARNING);
 			replace(Dialog.DLG_IMG_MESSAGE_INFO, IGamaIcons.MARKER_INFO);

@@ -54,6 +54,7 @@ import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
+import gama.ui.shared.views.toolbar.TextSearchItem;
 
 /**
  * The Class InteractiveConsoleView.
@@ -133,7 +134,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		getParentOfControlToDisplayFullScreen().setLayout(layout);
-		controlToDisplayInFullScreen = new Composite(composite, SWT.BORDER);
+		controlToDisplayInFullScreen = new Composite(composite, SWT.NONE);
 		controlToDisplayInFullScreen.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		super.createPartControl(controlToDisplayInFullScreen);
 
@@ -168,6 +169,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			inputStartOffset = 0;
 			showPrompt();
 		}, true);
+		TextSearchItem.bind(this, viewer);
 
 		msgConsole.getDocument().addDocumentListener(new IDocumentListener() {
 
@@ -377,6 +379,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	public void createToolItems(final GamaToolbar2 tb) {
 		super.createToolItems(tb);
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		TextSearchItem.install(tbs, () -> TextSearchItem.open(this));
 		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
 			final GamaMenu menu = new GamaMenu() {

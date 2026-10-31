@@ -47,6 +47,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.Selector;
+import gama.ui.shared.views.toolbar.TextSearchItem;
 import gaml.compiler.ui.editor.GamlEditor;
 
 /**
@@ -138,8 +139,7 @@ public class EditorToolbar {
 		previous = toolbar.button("editor/command.lastedit", null, "Previous edit location", globalPrevious);
 		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
 
-		toolbar.button("editor/search", null,
-				"Find/Replace (" + GamaKeyBindings.format(SWT.MOD1, 'F') + ")", e -> editor.doSearch());
+		TextSearchItem.install(toolbar, editor::doSearch);
 
 		toolbar.button("editor/local.menu", "Editor options", "Editor options", e -> {
 
