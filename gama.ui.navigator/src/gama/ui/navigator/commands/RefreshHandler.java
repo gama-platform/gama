@@ -120,6 +120,18 @@ public class RefreshHandler implements IRefreshHandler {
 		runInUI("Refreshing library categories", 0, monitor -> {
 			NavigatorRoot.getInstance().resetVirtualFolders(NavigatorRoot.getInstance().getManager());
 			WorkbenchHelper.refreshNavigator();
+			syncNavigatorWithEditor();
+		});
+	}
+
+	/**
+	 * Reveals the active editor again, as refreshing the whole tree may collapse its branch (e.g. at startup, when the
+	 * library is reloaded after the navigator has been synchronized).
+	 */
+	private void syncNavigatorWithEditor() {
+		WorkbenchHelper.asyncRun(() -> {
+			final GamaNavigator nav = getNavigator();
+			if (nav != null) { nav.scheduleSyncWithEditor(); }
 		});
 	}
 
@@ -196,6 +208,7 @@ public class RefreshHandler implements IRefreshHandler {
 				} finally {
 					ResourceManager.unblock(monitor);
 					WorkbenchHelper.refreshNavigator();
+					syncNavigatorWithEditor();
 					monitor.done();
 				}
 				report[0].save();

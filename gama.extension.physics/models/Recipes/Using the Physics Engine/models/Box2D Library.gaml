@@ -94,11 +94,7 @@ species ball skills: [dynamic_body, moving] {
 }
 
 experiment "Disturbance" type: gui {
-	
 
-
-	image_file bang <- image_file("../images/bang.png");
-	image_file bam <- image_file("../images/bam.png");
 	text "This experiment uses the Box2D library to display particles that are disturbed randomly and try to get back to their original location when this happens. Try stopping the disturbance or increasing or decreasing the restitution to see what happens. Agents are provided also with the moving skill, and it is a good example of mixing a physics-based with a behavior-based dynamics";
 
 	output {

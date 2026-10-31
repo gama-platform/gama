@@ -152,7 +152,7 @@ public class GamaNavigator extends CommonNavigator
 	/**
 	 * Schedules the synchronization of the navigator with the active editor, if linking is enabled.
 	 */
-	private void scheduleSyncWithEditor() {
+	public void scheduleSyncWithEditor() {
 		syncAttempts = 0;
 		if (isLinkingEnabled()) { syncWithEditorJob.schedule(200); }
 	}
@@ -192,9 +192,6 @@ public class GamaNavigator extends CommonNavigator
 			retrySyncWithEditor();
 			return;
 		}
-		final Object current = viewer.getStructuredSelection().getFirstElement();
-		// Already selected, or a model element of the file is selected
-		if (current == wrapped || current instanceof WrappedSyntacticContent s && s.isContainedIn(wrapped)) return;
 		final List<Object> ancestors = new ArrayList<>();
 		for (Object p = wrapped.getParent(); p != null && p != NavigatorRoot.getInstance(); p =
 				((VirtualContent<?>) p).getParent()) {
@@ -209,7 +206,18 @@ public class GamaNavigator extends CommonNavigator
 				}
 			}
 		}
+		final Object current = viewer.getStructuredSelection().getFirstElement();
+		// Already selected (or a model element of the file is selected) and visible: a refresh may have collapsed it
+		final boolean elementSelected = current instanceof WrappedSyntacticContent s && s.isContainedIn(wrapped);
+		if ((current == wrapped || elementSelected && viewer.getExpandedState(wrapped))
+				&& ancestors.stream().allMatch(viewer::getExpandedState))
+			return;
 		for (final Object ancestor : ancestors) { viewer.setExpandedState(ancestor, true); }
+		if (elementSelected) {
+			viewer.setExpandedState(wrapped, true);
+			viewer.reveal(current);
+			return;
+		}
 		viewer.setSelection(new StructuredSelection(wrapped), true);
 		viewer.reveal(wrapped);
 	}
