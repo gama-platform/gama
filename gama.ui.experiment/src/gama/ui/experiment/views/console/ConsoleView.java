@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.console.IOConsole;
@@ -46,6 +47,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.access.ConsoleContextMenuHelper;
@@ -72,7 +74,16 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	}
 
 	/** The msg console. */
-	private final IOConsole msgConsole = new IOConsole("GAMA Console", null);
+	private final IOConsole msgConsole;
+	private final IPreferenceAfterChangeListener<Integer> sizeListener = this::setCharacterLimit;
+
+	public ConsoleView() {
+		this("GAMA Console");
+	}
+
+	protected ConsoleView(final String name) {
+		msgConsole = new IOConsole(name, null);
+	}
 
 	/** The viewer. */
 	IOConsoleViewer viewer;
@@ -126,7 +137,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	@Override
 	public void ownCreatePartControl(final Composite parent) {
 		setCharacterLimit(GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue());
-		GamaPreferences.Interface.CORE_CONSOLE_SIZE.onChange(this::setCharacterLimit);
+		GamaPreferences.Interface.CORE_CONSOLE_SIZE.addChangeListener(sizeListener);
 		viewer = new IOConsoleViewer(parent, msgConsole);
 		viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
 		ConsoleContextMenuHelper.install(viewer.getTextWidget(), this::reset, false);
@@ -273,6 +284,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 
 	@Override
 	public void widgetDisposed(final DisposeEvent e) {
+		GamaPreferences.Interface.CORE_CONSOLE_SIZE.removeChangeListener(sizeListener);
 		reset();
 		super.widgetDisposed(e);
 	}
@@ -369,6 +381,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 					check("Wrap long lines", GamaPreferences.Interface.CORE_CONSOLE_WRAP, e -> {
 						viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
 					});
+					fillAdditionalMenuItems(mainMenu);
 				}
 
 			};
@@ -376,6 +389,8 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 		});
 
 	}
+
+	protected void fillAdditionalMenuItems(final Menu menu) {}
 
 	/**
 	 * Adds incremental text search and match navigation to the console toolbar.

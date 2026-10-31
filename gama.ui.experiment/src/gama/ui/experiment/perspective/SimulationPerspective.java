@@ -47,6 +47,7 @@ public class SimulationPerspective implements IPerspectiveFactory {
 
 		consoleFolder.addView(IGui.CONSOLE_VIEW_ID);
 		consoleFolder.addView(IGui.INTERACTIVE_CONSOLE_VIEW_ID);
+		consoleFolder.addPlaceholder(IGui.SERVER_CONSOLE_VIEW_ID);
 
 		final IPlaceholderFolderLayout displays =
 				layout.createPlaceholderFolder("displays", IPageLayout.TOP, 0.7f, editor);
@@ -68,6 +69,7 @@ public class SimulationPerspective implements IPerspectiveFactory {
 		// apply: shortcuts listed in "Show View..." must be declared here.
 		layout.addShowViewShortcut(IGui.CONSOLE_VIEW_ID);
 		layout.addShowViewShortcut(IGui.INTERACTIVE_CONSOLE_VIEW_ID);
+		layout.addShowViewShortcut(IGui.SERVER_CONSOLE_VIEW_ID);
 
 	}
 

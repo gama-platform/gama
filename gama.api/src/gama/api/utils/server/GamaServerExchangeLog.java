@@ -39,10 +39,15 @@ final class GamaServerExchangeLog implements AutoCloseable {
 
 	// Do not feed logging failures back through the server's stderr-to-WebSocket broadcaster.
 	private final PrintStream errors = System.err;
+	private final GamaServerConsole console;
 	private BufferedWriter writer;
 	private Path file;
 	private long sequence;
 	private boolean stopped;
+
+	GamaServerExchangeLog(final GamaServerConsole console) {
+		this.console = console;
+	}
 
 	synchronized void start(final int port) {
 		try {
@@ -97,6 +102,8 @@ final class GamaServerExchangeLog implements AutoCloseable {
 
 	synchronized Path file() { return file; }
 
+	synchronized boolean isEnabled() { return writer != null; }
+
 	synchronized void connectionOpened(final WebSocket socket) {
 		if (writer != null) { write(record("connection_opened", socket)); }
 	}
@@ -140,6 +147,7 @@ final class GamaServerExchangeLog implements AutoCloseable {
 	}
 
 	private void fail(final Exception error) {
+		console.error("Server exchange logging unavailable" + (file == null ? "" : " (" + file + ")"), error);
 		errors.println("GAMA server exchange logging unavailable"
 				+ (file == null ? "" : " (" + file + ")") + ": " + error);
 		if (writer != null) {
@@ -150,6 +158,7 @@ final class GamaServerExchangeLog implements AutoCloseable {
 			}
 			writer = null;
 		}
+		console.setExchangeLogging(false, file);
 	}
 
 	@Override

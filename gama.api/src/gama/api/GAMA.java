@@ -185,7 +185,8 @@ public class GAMA {
 				__SERVER__.stop();
 				__SERVER__ = null;
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
+				throw new IllegalStateException("Interrupted while stopping the GAMA server", e);
 			}
 		}
 		__SERVER__ = server;

@@ -38,6 +38,30 @@ The GUI server has one current experiment, shared with the desktop user; it does
 
 Use this server on a trusted network. Clients can load local models and execute GAML; the desktop WebSocket endpoint is not an authenticated public service.
 
+### Desktop server console and controls
+
+Open **Views > Show View... > Server Console** in either the modeling or simulation perspective.
+This view is independent of the experiment consoles and remains available when the model layout hides them.
+It shows the server state, listening port, connected client identifiers and addresses, incoming requests,
+and errors with stack traces. Diagnostics are retained while the view is closed and across GUI server restarts,
+within a bounded journal (2,000 events / 200,000 characters, with individual messages capped at 16,384 characters).
+Search, pause, clear, text sizing, and log export use the same controls as the execution console.
+Clearing the view clears its displayed text, not the retained server journal.
+
+The toolbar provides **Start**, **Stop**, and **Restart** without changing the saved startup setting.
+The separate pause button pauses console output only, not the server or experiment.
+Stopping or restarting disconnects clients but does not close the desktop experiment.
+**Port > Apply** saves the configured port and restarts an active server; startup/binding failures appear in the
+console. **Clients (N)...** lists connected clients and is disabled when none are connected.
+The default startup setting is unchanged.
+
+The **Server options** section at the end of the three-dots menu can hide incoming requests, enable persistent
+exchange logging, and open the current run's exchange log. Its **Enable at startup** option saves the existing
+server-mode preference and also starts or stops the current server.
+Requests are still retained while hidden. Export the visible console text for a
+diagnostic/error log; enable exchange logging for a complete protocol journal. These are local GUI controls,
+not new remote administration commands or an additional network endpoint.
+
 ## Platform preferences over WebSocket
 
 GUI and headless servers accept `get_preferences` and `set_preference` **without loading an experiment**.

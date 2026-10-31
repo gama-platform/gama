@@ -25,6 +25,7 @@ Bundle-Version: 0.0.0.qualifier
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: gama.ui.application;singleton:=true
 Export-Package: gama.ui.application;uses:="org.eclipse.ui,org.eclipse.equinox.app",
+ gama.ui.application.server,
  gama.ui.application.workbench
 Import-Package: jakarta.inject,
  org.w3c.css.sac

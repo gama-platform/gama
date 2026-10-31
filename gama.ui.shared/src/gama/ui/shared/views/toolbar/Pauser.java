@@ -13,6 +13,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.api.ui.IOutput;
+import gama.api.ui.IGamaView;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView.StateListener;
@@ -64,7 +65,8 @@ public class Pauser implements StateListener {
 	 */
 	public void install(final GamaToolbar2 tb) {
 		pauseItem = tb.check(view.largePauseIcon() ? IGamaIcons.DISPLAY_TOOLBAR_PAUSE : "toolbar/view.pause", "Pause",
-				"Pause or resume the current view", e -> {
+				view instanceof IGamaView.Console ? "Pause or resume console output (does not pause execution)"
+						: "Pause or resume the current view", e -> {
 					final IOutput output = view.getOutput();
 					if (!internalChange && output != null) {
 						if (output.isPaused()) {

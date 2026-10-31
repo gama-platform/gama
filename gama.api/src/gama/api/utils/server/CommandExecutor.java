@@ -149,14 +149,26 @@ public class CommandExecutor implements ICommandExecuter {
 			res = command.execute(server, socket, map);
 		} catch (Throwable t) {
 			// We ensure that every request gets an answer, even in case of complete crash
+			if (server instanceof GamaWebSocketServer webSocketServer) {
+				webSocketServer.getServerConsole().error("Error executing command '" + cmd_type + "'", t);
+			}
 			DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
 			res = new CommandResponse(MessageType.GamaServerError, t, map, false);
 		}
 		try {
 			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+				if (server instanceof GamaWebSocketServer webSocketServer
+						&& (res.type == MessageType.MalformedRequest || res.type == MessageType.UnableToExecuteRequest
+								|| res.type == MessageType.RuntimeError)) {
+					webSocketServer.getServerConsole().message(gama.api.ui.ConsoleEvent.Level.WARNING,
+							GamaWebSocketServer.getSocketId(socket), "Command '" + cmd_type + "': " + res.content);
+				}
 				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
 			}
 		} catch (final RuntimeException e) {
+			if (server instanceof GamaWebSocketServer webSocketServer) {
+				webSocketServer.getServerConsole().error("Error sending response to command '" + cmd_type + "'", e);
+			}
 			DEBUG.ERR("Error while sending the response to command '" + cmd_type + "'", e);
 		}
 	}

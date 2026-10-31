@@ -11,8 +11,12 @@
 package gama.ui.application.server;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.ref.WeakReference;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -25,6 +29,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeListener;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaServerMessage;
+import gama.api.utils.server.GamaServerConsole;
 import gama.api.utils.server.GamaWebSocketServer;
 import gama.api.utils.server.IServerConfiguration;
 import gama.api.utils.server.MessageType;
@@ -34,12 +39,98 @@ import gama.api.utils.server.MessageType;
  */
 public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExperimentStateListener {
 
+	private static final GamaServerConsole SERVER_CONSOLE = new GamaServerConsole();
+	private static final ExecutorService SERVER_CONTROL = Executors.newSingleThreadExecutor(task -> {
+		final Thread thread = new Thread(task, "GAMA GUI server controls");
+		thread.setDaemon(true);
+		return thread;
+	});
+
+	private static final IPreferenceBeforeChangeListener<Boolean> LOGGING_PREFERENCE_LISTENER = enabled -> {
+		if (!(GAMA.getServer() instanceof GamaGuiWebSocketServer server)
+				|| SERVER_CONSOLE.snapshot().state() != GamaServerConsole.State.RUNNING) return true;
+		if (server.isExchangeLogging() == enabled) return true;
+		try {
+			server.setExchangeLogging(enabled);
+			return true;
+		} catch (final IOException e) {
+			GAMA.getGui().getDialogFactory().error("Unable to change server exchange logging: " + e.getMessage());
+			return false;
+		}
+	};
+
+	public static GamaServerConsole getGuiServerConsole() { return SERVER_CONSOLE; }
+
 	/**
 	 * Start server.
 	 */
 	public static void startGuiServer() {
-		if (!GAMA.isInHeadLessMode() && GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) { createGuiServer(); }
-		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(newValue -> { if (newValue) { createGuiServer(); } });
+		if (GAMA.isInHeadLessMode()) return;
+		GamaPreferences.Runtime.CORE_SERVER_LOG.addChangeListener(LOGGING_PREFERENCE_LISTENER);
+		if (GamaPreferences.Runtime.CORE_SERVER_MODE.getValue()) { startServer(); }
+		GamaPreferences.Runtime.CORE_SERVER_MODE.onChange(enabled -> {
+			if (enabled) {
+				startServer();
+			} else {
+				stopServer();
+			}
+		});
+		GamaPreferences.Runtime.CORE_SERVER_PORT.onChange(port -> control(() -> {
+			if (GAMA.getServer() instanceof GamaGuiWebSocketServer) {
+				GAMA.setServer(null);
+				createGuiServer();
+			}
+		}));
+	}
+
+	public static CompletableFuture<Void> startServer() {
+		return control(() -> {
+			final GamaServerConsole.State state = SERVER_CONSOLE.snapshot().state();
+			if (GAMA.getServer() instanceof GamaGuiWebSocketServer
+					&& (state == GamaServerConsole.State.RUNNING || state == GamaServerConsole.State.STARTING)) return;
+			GAMA.setServer(null);
+			createGuiServer();
+		});
+	}
+
+	public static CompletableFuture<Void> stopServer() {
+		return control(() -> GAMA.setServer(null));
+	}
+
+	public static CompletableFuture<Void> restartServer() {
+		return control(() -> {
+			GAMA.setServer(null);
+			createGuiServer();
+		});
+	}
+
+	public static CompletableFuture<Void> setServerLogging(final boolean enabled) {
+		return control(() -> {
+			if (GAMA.getServer() instanceof GamaGuiWebSocketServer server
+					&& SERVER_CONSOLE.snapshot().state() == GamaServerConsole.State.RUNNING) {
+				try {
+					server.setExchangeLogging(enabled);
+				} catch (final IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			}
+		});
+	}
+
+	private static CompletableFuture<Void> control(final Runnable action) {
+		return CompletableFuture.runAsync(() -> {
+			try {
+				action.run();
+			} catch (final RuntimeException e) {
+				SERVER_CONSOLE.error("Unable to control GUI server", e);
+				if (!(GAMA.getServer() instanceof GamaGuiWebSocketServer)
+						|| SERVER_CONSOLE.snapshot().state() != GamaServerConsole.State.RUNNING) {
+					SERVER_CONSOLE.setState(GamaServerConsole.State.FAILED,
+							GamaPreferences.Runtime.CORE_SERVER_PORT.getValue());
+				}
+				throw e;
+			}
+		}, SERVER_CONTROL);
 	}
 
 	/**
@@ -49,7 +140,10 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
 		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
 		final boolean noDelay = GamaPreferences.Runtime.CORE_SERVER_NO_DELAY.getValue();
-		GAMA.setServer(startForGUI(port, ping, noDelay));
+		if (port < 1 || port > 65535) { throw new IllegalArgumentException("Server port must be between 1 and 65535"); }
+		final GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, ping, noDelay);
+		GAMA.setServer(server);
+		server.start();
 	}
 
 	/** The current server config. */
@@ -61,16 +155,6 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	private WeakReference<IExperimentSpecies> currentStateExperiment = new WeakReference<>(null);
 
 	private WebSocket currentStateSocket;
-
-	private final IPreferenceBeforeChangeListener<Boolean> loggingPreferenceListener = enabled -> {
-		try {
-			setExchangeLogging(enabled);
-			return true;
-		} catch (final IOException e) {
-			GAMA.getGui().getDialogFactory().error("Unable to change server exchange logging: " + e.getMessage());
-			return false;
-		}
-	};
 
 	/**
 	 * Start for GUI. No SSL, the default ping interval, and no TCP_NODELAY option
@@ -105,15 +189,9 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 16 oct. 2023
 	 */
 	public static GamaGuiWebSocketServer startForGUI(final int port, final int pingInterval, final boolean noDelay) {
-		try {
-			GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval, noDelay);
-			server.currentServerConfig = GamaWebSocketServer.GUI;
-			server.start();
-			return server;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+		final GamaGuiWebSocketServer server = new GamaGuiWebSocketServer(port, pingInterval, noDelay);
+		server.start();
+		return server;
 	}
 
 	/**
@@ -137,7 +215,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * @date 16 oct. 2023
 	 */
 	private GamaGuiWebSocketServer(final int port, final int interval, final boolean noDelay) {
-		super(port, interval, noDelay);
+		super(port, interval, noDelay, SERVER_CONSOLE);
 	}
 
 	/**
@@ -181,10 +259,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 */
 	@Override
 	public void onError(final WebSocket conn, final Exception ex) {
-		ex.printStackTrace();
-		if (conn != null) {
-			// some errors like port binding failed may not be assignable to a specific websocket
-		}
+		super.onError(conn, ex);
 	}
 
 	/**
@@ -193,7 +268,6 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onStart() {
 		super.onStart();
-		GamaPreferences.Runtime.CORE_SERVER_LOG.addChangeListener(loggingPreferenceListener);
 		GAMA.getGui().getConsole().addConsoleListener(console);
 		GAMA.addExperimentStateListener(this);
 	}
@@ -209,7 +283,6 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 		try {
 			super.stop(timeout, closeMessage);
 		} finally {
-			GamaPreferences.Runtime.CORE_SERVER_LOG.removeChangeListener(loggingPreferenceListener);
 			GAMA.getGui().getConsole().removeConsoleListener(console);
 			GAMA.removeExperimentStateListener(this);
 		}

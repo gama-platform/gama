@@ -170,6 +170,9 @@ public interface IGui {
 	/** The console view id. */
 	String CONSOLE_VIEW_ID = "gama.ui.application.view.ConsoleView";
 
+	/** The desktop server console and control panel. */
+	String SERVER_CONSOLE_VIEW_ID = "gama.ui.application.view.ServerConsoleView";
+
 	/** The user control view id. */
 	String USER_CONTROL_VIEW_ID = "gama.ui.application.view.userControlView";
 

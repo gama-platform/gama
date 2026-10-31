@@ -74,6 +74,9 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	protected final ListenerList<Listener> listeners = new ListenerList<>(ListenerList.IDENTITY);
 
 	private final GamaServerExchangeLog exchangeLog;
+	private final GamaServerConsole serverConsole;
+	private final PrintStream previousErrorStream = System.err;
+	private PrintStream serverErrorStream;
 
 	// Is thread local because the decoder is stateful
 	// TODO: It may be better to have one decoder per open connection (needs to be benchmarked) but good enough for now
@@ -104,19 +107,41 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 16 oct. 2023
 	 */
 	protected GamaWebSocketServer(final int port, final int interval, final boolean noDelay) {
-		this(port, interval, noDelay, new GamaServerExchangeLog());
+		this(port, interval, noDelay, new GamaServerConsole());
+	}
+
+	protected GamaWebSocketServer(final int port, final int interval, final boolean noDelay,
+			final GamaServerConsole serverConsole) {
+		this(port, interval, noDelay, new GamaServerExchangeLog(serverConsole), serverConsole);
 	}
 
 	private GamaWebSocketServer(final int port, final int interval, final boolean noDelay,
-			final GamaServerExchangeLog log) {
+			final GamaServerExchangeLog log, final GamaServerConsole serverConsole) {
 		super(new InetSocketAddress(port), List.of(new GamaServerLoggingDraft(log)));
 		exchangeLog = log;
+		this.serverConsole = serverConsole;
 		// Should solve the problem with the address being still used after relaunching
 		this.setReuseAddr(true);
 		this.setTcpNoDelay(noDelay);
 		canPing = interval >= 0;
 		pingInterval = interval;
+		if (interval == 0 || interval < -1) {
+			throw new IllegalArgumentException("Server ping interval must be positive or -1");
+		}
 		configureErrorStream();
+	}
+
+	@Override
+	public void start() {
+		serverConsole.setState(GamaServerConsole.State.STARTING, getPort());
+		try {
+			super.start();
+		} catch (final RuntimeException e) {
+			serverConsole.error("Unable to start server", e);
+			serverConsole.setState(GamaServerConsole.State.FAILED, getPort());
+			restoreErrorStream();
+			throw e;
+		}
 	}
 
 	/**
@@ -150,7 +175,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	private void configureErrorStream() {
 		// error handling should not rely on this as we don't know when the error starts and ends,
 		// making it hard to handle on the client side. This is a last resort option
-		PrintStream errorStream = new PrintStream(System.err) {
+		serverErrorStream = new PrintStream(previousErrorStream) {
 
 			// This is actually probably never called, because printErrorStack uses print(String)
 			@Override
@@ -160,7 +185,11 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 						.toString());
 			}
 		};
-		System.setErr(errorStream);
+		System.setErr(serverErrorStream);
+	}
+
+	private void restoreErrorStream() {
+		if (System.err == serverErrorStream) { System.setErr(previousErrorStream); }
 	}
 
 	/**
@@ -179,23 +208,43 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	@Override
 	public void onStart() {
 		exchangeLog.start(getPort());
+		serverConsole.setState(GamaServerConsole.State.RUNNING, getPort());
+		serverConsole.setExchangeLogging(exchangeLog.isEnabled(), exchangeLog.file());
 		DEBUG.BANNER(BANNER_CATEGORY.GAMA, "Server started", "at port", "" + this.getPort());
 	}
+
+	public GamaServerConsole getServerConsole() { return serverConsole; }
 
 	/** @return this run's exchange log file, or null if no file was created. */
 	public Path getExchangeLogFile() { return exchangeLog.file(); }
 
+	public boolean isExchangeLogging() { return exchangeLog.isEnabled(); }
+
 	@Override
 	public IJsonObject setExchangeLogging(final boolean enabled) throws IOException {
-		return exchangeLog.setEnabled(enabled, getPort());
+		try {
+			final IJsonObject result = exchangeLog.setEnabled(enabled, getPort());
+			serverConsole.setExchangeLogging(exchangeLog.isEnabled(), exchangeLog.file());
+			return result;
+		} catch (final IOException e) {
+			serverConsole.error("Unable to change exchange logging", e);
+			throw e;
+		}
 	}
 
 	@Override
 	public void stop(final int timeout, final String closeMessage) throws InterruptedException {
+		serverConsole.setState(GamaServerConsole.State.STOPPING, getPort());
 		try {
 			super.stop(timeout, closeMessage);
+			serverConsole.setState(GamaServerConsole.State.STOPPED, getPort());
+		} catch (final InterruptedException e) {
+			serverConsole.error("Interrupted while stopping server", e);
+			serverConsole.setState(GamaServerConsole.State.FAILED, getPort());
+			throw e;
 		} finally {
 			exchangeLog.close();
+			restoreErrorStream();
 		}
 	}
 
@@ -203,6 +252,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
 		if (socket.getDraft() instanceof GamaServerLoggingDraft draft) { draft.bind(socket); }
 		exchangeLog.connectionOpened(socket);
+		serverConsole.connectionOpened(socket);
 		socket.send(GAMA.getJsonEncoder()
 				.valueOf(new GamaServerMessage(MessageType.ConnectionSuccessful, String.valueOf(socket.hashCode())))
 				.toString());
@@ -221,6 +271,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	@Override
 	public void onClose(final WebSocket conn, final int code, final String reason, final boolean remote) {
 		exchangeLog.connectionClosed(conn, code, reason, remote);
+		serverConsole.connectionClosed(conn, code, reason);
 		var timer = pingTimers.remove(conn);
 		if (timer != null) { timer.cancel(); }
 		listeners.clear();
@@ -244,6 +295,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			m.put("server", this);
 			return m;
 		} catch (Exception e1) {
+			serverConsole.error("Malformed client request", e1);
 			DEBUG.OUT(e1.toString());
 			socket.send(
 					GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.MalformedRequest, e1)).toString());
@@ -253,8 +305,10 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 
 	@Override
 	public void onMessage(final WebSocket socket, final String message) {
+		serverConsole.request(socket, message);
 		try {
 			ReceivedMessage received = extractParam(socket, message);
+			if (received == null) return;
 			// Gives listeners a chance to process the message. If one returns false, we abort the processing. See #438
 			for (Listener listener : listeners) { if (!listener.process(received)) return; }
 			if (ISocketCommand.SERVER_LOG.equals(received.get(IKeyword.TYPE))) {
@@ -275,6 +329,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 				cmdHelper.processAsync(this, socket, received);
 			}
 		} catch (Exception e1) {
+			serverConsole.error("Unable to process client request", e1);
 			DEBUG.OUT(e1);
 			socket.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
 		}
@@ -285,6 +340,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		try {
 			onMessage(socket, DECODER.get().decode(message).toString());
 		} catch (CharacterCodingException e) {
+			serverConsole.error("Unable to decode client request", e);
 			socket.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e)).toString());
 		}
 	}
@@ -332,6 +388,12 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 
 	@Override
 	public void onError(final WebSocket conn, final Exception ex) {
+		serverConsole.error(conn == null ? "Server error" : "Client " + getSocketId(conn) + " error", ex);
+		if (conn == null && (serverConsole.snapshot().state() == GamaServerConsole.State.STARTING
+				|| serverConsole.snapshot().state() == GamaServerConsole.State.RUNNING)) {
+			serverConsole.setState(GamaServerConsole.State.FAILED, getPort());
+			restoreErrorStream();
+		}
 		ex.printStackTrace();
 		if (conn != null) {
 			// some errors like port binding failed may not be assignable to a specific websocket

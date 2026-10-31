@@ -831,7 +831,7 @@ public class GamaPreferences {
 		/** The TCP port on which the GAMA Server listens for incoming client connections. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
 				create("pref_server_port", "Port to which GAMA server is listening", 1000, IType.INT, true)
-						.in(Network.NAME, Network.SERVER);
+						.in(Network.NAME, Network.SERVER).between(1, 65535);
 
 		/**
 		 * The interval in milliseconds between two keep-alive pings from the server to connected clients. Use
