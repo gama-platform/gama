@@ -16,6 +16,7 @@ import gama.api.GAMA;
 import gama.dependencies.GamaBundleActivator;
 import gama.dev.DEBUG;
 import gama.workspace.manager.WorkspaceManager;
+import gama.workspace.manager.WorkspaceModelsManager;
 import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
@@ -109,6 +110,7 @@ public class WorkspaceActivator extends GamaBundleActivator {
 		GAMA.setWorkspaceManager(WorkspaceManager.getInstance());
 		// Register metadata provider for resource indexing
 		GAMA.setMetadataProvider(FileMetaDataProvider.getInstance());
+		WorkspaceModelsManager.removeMissingLibraryProjectsBeforeAutoRefresh();
 	}
 
 	/**

@@ -36,6 +36,7 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
 
 import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.api.gaml.GAML;
@@ -92,6 +93,9 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	/** The temps. */
 	private final Map<String, Object> temps = new LinkedHashMap<>();
+
+	/** The species description currently exposing this console's temporary variables. */
+	private IDescription alternateVarDescription;
 
 	/**
 	 * Tracks the declared type of each persistent console variable. Populated the first time {@link #getVarExpr} is
@@ -524,6 +528,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent agent) {
+		if (alternateVarDescription != null && alternateVarDescription.getAlternateVarProvider() == this) {
+			alternateVarDescription.attachAlternateVarDescriptionProvider(null);
+		}
+		alternateVarDescription = null;
 		// Clear persistent console variables when the top-level agent changes so that
 		// bindings from a previous experiment/model do not leak into the new session.
 		temps.clear();
@@ -540,7 +548,8 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		} else {
 			DEBUG.OUT("Changing top level agent to " + agent.getName());
 			if (!(agent instanceof PlatformAgent)) {
-				agent.getSpecies().getDescription().attachAlternateVarDescriptionProvider(this);
+				alternateVarDescription = agent.getSpecies().getDescription();
+				alternateVarDescription.attachAlternateVarDescriptionProvider(this);
 			}
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null) {

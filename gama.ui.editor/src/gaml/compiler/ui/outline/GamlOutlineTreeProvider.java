@@ -10,6 +10,11 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.outline;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.ui.editor.outline.IOutlineNode;
 import org.eclipse.xtext.ui.editor.outline.impl.AbstractOutlineNode;
@@ -21,6 +26,7 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.ast.IGamlLabelProvider.OutlineGroup;
 import gaml.compiler.EGaml;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.Model;
@@ -59,7 +65,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 						for (final Statement s : EGaml.getInstance().getStatementsOf(block)) {
 							if (s instanceof S_Global) {
 								block = s.getBlock();
-								if (block != null) { ownCreateChildren(parentNode, block, true); }
+								if (block != null) { ownCreateChildren(parentNode, block, true, false); }
 							} else {
 								createNode(parentNode, s);
 							}
@@ -70,19 +76,19 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 
 				@Override
 				public Object caseS_Experiment(final S_Experiment stm1) {
-					ownCreateChildren(parentNode, stm1.getBlock(), true);
+					ownCreateChildren(parentNode, stm1.getBlock(), true, true);
 					return FOUND;
 				}
 
 				@Override
 				public Object caseStandaloneExperiment(final StandaloneExperiment stm1) {
-					ownCreateChildren(parentNode, stm1.getBlock(), true);
+					ownCreateChildren(parentNode, stm1.getBlock(), true, true);
 					return FOUND;
 				}
 
 				@Override
 				public Object caseS_Species(final S_Species stm1) {
-					ownCreateChildren(parentNode, stm1.getBlock(), true);
+					ownCreateChildren(parentNode, stm1.getBlock(), true, false);
 					return FOUND;
 				}
 
@@ -107,43 +113,72 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 	 *            the parent node
 	 * @param block
 	 *            the block
+	 * @param categorizeChildren
+	 *            whether to group the children in folders
 	 */
 	protected void ownCreateChildren(final IOutlineNode parentNode, final Block block,
 			final boolean categorizeChildren) {
+		ownCreateChildren(parentNode, block, categorizeChildren, false);
+	}
 
-		IOutlineNode attributesNode = null;
-		IOutlineNode parametersNode = null;
-		IOutlineNode actionsNode = null;
-		if (block != null && categorizeChildren) {
-			for (final Statement s : EGaml.getInstance().getStatementsOf(block)) {
-				if (isParameter(s)) {
-					if (parametersNode == null) {
-						parametersNode = new AbstractOutlineNode(parentNode,
-								provider.convertToImageDescriptor("_parameter.png"), "Parameters", false) {};
-					}
-					createNode(parametersNode, s);
-				} else if (isAttribute(s)) {
-					if (attributesNode == null) {
-						attributesNode = new AbstractOutlineNode(parentNode,
-								provider.convertToImageDescriptor("_attributes.png"), "Attributes", false) {};
-					}
-					createNode(attributesNode, s);
-				} else if (isAction(s)) {
-					if (actionsNode == null) {
-						actionsNode = new AbstractOutlineNode(parentNode,
-								provider.convertToImageDescriptor("_action.png"), "Actions", false) {};
-					}
-					createNode(actionsNode, s);
-
-				}
-
-				else {
-					createNode(parentNode, s);
-				}
-			}
-		} else {
-			EGaml.getInstance().getStatementsOf(block).forEach(s -> createNode(parentNode, s));
+	/**
+	 * Own create children. Grouped children are placed in folders created in the order of {@link OutlineGroup},
+	 * followed by the other children.
+	 *
+	 * @param parentNode
+	 *            the parent node
+	 * @param block
+	 *            the block
+	 * @param categorizeChildren
+	 *            whether to group the children in folders
+	 * @param inExperiment
+	 *            whether the block is the one of an experiment (behaviors and aspects are then not grouped)
+	 */
+	protected void ownCreateChildren(final IOutlineNode parentNode, final Block block,
+			final boolean categorizeChildren, final boolean inExperiment) {
+		if (block == null) return;
+		final List<Statement> statements = EGaml.getInstance().getStatementsOf(block);
+		if (!categorizeChildren) {
+			statements.forEach(s -> createNode(parentNode, s));
+			return;
 		}
+		final Map<OutlineGroup, List<Statement>> groups = new EnumMap<>(OutlineGroup.class);
+		final List<Statement> others = new ArrayList<>();
+		for (final Statement s : statements) {
+			final OutlineGroup g = groupOf(s, inExperiment);
+			if (g == null) {
+				others.add(s);
+			} else {
+				groups.computeIfAbsent(g, k -> new ArrayList<>()).add(s);
+			}
+		}
+		groups.forEach((g, list) -> {
+			final IOutlineNode node = new AbstractOutlineNode(parentNode,
+					provider.convertToImageDescriptor(g.icon + ".png"), g.label, false) {};
+			list.forEach(s -> createNode(node, s));
+		});
+		others.forEach(s -> createNode(parentNode, s));
+	}
+
+	/**
+	 * Returns the group in which a statement is displayed in outlines.
+	 *
+	 * @param s
+	 *            the statement
+	 * @param inExperiment
+	 *            whether the statement belongs to an experiment
+	 * @return the group or null
+	 */
+	public static OutlineGroup groupOf(final Statement s, final boolean inExperiment) {
+		if (s == null) return null;
+		if (isParameter(s)) return OutlineGroup.PARAMETERS;
+		if (isAttribute(s)) return OutlineGroup.ATTRIBUTES;
+		if (isAction(s)) return OutlineGroup.ACTIONS;
+		if (isTest(s)) return OutlineGroup.TESTS;
+		if (inExperiment) return null;
+		if (isAspect(s)) return OutlineGroup.ASPECTS;
+		if (isBehavior(s)) return OutlineGroup.BEHAVIORS;
+		return null;
 	}
 
 	/**
@@ -153,7 +188,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 	 *            the s
 	 * @return true, if is parameter
 	 */
-	private boolean isParameter(final Statement s) {
+	public static boolean isParameter(final Statement s) {
 		final String key = EGaml.getInstance().getKeyOf(s);
 		return IKeyword.PARAMETER.equals(key) || IKeyword.TEXT.equals(key) || IKeyword.USER_COMMAND.equals(key)
 				|| IKeyword.CATEGORY.equals(key);
@@ -164,7 +199,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 	 * @return
 	 */
 	public static boolean isAttribute(final Statement s) {
-		if (!(s instanceof S_Definition)) return false;
+		if (!(s instanceof S_Definition) || s instanceof S_Action) return false;
 		final String key = EGaml.getInstance().getKeyOf(s);
 		if (IKeyword.ACTION.equals(key)) return false;
 		// if (s.getBlock() != null && s.getBlock().getFunction() == null) { return false; }
@@ -181,13 +216,45 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 	 * @return true, if is action
 	 */
 	public static boolean isAction(final Statement s) {
-		if (!(s instanceof S_Definition)) return false;
-		if (s instanceof S_Action) return true;
+		return s instanceof S_Action
+				|| s instanceof S_Definition && IKeyword.ACTION.equals(EGaml.getInstance().getKeyOf(s));
+	}
+
+	/**
+	 * Checks if is test.
+	 *
+	 * @param s
+	 *            the s
+	 * @return true, if is test
+	 */
+	public static boolean isTest(final Statement s) {
+		return IKeyword.TEST.equals(EGaml.getInstance().getKeyOf(s));
+	}
+
+	/**
+	 * Checks if is aspect.
+	 *
+	 * @param s
+	 *            the s
+	 * @return true, if is aspect
+	 */
+	public static boolean isAspect(final Statement s) {
+		return IKeyword.ASPECT.equals(EGaml.getInstance().getKeyOf(s));
+	}
+
+	/**
+	 * Checks if is a behavior (reflex, init, state, perceive, rule, plan...).
+	 *
+	 * @param s
+	 *            the s
+	 * @return true, if is behavior
+	 */
+	public static boolean isBehavior(final Statement s) {
 		final String key = EGaml.getInstance().getKeyOf(s);
+		if (key == null || IKeyword.ASPECT.equals(key) || IKeyword.ACTION.equals(key) || IKeyword.TEST.equals(key))
+			return false;
 		final IArtefact.Symbol p = ArtefactRegistry.getStatementArtefact(key);
-		if (p != null && p.isTopLevel()) return false;
-		if (s.getKey() == null) return true;
-		return false;
+		return p != null && p.getKind() == ISymbolKind.BEHAVIOR;
 	}
 
 	@Override

@@ -102,9 +102,9 @@ experiment NilContainersTest type: test autorun: true {
 	}
 
 	test "Species defaults are independent between agents and attributes" {
-		create holder number: 2 returns: agents;
-		holder a <- agents[0];
-		holder b <- agents[1];
+		create holder number: 2 returns: aa;
+		holder a <- aa[0];
+		holder b <- aa[1];
 		assert a.values = [] and a.entries = map([]);
 		assert a.absent_values = nil and a.absent_entries = nil;
 		assert a.absent_typed_values = nil and a.absent_typed_entries = nil;
@@ -145,9 +145,9 @@ experiment NilContainersTest type: test autorun: true {
 	}
 
 	test "Explicit nil supplied to agent creation is not an omitted initializer" {
-		create holder with: (values: nil, entries: nil, typed_values: nil, typed_entries: nil) returns: agents;
-		assert agents[0].values = nil and agents[0].entries = nil;
-		assert agents[0].typed_values = nil and agents[0].typed_entries = nil;
+		create holder (values: nil, entries: nil, typed_values: nil, typed_entries: nil) returns: aa;
+		assert aa[0].values = nil and aa[0].entries = nil;
+		assert aa[0].typed_values = nil and aa[0].typed_entries = nil;
 	}
 
 	test "Objects distinguish omitted and explicit nil constructor arguments" {

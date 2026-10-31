@@ -113,6 +113,10 @@ public class PreferencesHelper {
 	public static final Pref<Boolean> KEEP_NAVIGATOR_STATE =
 			create("pref_keep_navigator_state", "Maintain the state of the navigator across sessions", true, IType.BOOL,
 					false).in(NAME, NAVIGATOR).hidden();
+	/** Whether cleaning and updating the workspace requires confirmation. */
+	public static final Pref<Boolean> CONFIRM_CLEAN_AND_UPDATE =
+			create("pref_confirm_clean_and_update", "Confirm before cleaning and updating the workspace", true,
+					IType.BOOL, false).in(NAME, NAVIGATOR);
 	/** Whether the navigator stays in sync with the active editor. */
 	public static final Pref<Boolean> NAVIGATOR_LINK_WITH_EDITOR =
 			create("pref_navigator_link_with_editor", "Keep the navigator in sync with the editor", true, IType.BOOL,

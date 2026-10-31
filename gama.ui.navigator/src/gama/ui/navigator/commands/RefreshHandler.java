@@ -234,7 +234,7 @@ public class RefreshHandler implements IRefreshHandler {
 	}
 
 	/**
-	 * Check location deleted.
+	 * Removes missing library references silently; asks before removing missing user projects.
 	 *
 	 * @param project
 	 *            the project
@@ -242,7 +242,7 @@ public class RefreshHandler implements IRefreshHandler {
 	 *             the core exception
 	 */
 	void checkLocationDeleted(final IProject project) throws CoreException {
-		if (!project.exists()) return;
+		if (!project.exists() || WorkspaceModelsManager.removeMissingLibraryProject(project)) return;
 		final IFileInfo location = IDEResourceInfoUtils.getFileInfo(project.getLocationURI());
 		if (!location.exists() && GAMA.getGui().getDialogFactory().confirm("Project location has been deleted",
 				"The location for project " + project.getName() + " (" + location.toString()

@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 
+import gama.annotations.doc;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.no_test;
 import gama.annotations.operator;
@@ -207,6 +208,9 @@ public class FuzzTestGenerator {
 	/** The calls collected so far: Java class -> name of the test -> calls. */
 	private final Map<String, Map<String, Set<String>>> calls = new TreeMap<>();
 
+	/** Groups containing deprecated operators, whose generated calls intentionally produce deprecation warnings. */
+	private final Set<String> groupsWithDeprecatedOperators = new LinkedHashSet<>();
+
 	/**
 	 * Collects the operators and types of the current round of annotation processing.
 	 *
@@ -242,12 +246,16 @@ public class FuzzTestGenerator {
 	public void write(final ProcessorContext context) {
 		for (final Map.Entry<String, Map<String, Set<String>>> group : calls.entrySet()) {
 			try (Writer writer = context.createTestWriter(group.getKey() + " Fuzz Tests.gaml")) {
-				if (writer != null) { writeExperiment(writer, group.getKey(), group.getValue()); }
+				if (writer != null) {
+					writeExperiment(writer, group.getKey(), group.getValue(),
+							groupsWithDeprecatedOperators.contains(group.getKey()));
+				}
 			} catch (final IOException e) {
 				context.emitWarning("An exception occured in the generation of fuzz tests: ", e);
 			}
 		}
 		calls.clear();
+		groupsWithDeprecatedOperators.clear();
 	}
 
 	/**
@@ -292,6 +300,10 @@ public class FuzzTestGenerator {
 		final String group = method.getEnclosingElement().getSimpleName().toString();
 		for (final String name : op.value()) {
 			if (!isIdentifier(name)) { continue; }
+			final doc documentation = method.getAnnotation(doc.class);
+			if (documentation != null && !documentation.deprecated().isEmpty()) {
+				groupsWithDeprecatedOperators.add(group);
+			}
 			add(group, "Operator " + name, call(name, values, -1, null));
 			for (int i = 0; i < values.size(); i++) {
 				for (final String edge : values.get(i).edges()) {
@@ -388,8 +400,8 @@ public class FuzzTestGenerator {
 	/**
 	 * Writes the experiment testing a group of calls.
 	 */
-	private void writeExperiment(final Writer writer, final String group, final Map<String, Set<String>> tests)
-			throws IOException {
+	private void writeExperiment(final Writer writer, final String group, final Map<String, Set<String>> tests,
+			final boolean hasDeprecatedOperators) throws IOException {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("/**").append(ln);
 		sb.append("* GENERATED at compile time by gama.processor (FuzzTestGenerator), do not edit.").append(ln);
@@ -401,6 +413,7 @@ public class FuzzTestGenerator {
 				.append(ln);
 		sb.append("* Java exception. Operators and types are left out with the @no_fuzz_test annotation.").append(ln);
 		sb.append("*/").append(ln).append(ln);
+		if (hasDeprecatedOperators) { sb.append("@no_warning").append(ln).append(ln); }
 		sb.append("model ").append(group).append("FuzzTests").append(ln).append(ln);
 		sb.append("experiment ").append(toGamlString("Fuzz tests of " + group)).append(" type: test {").append(ln);
 		sb.append(ln).append(tab).append("// typed nil values, to pass nil to the operands of a given type");

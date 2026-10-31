@@ -825,7 +825,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (!ops.containsKey(userSignature)) {
 			final Signature originalUserSignature = userSignature;
 			int bestDistance = Integer.MAX_VALUE; // Track smallest type conversion distance
-			
+
 			// Candidates may share the same bestDistance but only the first one will actually be retained.
 			// We gather the others to report the ambiguity
 			List<Signature> equallyDistantCandidates = null;
@@ -909,9 +909,11 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * Warns when an operator has been chosen arbitrarily among several equally plausible definitions.
 	 *
 	 * <p>
-	 * Several definitions of the same operator can end up at  the same distance from the call.
-	 * The resolution arbitrarily keeps the first of them, and since the registry is a hash map, that first one depends on an order nobody controls but that is fixed per build. 
-	 * This makes the resulting failure puzzling: at runtime and systematically, cast exceptions with unrelated types may appear inside of operators that otherwise are completely accepted by the compiler.
+	 * Several definitions of the same operator can end up at the same distance from the call. The resolution
+	 * arbitrarily keeps the first of them, and since the registry is a hash map, that first one depends on an order
+	 * nobody controls but that is fixed per build. This makes the resulting failure puzzling: at runtime and
+	 * systematically, cast exceptions with unrelated types may appear inside of operators that otherwise are completely
+	 * accepted by the compiler.
 	 * </p>
 	 *
 	 * <p>
@@ -939,24 +941,25 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			final IExpression[] args, final Signature userSignature, final Signature chosen, final int bestDistance,
 			final List<Signature> candidates) {
 		if (context == null || candidates == null || candidates.size() < 2 || bestDistance <= 0) return;
-//		// Uncomment to only warn if there's an untyped operand
-//		boolean untypedOperand = false;
-//		for (int i = 0; i < args.length; i++) {
-//			if (userSignature.get(i) == Types.NO_TYPE) {
-//				untypedOperand = true;
-//				break;
-//			}
-//		}
-//		if (!untypedOperand) return;
+		// // Uncomment to only warn if there's an untyped operand
+		// boolean untypedOperand = false;
+		// for (int i = 0; i < args.length; i++) {
+		// if (userSignature.get(i) == Types.NO_TYPE) {
+		// untypedOperand = true;
+		// break;
+		// }
+		// }
+		// if (!untypedOperand) return;
 		final StringBuilder others = new StringBuilder();
 		for (final Signature candidate : candidates) {
 			if (candidate.equals(chosen)) { continue; }
 			if (others.length() > 0) { others.append(", "); }
 			others.append(candidate.toString().replaceFirst("types? ", ""));
 		}
-		context.warning("The operand " + userSignature + " match several definitions of '" + op
-				+ "' equally well. The one for " + chosen.toString().replaceFirst("types? ", "") + " has been chosen over " + others
-				+ ". Cast the untyped operands to the intended types to make the choice explicit.",
+		context.info(
+				"The operand " + userSignature + " match several definitions of '" + op + "' equally well. The one for "
+						+ chosen.toString().replaceFirst("types? ", "") + " has been chosen over " + others
+						+ ". Cast the untyped operands to the intended types to make the choice explicit.",
 				IGamlIssue.SHOULD_CAST, eObject);
 	}
 

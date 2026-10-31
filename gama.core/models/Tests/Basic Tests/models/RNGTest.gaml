@@ -183,7 +183,7 @@ experiment RNGTest type: test autorun: true {
 				rng <- generator;
 				seed <- 123.0;
 				// A fixed location isolates heading draws from spatial sampling.
-				create walker with: [location::{50, 50}] returns: created;
+				create walker (location:{50, 50}) returns: created;
 				point initial_location <- created[0].location;
 				float initial_heading <- created[0].heading;
 				assert rng_usage = 2;
@@ -193,7 +193,7 @@ experiment RNGTest type: test autorun: true {
 				float final_heading <- created[0].heading;
 				ask created { do die(); }
 				seed <- 123.0;
-				create walker with: [location::{50, 50}] returns: replay;
+				create walker (location:{50, 50}) returns: replay;
 				assert replay[0].location = initial_location;
 				assert replay[0].heading = initial_heading;
 				assert rng_usage = 2;

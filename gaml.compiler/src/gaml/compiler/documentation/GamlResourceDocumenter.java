@@ -148,9 +148,8 @@ public class GamlResourceDocumenter implements IDocManager {
 	 * </p>
 	 *
 	 * <p>
-	 * Uses {@link ConcurrentHashMap#computeIfAbsent} to atomically create the {@link DocumentedObject} entry,
-	 * preventing a put-if-absent race where two concurrent workers could both observe a missing entry and both
-	 * insert conflicting objects.
+	 * Builds documentation outside the map's locks, since description callbacks may resolve model references.
+	 * The entry is then published atomically with {@link ConcurrentHashMap#putIfAbsent}.
 	 * </p>
 	 *
 	 * @param res
@@ -169,10 +168,15 @@ public class GamlResourceDocumenter implements IDocManager {
 		try {
 			if (!isTaskValid(res) || !isValidGeneration(res, generation)) return false;
 			URI fragment = EcoreUtil.getURI(object);
-			// computeIfAbsent is atomic: prevents two concurrent callers from both observing a missing
-			// entry and both inserting a DocumentedObject, which would leave one of them orphaned.
-			DocumentedObject documented = documentedObjects.computeIfAbsent(fragment,
-					k -> new DocumentedObject(new DocumentationNode(desc), ConcurrentHashMap.newKeySet()));
+			DocumentedObject documented = documentedObjects.get(fragment);
+			if (documented == null) {
+				// Description callbacks can acquire the resource lock also held during cache invalidation.
+				DocumentedObject candidate =
+						new DocumentedObject(new DocumentationNode(desc), ConcurrentHashMap.newKeySet());
+				if (!isTaskValid(res) || !isValidGeneration(res, generation)) return false;
+				DocumentedObject existing = documentedObjects.putIfAbsent(fragment, candidate);
+				documented = existing == null ? candidate : existing;
+			}
 			documented.resources.add(res);
 			getTaskFor(res).objects.add(fragment);
 			return true;

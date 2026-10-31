@@ -19,6 +19,30 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### GAML outline icons
+
+The editor outline uses the reflex blue from the GAMA 2026 syntax palette,
+adapted for light and dark themes. Distinct shapes and badges differentiate
+items instead of multiple category colors. Group folders and display icons
+use thin outlines without overlapping borders.
+
+Imports, experiment setup, user interaction, BDI behaviors, batch methods and
+additional data types now have matching icons. Generic types use their base type;
+model-defined agent, class and skill types and future extension types receive
+semantic family icons. Missing artwork has its own dashed icon, separate from
+the question mark for the GAML `unknown` type.
+
+Attributes, Parameters and Actions have folder-style group icons. In species and
+`global`, behaviors (reflex, init, state, perceive, rule, plan...) and aspects are
+also grouped in Behaviors and Aspects folders, and `test` blocks get their own Tests
+folder (also in experiments). Groups appear first, in this order, followed by the
+other elements. The navigator's model outline uses the same groups and icons. Attribute icons
+retain their type and add a function, update or constant badge; typed actions
+show their return type with an action arrow, and parameters show their referenced
+attribute type with a slider badge. Typed actions are grouped under Actions,
+not Attributes. Standalone experiments without an explicit type use the GUI icon,
+matching the compiler default.
+
 ### Java2D display responsiveness
 
 Java2D render requests are coalesced and painted directly on the AWT event thread

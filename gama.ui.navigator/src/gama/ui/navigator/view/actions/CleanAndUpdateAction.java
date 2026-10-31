@@ -12,9 +12,11 @@ package gama.ui.navigator.view.actions;
 
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 
-import gama.api.GAMA;
 import gama.ui.shared.interfaces.IRefreshHandler;
+import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -39,14 +41,19 @@ public class CleanAndUpdateAction extends Action {
 
 	@Override
 	public void run() {
-		if (!GAMA.getGui().getDialogFactory().confirm("Clean and update the workspace",
-				"The metadata of all the files will be deleted and rebuilt, the library of models will be rebuilt "
-						+ "to be in sync with GAMA and its plugins, and all the projects will be reclassified and "
-						+ "rebuilt. Library projects will be linked to the running installation's versions, without "
-						+ "creating user copies. Genuine user projects and original library files will not be deleted. "
-						+ "A report will describe the result.\n\n"
-						+ "This can take some time. Do you want to proceed?"))
-			return;
+		if (PreferencesHelper.CONFIRM_CLEAN_AND_UPDATE.getValue()) {
+			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openOkCancelConfirm(
+					WorkbenchHelper.getShell(), "Clean and update the workspace",
+					"The metadata of all the files will be deleted and rebuilt, the library of models will be rebuilt "
+							+ "to be in sync with GAMA and its plugins, and all the projects will be reclassified and "
+							+ "rebuilt. Library projects will be linked to the running installation's versions, without "
+							+ "creating user copies. Genuine user projects and original library files will not be deleted. "
+							+ "A report will describe the result.\n\n"
+							+ "This can take some time. Do you want to proceed?",
+					"Do not show again", false, null, null);
+			if (dialog.getReturnCode() != IDialogConstants.OK_ID) return;
+			if (dialog.getToggleState()) { PreferencesHelper.CONFIRM_CLEAN_AND_UPDATE.set(false).save(); }
+		}
 		if (!org.eclipse.ui.PlatformUI.getWorkbench().saveAllEditors(true)) return;
 		final IRefreshHandler refresh = WorkbenchHelper.getService(IRefreshHandler.class);
 		if (refresh != null) { refresh.completeRefresh(null); }

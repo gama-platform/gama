@@ -125,4 +125,57 @@ public interface IGamlLabelProvider {
 	 */
 	Object getImageDescriptor(ISyntacticElement element);
 
+
+	/**
+	 * The folder-like groups used to organise the contents of species, global and experiments in outlines (GAML
+	 * editor outline and navigator). Their declaration order is the order in which they are displayed.
+	 */
+	enum OutlineGroup {
+
+		/** The parameters (and other experiment inputs). */
+		PARAMETERS("Parameters", "_parameters"),
+		/** The attributes. */
+		ATTRIBUTES("Attributes", "_attributes_group"),
+		/** The actions. */
+		ACTIONS("Actions", "_actions"),
+		/** The behaviors (reflex, init, state, perceive, rule, plan...). */
+		BEHAVIORS("Behaviors", "_behaviors"),
+		/** The aspects. */
+		ASPECTS("Aspects", "_aspects"),
+		/** The tests. */
+		TESTS("Tests", "_tests");
+
+		/** The label displayed for the group. */
+		public final String label;
+
+		/** The name of the icon (in the gaml icons folder) of the group. */
+		public final String icon;
+
+		/**
+		 * Instantiates a new outline group.
+		 *
+		 * @param label
+		 *            the label
+		 * @param icon
+		 *            the icon
+		 */
+		OutlineGroup(final String label, final String icon) {
+			this.label = label;
+			this.icon = icon;
+		}
+	}
+
+	/**
+	 * Returns the outline group in which the element should be placed when listed among the children of a species
+	 * (including global) or of an experiment.
+	 *
+	 * @param element
+	 *            the syntactic element
+	 * @param inExperiment
+	 *            whether the parent is an experiment (in which case behaviors and aspects are not grouped)
+	 * @return the group, or null if the element should not be grouped
+	 */
+	default OutlineGroup getOutlineGroup(final ISyntacticElement element, final boolean inExperiment) {
+		return null;
+	}
 }

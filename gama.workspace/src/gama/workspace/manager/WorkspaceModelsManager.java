@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -50,6 +52,9 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Strings;
@@ -487,6 +492,7 @@ public class WorkspaceModelsManager {
 			return report;
 		}
 		removeLegacyNatures(report);
+		setExplicitEncodingForGamaProjects();
 		// The core library has the priority when several plugins contribute projects with the same name
 		folders.sort((f1, f2) -> Boolean.compare(!f1.bundle().equals(GamaBundleLoader.CORE_MODELS),
 				!f2.bundle().equals(GamaBundleLoader.CORE_MODELS)));
@@ -567,8 +573,8 @@ public class WorkspaceModelsManager {
 				natures.clear();
 				natures.addAll(List.of(migrated));
 				final IPath loc = p.getLocation();
-				if (loc != null && !loc.toFile().exists() && LibraryProjectSupport.isBuiltIn(p)) {
-					p.delete(false, true, null);
+				if (removeMissingLibraryProject(p)) {
+					report.changed("Removed missing library reference: " + p.getName() + " (" + loc + ").");
 				} else if (p.isOpen()) {
 					desc.setNatureIds(natures.toArray(new String[0]));
 					p.setDescription(desc, IResource.FORCE, null);
@@ -580,8 +586,72 @@ public class WorkspaceModelsManager {
 	}
 
 	/**
+	 * Removes a missing built-in project reference without prompting or deleting its contents. A project is missing
+	 * when its location or its .project file no longer exists. Workspace-owned provenance identifies library projects
+	 * even when they point to an older installation.
+	 *
+	 * @return whether the reference was removed; user projects and intact locations are left untouched
+	 * @throws CoreException if provenance cannot be read or the reference cannot be removed
+	 */
+	public static boolean removeMissingLibraryProject(final IProject project) throws CoreException {
+		if (!project.exists()) return false;
+		final IPath location = project.getLocation();
+		if (location == null) return false;
+		final boolean locationMissing = !location.toFile().exists();
+		if (!locationMissing && location.append(IProjectDescription.DESCRIPTION_FILE_NAME).toFile().exists()
+				|| !LibraryProjectSupport.isBuiltIn(project))
+			return false;
+		project.delete(false, true, null);
+		final String message = "Removed missing built-in library project '" + project.getName() + "' from the workspace: "
+				+ location + (locationMissing ? ". Its location is no longer available in this GAMA installation."
+						: ". Its .project file is no longer available.");
+		DEBUG.LOG(message);
+		org.eclipse.core.runtime.Platform.getLog(WorkspaceModelsManager.class)
+				.log(new Status(IStatus.WARNING, "gama.workspace", message));
+		return true;
+	}
+
+	/**
+	 * Adds an explicit UTF-8 encoding to accessible GAMA projects that do not already have one.
+	 */
+	public static void setExplicitEncodingForGamaProjects() {
+		for (final IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+			if (!project.isAccessible()) continue;
+			try {
+				if (GamaNatures.isGamaProject(project.getDescription())) { setExplicitUtf8Encoding(project); }
+			} catch (final CoreException e) {
+				DEBUG.ERR("Could not set explicit UTF-8 encoding for GAMA project " + project.getName(), e);
+			}
+		}
+	}
+
+	private static void setExplicitUtf8Encoding(final IProject project) throws CoreException {
+		if (project.getDefaultCharset(false) == null) { project.setDefaultCharset(StandardCharsets.UTF_8.name(), null); }
+	}
+
+	/**
+	 * Removes missing built-in projects before each Eclipse auto-refresh, which would otherwise report their missing
+	 * .project files in an error dialog.
+	 */
+	public static void removeMissingLibraryProjectsBeforeAutoRefresh() {
+		Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
+			@Override
+			public void aboutToRun(final IJobChangeEvent event) {
+				if (!event.getJob().belongsTo(ResourcesPlugin.FAMILY_AUTO_REFRESH)) return;
+				for (final IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+					try {
+						removeMissingLibraryProject(p);
+					} catch (final CoreException e) {
+						DEBUG.ERR("Could not remove missing library project " + p.getName(), e);
+					}
+				}
+			}
+		});
+	}
+
+	/**
 	 * Removes from the workspace (without deleting their contents) the projects that were contributed by a plugin and
-	 * whose location does not exist anymore. User projects are never removed.
+	 * whose location or .project file does not exist anymore. User projects are never removed.
 	 *
 	 * @param importedNames
 	 *            the names of the projects that have just been imported
@@ -592,16 +662,11 @@ public class WorkspaceModelsManager {
 			try {
 				final IPath loc = p.getLocation();
 				if (loc == null) { continue; }
-				if (loc.toFile().exists()) {
-					if (LibraryProjectSupport.isBuiltIn(p)) {
-						report.warning("Library project '" + p.getName() + "' is not available from this installation. "
-								+ "Its existing reference and files were kept at " + loc + ".");
-					}
-					continue;
-				}
-				if (LibraryProjectSupport.isBuiltIn(p)) {
-					p.delete(false, true, null);
+				if (removeMissingLibraryProject(p)) {
 					report.changed("Removed missing library reference: " + p.getName() + " (" + loc + ").");
+				} else if (loc.toFile().exists() && LibraryProjectSupport.isBuiltIn(p)) {
+					report.warning("Library project '" + p.getName() + "' is not available from this installation. "
+							+ "Its existing reference and files were kept at " + loc + ".");
 				}
 			} catch (final CoreException e) {
 				report.error("Could not check project " + p.getName(), e);
@@ -901,7 +966,11 @@ public class WorkspaceModelsManager {
 				if (monitor.isCanceled()) throw new OperationCanceledException();
 				project.open(IResource.BACKGROUND_REFRESH, m.split(1000));
 				projectHandle[0] = project;
-				if (created) { setValuesProjectDescription(project, null); }
+				if (created) {
+					setValuesProjectDescription(project, null);
+				} else if (GamaNatures.isGamaProject(project.getDescription())) {
+					setExplicitUtf8Encoding(project);
+				}
 			}
 		};
 		try {
@@ -945,6 +1014,7 @@ public class WorkspaceModelsManager {
 			desc.setComment(comment);
 			proj.setDescription(desc, IResource.FORCE, null);
 		}
+		setExplicitUtf8Encoding(proj);
 
 		if (bundle != null) {
 			LibraryProjectSupport.setIfChanged(proj, BUILTIN_PROPERTY, bundle.getVersion().toString());

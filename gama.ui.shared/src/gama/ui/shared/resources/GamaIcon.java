@@ -319,8 +319,7 @@ public class GamaIcon implements IGamaIcons {
 	 * @return true, if successful
 	 */
 	public static boolean exist(final String code) {
-		if (ICON_CACHE.getIfPresent(code) != null) return true;
-		return computeURL(code) != null;
+		return code != null && Platform.getBundle(PLUGIN_ID).getEntry(ICONS_PATH + code + ".svg") != null;
 	}
 
 	/**

@@ -56,6 +56,20 @@
             isEqualityPattern="true"
             pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.commands.showStatusBarMenu">
       </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            isEqualityPattern="true"
+            pattern="org.eclipse.ui.ide.application/org.eclipse.ui.projectConfigure">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            isEqualityPattern="true"
+            pattern="org.eclipse.ui.ide/org.eclipse.e4.ui.importer.configureProject">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            pattern="org.eclipse.xtext.ui.shared/org.eclipse.xtext.ui.shared.(Add|Remove)XtextNatureCommand">
+      </activityPatternBinding>
       <activity
             id="disabled2"
             name="Disable XText activity">

@@ -50,6 +50,7 @@ import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.UserGroups;
 import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
 import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
@@ -112,11 +113,10 @@ public class RefreshAction extends WorkspaceAction {
 	}
 
 	/**
-	 * Checks whether the given project's location has been deleted. If so, prompts the user with whether to delete the
-	 * project or not.
+	 * Removes missing library references silently; asks before removing missing user projects.
 	 */
 	void checkLocationDeleted(final IProject project) throws CoreException {
-		if (!project.exists()) return;
+		if (!project.exists() || WorkspaceModelsManager.removeMissingLibraryProject(project)) return;
 		final IFileInfo location = IDEResourceInfoUtils.getFileInfo(project.getLocationURI());
 		if (!location.exists() && GAMA.getGui().getDialogFactory().confirm("Project location has been deleted",
 				"The location for project " + project.getName() + " (" + location.toString()

@@ -11,7 +11,9 @@
 package gama.ui.navigator.view.contents;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -19,6 +21,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 
 import gama.api.GAMA;
 import gama.api.compilation.ast.IGamlLabelProvider;
+import gama.api.compilation.ast.IGamlLabelProvider.OutlineGroup;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -42,7 +45,7 @@ public class WrappedSyntacticContent extends VirtualContent<VirtualContent<?>>
 	 * @param e
 	 *            the e
 	 */
-	private WrappedSyntacticContent(final WrappedSyntacticContent parent, final ISyntacticElement e) {
+	WrappedSyntacticContent(final VirtualContent<?> parent, final ISyntacticElement e) {
 		this(parent, e, WorkbenchHelper.getService(IGamlLabelProvider.class).getText(e));
 	}
 
@@ -67,7 +70,11 @@ public class WrappedSyntacticContent extends VirtualContent<VirtualContent<?>>
 	 *
 	 * @return the file
 	 */
-	public WrappedGamaFile getFile() { return ((WrappedSyntacticContent) getParent()).getFile(); }
+	public WrappedGamaFile getFile() {
+		VirtualContent<?> parent = getParent();
+		if (parent instanceof WrappedSyntacticGroup group) { parent = group.getParent(); }
+		return ((WrappedSyntacticContent) parent).getFile();
+	}
 
 	@Override
 	public boolean hasChildren() {
@@ -79,8 +86,18 @@ public class WrappedSyntacticContent extends VirtualContent<VirtualContent<?>>
 	@Override
 	public Object[] getNavigatorChildren() {
 		if (!hasChildren()) return null;
-		final List<WrappedSyntacticContent> children = new ArrayList<>();
-		element.visitAllChildren(elt -> children.add(new WrappedSyntacticContent(WrappedSyntacticContent.this, elt)));
+		final IGamlLabelProvider provider = WorkbenchHelper.getService(IGamlLabelProvider.class);
+		final Map<OutlineGroup, List<ISyntacticElement>> groups = new EnumMap<>(OutlineGroup.class);
+		final List<VirtualContent<?>> children = new ArrayList<>();
+		element.visitAllChildren(elt -> {
+			final OutlineGroup group = provider.getOutlineGroup(elt, element.isExperiment());
+			if (group == null) {
+				children.add(new WrappedSyntacticContent(WrappedSyntacticContent.this, elt));
+			} else {
+				groups.computeIfAbsent(group, g -> new ArrayList<>()).add(elt);
+			}
+		});
+		groups.forEach((group, elements) -> children.add(new WrappedSyntacticGroup(this, group, elements)));
 		return children.toArray();
 	}
 

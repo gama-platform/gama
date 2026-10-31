@@ -37,22 +37,24 @@ public final class GamaServerConsoleListener extends GamaServerMessager implemen
 	 */
 	@Override
 	public boolean canSendMessage(final IExperimentAgent exp) {
-		if (!GamaPreferences.Runtime.CORE_SERVER_CONSOLE.getValue()) return false;
+		if (exp == null || !GamaPreferences.Runtime.CORE_SERVER_CONSOLE.getValue()) return false;
 		var scope = exp.getScope();
 		return scope != null && scope.getServerConfiguration().hasConsole();
 	}
 
 	@Override
 	public void informConsole(final String s, final ITopLevelAgent root, final IColor color) {
-		if (!canSendMessage(root.getExperiment())) return;
-		sendMessage(root.getExperiment(), GAMA.getJsonEncoder().object("message", s, "color", color),
+		final IExperimentAgent exp = root == null ? null : root.getExperiment();
+		if (!canSendMessage(exp)) return;
+		sendMessage(exp, GAMA.getJsonEncoder().object("message", s, "color", color),
 				MessageType.SimulationOutput);
 	}
 
 	@Override
 	public void debugConsole(final int cycle, final String s, final ITopLevelAgent root, final IColor color) {
-		if (!canSendMessage(root.getExperiment())) return;
-		sendMessage(root.getExperiment(), GAMA.getJsonEncoder().object("cycle", cycle, "message", s, "color", color),
+		final IExperimentAgent exp = root == null ? null : root.getExperiment();
+		if (!canSendMessage(exp)) return;
+		sendMessage(exp, GAMA.getJsonEncoder().object("cycle", cycle, "message", s, "color", color),
 				MessageType.SimulationDebug);
 	}
 }

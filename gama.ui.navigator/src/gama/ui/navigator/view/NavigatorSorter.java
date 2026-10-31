@@ -18,6 +18,7 @@ import gama.annotations.constants.IKeyword;
 import gama.ui.navigator.view.contents.Category;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;
+import gama.ui.navigator.view.contents.WrappedSyntacticGroup;
 
 /**
  * The Class NavigatorSorter.
@@ -44,6 +45,7 @@ public class NavigatorSorter extends ViewerComparator {
 		if (e2 instanceof Category) {
 			return -1;
 		}
+		if (e2 instanceof WrappedSyntacticGroup g) return -20 + g.group.ordinal();
 		if (e2 instanceof WrappedExperimentContent) {
 			return 100;
 		}

@@ -24,10 +24,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.ast.IGamlLabelProvider;
 import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.gaml.operators.Strings;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 import gaml.compiler.EGaml;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.Facet;
@@ -35,9 +39,11 @@ import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Experiment;
+import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
+import gaml.compiler.gaml.TypeRef;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.ui.outline.GamlOutlineTreeProvider;
@@ -50,6 +56,12 @@ import gaml.compiler.ui.outline.GamlOutlineTreeProvider;
 @Singleton
 
 public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IGamlLabelProvider {
+
+	private static final Map<String, String> ICON_ALIASES = Map.ofEntries(
+			Map.entry("include", "imports"), Map.entry("var", "unknown"), Map.entry("const", "unknown"),
+			Map.entry(Types.SPECIES_VAR, "species"), Map.entry("color", "rgb"), Map.entry("picture", "image"),
+			Map.entry("BDIPlan", "plan"), Map.entry("Norm", "norm"), Map.entry("Sanction", "sanction"),
+			Map.entry("type", "object"));
 
 	/** The name provider. */
 	@Inject private IQualifiedNameProvider nameProvider;
@@ -152,7 +164,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		final Map<String, Facet> map = EGaml.getInstance().getFacetsMapOf(ele);
 		if (ele.getBlock() != null /* && ele.getBlock().getFunction() != null */) {
 			key = "function";
-		} else if (map.containsKey(IKeyword.FUNCTION) || map.containsKey("->")) { type = "function"; }
+		} else if (map.containsKey(IKeyword.FUNCTION) || map.containsKey("->")) { key = "function"; }
 		if (IKeyword.VAR.equals(type) || IKeyword.CONST.equals(type)) {
 			final Facet f = map.get(IKeyword.TYPE);
 			if (f != null) { type = EGaml.getInstance().getKeyOf(f.getExpr()); }
@@ -244,7 +256,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 * @return the string
 	 */
 	String image(final Import ele) {
-		return "_include.png";
+		return "_imports.png";
 	}
 
 	/**
@@ -271,7 +283,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	String image(final StandaloneExperiment ele) {
 		final Map<String, Facet> facets = EGaml.getInstance().getFacetsMapOf(ele);
 		Facet type = facets.get(IKeyword.TYPE);
-		if (type == null) return "_batch.png";
+		if (type == null) return "_gui.png";
 		return typeImage(EGaml.getInstance().toString(type.getExpr()));
 	}
 
@@ -285,14 +297,48 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	// Statement : keyword.value
 	public String image(final Statement ele) {
 		final String kw = EGaml.getInstance().getKeyOf(ele);
-		if (kw == null) return null;
+		if (GamlOutlineTreeProvider.isAction(ele)) {
+			final String type = definitionTypeImage((S_Definition) ele);
+			return "_action.png".equals(type) || kw == null ? "_action.png" : decorate(type, "_badge_action");
+		}
 		if (IKeyword.PARAMETER.equals(kw)) return parameterImage(ele);
-		if (IKeyword.VAR.equals(kw) || IKeyword.CONST.equals(kw)) {
+		if (GamlOutlineTreeProvider.isAttribute(ele)) {
+			final S_Definition definition = (S_Definition) ele;
 			final Map<String, Facet> facets = EGaml.getInstance().getFacetsMapOf(ele);
-			Facet type = facets.get(IKeyword.TYPE);
-			if (type != null) return typeImage(EGaml.getInstance().toString(type.getExpr()));
+			String icon = definitionTypeImage(definition);
+			if (ele.getBlock() != null || facets.containsKey(IKeyword.FUNCTION) || facets.containsKey("->")) {
+				icon = decorate(icon, "_badge_function");
+			} else if (facets.containsKey(IKeyword.UPDATE)) {
+				icon = decorate(icon, "_badge_update");
+			}
+			final Facet constant = facets.get(IKeyword.CONST);
+			if (IKeyword.CONST.equals(kw) || constant != null
+					&& "true".equals(EGaml.getInstance().toString(constant.getExpr()))) {
+				icon = decorate(icon, "_badge_const");
+			}
+			return icon;
 		}
 		return typeImage(kw);
+	}
+
+	private String definitionTypeImage(final S_Definition definition) {
+		final Facet facet = EGaml.getInstance().getFacetsMapOf(definition).get(IKeyword.TYPE);
+		final Expression type = facet == null ? definition.getTkey() : facet.getExpr();
+		final String key = type == null ? EGaml.getInstance().getKeyOf(definition)
+				: EGaml.getInstance().getKeyOf(type);
+		if (type instanceof TypeRef ref && ref.getRef() instanceof S_Species species && !hasIcon(key)) {
+			return switch (EGaml.getInstance().getKeyOf(species)) {
+				case IKeyword.CLASS -> "_object.png";
+				case IKeyword.SKILL -> "_skill.png";
+				case null -> "_missing.png";
+				default -> "_agent.png";
+			};
+		}
+		return typeImage(key);
+	}
+
+	private static String decorate(final String icon, final String badge) {
+		return icon.substring(0, icon.length() - ".png".length()) + "+" + badge + ".png";
 	}
 
 	/**
@@ -303,18 +349,19 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 * @return the string
 	 */
 	protected String parameterImage(final Statement p) {
-		if (!IKeyword.PARAMETER.equals(p.getKey())) return "_parameter.png";
-		String var = null;
 		final Facet f = EGaml.getInstance().getFacetsMapOf(p).get(IKeyword.VAR);
 		if (f != null) {
 			final Expression vr = f.getExpr();
 			if (vr instanceof VariableRef) {
 				final VarDefinition vd = ((VariableRef) vr).getRef();
-				if (vd instanceof S_Definition) { var = EGaml.getInstance().getKeyOf(vd); }
+				if (vd instanceof S_Definition definition) {
+					return decorate(definitionTypeImage(definition), "_badge_parameter");
+				}
 			}
 		}
-		if (var == null) return "_parameter.png";
-		return typeImage(var);
+		final Facet type = EGaml.getInstance().getFacetsMapOf(p).get(IKeyword.TYPE);
+		return type == null ? "_parameter.png"
+				: decorate(typeImage(EGaml.getInstance().getKeyOf(type.getExpr())), "_badge_parameter");
 	}
 
 	/**
@@ -324,9 +371,47 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 *            the string
 	 * @return the string
 	 */
-	public String typeImage(String string) {
-		if (string.contains("_file")) { string = "file"; }
-		return "_" + string + ".png";
+	public String typeImage(final String string) {
+		if (string == null || string.isBlank()) return "_missing.png";
+		String key = string.trim();
+		if (key.length() > 1 && (key.startsWith("\"") && key.endsWith("\"")
+				|| key.startsWith("'") && key.endsWith("'"))) {
+			key = key.substring(1, key.length() - 1);
+		}
+		final int generic = key.indexOf('<');
+		if (generic >= 0) { key = key.substring(0, generic).trim(); }
+		key = ICON_ALIASES.getOrDefault(key, key);
+		if (hasIcon(key)) return "_" + key + ".png";
+		if (key.endsWith("_file")) return "_file.png";
+		final IType<?> type = Types.get(key);
+		if (type != Types.NO_TYPE) {
+			if (type.isNumber()) return "_float.png";
+			if (type.isAgentType()) return "_agent.png";
+			if (type.isSkillType()) return "_skill.png";
+			if (type.isContainer()) return "_container.png";
+			return "_object.png";
+		}
+		final var symbol = ArtefactRegistry.getStatementArtefact(key);
+		if (symbol == null) return "_missing.png";
+		return "_" + switch (symbol.getKind()) {
+			case MODEL -> "model";
+			case SPECIES -> "species";
+			case CLASS -> "class";
+			case BEHAVIOR -> "behavior";
+			case PARAMETER -> "parameter";
+			case OUTPUT -> "output";
+			case LAYER -> "layer";
+			case SKILL -> "skill";
+			case BATCH_METHOD, BATCH_SECTION -> "method";
+			case EXPERIMENT -> "gui";
+			case NUMBER -> "float";
+			case REGULAR -> "object";
+			default -> "statement";
+		} + ".png";
+	}
+
+	private static boolean hasIcon(final String key) {
+		return key != null && GamaIcon.exist(IGamaIcons.GAML_PATH + "_" + key);
 	}
 
 	/**
@@ -340,6 +425,12 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	@Override
 	public ImageDescriptor getImageDescriptor(final ISyntacticElement element) {
 		return this.getImageDescriptor(element.getElement());
+	}
+
+	@Override
+	public OutlineGroup getOutlineGroup(final ISyntacticElement element, final boolean inExperiment) {
+		if (element == null || !(element.getElement() instanceof Statement s)) return null;
+		return GamlOutlineTreeProvider.groupOf(s, inExperiment);
 	}
 
 	@Override

@@ -485,7 +485,7 @@ public interface IDescription
 	 * after the description itself when resolving variable references.
 	 *
 	 * @param vp
-	 *            the provider to attach; must not be {@code null}
+	 *            the provider to attach, or {@code null} to detach the current provider
 	 */
 	void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp);
 

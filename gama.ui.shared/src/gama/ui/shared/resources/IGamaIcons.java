@@ -42,7 +42,7 @@ public interface IGamaIcons {
 	String GAML_PATH = "gaml/";
 
 	/** The Constant defaultIcon. */
-	String MISSING = GAML_PATH + "_unknown";
+	String MISSING = GAML_PATH + "_missing";
 
 	/** The Constant PLUGIN_ID. */
 	String PLUGIN_ID = "gama.ui.shared";

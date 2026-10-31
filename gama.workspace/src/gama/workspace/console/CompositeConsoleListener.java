@@ -45,6 +45,11 @@ public class CompositeConsoleListener implements IConsoleListener {
 		for (IConsoleListener console : consoles) { console.informConsole(s, root, color); }
 	}
 
+	@Override
+	public void debugConsole(final int cycle, final String s, final ITopLevelAgent root, final IColor color) {
+		for (IConsoleListener console : consoles) { console.debugConsole(cycle, s, root, color); }
+	}
+
 	/**
 	 * Show console view.
 	 *
