@@ -256,7 +256,7 @@ In the HTML connector's path field, omit the JSON quotes and click the checkmark
 
 Forwarding settings are associated with the experiment and its requesting connection, including during initialization and reload. In GUI mode they only control the extra WebSocket messages: they do **not** hide the local console, status bar, dialogs or errors. Local modal dialogs may still require a desktop user's response.
 
-The GUI also sends lifecycle notifications of type `SimulationStatus` (for example `RUNNING` or `PAUSED`). These are control notifications, independent of the `status` option.
+Both GUI and headless servers also send lifecycle notifications of type `SimulationStatus` (for example `RUNNING` or `PAUSED`). These are control notifications, independent of the `status` option.
 
 ### Runtime status subscription and status requests
 
@@ -284,6 +284,10 @@ A successful GUI load returns `CommandExecutedSuccessfully` with the experiment 
 Output from `global init` can arrive **before** the load response. Always install a message handler before sending the request, and distinguish command responses (which include `command`) from asynchronous simulation messages.
 
 Send `{"type":"play","exp_id":"exp"}` to run the experiment. GUI experiments retain their usual autorun preference; declare `autorun: false` if the client should start execution explicitly.
+
+In headless mode, `play` applies the start transition and sends `RUNNING` before acknowledging success,
+without waiting for a simulation cycle. The simulation still runs asynchronously. A headless `play` with
+`sync: true` and an `until` condition, or a batch experiment, retains its deferred response until completion.
 
 The `stepBack` command (or its `back` alias) requires an experiment declared with `record: true`.
 In both GUI and headless modes, non-record experiments return `UnableToExecuteRequest` with an

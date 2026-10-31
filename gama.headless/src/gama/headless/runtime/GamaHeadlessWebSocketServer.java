@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.security.KeyStore;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -30,8 +31,10 @@ import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.exceptions.CommandException;
 import gama.api.kernel.simulation.IExperimentController;
+import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.server.CommandResponse;
+import gama.api.utils.server.GamaServerMessage;
 import gama.api.utils.server.GamaWebSocketServer;
 import gama.api.utils.server.IGamaServer;
 import gama.api.utils.server.IServerConfiguration;
@@ -42,7 +45,7 @@ import gama.dev.DEBUG;
 /**
  * The Class GamaWebSocketServer.
  */
-public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
+public class GamaHeadlessWebSocketServer extends GamaWebSocketServer implements IExperimentStateListener {
 
 	/** The Constant TLS. */
 	static final String TLS = "TLS";
@@ -58,6 +61,11 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 
 	/** The experiments. Only used in the headless version */
 	private final Map<String, Map<String, IExperimentSpecies>> launchedExperiments = new ConcurrentHashMap<>();
+
+	/** Last state sent for each experiment, so repeated updates do not flood clients. */
+	private final Map<IExperimentSpecies, ExperimentStatus> experimentStatuses = new WeakHashMap<>();
+
+	private record ExperimentStatus(IExperimentStateListener.State state, WebSocket socket) {}
 
 	/**
 	 * Start for headless with SSL security on
@@ -147,6 +155,50 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 		super(port, interval, noDelay);
 		executor = runner;
 		if (ssl) { configureWebSocketFactoryWithSSL(jksPath, spwd, kpwd); }
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		GAMA.addExperimentStateListener(this);
+	}
+
+	@Override
+	public void stop(final int timeout, final String closeMessage) throws InterruptedException {
+		try {
+			super.stop(timeout, closeMessage);
+		} finally {
+			GAMA.removeExperimentStateListener(this);
+			synchronized (this) {
+				experimentStatuses.clear();
+			}
+		}
+	}
+
+	@Override
+	public synchronized void updateStateTo(final IExperimentSpecies experiment,
+			final IExperimentStateListener.State state) {
+		if (experiment == null) return;
+		final var agent = experiment.getAgent();
+		final var scope = agent == null ? null : agent.getScope();
+		final IServerConfiguration config = scope == null ? null : scope.getServerConfiguration();
+		final WebSocket socket = config == null ? null : config.socket();
+		if (socket == null || socket.isClosed() || socket.isClosing() || !socket.isOpen()) return;
+
+		final IExperimentController controller = experiment.getController();
+		final IExperimentStateListener.State effectiveState =
+				controller != null && controller.isDisposing() ? IExperimentStateListener.State.NONE : state;
+		final ExperimentStatus previous = experimentStatuses.get(experiment);
+		if (previous != null && previous.state() == effectiveState && previous.socket() == socket) return;
+
+		try {
+			socket.send(GAMA.getJsonEncoder()
+					.valueOf(new GamaServerMessage(MessageType.SimulationStatus, effectiveState.name(), config.expId()))
+					.toString());
+			experimentStatuses.put(experiment, new ExperimentStatus(effectiveState, socket));
+		} catch (final org.java_websocket.exceptions.WebsocketNotConnectedException e) {
+			DEBUG.OUT("Client disconnected while sending experiment state: " + e);
+		}
 	}
 
 	/**
