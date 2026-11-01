@@ -113,11 +113,10 @@ public class ArtefactRegistry {
 
 	/**
 	 * List of {@link IType} kind constants whose facets represent identifiers or labels rather than arbitrary
-	 * expressions. Includes {@link IType#LABEL}, {@link IType#ID}, {@link IType#NEW_TEMP_ID}, and
-	 * {@link IType#NEW_VAR_ID}.
+	 * expressions. Temporary declarations are identified separately by their facet's declaration flag.
 	 */
 	public static final List<Integer> ID_FACETS =
-			Arrays.asList(IType.LABEL, IType.ID, IType.NEW_TEMP_ID, IType.NEW_VAR_ID);
+			Arrays.asList(IType.LABEL, IType.ID, IType.NEW_VAR_ID);
 
 	/**
 	 * Set of facet names that must be excluded from GAML model serialization (e.g. {@code internal_function},

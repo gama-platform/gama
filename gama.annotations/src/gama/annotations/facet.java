@@ -28,24 +28,40 @@ public @interface facet {
 	/**
 	 * Type.
 	 *
-	 * @return The int values of the different types that can be taken by this facet.
-	 * @see gama.gaml.types.IType
+	 * @return The accepted expression type IDs, or exactly one variable type descriptor when
+	 *         {@link #declares_new_temp()} is true. Declaring facets also accept
+	 *         {@link gama.annotations.support.ITypeProvider#STATEMENT_TYPE} and
+	 *         {@link gama.annotations.support.ITypeProvider#INFERRED_TYPE}.
 	 */
 	int[] type();
 
 	/**
+	 * Whether this facet declares a new temporary identifier rather than accepting an expression.
+	 * Its variable type is described by {@link #type()}, {@link #of()}, and {@link #index()}, which may use
+	 * {@link gama.annotations.support.ITypeProvider#STATEMENT_TYPE} or
+	 * {@link gama.annotations.support.ITypeProvider#INFERRED_TYPE}.
+	 * Fixed types use their ordinary IDs; for example, {@code type = IType.LIST, of = IType.FLOAT}
+	 * declares a {@code list<float>}. The declaration flag does not imply a list or another container.
+	 * The statement implementation remains responsible for creating and assigning the runtime variable
+	 * in the matching scope. This flag replaces the removed {@code IType.NEW_TEMP_ID} marker.
+	 *
+	 * @return true for an identifier declaration; false for an ordinary facet
+	 */
+	boolean declares_new_temp() default false;
+
+	/**
 	 * Of.
 	 *
-	 * @return The int representation of the content type of the facet (see IType#defaultContentType()). Only applies to
-	 *         the types considered as containers
+	 * @return The content type ID. On a declaring facet, this may also be a contextual statement/inference
+	 *         provider. Only applies to container types; it does not make the outer type a container.
 	 */
 	int of() default 0;
 
 	/**
 	 * Index.
 	 *
-	 * @return The int representation of the index type of the facet (see IType#defaultKeyType()). Only applies to the
-	 *         types considered as containers
+	 * @return The key type ID. On a declaring facet, this may also be a contextual statement/inference
+	 *         provider. Only applies to container types, for example {@code index = IType.STRING} for a map.
 	 */
 	int index() default 0;
 

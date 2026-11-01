@@ -34,6 +34,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.additions.delegates.ICreateDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.annotations.serializer;
@@ -116,7 +117,9 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 				doc = @doc ("the species of the agents to be created. In the case of simulations, the name 'simulation', which represents the current instance of simulation, can also be used as a proxy to their species")),
 				@facet (
 						name = RETURNS,
-						type = IType.NEW_TEMP_ID,
+						declares_new_temp = true,
+						type = IType.LIST,
+						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
 						doc = @doc ("a new temporary variable name containing the list of created agents (a list, even if only one agent has been created)")),
 				@facet (

@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
+import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
@@ -280,26 +281,27 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	@Override
 	protected IExpression createVarWithTypes(final String tag) {
 		compileTypeProviderFacets();
-		IType t = getGamlType();
-		final String kw = getKeyword();
-		IType ct = t.getContentType();
-		if (isCreate() || IKeyword.CAPTURE.equals(kw) || IKeyword.RELEASE.equals(kw)) {
-			ct = t;
-			t = Types.LIST;
-		} else if (t == NO_TYPE && !isSet(Flag.NoTypeInference)) { t = inferType(); }
-		IType kt = t.getKeyType();
-		// Definition of the content type and key type
-		if (hasFacet(AS)) {
-			ct = getTypeDenotedByFacet(AS);
-		} else if (hasFacet(SPECIES)) {
-			final IExpression expr = getFacetExpr(SPECIES);
-			if (expr != null) {
-				ct = expr.getGamlType().getContentType();
-				kt = expr.getGamlType().getKeyType();
-			}
-		}
+		final var tempFacet = getArtefact().getPossibleFacets().get(tag);
+		final IType<?> t = resolveTemporaryType(tempFacet.getTypesDescribers()[0]);
+		final IType<?> ct = resolveTemporaryType(tempFacet.getContentTypeProvider());
+		final IType<?> kt = resolveTemporaryType(tempFacet.getKeyTypeProvider());
 		return addNewTempIfNecessary(tag, GamaType.from(t, kt, ct));
+	}
 
+	private IType<?> resolveTemporaryType(final int descriptor) {
+		return switch (descriptor) {
+			case ITypeProvider.STATEMENT_TYPE -> getGamlType();
+			case ITypeProvider.INFERRED_TYPE -> {
+				final IType<?> type = getGamlType();
+				yield type == NO_TYPE && !isSet(Flag.NoTypeInference) ? inferType() : type;
+			}
+			default -> {
+				if (descriptor < 0) {
+					error("Unsupported temporary type provider " + descriptor, GENERAL);
+				}
+				yield Types.get(descriptor);
+			}
+		};
 	}
 
 	/**

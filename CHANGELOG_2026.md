@@ -19,6 +19,37 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Benchmark statement: individual durations and optional console output
+
+`benchmark` now accepts `returns:` to declare a temporary `list<float>` containing one
+duration per execution, in milliseconds and execution order (#329). The variable remains
+available in the enclosing scope after the block, without predeclaration or casts.
+`console: false` suppresses the summary while retaining timing and result collection;
+output produced inside the block is unaffected. By default, the block runs once and the
+console summary is unchanged. `repeat:` must be positive; zero and negative values raise
+a runtime error. Repetitions do not reset model state.
+
+```gaml
+benchmark "List construction" repeat: 5 returns: durations console: false {
+    list<int> values <- [1, 2, 3];
+}
+float first_duration <- durations[0];
+write "Average duration: " + mean(durations) + " ms";
+```
+
+This is separate from experiment-wide profiling via `experiment ... benchmark: true`.
+See the [Benchmarking recipe](gama.library/models/Recipes/System/Benchmarking.gaml).
+
+### Extension API: temporary declarations separated from facet types
+
+`IType.NEW_TEMP_ID` has been removed. Temporary-declaring facets use
+`declares_new_temp = true` with ordinary `type`, `of`, and `index` metadata.
+`ITypeProvider.STATEMENT_TYPE` describes the statement's computed type;
+`INFERRED_TYPE` uses its declaration/value/iteration inference, preserving nested container
+types. Built-in declarations and generated documentation have been migrated. Extensions
+must migrate affected annotations and regenerate their additions; see the
+[migration guide](MIGRATION_GUIDE_2026.md#temporary-declaring-facets-replacing-new_temp_id).
+
 ### GAML outline icons
 
 The editor outline uses the reflex blue from the GAMA 2026 syntax palette,

@@ -23,6 +23,9 @@ package gama.annotations.support;
  *   <li><strong>Relationship constants:</strong> Define types based on owner/container relationships (OWNER_TYPE, MACRO_TYPE, etc.)</li>
  *   <li><strong>Special type constants:</strong> Handle specific type resolution scenarios (BOTH, ALL, NONE, etc.)</li>
  *   <li><strong>Container-aware constants:</strong> Work with container types and their contents (KEY_TYPE_AT_INDEX, etc.)</li>
+ *   <li><strong>Temporary declaration constants:</strong> STATEMENT_TYPE and INFERRED_TYPE describe variables
+ *       declared by facets with declares_new_temp = true. These providers are specific to declaring facets,
+ *       not general operator type providers.</li>
  * </ul>
  * 
  * @author drogoul
@@ -160,6 +163,21 @@ public interface ITypeProvider {
 	 * The type returned is the type of the expression itself (i.e. species)
 	 */
 	int TYPE = -14;
+	/**
+	 * The computed type of the statement declaring a temporary variable. Usable in a declaring facet's
+	 * {@code type}, {@code of}, or {@code index}.
+	 * For example, {@code type = IType.LIST, of = STATEMENT_TYPE} describes a list of the species selected
+	 * by {@code create} or by the target-species facets of {@code capture}, {@code release}, and {@code migrate}.
+	 * This is distinct from {@code OWNER_TYPE}, which describes an owning species or operand.
+	 */
+	int STATEMENT_TYPE = -35;
+	/**
+	 * The temporary variable type inferred from the statement's declared type, value, or iteration bounds/source.
+	 * Unlike STATEMENT_TYPE, includes the inference rules for loop variables and local declarations.
+	 * Parameterized types are retained, so inferring a nested list or map does not discard its type parameters.
+	 * Only supported on facets declaring a temporary variable.
+	 */
+	int INFERRED_TYPE = -36;
 	/**
 	 * The type should not (or cannot) be computed
 	 */

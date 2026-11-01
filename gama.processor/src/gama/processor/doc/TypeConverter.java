@@ -339,7 +339,6 @@ public class TypeConverter {
 		hm.put(-201, "an identifier");
 		hm.put(-202, "a datatype identifier");
 		hm.put(-203, "a new identifier");
-		hm.put(-204, "a new identifier");
 		return hm;
 	}
 

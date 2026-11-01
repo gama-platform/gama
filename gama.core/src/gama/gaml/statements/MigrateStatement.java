@@ -20,6 +20,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
@@ -75,7 +76,9 @@ import gama.gaml.statements.MigrateStatement.MigrateValidator;
 						doc = @doc ("target species/population that source agent(s) migrate to.")),
 				@facet (
 						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
+						declares_new_temp = true,
+						type = IType.LIST,
+						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
 						doc = @doc ("the list of returned agents in a new local variable")) },
 		omissible = IKeyword.SOURCE)

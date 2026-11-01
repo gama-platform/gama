@@ -3,7 +3,7 @@
 * Author: Benoit Gaudou
 * Description: Illustrates GAMA's built-in benchmarking and profiling capabilities. When a model becomes large
 *   and slow, it is necessary to identify which parts of the code take the most time. GAML provides two mechanisms:
-*   (1) the 'benchmark' statement, which measures the execution time of a specific block and reports it in the console;
+*   (1) the 'benchmark' statement, which measures a specific block, reports a summary, and can return each duration;
 *   (2) the 'benchmark' facet of the 'experiment' statement, which instruments the entire simulation execution and
 *   writes detailed timing results to a CSV file. Both approaches help modelers pinpoint performance bottlenecks
 *   and compare the speed of different implementation strategies.
@@ -20,13 +20,17 @@ global {
 	}
 	
 	reflex neighboorhood {
-		// benchmark statement will compute the time spent to execute the block of code its embeds.
-		// To get more reliable results, the inner statements can be executed several times (specified by the repeat: facet).
-		benchmark "Benchmark of closest_to operator" repeat: 100 {
+		// repeat: must be positive (default: 1); model state is not reset between executions.
+		// returns: declares durations as list<float>, with one entry per execution in milliseconds.
+		// The variable is available after the block; no predeclaration or cast is needed.
+		// console: false disables only the summary, not writes inside the measured block.
+		benchmark "Benchmark of closest_to operator" repeat: 100 returns: durations console: false {
 			ask people {
 				do get_closest_people();
 			}
 		}
+		float first_duration <- durations[0];
+		write "Average block duration: " + mean(durations) + " ms";
 	}
 }
 
@@ -36,6 +40,6 @@ species people {
 	} 
 }
 
-// When the facet benchmark: is used in an experiment, it will produces step after step a csv file
-// that summarizes the time spent in block and the number of executions of each statement.
+// The experiment facet benchmark: true enables separate, experiment-wide profiling.
+// It exports a CSV summary of statement durations and execution counts when the experiment closes.
 experiment Benchmarking type: gui benchmark: true { }

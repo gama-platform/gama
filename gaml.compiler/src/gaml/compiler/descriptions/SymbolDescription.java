@@ -1279,7 +1279,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 			} else {
 				// Some expressions might not be compiled
 				IExpression exp = compileExpression(facet, expr, fp);
-				if (exp != null && !isBuiltIn) {
+				if (exp != null && !isBuiltIn && !fp.isNewTemp()) {
 					final IType<?> actualType = exp.getGamlType();
 					// Special case for init. Temporary solution before we can pass ITypeProvider.OWNER_TYPE to the init
 					// facet. Concerned types are point and date, which belong to "OrdinalAttributeDeclaration" and can accept nil,

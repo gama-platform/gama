@@ -66,6 +66,36 @@ experiment StatementsAdvancedTest type: test autorun: true {
 			repeated <- repeated + 1;
 		}
 		assert repeated = 5;
+
+		// Durations can be captured without writing the summary to the console.
+		int captured_count <- 0;
+		benchmark "Captured" returns: durations console: false {
+			captured_count <- captured_count + 1;
+		}
+		assert captured_count = 1;
+		assert length(durations) = 1;
+		assert durations[0] >= 0.0;
+
+		// Repeated executions produce one duration per iteration.
+		int captured_repeated_count <- 0;
+		benchmark "Repeated capture" repeat: 5 returns: repeated_durations console: false {
+			captured_repeated_count <- captured_repeated_count + 1;
+		}
+		assert captured_repeated_count = 5;
+		assert length(repeated_durations) = 5;
+		assert repeated_durations all_match (each >= 0.0);
+
+		// A zero repeat count is rejected rather than producing invalid summary values.
+		string repeat_problem <- nil;
+		try {
+			benchmark "Invalid repeat" repeat: 0 returns: invalid_durations console: false {
+				captured_repeated_count <- captured_repeated_count + 1;
+			}
+		} catch {
+			repeat_problem <- #current_error;
+		}
+		assert repeat_problem != nil;
+		assert repeat_problem contains "must be positive";
 	}
 
 	test "Trace and Status Statements" {

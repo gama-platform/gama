@@ -21,6 +21,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
 import gama.api.compilation.IInternalFacets;
@@ -82,7 +83,8 @@ import gama.gaml.statements.LoopStatement.LoopValidator;
 						doc = @doc ("an int or float expression that represents the incrementation of the loop")),
 				@facet (
 						name = IKeyword.NAME,
-						type = IType.NEW_TEMP_ID,
+						declares_new_temp = true,
+						type = ITypeProvider.INFERRED_TYPE,
 						optional = true,
 						doc = @doc ("a temporary variable name")),
 				@facet (

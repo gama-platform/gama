@@ -22,6 +22,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -79,7 +80,8 @@ import gama.api.types.color.IColor;
 						doc = @doc ("the maximum value")),
 				@facet (
 						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
+						declares_new_temp = true,
+						type = ITypeProvider.INFERRED_TYPE,
 						optional = false,
 						doc = @doc ("a new local variable containing the value given by the user")),
 				@facet (

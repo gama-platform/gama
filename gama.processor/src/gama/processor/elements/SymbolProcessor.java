@@ -20,6 +20,7 @@ import gama.annotations.facet;
 import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
+import gama.annotations.support.ITypeProvider;
 
 /**
  * The SymbolProcessor is responsible for processing {@code @symbol} annotations during the annotation processing phase.
@@ -232,6 +233,18 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 	private void processFacet(final StringBuilder sb, final Element e, final facet child,
 			final StringBuilder constants) {
 		final String fName = child.name();
+		if (child.declares_new_temp()) {
+			if (child.type().length != 1) {
+				context.emitError("A temporary declaration must specify exactly one type: " + fName, e);
+				return;
+			}
+			for (final int descriptor : new int[] { child.type()[0], child.of(), child.index() }) {
+				if (descriptor < 0 && descriptor != ITypeProvider.STATEMENT_TYPE
+						&& descriptor != ITypeProvider.INFERRED_TYPE) {
+					context.emitError("Unsupported temporary type provider " + descriptor + " for facet " + fName, e);
+				}
+			}
+		}
 		sb.append("_facet(").append(toJavaString(fName)).append(',');
 
 		toArrayOfInts(child.type(), sb).append(',').append(child.of()).append(',').append(child.index()).append(',');
@@ -240,7 +253,8 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 		if (values != null && values.length > 0) { toArrayOfStrings(values, constants).append(','); }
 
 		toArrayOfStrings(values, sb).append(',').append(toBoolean(child.optional())).append(',')
-				.append(toBoolean(child.internal())).append(',').append(toBoolean(child.remote_context()));
+				.append(toBoolean(child.internal())).append(',').append(toBoolean(child.remote_context())).append(',')
+				.append(toBoolean(child.declares_new_temp()));
 
 		verifyDoc(e, "facet " + child.name(), child);
 		sb.append(')');

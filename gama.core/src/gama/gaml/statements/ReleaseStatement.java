@@ -40,6 +40,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 
 /**
  * The Class ReleaseStatement.
@@ -73,7 +74,9 @@ import gama.annotations.support.ISymbolKind;
 						doc = @doc ("an expression that is evaluated as an agent that will be the macro-agent in which micro-agent will be released, i.e. their new host")),
 				@facet (
 						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
+						declares_new_temp = true,
+						type = IType.LIST,
+						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
 						doc = @doc ("a new variable containing a list of the newly released agent(s)")) },
 		omissible = IKeyword.TARGET)

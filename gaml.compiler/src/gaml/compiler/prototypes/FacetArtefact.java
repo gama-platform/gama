@@ -50,6 +50,8 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	/** The key type. */
 	private final IType<?> keyType;
 
+	private final int contentTypeProvider, keyTypeProvider;
+
 	/** The optional. */
 	private final boolean optional, internal, isLabel, isId, isRemote, isNewTemp;
 
@@ -86,18 +88,20 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	 *            the is remote
 	 */
 	public FacetArtefact(final String name, final int[] types, final int ct, final int kt, final String[] values,
-			final boolean optional, final boolean internal, final boolean isRemote) {
+			final boolean optional, final boolean internal, final boolean isRemote, final boolean declaresNewTemp) {
 		this.name = name;
 		this.typesDescribers = types;
-		isNewTemp = typesDescribers[0] == IType.NEW_TEMP_ID;
+		isNewTemp = declaresNewTemp;
 		this.types = new IType[types.length];
 		for (int i = 0; i < types.length; i++) { this.types[i] = Types.get(types[i]); }
 		this.contentType = Types.get(ct);
 		this.keyType = Types.get(kt);
+		contentTypeProvider = ct;
+		keyTypeProvider = kt;
 		this.optional = optional;
 		this.internal = internal;
 		this.isRemote = isRemote;
-		isLabel = ArtefactRegistry.ID_FACETS.contains(types[0]);
+		isLabel = declaresNewTemp || ArtefactRegistry.ID_FACETS.contains(types[0]);
 		isId = isLabel && types[0] != IType.LABEL;
 		this.values = values.length == 0 ? null : ImmutableSet.copyOf(values);
 	}
@@ -156,13 +160,14 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	 * @return the string
 	 */
 	public String typesToString() {
+		if (isNewTemp) return " a new identifier";
 		final StringBuilder s = new StringBuilder(30);
 		s.append(types.length < 2 ? " " : " any type in [");
 		for (int i = 0; i < types.length; i++) {
 			switch (typesDescribers[i]) {
 				case IType.ID -> s.append("an identifier");
 				case IType.LABEL -> s.append("a label");
-				case IType.NEW_TEMP_ID, IType.NEW_VAR_ID -> s.append("a new identifier");
+				case IType.NEW_VAR_ID -> s.append("a new identifier");
 				case IType.TYPE_ID -> s.append("a datatype identifier");
 				case IType.NONE -> s.append("any type");
 				default -> // TODO AD 2/16 Document the types with the new possibility to
@@ -318,6 +323,12 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	 */
 	@Override
 	public IType<?> getContentType() { return contentType; }
+
+	@Override
+	public int getContentTypeProvider() { return contentTypeProvider; }
+
+	@Override
+	public int getKeyTypeProvider() { return keyTypeProvider; }
 
 	/**
 	 * Gets the key type.

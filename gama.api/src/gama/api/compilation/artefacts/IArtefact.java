@@ -344,6 +344,12 @@ public interface IArtefact extends IGamlDescription {
 		 */
 		IType<?> getContentType();
 
+		/** Returns the unresolved content type ID or contextual type provider. */
+		int getContentTypeProvider();
+
+		/** Returns the unresolved key type ID or contextual type provider. */
+		int getKeyTypeProvider();
+
 		/**
 		 * Gets the types describers.
 		 *

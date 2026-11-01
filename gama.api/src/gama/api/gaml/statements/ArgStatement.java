@@ -19,6 +19,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.ValidNameValidator;
@@ -99,7 +100,8 @@ import gama.api.gaml.types.IType;
 @facets (
 		value = { @facet (
 				name = IKeyword.NAME,
-				type = IType.NEW_TEMP_ID,
+				declares_new_temp = true,
+				type = ITypeProvider.INFERRED_TYPE,
 				optional = false,
 				doc = @doc ("the name of the action argument ")),
 				@facet (

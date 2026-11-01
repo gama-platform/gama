@@ -17,6 +17,7 @@ import gama.annotations.symbol;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
@@ -42,7 +43,8 @@ import gama.gaml.statements.LetStatement.LetValidator;
 @facets (
 		value = { @facet (
 				name = IKeyword.NAME,
-				type = IType.NEW_TEMP_ID,
+				declares_new_temp = true,
+				type = ITypeProvider.INFERRED_TYPE,
 				optional = false,
 				doc = @doc ("The name of the temporary variable")),
 				@facet (

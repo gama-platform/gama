@@ -30,6 +30,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | **`AbstractPopulation`** centralises population logic | `createAgentAt` renamed to `createAgentAtIndex` |
 | **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
 | **Apache Fory** replaces FST for binary serialization | FST binary saves must be regenerated; no legacy reader is provided |
+| **`IType.NEW_TEMP_ID` removed** | Use `@facet(declares_new_temp = true)` and explicit variable type metadata |
 
 ### Binary serialization compatibility
 
@@ -408,6 +409,54 @@ import gama.core.common.interfaces.IKeyword;
 // After
 import gama.annotations.constants.IKeyword;
 ```
+
+### Temporary-declaring facets: replacing `NEW_TEMP_ID`
+
+`IType.NEW_TEMP_ID` has been removed. Declaring a temporary identifier and describing its
+type are now independent: set `declares_new_temp = true` on the `@facet`, then use `type`,
+`of` (container contents), and `index` (container keys) to describe the variable.
+
+```java
+// Before: the compiler needed statement-specific rules to determine the variable type.
+@facet(name = IKeyword.RETURNS, type = IType.NEW_TEMP_ID, optional = true)
+
+// After: a fixed list<float>, as used by benchmark returns:.
+@facet(name = IKeyword.RETURNS, declares_new_temp = true,
+       type = IType.LIST, of = IType.FLOAT, optional = true)
+
+// After: a list of the statement's selected species, as used by create returns:.
+@facet(name = IKeyword.RETURNS, declares_new_temp = true,
+       type = IType.LIST, of = ITypeProvider.STATEMENT_TYPE, optional = true)
+```
+
+Use `gama.api.gaml.types.IType` and `gama.annotations.support.ITypeProvider`.
+Every declaring facet must specify **exactly one** outer type. `of` alone does not imply
+a list: use `type = IType.LIST` explicitly. A fixed map, for example, uses
+`type = IType.MAP, index = IType.STRING, of = IType.FLOAT`.
+
+Two contextual providers can be used in any of `type`, `of`, and `index`:
+
+| Provider | Meaning | Existing uses |
+|---|---|---|
+| `STATEMENT_TYPE` | The computed type of the statement, including its species/target facets | Contents of the result lists from `create`, `capture`, `release`, and `migrate` |
+| `INFERRED_TYPE` | The statement's declared type, or its existing value/iteration inference when no type is declared | `let`, `loop`, `arg`, and `user_input` temporary variables |
+
+`INFERRED_TYPE` retains nested container parameters, such as `list<list<int>>` or
+`map<string, list<float>>`. Do not substitute `OWNER_TYPE`: that existing provider refers
+to an owning species/operand, not the statement's computed type. Other negative provider
+IDs are not supported on temporary-declaring facets.
+
+The annotation controls identifier handling and **static typing**, not runtime assignment.
+A statement implementation must still create and populate its temporary in the matching
+runtime scope. For a result that must remain visible after a sequence, initialize the
+variable in the enclosing frame before entering the sequence's own scope.
+
+**Action needed:** migrate affected annotations, rebuild `gama.annotations` and
+`gama.processor`, then clean/rebuild dependent bundles so their generated `GamlAdditions`
+use the new metadata. Custom implementations/callers of `IArtefactFactory.createFacetArtefact`
+must pass the new `declaresNewTemp` boolean; custom facet artefacts must expose their raw
+content/key descriptors through `getContentTypeProvider()` and `getKeyTypeProvider()`.
+Ordinary expression facets keep `declares_new_temp = false` (the default).
 
 ---
 

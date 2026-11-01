@@ -102,9 +102,6 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** Type ID for new variable declarations. */
 	int NEW_VAR_ID = -203;
 
-	/** Type ID for temporary variables. */
-	int NEW_TEMP_ID = -204;
-
 	// ==================== Built-in Type IDs ====================
 
 	/**

@@ -1884,7 +1884,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 			if (f.doc() == null || f.doc().length <= 0 || "".equals(f.doc()[0].deprecated())) {
 				final org.w3c.dom.Element facetElt = doc.createElement(XMLElements.FACET);
 				facetElt.setAttribute(XMLElements.ATT_FACET_NAME, f.name());
-				facetElt.setAttribute(XMLElements.ATT_FACET_TYPE, tc.getTypeString(f.type()));
+				facetElt.setAttribute(XMLElements.ATT_FACET_TYPE,
+						f.declares_new_temp() ? "a new identifier" : tc.getTypeString(f.type()));
 				facetElt.setAttribute(XMLElements.ATT_FACET_OPTIONAL, "" + f.optional());
 				if (f.values().length != 0) {
 					StringBuilder valuesTaken = new StringBuilder();

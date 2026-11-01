@@ -23,6 +23,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.ITypeProvider;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
@@ -81,7 +82,9 @@ import gama.gaml.statements.CaptureStatement.CaptureValidator;
 						doc = @doc ("the species that the captured agent(s) will become, this is a micro-species of the calling agent's species")),
 				@facet (
 						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
+						declares_new_temp = true,
+						type = IType.LIST,
+						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
 						doc = @doc ("a list of the newly captured agent(s)")) },
 		omissible = IKeyword.TARGET)

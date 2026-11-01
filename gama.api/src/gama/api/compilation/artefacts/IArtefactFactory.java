@@ -270,9 +270,11 @@ public interface IArtefactFactory {
 	 *            whether the facet is internal (not user-facing)
 	 * @param isRemote
 	 *            whether expressions are evaluated in remote context
+	 * @param declaresNewTemp
+	 *            whether the facet declares a temporary identifier with the specified type
 	 * @return a new facet prototype
 	 */
 	IArtefact.Facet createFacetArtefact(String name, int[] types, int contentType, int keyType, String[] values,
-			boolean optional, boolean internal, boolean isRemote);
+			boolean optional, boolean internal, boolean isRemote, boolean declaresNewTemp);
 
 }

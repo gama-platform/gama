@@ -489,7 +489,17 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected IArtefact.Facet _facet(final String name, final int[] types, final int ct, final int kt,
 			final String[] values, final boolean optional, final boolean internal, final boolean isRemote) {
-		return GAML.getArtefactFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal, isRemote);
+		return _facet(name, types, ct, kt, values, optional, internal, isRemote, false);
+	}
+
+	/**
+	 * Registers a facet, optionally declaring a temporary identifier whose type uses the supplied descriptors.
+	 */
+	protected IArtefact.Facet _facet(final String name, final int[] types, final int ct, final int kt,
+			final String[] values, final boolean optional, final boolean internal, final boolean isRemote,
+			final boolean declaresNewTemp) {
+		return GAML.getArtefactFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal, isRemote,
+				declaresNewTemp);
 	}
 
 	/**
