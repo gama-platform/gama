@@ -38,6 +38,7 @@ import gama.api.ui.IGui;
 import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;
+import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -111,6 +112,9 @@ public class LaunchingOverlay {
 	 * keep their native canvases hidden until the launch completes.
 	 */
 	private static volatile boolean launchOverlayVisible;
+
+	/** Actions deferred until the current launch overlay closes (e.g. showing display info popups). */
+	private static final Set<Runnable> AFTER_CLOSE_ACTIONS = ConcurrentHashMap.newKeySet();
 
 	// ── Construction-time dependencies (never null after construction) ───────────
 
@@ -229,6 +233,22 @@ public class LaunchingOverlay {
 	public static boolean isLaunchOverlayVisible() { return launchOverlayVisible; }
 
 	/**
+	 * Runs the given action on the UI thread once the launch overlay closes, or immediately if no overlay is visible.
+	 * Used by auxiliary child shells (which would otherwise be stacked above the overlay) to defer their appearance.
+	 *
+	 * @param action
+	 *            the action to run
+	 */
+	public static void runAfterLaunchOverlay(final Runnable action) {
+		if (action == null) return;
+		if (!launchOverlayVisible) {
+			WorkbenchHelper.asyncRun(action);
+			return;
+		}
+		AFTER_CLOSE_ACTIONS.add(action);
+	}
+
+	/**
 	 * Hides the native canvas of the given display when a launching overlay is active.
 	 *
 	 * @param display
@@ -287,8 +307,9 @@ public class LaunchingOverlay {
 			WorkbenchHelper.asyncRun(() -> {
 				if (shell != null && !shell.isDisposed()) { shell.close(); }
 				restoreNativeDisplays(suppressedDisplays);
+				runAfterCloseActions();
 			});
-		}
+		} else if (!AFTER_CLOSE_ACTIONS.isEmpty()) { WorkbenchHelper.asyncRun(LaunchingOverlay::runAfterCloseActions); }
 	}
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
@@ -632,6 +653,23 @@ public class LaunchingOverlay {
 	private static void suppressNativeDisplay(final IGamaView.Display display) {
 		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display) || display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) return;
 		if (SUPPRESSED_NATIVE_DISPLAYS.add(display)) { display.hideCanvas(); }
+	}
+
+	/**
+	 * Drains and returns the set of native displays currently suppressed by the launch overlay.
+	 *
+	 * @return the displays that must be restored after the overlay closes
+	 */
+	private static void runAfterCloseActions() {
+		final List<Runnable> actions = new ArrayList<>(AFTER_CLOSE_ACTIONS);
+		AFTER_CLOSE_ACTIONS.clear();
+		for (final Runnable action : actions) {
+			try {
+				action.run();
+			} catch (final RuntimeException e) {
+				DEBUG.ERR("Error while running post-launch action", e);
+			}
+		}
 	}
 
 	/**

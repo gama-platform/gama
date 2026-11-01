@@ -41,6 +41,7 @@ import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
+import gama.ui.shared.utils.LaunchingOverlay;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -442,12 +443,27 @@ public class DisplayOverlay {
 	 */
 	public Shell getPopup() { return popup; }
 
+	/** Whether the display of the popup has been deferred until the launch overlay closes. */
+	private boolean deferredUntilLaunched;
+
 	/**
 	 * Display.
 	 */
 	public void display() {
 		// We first verify that the popup is still ok
 		if (!isVisible() || popup.isDisposed()) return;
+		// The popup is a child shell of the workbench window: on macOS it would be stacked above the launch overlay
+		if (LaunchingOverlay.isLaunchOverlayVisible()) {
+			hide();
+			if (!deferredUntilLaunched) {
+				deferredUntilLaunched = true;
+				LaunchingOverlay.runAfterLaunchOverlay(() -> {
+					deferredUntilLaunched = false;
+					display();
+				});
+			}
+			return;
+		}
 		final long t0 = System.currentTimeMillis();
 		DEBUG.OUT("[DisplayOverlay.display] START thread=" + Thread.currentThread().getName());
 		update();
