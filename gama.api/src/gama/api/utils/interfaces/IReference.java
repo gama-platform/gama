@@ -47,7 +47,7 @@ public interface IReference {
 	default void resolveReferences(final IScope scope, final ISimulationAgent sim) {
 		Object referencedObject = constructReferencedObject(sim);
 		for (AgentAttribute agtAttr : getAgentAttributes()) {
-			agtAttr.getAgt().setDirectVarValue(scope, agtAttr.getAttributeName(), referencedObject);
+			agtAttr.agt().setDirectVarValue(scope, agtAttr.attributeName(), referencedObject);
 		}
 	}
 
@@ -103,40 +103,6 @@ public interface IReference {
 	/**
 	 * The Class AgentAttribute.
 	 */
-	class AgentAttribute {
-
-		/** The agt. */
-		IAgent agt;
-
-		/** The attribute name. */
-		String attributeName;
-
-		/**
-		 * Gets the agt.
-		 *
-		 * @return the agt
-		 */
-		public IAgent getAgt() { return agt; }
-
-		/**
-		 * Gets the attribute name.
-		 *
-		 * @return the attribute name
-		 */
-		public String getAttributeName() { return attributeName; }
-
-		/**
-		 * Instantiates a new agent attribute.
-		 *
-		 * @param _agt
-		 *            the agt
-		 * @param agtAttrName
-		 *            the agt attr name
-		 */
-		public AgentAttribute(final IAgent _agt, final String agtAttrName) {
-			agt = _agt;
-			attributeName = agtAttrName;
-		}
-	}
+	record AgentAttribute(IAgent agt, String attributeName) {}
 
 }

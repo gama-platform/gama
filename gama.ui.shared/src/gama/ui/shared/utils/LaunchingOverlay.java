@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -91,20 +92,6 @@ public class LaunchingOverlay {
 	 * {@link StyledText#setMargins(int, int, int, int)}.
 	 */
 	private static final int CONSOLE_TEXT_PADDING = 6;
-
-	/**
-	 * Blend percentage (0–100) used to derive the console border colour from the overlay background and foreground. A
-	 * value of 30 means the border is 30 % of the way between the background and the foreground, creating a subtle but
-	 * clearly visible frame on both light and dark themes.
-	 */
-	private static final int CONSOLE_BORDER_BLEND_PCT = 30;
-
-	/**
-	 * Blend percentage (0–100) used to tint the console background colour away from the overlay background. A value of
-	 * 8 means only a slight tint toward white (dark theme) or black (light theme), just enough to visually separate the
-	 * terminal area from the surrounding overlay without being distracting.
-	 */
-	private static final int CONSOLE_BG_BLEND_PCT = 8;
 
 	/**
 	 * SWT style of the overlay shell. The overlay is intentionally modeless so the native frame of the parent workbench
@@ -178,6 +165,11 @@ public class LaunchingOverlay {
 	private StyledText consoleText;
 	private LaunchPresentation presentation;
 	private ScrolledComposite presentationArea;
+	/**
+	 * Full-window content of {@link #presentationArea} carrying its own watermark, as in the Home view: Cocoa does not
+	 * propagate the shell background image through a ScrolledComposite.
+	 */
+	private Composite presentationHolder;
 	private LaunchPresentation.State presentationState;
 	private org.eclipse.swt.graphics.Point initialSize;
 
@@ -316,6 +308,9 @@ public class LaunchingOverlay {
 		overlay.setForeground(fg);
 		overlay.setFont(parent.getFont());
 		overlay.setLayout(null);
+		// Scrollable children (presentation area, console) only inherit the watermark when forced on Cocoa.
+		overlay.setBackgroundMode(SWT.INHERIT_FORCE);
+		LaunchPresentation.installBackground(overlay);
 		overlayShell = overlay;
 		launchOverlayVisible = true;
 		suppressExistingNativeDisplays();
@@ -323,7 +318,6 @@ public class LaunchingOverlay {
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
 
 		// ── Cancel (stop) button ────────────────────────────────────────────────
-		cancelBar.setBackground(bg);
 		final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
 		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
 		cancelItem.setImage(stopIcon.image());
@@ -343,28 +337,27 @@ public class LaunchingOverlay {
 			presentationState = state;
 			initialSize = new org.eclipse.swt.graphics.Point(parent.getClientArea().width, parent.getClientArea().height);
 			presentationArea = new ScrolledComposite(overlay, SWT.V_SCROLL);
-			presentationArea.setBackground(bg);
+			presentationArea.setBackgroundMode(SWT.INHERIT_FORCE);
 			presentationArea.setForeground(fg);
 			presentationArea.setFont(parent.getFont());
 			presentationArea.setExpandHorizontal(true);
 			presentationArea.setExpandVertical(true);
-			presentation = new LaunchPresentation(presentationArea, state.content(), state.selection(), true,
+			presentationHolder = new Composite(presentationArea, SWT.NONE);
+			presentationHolder.setLayout(null);
+			presentationHolder.setBackgroundMode(SWT.INHERIT_FORCE);
+			LaunchPresentation.installBackground(presentationHolder);
+			presentation = new LaunchPresentation(presentationHolder, state.content(), state.selection(), true,
 					selection -> {}, this::handleCancel);
-			presentationArea.setContent(presentation);
+			presentationArea.setContent(presentationHolder);
 			cancelBar.setVisible(false);
 		}
 
 		// ── Scrollable console area at the bottom ─────────────────────────────────
 		// No SWT.H_SCROLL – SWT.WRAP already prevents horizontal overflow.
-		// A tinted background and a drawn border (see paintCanvas) frame the widget.
+		// No background of its own: the overlay watermark shows through.
 		consoleText = new StyledText(overlay, SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.WRAP);
 		consoleText.setEditable(false);
-		// Tinted background: slightly lighter (dark theme) or slightly darker (light theme) than the overlay
-		// background, so the console area is visually distinct on every platform.
 		final boolean dark = ThemeHelper.isDark();
-		final var consoleBg = createConsoleBgColor(overlay.getDisplay(), bg, dark);
-		consoleText.setBackground(consoleBg);
-		consoleText.addDisposeListener(ev -> consoleBg.dispose());
 		// Dimmed foreground matching the subtitle style
 		final var consoleFg = new Color(overlay.getDisplay(), blend(fg.getRed(), dark ? 255 : 0, 20),
 				blend(fg.getGreen(), dark ? 255 : 0, 20), blend(fg.getBlue(), dark ? 255 : 0, 20));
@@ -540,12 +533,12 @@ public class LaunchingOverlay {
 			final var size = presentation.computeSize(width, SWT.DEFAULT);
 			final int desiredY = anchor == null ? (consoleY - size.y) / 2 : anchor.y + (sz.y - initialSize.y) / 2;
 			final int y = Math.max(12, Math.min(desiredY, consoleY - 19));
-			// Keep the Home title anchored; scroll the lower content rather than moving the whole card up.
-			final int height = Math.min(size.y, Math.max(1, consoleY - y - 18));
 			final int x = anchor == null ? (sz.x - width) / 2
 					: Math.max(0, Math.min(sz.x - width, anchor.x + (sz.x - initialSize.x) / 2));
-			presentationArea.setBounds(x, y, width, height);
-			presentationArea.setMinSize(presentation.computeSize(presentationArea.getClientArea().width, SWT.DEFAULT));
+			// Keep the Home title anchored; scroll the window content rather than moving the whole card up.
+			presentationArea.setBounds(0, 0, sz.x, sz.y);
+			presentationArea.setMinSize(1, Math.max(sz.y, y + size.y + 18 + sz.y - consoleY));
+			presentation.setBounds(x, y, width, size.y);
 			presentationArea.moveAbove(canvas);
 		}
 
@@ -553,13 +546,10 @@ public class LaunchingOverlay {
 		final int hMargin = sz.x / CONSOLE_H_MARGIN_DIVISOR;
 		final int consoleHeight = Math.max(0, Math.min(CONSOLE_AREA_HEIGHT, sz.y - consoleY - CONSOLE_BOTTOM_MARGIN));
 		consoleText.setBounds(hMargin, consoleY, sz.x - 2 * hMargin, consoleHeight);
-		consoleText.moveAbove(canvas);
+		consoleText.moveAbove(presentationArea == null ? canvas : presentationArea);
 
-		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar,
-		// and the console bounds so it can draw a visible border around the terminal area.
+		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar.
 		canvas.setData("blockTop", blockTop);
-		canvas.setData("consoleBounds", consoleHeight == 0 ? null
-				: new Rectangle(hMargin, consoleY, sz.x - 2 * hMargin, consoleHeight));
 		canvas.redraw();
 	}
 
@@ -577,26 +567,8 @@ public class LaunchingOverlay {
 		final var b = canvas.getBounds();
 		e.gc.setBackground(bg);
 		e.gc.fillRectangle(0, 0, b.width, b.height);
-
-		// ── Console area: tinted fill + border ────────────────────────────────
-		final Object consoleBoundsData = canvas.getData("consoleBounds");
-		if (consoleBoundsData instanceof Rectangle cb) {
-			// Fill the tinted background region so it shows even behind the StyledText (avoids gaps on resize)
-			final boolean darkBg = ThemeHelper.isDark();
-			final var consoleBgColor = createConsoleBgColor(e.display, bg, darkBg);
-			e.gc.setBackground(consoleBgColor);
-			e.gc.fillRectangle(cb.x, cb.y, cb.width, cb.height);
-			consoleBgColor.dispose();
-			// Draw a 1-px border with CONSOLE_BORDER_BLEND_PCT % blend toward the foreground
-			final var borderColor = new Color(e.display, blend(bg.getRed(), fg.getRed(), CONSOLE_BORDER_BLEND_PCT),
-					blend(bg.getGreen(), fg.getGreen(), CONSOLE_BORDER_BLEND_PCT),
-					blend(bg.getBlue(), fg.getBlue(), CONSOLE_BORDER_BLEND_PCT));
-			e.gc.setForeground(borderColor);
-			e.gc.drawRectangle(cb.x - 1, cb.y - 1, cb.width + 1, cb.height + 1);
-			borderColor.dispose();
-			// Restore background for subsequent text drawing
-			e.gc.setBackground(bg);
-		}
+		final var background = canvas.getParent().getBackgroundImage();
+		if (background != null) e.gc.drawImage(background, 0, 0);
 
 		if (presentation != null) return;
 
@@ -640,27 +612,6 @@ public class LaunchingOverlay {
 	 */
 	private static int blend(final int a, final int b, final int pct) {
 		return a + (b - a) * pct / 100;
-	}
-
-	/**
-	 * Creates a tinted version of the given background colour for use as the console area background. The tint blends
-	 * {@code CONSOLE_BG_BLEND_PCT} percent toward white on dark themes and toward black on light themes, so the console
-	 * area is subtly distinct from the surrounding overlay on every platform.
-	 *
-	 * @param display
-	 *            the SWT display to allocate the colour on
-	 * @param bg
-	 *            the overlay background colour
-	 * @param dark
-	 *            {@code true} if the current theme is dark, {@code false} if light
-	 * @return a new {@link Color} that the caller is responsible for disposing
-	 */
-	private static Color createConsoleBgColor(final org.eclipse.swt.widgets.Display display, final Color bg,
-			final boolean dark) {
-		final int target = dark ? 255 : 0;
-		return new Color(display, blend(bg.getRed(), target, CONSOLE_BG_BLEND_PCT),
-				blend(bg.getGreen(), target, CONSOLE_BG_BLEND_PCT),
-				blend(bg.getBlue(), target, CONSOLE_BG_BLEND_PCT));
 	}
 
 	/**

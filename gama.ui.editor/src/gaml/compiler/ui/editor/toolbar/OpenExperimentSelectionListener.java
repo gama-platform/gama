@@ -56,9 +56,9 @@ public class OpenExperimentSelectionListener implements Selector {
 	@Override
 	public void widgetSelected(final SelectionEvent e) {
 		final String label = (String) e.widget.getData("exp");
-		final int i = state.abbreviations.indexOf(label);
+		final int i = state.abbreviations().indexOf(label);
 		if (i == -1) return;
-		launch(state.experiments.get(i));
+		launch(state.experiments().get(i));
 	}
 
 	/** Launch by full experiment name, preserving the text editor's save policy. */

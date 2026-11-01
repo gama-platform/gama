@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -80,12 +81,25 @@ public final class StartupModelHelper {
 
 	public boolean initialize(final SimulationLaunchContext launchContext) throws IOException, CoreException {
 		if (context != null) throw new IllegalStateException("The simulation player is already initialized");
+		disableAutoBuild();
 		workspace.registerProjects(launchContext.workspace());
 		artifacts.initialize(launchContext.workspace());
 		context = launchContext;
 		selections = context.selections();
 		configuration = context.configuration();
 		return true;
+	}
+
+	/**
+	 * The player compiles its models explicitly. Building the workspace would activate the GAML editor before the
+	 * workbench exists, which breaks every UI resource it initializes.
+	 */
+	private static void disableAutoBuild() throws CoreException {
+		final var ws = ResourcesPlugin.getWorkspace();
+		final var description = ws.getDescription();
+		if (!description.isAutoBuilding()) return;
+		description.setAutoBuilding(false);
+		ws.setDescription(description);
 	}
 
 	private void select(final String selected) {

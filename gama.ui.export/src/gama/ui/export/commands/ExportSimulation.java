@@ -17,9 +17,11 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -63,12 +65,15 @@ public final class ExportSimulation extends AbstractHandler {
 			if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()
 					&& !window.getActivePage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue()))
 				return null;
-			final ExportModels models = ExportModels.discover(files);
+			final ExportModels models = ExportModels.discover(files, missing -> proceedWithMissingFiles(window.getShell(), missing));
 			final boolean multipleModels = models.roots().size() > 1;
 			final var experiments = models.experiments();
 			final String[] labels = experiments.stream().map(experiment -> experiment.label(multipleModels))
 					.toArray(String[]::new);
-			final var dialog = new ExportModelDialog(labels, models.defaultTitle(), models.defaultDescription());
+			final String modelKey = models.roots().stream().map(file -> file.getFullPath().toString()).sorted()
+					.collect(Collectors.joining("\n"));
+			final var dialog = new ExportModelDialog(labels, models.defaultTitle(), models.defaultDescription(),
+					ExportModelDialog.Format.PACKAGE, modelKey);
 			final var dependencies = new java.util.concurrent.atomic.AtomicReference<List<SimulationPackageExporter.Dependency>>();
 			final var dependencyFailure = new java.util.concurrent.atomic.AtomicReference<IOException>();
 			new ProgressMonitorDialog(window.getShell()).run(true, true, monitor -> {
@@ -150,8 +155,17 @@ public final class ExportSimulation extends AbstractHandler {
 		return Adapters.adapt(selection, IResource.class);
 	}
 
+	private static boolean proceedWithMissingFiles(final Shell shell, final List<String> missing) {
+		final String message = String.join("\n", missing) + "\n\nThese files may only be needed in parts of the "
+				+ "model that are never executed. Do you want to export anyway, without them?";
+		return new MessageDialog(shell, "Missing data files", null, message, MessageDialog.WARNING, 1, "Export anyway",
+				IDialogConstants.CANCEL_LABEL).open() == 0;
+	}
+
 	private static void reportFailure(final Throwable error) {
 		DEBUG.ERR("Unable to export the simulation", error);
-		GAMA.getGui().getDialogFactory().error("Unable to export the simulation: " + (error.getMessage() == null ? error.toString() : error.getMessage()));
+		final String message = error.getMessage() == null ? error.toString() : error.getMessage();
+		GAMA.getGui().getDialogFactory().error(message.startsWith("Unable to find ")
+				? message : "Unable to export the simulation: " + message);
 	}
 }

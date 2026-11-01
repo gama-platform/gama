@@ -53,6 +53,8 @@ public final class LauncherHomeView extends ViewPart {
 		scroll.setBackgroundMode(SWT.INHERIT_FORCE);
 		scroll.setLayout(new GridLayout());
 		content = new Composite(scroll, SWT.NONE);
+		content.setBackgroundMode(SWT.INHERIT_FORCE);
+		LaunchPresentation.installBackground(content);
 		final GridLayout layout = new GridLayout();
 		layout.marginWidth = 40;
 		layout.marginHeight = 32;

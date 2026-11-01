@@ -204,9 +204,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return FACTORY.createAs(context.getContext(), expr, getSpeciesContext(op).getSpeciesExpr());
 
 		// Prefer a matching unary operator over a same-named field (e.g. envelope(geometry)).
-		if (FACTORY.hasOperator(op, new Signature(expr))) {
+		if (FACTORY.hasOperator(op, new Signature(expr)))
 			return FACTORY.createOperator(op, context.getContext(), e, expr);
-		}
 
 		// Check for field getter
 		final IArtefact proto = expr.getGamlType().getGetter(op);
@@ -361,10 +360,9 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 
-		if (IArtefact.Operator.isAccumulator(op)) {
+		if (IArtefact.Operator.isAccumulator(op))
 			return compileAccumulator(op, left, originalExpression instanceof ExpressionList params
 					? EGAML.getExprsOf(params) : List.of(originalExpression), originalExpression);
-		}
 
 		final boolean isIterator = isIteratorBinary(op, left, originalExpression);
 		if (isIterator) return compileIteratorBinary(op, left, originalExpression);
@@ -386,6 +384,19 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		return FACTORY.createOperator(op, context.getContext(), originalExpression.eContainer(), left, right);
 	}
 
+	/**
+	 * Compile accumulator.
+	 *
+	 * @param op
+	 *            the op
+	 * @param left
+	 *            the left
+	 * @param args
+	 *            the args
+	 * @param source
+	 *            the source
+	 * @return the i expression
+	 */
 	private IExpression compileAccumulator(final String op, final IExpression left, final List<Expression> args,
 			final EObject source) {
 		if (left == null) return null;
@@ -418,8 +429,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 				body = FACTORY.createAs(context.getContext(), body, FACTORY.createTypeExpression(accumulatorType));
 			}
 			final IExpression eachName = FACTORY.createConst(EACH, Types.STRING);
-			return initial == null
-					? FACTORY.createOperator(op, context.getContext(), source, eachName, left, body)
+			return initial == null ? FACTORY.createOperator(op, context.getContext(), source, eachName, left, body)
 					: FACTORY.createOperator(op, context.getContext(), source, eachName, left, initial, body);
 		} finally {
 			context.popIteratorContext();
@@ -879,15 +889,15 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 					extractArgumentInfo(exp, completeArgs, expectedArgs, positionalIndex, action, command);
 			if (argInfo == null) return argMap;
 
-			if (argInfo.incrementIndex) { positionalIndex++; }
+			if (argInfo.incrementIndex()) { positionalIndex++; }
 
-			IExpressionDescription ed = builder.createFromEObject(argInfo.valueExpr);
+			IExpressionDescription ed = builder.createFromEObject(argInfo.valueExpr());
 			if (ed != null && compileArgValues) {
 				// We keep the same compilation context
-				ed.setExpression(compile(argInfo.valueExpr));
+				ed.setExpression(compile(argInfo.valueExpr()));
 				// ed.compile(command); would switch the compilation context
 			}
-			argMap.put(argInfo.name, ed);
+			argMap.put(argInfo.name(), ed);
 		}
 
 		return argMap;
@@ -930,33 +940,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	/**
 	 * The Class ArgInfo.
 	 */
-	private static class ArgInfo {
-
-		/** The name. */
-		final String name;
-
-		/** The value expr. */
-		final Expression valueExpr;
-
-		/** The increment index. */
-		final boolean incrementIndex;
-
-		/**
-		 * Instantiates a new arg info.
-		 *
-		 * @param name
-		 *            the name
-		 * @param valueExpr
-		 *            the value expr
-		 * @param incrementIndex
-		 *            the increment index
-		 */
-		ArgInfo(final String name, final Expression valueExpr, final boolean incrementIndex) {
-			this.name = name;
-			this.valueExpr = valueExpr;
-			this.incrementIndex = incrementIndex;
-		}
-	}
+	private static record ArgInfo(String name, Expression valueExpr, boolean incrementIndex) {}
 
 	/**
 	 * Extract argument info.

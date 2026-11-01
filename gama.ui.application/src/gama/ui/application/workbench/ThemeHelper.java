@@ -173,9 +173,11 @@ public class ThemeHelper {
 	public static boolean isDark() {
 		// DEBUG.OUT("Asks for isDark(): ", false);
 		String id;
-		final var themeEngine = getContext().get(IThemeEngine.class);
+		final var workbench = Workbench.getInstance();
+		final var context = workbench == null ? null : workbench.getContext();
+		final var themeEngine = context == null ? null : context.get(IThemeEngine.class);
 		if (themeEngine == null) {
-			id = (String) getContext().get(THEME_ID);
+			id = context == null ? null : (String) context.get(THEME_ID);
 			if (id == null) {
 				// Still no trace of a theme, let's look at preferences
 				final var prefs = getThemeEclipsePreferences();

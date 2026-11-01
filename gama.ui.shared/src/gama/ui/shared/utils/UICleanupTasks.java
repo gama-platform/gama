@@ -286,6 +286,37 @@ public class UICleanupTasks {
 	 * @throws IOException
 	 */
 	public static void run() {
+		GAMA.setRegularGui(new SwtGui());
+		if (PlatformUI.isWorkbenchRunning()) {
+			configureWorkbench(0);
+			return;
+		}
+		// The bundle can be activated before the workbench exists (e.g. by an early workspace build in a playable
+		// model): configure it as soon as it is created
+		Thread.ofPlatform().daemon().name("GAMA UI configuration").start(() -> {
+			while (!PlatformUI.isWorkbenchRunning()) {
+				if (!Platform.isRunning()) return;
+				try {
+					Thread.sleep(50);
+				} catch (final InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return;
+				}
+			}
+			configureWorkbench(WINDOW_ATTEMPTS);
+		});
+	}
+
+	/** Number of times the configuration waits for a workbench window when the workbench has just been created. */
+	private static final int WINDOW_ATTEMPTS = 100;
+
+	/**
+	 * Configures the workbench.
+	 *
+	 * @param windowAttempts
+	 *            how many times to wait for the workbench window to be opened before giving up
+	 */
+	private static void configureWorkbench(final int windowAttempts) {
 		final MApplication a = PlatformUI.getWorkbench().getService(MApplication.class);
 		EclipseContext context = (EclipseContext) a.getContext();
 		if (context != null) {
@@ -306,9 +337,23 @@ public class UICleanupTasks {
 				}
 			});
 		}
-		GAMA.setRegularGui(new SwtGui());
+		configureWindow(windowAttempts, 0);
+	}
 
-		WorkbenchHelper.runInUI("Configuring GAMA UI", 0, p -> {
+	/**
+	 * Configures the active workbench window, waiting for it to be opened if necessary.
+	 *
+	 * @param remainingAttempts
+	 *            the remaining number of attempts if the window does not exist yet
+	 * @param delay
+	 *            the delay before running, in milliseconds
+	 */
+	private static void configureWindow(final int remainingAttempts, final int delay) {
+		WorkbenchHelper.runInUI("Configuring GAMA UI", delay, p -> {
+			if (remainingAttempts > 0 && WorkbenchHelper.getWorkbench().getActiveWorkbenchWindow() == null) {
+				configureWindow(remainingAttempts - 1, 100);
+				return;
+			}
 			try {
 				DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Configuring GAMA UI", "completed in", () -> {
 					Workbench workbench = (Workbench) WorkbenchHelper.getWorkbench();

@@ -60,6 +60,9 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 	public ApplicationWorkbenchWindowAdvisor createWorkbenchWindowAdvisor(final IWorkbenchWindowConfigurer configurer) {
 		return new ApplicationWorkbenchWindowAdvisor(this, configurer) {
 			@Override
+			protected boolean useIDEWindowSetup() { return false; }
+
+			@Override
 			public void preWindowOpen() {
 				super.preWindowOpen();
 				configurer.setTitle(StartupModelHelper.getInstance().getPresentation().title() + " (powered by GAMA)");

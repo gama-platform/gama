@@ -4,8 +4,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -15,6 +17,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.FlatButton;
@@ -39,10 +42,60 @@ public final class LaunchPresentation extends Composite {
 
 	private final Control actionControl;
 
+	/** Installs a centered watermark; descendants can inherit it without obscuring it with solid backgrounds. */
+	public static void installBackground(final Composite surface) {
+		final ImageDescriptor descriptor =
+				AbstractUIPlugin.imageDescriptorFromPlugin("gama.ui.shared", "welcome/welcome.png");
+		if (descriptor == null) throw new IllegalStateException("The GAMA welcome image is missing");
+		final Image original = descriptor.createImage(false, surface.getDisplay());
+		if (original == null) throw new IllegalStateException("Unable to load the GAMA welcome image");
+		final Image watermark;
+		try {
+			watermark = new Image(surface.getDisplay(), original, SWT.IMAGE_GRAY);
+		} finally {
+			original.dispose();
+		}
+		class Background implements Runnable {
+			private Image image;
+
+			@Override
+			public void run() {
+				final Rectangle area = surface.getClientArea();
+				if (area.width <= 0 || area.height <= 0) return;
+				final Image next = new Image(surface.getDisplay(), area.width, area.height);
+				final GC gc = new GC(next);
+				try {
+					gc.setBackground(surface.getBackground());
+					gc.fillRectangle(next.getBounds());
+					gc.setInterpolation(SWT.HIGH);
+					gc.setAlpha(28);
+					final Rectangle source = watermark.getBounds();
+					final double scale = 0.85 * Math.min((double) area.width / source.width,
+							(double) area.height / source.height);
+					final int width = Math.max(1, (int) (source.width * scale));
+					final int height = Math.max(1, (int) (source.height * scale));
+					gc.drawImage(watermark, 0, 0, source.width, source.height, (area.width - width) / 2,
+							(area.height - height) / 2, width, height);
+				} finally {
+					gc.dispose();
+				}
+				surface.setBackgroundImage(next);
+				if (image != null) image.dispose();
+				image = next;
+			}
+		}
+		final Background background = new Background();
+		surface.addListener(SWT.Resize, event -> background.run());
+		surface.addDisposeListener(event -> {
+			if (background.image != null) background.image.dispose();
+			watermark.dispose();
+		});
+		background.run();
+	}
+
 	public LaunchPresentation(final Composite parent, final Content content, final String selection,
 			final boolean launching, final Consumer<String> choose, final Runnable action) {
 		super(parent, SWT.NONE);
-		setBackground(parent.getShell().getBackground());
 		setForeground(parent.getShell().getForeground());
 		setFont(parent.getShell().getFont());
 		setBackgroundMode(SWT.INHERIT_FORCE);

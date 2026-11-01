@@ -1,11 +1,13 @@
 package gama.ui.export.dialogs;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -23,6 +25,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.osgi.framework.FrameworkUtil;
 
 import gama.api.runtime.SystemInfo;
 import gama.export.LauncherConfiguration;
@@ -36,6 +40,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private final String defaultTitle;
 	private final String defaultDescription;
 	private final Format format;
+	private final IDialogSettings settings;
 	private Path destinationDirectory = Path.of(System.getProperty("user.home"));
 	private Button[] experiments;
 	private Combo defaultChoice;
@@ -46,6 +51,8 @@ public class ExportModelDialog extends TitleAreaDialog {
 	private Text description;
 	private String imagePath = "";
 	private Image imagePreview;
+	private Button imageButton;
+	private MenuItem removeImageItem;
 	private Text pluginPaths;
 	private int defaultExperiment = -1;
 	private LauncherConfiguration homeConfiguration;
@@ -68,11 +75,23 @@ public class ExportModelDialog extends TitleAreaDialog {
 
 	public ExportModelDialog(final String[] experimentNames, final String defaultTitle, final String defaultDescription,
 			final Format format) {
+		this(experimentNames, defaultTitle, defaultDescription, format, "");
+	}
+
+	public ExportModelDialog(final String[] experimentNames, final String defaultTitle, final String defaultDescription,
+			final Format format, final String modelKey) {
 		super(Display.getDefault().getActiveShell());
 		availableExperiments = experimentNames.clone();
 		this.defaultTitle = defaultTitle;
 		this.defaultDescription = defaultDescription;
 		this.format = format;
+		final String sectionName = "exportModel." + format.name().toLowerCase(java.util.Locale.ROOT) + "."
+				+ java.util.UUID.nameUUIDFromBytes(modelKey.getBytes(StandardCharsets.UTF_8));
+		final IDialogSettings root = PlatformUI.getDialogSettingsProvider(FrameworkUtil.getBundle(getClass()))
+				.getDialogSettings();
+		IDialogSettings section = root.getSection(sectionName);
+		if (section == null) section = root.addNewSection(sectionName);
+		settings = section;
 		setHelpAvailable(false);
 	}
 
@@ -122,7 +141,69 @@ public class ExportModelDialog extends TitleAreaDialog {
 		}
 		formatData.exclude = formatOptions.getChildren().length == 0;
 		formatOptions.setVisible(!formatData.exclude);
+		restoreChoices();
 		return area;
+	}
+
+	private void restoreChoices() {
+		final String savedTitle = settings.get("title");
+		final String savedDescription = settings.get("description");
+		if (savedTitle != null) title.setText(savedTitle);
+		if (savedDescription != null) description.setText(savedDescription);
+		final String savedImage = settings.get("image");
+		if (savedImage != null && !savedImage.isBlank()) restoreImage(savedImage);
+		final String savedDirectory = settings.get("destinationDirectory");
+		if (savedDirectory != null) {
+			try {
+				destinationDirectory = Path.of(savedDirectory);
+			} catch (final java.nio.file.InvalidPathException e) {
+				destinationDirectory = Path.of(System.getProperty("user.home"));
+			}
+		}
+		final String[] selected = settings.getArray("experiments");
+		if (selected != null && experiments != null) {
+			defaultExperiment = -1;
+			for (int index = 0; index < experiments.length; index++) {
+				experiments[index].setSelection(Arrays.asList(selected).contains(availableExperiments[index]));
+			}
+		}
+		final String startup = settings.get("startupExperiment");
+		if (startup != null && !startup.isBlank()) {
+			for (int index = 0; index < availableExperiments.length; index++) {
+				if (availableExperiments[index].equals(startup)
+						&& (experiments == null || experiments[index].getSelection())) defaultExperiment = index;
+			}
+		}
+		final String showHome = settings.get("showHome");
+		if (showHome != null) showHomeButton.setSelection(Boolean.parseBoolean(showHome));
+		if (includeJdkButton != null) {
+			final String includeJdk = settings.get("includeJdk");
+			if (includeJdk != null) includeJdkButton.setSelection(Boolean.parseBoolean(includeJdk));
+		}
+		if (oneFileButton != null) {
+			final String oneFile = settings.get("oneFile");
+			if (oneFile != null) oneFileButton.setSelection(Boolean.parseBoolean(oneFile));
+		}
+		updateExperimentSelection();
+	}
+
+	private void restoreImage(final String path) {
+		try {
+			if (!Files.isRegularFile(Path.of(path))) return;
+			final ImageData original = new ImageData(path);
+			final double scale = 80d / Math.max(original.width, original.height);
+			final Image preview = new Image(imageButton.getDisplay(), original.scaledTo(
+					Math.max(1, (int) Math.round(original.width * scale)),
+					Math.max(1, (int) Math.round(original.height * scale))));
+			imageButton.setImage(preview);
+			imageButton.setText("");
+			imageButton.setToolTipText(path + "\nClick to change; right-click to remove.");
+			imagePreview = preview;
+			imagePath = path;
+			removeImageItem.setEnabled(true);
+		} catch (final IllegalArgumentException | org.eclipse.swt.SWTException e) {
+			setErrorMessage("Unable to load image: " + e.getMessage());
+		}
 	}
 
 	private void createPackageSection(final Composite container) {
@@ -179,7 +260,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 				+ "Other aspect ratios are center-cropped, not stretched.";
 		final String imageHint = "Choose an image for the Home screen"
 				+ (format == Format.PACKAGE ? " and splash screen.\n" + splashHint : "");
-		final Button browse = new Button(container, SWT.PUSH);
+		final Button browse = imageButton = new Button(container, SWT.PUSH);
 		browse.setText("Image (optional)");
 		final GridData data = new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 2);
 		data.widthHint = data.heightHint = 104;
@@ -190,7 +271,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 		});
 		final Menu menu = new Menu(browse);
 		browse.setMenu(menu);
-		final MenuItem remove = new MenuItem(menu, SWT.PUSH);
+		final MenuItem remove = removeImageItem = new MenuItem(menu, SWT.PUSH);
 		remove.setText("Remove image");
 		remove.setEnabled(false);
 		remove.addListener(SWT.Selection, event -> {
@@ -397,7 +478,8 @@ public class ExportModelDialog extends TitleAreaDialog {
 				filenameSuggestion = filenameSuggestion.substring(0, filenameSuggestion.length() - filterSuffix.length());
 		}
 		dialog.setFilterPath(destinationDirectory.toString());
-		dialog.setFileName(filenameSuggestion);
+		final String savedFilename = settings.get("fileName");
+		dialog.setFileName(savedFilename == null || savedFilename.isBlank() ? filenameSuggestion : savedFilename);
 		dialog.setOverwrite(true);
 		final String selected = dialog.open();
 		if (selected == null) return;
@@ -421,7 +503,22 @@ public class ExportModelDialog extends TitleAreaDialog {
 		startupLabel = defaultExperiment < 0 ? "" : availableExperiments[defaultExperiment];
 		homeConfiguration = new LauncherConfiguration(title.getText().trim(), description.getText(),
 				showHomeButton.getSelection(), startupLabel, imagePath);
+		saveChoices();
 		super.okPressed();
+	}
+
+	private void saveChoices() {
+		settings.put("title", title.getText());
+		settings.put("description", description.getText());
+		settings.put("image", imagePath);
+		settings.put("destinationDirectory", destinationDirectory.toString());
+		settings.put("fileName", output.getFileName().toString());
+		settings.put("experiments", Arrays.stream(selectedExperimentIndices())
+				.mapToObj(index -> availableExperiments[index]).toArray(String[]::new));
+		settings.put("startupExperiment", startupLabel);
+		settings.put("showHome", showHomeButton.getSelection());
+		if (includeJdkButton != null) settings.put("includeJdk", includeJdkButton.getSelection());
+		if (oneFileButton != null) settings.put("oneFile", oneFileButton.getSelection());
 	}
 
 	public String getOutputPath() { return output.getParent().toString(); }

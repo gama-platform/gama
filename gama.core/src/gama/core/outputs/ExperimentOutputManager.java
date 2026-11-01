@@ -100,6 +100,9 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 		return new ExperimentOutputManager(GAML.getDescriptionFactory().create(IKeyword.PERMANENT, (String[]) null));
 	}
 
+	/** Whether this manager has been opened by a running experiment (and therefore owns GUI state to clean). */
+	private volatile boolean initialized;
+
 	/**
 	 * Instantiates a new experiment output manager.
 	 *
@@ -112,6 +115,7 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 
 	@Override
 	public boolean init(final IScope scope) {
+		initialized = true;
 		final Symbol layoutDefinition = layout == null ? this : layout;
 		final String definitionFacet = layout == null ? LAYOUT : IKeyword.VALUE;
 		final Object layoutObject =
@@ -146,7 +150,8 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 
 	@Override
 	public void dispose() {
-		GAMA.getGui().cleanAfterExperiment();
+		// Models compiled without being run (e.g. during export) must not reset the GUI of a running experiment
+		if (initialized) { GAMA.getGui().cleanAfterExperiment(); }
 		super.dispose();
 	}
 

@@ -101,11 +101,13 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 			if (alreadyPrepared) return super.run(playerArgs.toArray(String[]::new));
 			final PrintStream out = System.out;
 			final PrintStream err = System.err;
-			try (var log = Files.newOutputStream(Path.of(System.getProperty("gama.package.content")).resolve("player.log"))) {
+			final Path logFile = Path.of(System.getProperty("gama.package.content")).resolve("player.log");
+			final int exit;
+			try (var log = Files.newOutputStream(logFile)) {
 				System.setOut(tee(out, log));
 				System.setErr(tee(err, log));
 				try {
-					return super.run(playerArgs.toArray(String[]::new));
+					exit = super.run(playerArgs.toArray(String[]::new));
 				} finally {
 					System.out.flush();
 					System.err.flush();
@@ -113,29 +115,40 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 					System.setErr(err);
 				}
 			}
+			// Failures inside the application are only logged by Equinox, which then returns an error code
+			if (exit != 0 && exit != EXIT_RESTART && exit != EXIT_RELAUNCH)
+				return reportFailure("GAMA stopped unexpectedly while running the playable model (exit code " + exit
+						+ ").\nDetails are available in the log:\n" + logFile, exit);
+			return exit;
 		} catch (final Exception | LinkageError e) {
 			final Throwable failure = e instanceof java.lang.reflect.InvocationTargetException invocation
 					? invocation.getCause() : e;
 			System.err.println("Unable to start GAMA: " + failure);
 			failure.printStackTrace(System.err);
-			if (!Boolean.getBoolean("gama.launcher.suppressErrors")) {
-				try {
-					final String message = "Unable to open the playable model:\n" + failure.getMessage();
-					if (System.getProperty("os.name").startsWith("Mac")) {
-						showError(message);
-					} else if (!java.awt.GraphicsEnvironment.isHeadless()) {
-						javax.swing.JOptionPane.showMessageDialog(null, message, "GAMA", javax.swing.JOptionPane.ERROR_MESSAGE);
-					} else {
-						return 1;
-					}
-					// The error was acknowledged; a failed native exit would show the entire launch command again.
-					return 0;
-				} catch (final RuntimeException | UnsatisfiedLinkError unavailable) {
-					System.err.println("Startup error dialog unavailable: " + unavailable);
-				}
-			}
-			return 1;
+			return reportFailure("Unable to open the playable model:\n" + failure.getMessage(), 1);
 		}
+	}
+
+	/** Exit codes used by Eclipse to request a restart or a relaunch, which are not failures. */
+	private static final int EXIT_RESTART = 23, EXIT_RELAUNCH = 24;
+
+	private static int reportFailure(final String message, final int code) {
+		if (!Boolean.getBoolean("gama.launcher.suppressErrors")) {
+			try {
+				if (System.getProperty("os.name").startsWith("Mac")) {
+					showError(message);
+				} else if (!java.awt.GraphicsEnvironment.isHeadless()) {
+					javax.swing.JOptionPane.showMessageDialog(null, message, "GAMA", javax.swing.JOptionPane.ERROR_MESSAGE);
+				} else {
+					return code;
+				}
+				// The error was acknowledged; a failed native exit would show the entire launch command again.
+				return 0;
+			} catch (final RuntimeException | UnsatisfiedLinkError unavailable) {
+				System.err.println("Startup error dialog unavailable: " + unavailable);
+			}
+		}
+		return code;
 	}
 
 	static byte[] logo() throws IOException {

@@ -695,7 +695,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				// initialised or disposed; skip the update in that case to avoid a NullPointerException
 				// whose exception-handling overhead can cause a visible stutter on Windows.
 				final IFile editorFile = getDocument().getAdapter(IFile.class);
-				boolean showExperiments = editorFile != null && newState.showExperiments;
+				boolean showExperiments = editorFile != null && newState.showExperiments();
 				updateAddExperimentButton(showExperiments);
 				experimentToolbar.update(newState);
 

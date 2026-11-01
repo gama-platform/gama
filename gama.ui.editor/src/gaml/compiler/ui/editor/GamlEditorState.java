@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.emf.common.util.URI;
 
@@ -30,34 +29,12 @@ import gama.ui.shared.resources.IGamaColors;
  * A validation snapshot for experiment controls. Descriptions and validation contexts are not retained, so this
  * object can be built during validation and passed to the UI after the descriptions have been disposed.
  */
-public class GamlEditorState {
+public record GamlEditorState(boolean hasInternalErrors, boolean hasImportedErrors, boolean hasExperiments,
+		boolean hasNullStatus, boolean showExperiments, List<String> experiments, List<String> types,
+		Map<String, URI> importedErrors) {
 
-	/** The has internal errors. */
-	final boolean hasInternalErrors;
-
-	/** The has imported errors. */
-	final boolean hasImportedErrors;
-
-	/** The has experiments. */
-	final boolean hasExperiments;
-
-	/** The has null status. */
-	final boolean hasNullStatus;
-
-	/** The show experiments. */
-	final boolean showExperiments;
-
-	/** The experiments. */
-	public final List<String> experiments;
-
-	/** The abbreviations. */
-	public final List<String> abbreviations;
-
-	/** The types. */
-	final List<String> types;
-
-	/** The imported errors. */
-	final Map<String, URI> importedErrors;
+	private record Snapshot(boolean hasInternalErrors, boolean hasImportedErrors, boolean hasNullStatus,
+			boolean showExperiments, List<String> experiments, List<String> types, Map<String, URI> importedErrors) {}
 
 	/**
 	 * Instantiates a new gaml editor state.
@@ -68,44 +45,52 @@ public class GamlEditorState {
 	 *            the descriptions
 	 */
 	public GamlEditorState(final IValidationContext status, final Iterable<? extends IDescription> descriptions) {
+		this(snapshot(status, descriptions));
+	}
 
-		if (status != null) {
-			hasImportedErrors = status.hasImportedErrors();
-			importedErrors = hasImportedErrors
-					? Collections.unmodifiableMap(new LinkedHashMap<>(status.getImportedErrorsAsStrings()))
-					: Collections.emptyMap();
-			hasInternalErrors = status.hasInternalErrors() || status.hasInternalSyntaxErrors();
-			hasNullStatus = false;
-			showExperiments = !status.getNoExperiment();
-		} else {
-			hasNullStatus = true;
-			hasInternalErrors = false;
-			hasImportedErrors = false;
-			importedErrors = Collections.emptyMap();
-			showExperiments = true;
-		}
+	private GamlEditorState(final Snapshot snapshot) {
+		this(snapshot.hasInternalErrors(), snapshot.hasImportedErrors(), !snapshot.experiments().isEmpty(),
+				snapshot.hasNullStatus(), snapshot.showExperiments(), snapshot.experiments(), snapshot.types(),
+				snapshot.importedErrors());
+	}
+
+	public GamlEditorState {
+		experiments = Collections.unmodifiableList(new ArrayList<>(experiments));
+		types = Collections.unmodifiableList(new ArrayList<>(types));
+		importedErrors = Collections.unmodifiableMap(new LinkedHashMap<>(importedErrors));
+		hasExperiments = !experiments.isEmpty();
+	}
+
+	private static Snapshot snapshot(final IValidationContext status,
+			final Iterable<? extends IDescription> descriptions) {
+		final boolean hasImportedErrors = status != null && status.hasImportedErrors();
+		final Map<String, URI> importedErrors = hasImportedErrors
+				? Collections.unmodifiableMap(new LinkedHashMap<>(status.getImportedErrorsAsStrings()))
+				: Collections.emptyMap();
+		final boolean hasInternalErrors = status != null
+				&& (status.hasInternalErrors() || status.hasInternalSyntaxErrors());
+		final boolean hasNullStatus = status == null;
+		final boolean showExperiments = status == null || !status.getNoExperiment();
 		final List<String> names = new ArrayList<>();
 		final List<String> experimentTypes = new ArrayList<>();
 		if (descriptions != null) {
 			for (final IDescription ep : descriptions) {
 				final String name = ep.getName();
 				names.add(name);
-				IExperimentDescription r = (IExperimentDescription) ep;
+				final IExperimentDescription r = (IExperimentDescription) ep;
 				experimentTypes.add(IKeyword.BATCH.equals(r.getLitteral(IKeyword.TYPE)) ? IKeyword.BATCH
 						: r.isMemorize() ? IKeyword.RECORD : IKeyword.GUI_);
 			}
 		}
-		experiments = Collections.unmodifiableList(names);
-		abbreviations = experiments;
-		types = Collections.unmodifiableList(experimentTypes);
-		hasExperiments = !experiments.isEmpty();
+		return new Snapshot(hasInternalErrors, hasImportedErrors, hasNullStatus, showExperiments,
+				Collections.unmodifiableList(names), Collections.unmodifiableList(experimentTypes), importedErrors);
 	}
+
+	/** @return experiment abbreviations; currently the same as the full experiment names */
+	public List<String> abbreviations() { return experiments; }
 
 	/** @return whether validation allows experiment controls to be shown */
 	public boolean isShowingExperiments() { return showExperiments; }
-
-	/** @return whether an imported-error menu should be shown */
-	public boolean hasImportedErrors() { return hasImportedErrors; }
 
 	/** @return experiment types, in the same order as {@link #experiments} */
 	public List<String> getExperimentTypes() { return types; }
@@ -120,31 +105,6 @@ public class GamlEditorState {
 	public boolean equals2(final Object old) {
 		if (!(old instanceof final GamlEditorState state)) return false;
 		return equals(state);
-	}
-
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(experiments, hasImportedErrors, hasInternalErrors, hasNullStatus, showExperiments, types,
-				importedErrors);
-	}
-
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
-		final GamlEditorState other = (GamlEditorState) obj;
-		if (!Objects.equals(experiments, other.experiments) || hasImportedErrors != other.hasImportedErrors
-				|| hasInternalErrors != other.hasInternalErrors || hasNullStatus != other.hasNullStatus)
-			return false;
-		if (showExperiments != other.showExperiments || !Objects.equals(types, other.types)
-				|| !Objects.equals(importedErrors, other.importedErrors)) return false;
-		return true;
 	}
 
 	/**

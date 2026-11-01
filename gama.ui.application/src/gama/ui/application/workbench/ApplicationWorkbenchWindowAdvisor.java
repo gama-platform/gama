@@ -72,9 +72,14 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		super(adv, configurer);
 	}
 
+	/**
+	 * Whether to install IDE editor drop support and automatic workspace/editor window titles.
+	 */
+	protected boolean useIDEWindowSetup() { return true; }
+
 	@Override
 	public void preWindowOpen() {
-		super.preWindowOpen();
+		if (useIDEWindowSetup()) { super.preWindowOpen(); }
 		final IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 
 		configurer.getWindow().addPerspectiveListener(new IPerspectiveListener() {

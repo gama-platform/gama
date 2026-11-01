@@ -111,7 +111,7 @@ public final class ExperimentToolbar {
 			final ToolItem item = toolbar.button(state.getColor(), message, GamaIcon.named(icon).image(),
 					e -> revalidate.run(), BUTTON_HEIGHT, SWT.LEFT);
 			if (state.hasImportedErrors()) { bindImportedErrors((FlatButton) item.getControl(), state); }
-		} else if (state.isShowingExperiments() && !state.experiments.isEmpty()) {
+		} else if (state.isShowingExperiments() && !state.experiments().isEmpty()) {
 			if (EDITOR_EXPERIMENT_MENU.getValue()
 					|| EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow()) {
 				displayExperimentMenu();
@@ -138,8 +138,8 @@ public final class ExperimentToolbar {
 		for (int i = 0; i < Math.min(leadingItemCount, items.length); i++) {
 			width += items[i].getWidth();
 		}
-		for (int i = 0; i < state.abbreviations.size(); i++) {
-			measuringButton.setText(state.abbreviations.get(i));
+		for (int i = 0; i < state.abbreviations().size(); i++) {
+			measuringButton.setText(state.abbreviations().get(i));
 			measuringButton.setImage(GamaIcon.named(ExperimentMenu.buttonIcon(state.getExperimentTypes().get(i))).image());
 			width += measuringButton.computeSize(SWT.DEFAULT, BUTTON_HEIGHT).x + 4;
 		}
@@ -147,9 +147,9 @@ public final class ExperimentToolbar {
 	}
 
 	private void displayExperimentButtons() {
-		for (int i = 0; i < state.experiments.size(); i++) {
-			final String name = state.experiments.get(i);
-			final String text = state.abbreviations.get(i);
+		for (int i = 0; i < state.experiments().size(); i++) {
+			final String name = state.experiments().get(i);
+			final String text = state.abbreviations().get(i);
 			final String type = state.getExperimentTypes().get(i);
 			final ToolItem item = toolbar.button(IGamaColors.OK, text, GamaIcon.named(ExperimentMenu.buttonIcon(type)).image(),
 					e -> launchExperiment.accept(name), BUTTON_HEIGHT, SWT.LEFT);
@@ -165,8 +165,8 @@ public final class ExperimentToolbar {
 		final GamlEditorState snapshot = state;
 		final ToolItem item = toolbar.menuButton(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
 		final FlatButton button = ((FlatButton) item.getControl()).withHeight(BUTTON_HEIGHT);
-		final Menu menu = ExperimentMenu.create(button, IntStream.range(0, snapshot.experiments.size())
-				.mapToObj(i -> new ExperimentMenu.Entry(snapshot.experiments.get(i), snapshot.abbreviations.get(i),
+		final Menu menu = ExperimentMenu.create(button, IntStream.range(0, snapshot.experiments().size())
+				.mapToObj(i -> new ExperimentMenu.Entry(snapshot.experiments().get(i), snapshot.abbreviations().get(i),
 						snapshot.getExperimentTypes().get(i))).toList(), launchExperiment);
 		button.setSelectionListener(e -> ExperimentMenu.open(menu, button));
 	}
