@@ -47,7 +47,7 @@ import one.util.streamex.StreamEx;
  * <li>Placement metadata: a {@link #tab} and a {@link #group} that determine where the preference appears in the
  * preferences dialog.</li>
  * <li>Behavioral flags: {@link #disabled}, {@link #hidden}, {@link #restartRequired}, {@link #isWorkspace},
- * {@link #inGaml}.</li>
+ * {@link #inGaml}, {@link #inPlayer}.</li>
  * <li>Cross-preference activation/deactivation/refresh references: {@link #enables}, {@link #disables},
  * {@link #refreshes}.</li>
  * <li>A set of {@link IPreferenceChangeListener}s that are notified before and after each value change, and can veto
@@ -76,6 +76,9 @@ public class Pref<T> implements IParameter {
 	 * construction time and immutable.
 	 */
 	private final boolean inGaml;
+
+	/** Whether this preference is available in the player preferences dialog. */
+	private boolean inPlayer = true;
 
 	/**
 	 * The unique preference key used as the key in the backing store and in GAML. Also serves as the
@@ -700,6 +703,26 @@ public class Pref<T> implements IParameter {
 	 */
 	public boolean inGaml() {
 		return inGaml;
+	}
+
+	/**
+	 * Returns whether this preference is available in the player preferences dialog.
+	 *
+	 * @return {@code true} by default
+	 */
+	public boolean inPlayer() { return inPlayer; }
+
+	/**
+	 * Sets whether this preference is available in the player preferences dialog, without affecting its value or GAML
+	 * accessibility.
+	 *
+	 * @param available
+	 *            whether the player preferences dialog should expose this preference
+	 * @return {@code this} preference, for method chaining
+	 */
+	public Pref<T> inPlayer(final boolean available) {
+		inPlayer = available;
+		return this;
 	}
 
 	/**

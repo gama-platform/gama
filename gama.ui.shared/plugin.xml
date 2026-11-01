@@ -302,17 +302,12 @@
                style="push">
             <visibleWhen
                   checkEnabled="false">
-               <and>
                <not>
                   <systemTest
                         property="osgi.os"
                         value="macosx">
                   </systemTest>
                </not>
-               <not>
-                  <systemTest property="exported_runner" value="true"/>
-               </not>
-               </and>   
             </visibleWhen>
          </command>
          <command
@@ -353,19 +348,22 @@
             class="gama.ui.shared.commands.PreferencesHandler"
             commandId="org.eclipse.ui.window.preferences">
          <activeWhen>
-            <and>
             <or>
-               <reference
-                     definitionId="isInModelingPerspective">
-               </reference>
-               <reference
-                     definitionId="isInSimulationPerspective">
-               </reference>
+               <and>
+                  <or>
+                     <reference
+                           definitionId="isInModelingPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                  </or>
+                  <not>
+                     <systemTest property="exported_runner" value="true"/>
+                  </not>
+               </and>
+               <systemTest property="exported_runner" value="true"/>
             </or>
-            <not>
-                  <systemTest property="exported_runner" value="true"/>
-            </not> 
-            </and>
          </activeWhen>
       </handler>
    </extension>

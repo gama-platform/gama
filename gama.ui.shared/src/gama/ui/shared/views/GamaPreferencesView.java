@@ -114,6 +114,7 @@ public class GamaPreferencesView {
 		if (!instance.preloaded) { preload(); }
 		for (final IParameterEditor ed : instance.editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		for (final Pref<?> p : GAMA.getPreferenceStore().getPreferences()) {
+			if (instance.playerMode && !p.inPlayer()) continue;
 			instance.checkActivables(p, Cast.asBool(null, p.getValue()));
 		}
 		instance.resetSyntaxConfiguration();
@@ -162,6 +163,7 @@ public class GamaPreferencesView {
 	/** The model values. */
 	final Map<String, Object> modelValues = new LinkedHashMap();
 
+	private final boolean playerMode = Boolean.getBoolean("exported_runner");
 	private final Map<String, Button> syntaxStyleButtons = new LinkedHashMap<>();
 	private Combo syntaxConfigurations;
 
@@ -180,7 +182,7 @@ public class GamaPreferencesView {
 		tabFolder.setMRUVisible(true);
 		tabFolder.setSimple(false); // rounded tabs
 		GridDataFactory.fillDefaults().grab(true, true).span(2, 1).applyTo(tabFolder);
-		final var prefs = GamaPreferences.organizePrefs();
+		final var prefs = GamaPreferences.organizePrefs(playerMode);
 		for (final String tabName : prefs.keySet()) {
 			final var item = new CTabItem(tabFolder, SWT.NONE);
 			item.setText(tabName);
@@ -509,74 +511,91 @@ public class GamaPreferencesView {
 	 * Builds the buttons.
 	 */
 	private void buildButtons() {
-		final var doc = new Label(shell, SWT.WRAP);
-		GridData docData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		docData.heightHint = 50;
-		doc.setLayoutData(docData);
-		// doc.setFont(GamaFonts.boldHelpFont);
-		doc.setText(
-				"Some preferences can also be set in GAML, using 'gama.pref_name <- new_value;'. 'pref_name' is displayed in the contextual menu of each preference");
+		if (!playerMode) {
+			final var doc = new Label(shell, SWT.WRAP);
+			GridData docData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+			docData.heightHint = 50;
+			doc.setLayoutData(docData);
+			doc.setText(
+					"Some preferences can also be set in GAML, using 'gama.pref_name <- new_value;'. 'pref_name' is displayed in the contextual menu of each preference");
 
-		final var group1 = new Composite(shell, SWT.NONE);
-		RowLayout rowLayout = new RowLayout();
-		rowLayout.fill = true;
-		rowLayout.center = true;
-		rowLayout.spacing = 10;
-		group1.setLayout(rowLayout);
-		final var gridDataGroup1 = new GridData(SWT.BEGINNING, SWT.CENTER, true, false);
-		group1.setLayoutData(gridDataGroup1);
+			final var group1 = new Composite(shell, SWT.NONE);
+			final RowLayout rowLayout = new RowLayout();
+			rowLayout.fill = true;
+			rowLayout.center = true;
+			rowLayout.spacing = 10;
+			group1.setLayout(rowLayout);
+			group1.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, false));
 
-		final var buttonRevert = FlatButton.button(group1, IGamaColors.ERROR, "Revert to defaults");
-		buttonRevert.setToolTipText("Restore default values for all preferences");
+			final var buttonRevert = FlatButton.button(group1, IGamaColors.ERROR, "Revert to defaults");
+			buttonRevert.setToolTipText("Restore default values for all preferences");
 
-		final var buttonAdvanced = FlatButton.button(group1, IGamaColors.DARK_ORANGE, "Advanced...");
-		buttonAdvanced.setToolTipText("Access to advanced preferences");
+			final var buttonAdvanced = FlatButton.button(group1, IGamaColors.DARK_ORANGE, "Advanced...");
+			buttonAdvanced.setToolTipText("Access to advanced preferences");
 
-		final var buttonImport = FlatButton.button(group1, IGamaColors.DARK_ORANGE, "Import...");
-		buttonImport.setToolTipText("Import preferences from a file...");
-		buttonImport.setSelectionListener(e -> {
-			final var fd = new FileDialog(shell, SWT.OPEN);
-			fd.setFilterExtensions("*.prefs");
-			final var path = fd.open();
-			if (path == null) return;
-			GAMA.getPreferenceStore().applyPreferencesFrom(path, modelValues);
-			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
-			resetSyntaxConfiguration();
-		});
+			final var buttonImport = FlatButton.button(group1, IGamaColors.DARK_ORANGE, "Import...");
+			buttonImport.setToolTipText("Import preferences from a file...");
+			buttonImport.setSelectionListener(e -> {
+				final var fd = new FileDialog(shell, SWT.OPEN);
+				fd.setFilterExtensions("*.prefs");
+				final var path = fd.open();
+				if (path == null) return;
+				GAMA.getPreferenceStore().applyPreferencesFrom(path, modelValues);
+				for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
+				resetSyntaxConfiguration();
+			});
 
-		final var buttonExportToGaml = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to GAML");
-		buttonExportToGaml.setToolTipText("Export preferences to a model that can be run to restore or share them...");
-		buttonExportToGaml.setSelectionListener(e -> {
-			final var fd = new FileDialog(shell, SWT.SAVE);
-			fd.setFileName("__PREFS__.gaml");
-			fd.setFilterExtensions("*.gaml");
-			fd.setOverwrite(false);
-			final var path = fd.open();
-			if (path == null) return;
-			GAMA.getPreferenceStore().saveToGAML(path);
-		});
+			final var buttonExportToGaml = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to GAML");
+			buttonExportToGaml.setToolTipText("Export preferences to a model that can be run to restore or share them...");
+			buttonExportToGaml.setSelectionListener(e -> {
+				final var fd = new FileDialog(shell, SWT.SAVE);
+				fd.setFileName("__PREFS__.gaml");
+				fd.setFilterExtensions("*.gaml");
+				fd.setOverwrite(false);
+				final var path = fd.open();
+				if (path == null) return;
+				GAMA.getPreferenceStore().saveToGAML(path);
+			});
 
-		final var buttonExport = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to preferences");
-		buttonExport
-				.setToolTipText("Export preferences in a format suitable to reimport them in another instance of GAMA");
-		buttonExport.setSelectionListener(e -> {
-			final var fd = new FileDialog(shell, SWT.SAVE);
-			fd.setFileName("gama.prefs");
-			fd.setFilterExtensions("*.prefs");
-			fd.setOverwrite(false);
-			final var path = fd.open();
-			if (path == null) return;
-			GAMA.getPreferenceStore().saveToProperties(path);
-		});
+			final var buttonExport = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to preferences");
+			buttonExport
+					.setToolTipText("Export preferences in a format suitable to reimport them in another instance of GAMA");
+			buttonExport.setSelectionListener(e -> {
+				final var fd = new FileDialog(shell, SWT.SAVE);
+				fd.setFileName("gama.prefs");
+				fd.setFilterExtensions("*.prefs");
+				fd.setOverwrite(false);
+				final var path = fd.open();
+				if (path == null) return;
+				GAMA.getPreferenceStore().saveToProperties(path);
+			});
+
+			buttonRevert.setSelectionListener(e -> {
+				if (!GAMA.getGui().getDialogFactory().question("Revert to default",
+						"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately"))
+					return;
+				GamaPreferences.revertToDefaultValues(modelValues);
+				PlatformUI.getWorkbench().restart(true);
+			});
+
+			buttonAdvanced.setSelectionListener(e -> {
+				close();
+				WorkbenchHelper.asyncRun(() -> {
+					final PreferenceDialog pd = WorkbenchPreferenceDialog.createDialogOn(parentShell, null);
+					pd.open();
+					shell.setVisible(true);
+				});
+			});
+		}
 
 		final var group2 = new Composite(shell, SWT.NONE);
-		rowLayout = new RowLayout();
+		final RowLayout rowLayout = new RowLayout();
 		rowLayout.fill = true;
 		rowLayout.center = true;
 		// rowLayout.justify = true;
 		rowLayout.spacing = 10;
 		group2.setLayout(rowLayout);
-		final var gridDataGroup2 = new GridData(SWT.END, SWT.END, false, false);
+		final var gridDataGroup2 = new GridData(SWT.END, SWT.END, false, false, playerMode ? 2 : 1, 1);
 		// gridDataGroup2.widthHint = 200;
 		group2.setLayoutData(gridDataGroup2);
 
@@ -607,24 +626,6 @@ public class GamaPreferencesView {
 		});
 
 		// this.shell.setDefaultButton(buttonOK);
-
-		buttonRevert.setSelectionListener(e -> {
-			if (!GAMA.getGui().getDialogFactory().question("Revert to default",
-					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately"))
-				return;
-			GamaPreferences.revertToDefaultValues(modelValues);
-			PlatformUI.getWorkbench().restart(true);
-		});
-
-		buttonAdvanced.setSelectionListener(e -> {
-			close();
-			WorkbenchHelper.asyncRun(() -> {
-				final PreferenceDialog pd = WorkbenchPreferenceDialog.createDialogOn(parentShell, null);
-				pd.open();
-				shell.setVisible(true);
-			});
-
-		});
 
 		shell.addDisposeListener(e -> { saveDialogProperties(); });
 	}
@@ -696,7 +697,7 @@ public class GamaPreferencesView {
 
 		}
 
-		tabFolder.setSelection(tab);
+		tabFolder.setSelection(tab >= 0 && tab < tabFolder.getItemCount() ? tab : 0);
 		shell.setLocation(x, y);
 		shell.setSize(width, height);
 		shell.open();

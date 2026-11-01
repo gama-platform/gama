@@ -64,20 +64,21 @@ public final class SyntaxHighlightingPreferences {
 		titles = new LinkedHashMap<>(categories);
 		defaults = builtIn("GAMA 2026");
 		PREFERENCES.put(CONFIGURATION_KEY, create(CONFIGURATION_KEY, "Configuration", defaults.name(),
-				IType.STRING, false).in(Theme.NAME, CONFIGURATION_GROUP));
+				IType.STRING, false).in(Theme.NAME, CONFIGURATION_GROUP).inPlayer(false));
 		for (final String theme : THEMES) {
 			// Retain the old switch so existing custom colors are read without changing their meaning.
 			PREFERENCES.put(legacyKey(theme), create(legacyKey(theme), "Use default syntax colors", true,
-					IType.BOOL, false).hidden());
+					IType.BOOL, false).inPlayer(false).hidden());
 			titles.forEach((id, title) -> {
 				final Style style = defaults.themes().get(theme).get(id);
 				final String colorKey = key(id, "color", theme);
 				PREFERENCES.put(colorKey, create(colorKey, title, style.color(), IType.COLOR, false)
-						.in(Theme.NAME, group(theme)));
+						.in(Theme.NAME, group(theme)).inPlayer(false));
 				for (final String property : List.of("bold", "italic")) {
 					final String styleKey = key(id, property, theme);
 					PREFERENCES.put(styleKey, create(styleKey, title + " " + property,
-							"bold".equals(property) ? style.bold() : style.italic(), IType.BOOL, false).hidden());
+							"bold".equals(property) ? style.bold() : style.italic(), IType.BOOL, false)
+									.inPlayer(false).hidden());
 				}
 			});
 		}

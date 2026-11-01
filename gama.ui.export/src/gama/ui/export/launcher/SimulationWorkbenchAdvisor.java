@@ -68,8 +68,10 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 			@Override
 			public void postWindowOpen() {
 				super.postWindowOpen();
-				if (configurer.getWindow() instanceof WorkbenchWindow window)
+				if (configurer.getWindow() instanceof WorkbenchWindow window) {
 					configureHomeTrim(window, true);
+					window.getShell().setFullScreen(true);
+				}
 			}
 		};
 	}
