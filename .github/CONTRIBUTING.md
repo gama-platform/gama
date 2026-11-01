@@ -1,7 +1,7 @@
 ## How to contribute to GAMA
 
 For development environment setup and an introduction to the codebase, see the
-[developer introduction](../DEVELOPING.md).
+[developer documentation](https://github.com/gama-platform/gama/wiki/developingGAMA).
 
 #### **Did you write a patch that fixes a bug or adds a new feature?**
 

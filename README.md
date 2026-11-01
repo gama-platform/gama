@@ -21,10 +21,16 @@ There's a detailed tutorial that covers all cases in the [documentation](https:/
 
 ### Develop or run from source
 
-The recommended development environment is Eclipse 2026-03 running on Java 21, with JDK 25 configured
-for GAMA builds and launches, and [GAMA Developer Tools](https://github.com/gama-platform/gama.devtools).
-The tools can check out the sources, import the Eclipse projects, configure the workspace, and create launch configurations.
-See the [developer introduction](DEVELOPING.md) for setup, an overview of the codebase, and manual Maven builds.
+Use Eclipse IDE for Java and DSL Developers **2026-03** with PDE, running on Java 21 or newer,
+and a full **JDK 25** for GAMA builds and launches. Install
+[GAMA Developer Tools](https://github.com/gama-platform/gama.devtools) and choose
+**GAMA > Get started...**, also offered at startup in a workspace without `gama.core`.
+It guides environment checks, JDK registration, source import, rebuilding and launch configuration.
+Downloads and missing Eclipse dependencies remain explicit user steps.
+
+See [Developing GAMA](https://github.com/gama-platform/gama/wiki/developingGAMA) for the recommended guided route, a manual setup path,
+the codebase map and Maven build commands. Eclipse and the annotation processor can run on Java 21;
+GAMA itself compiles for and launches with Java 25.
 
 If the mandatory `gama.api` or `gama.core` generated `GamlAdditions` cannot be loaded, constructed or initialized,
 GAMA terminates the JVM with process exit status **42** (`GamaBundleLoader.EXIT_GAML_INITIALIZATION_FAILED`).
