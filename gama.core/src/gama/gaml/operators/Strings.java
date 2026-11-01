@@ -244,6 +244,7 @@ public class Strings {
 			masterDoc = true,
 			returns = "a {@code string} that is the concatenation of all elements in order.",
 			special_cases = { "If the list is empty, returns the empty string ''.",
+					"If the list is nil, raises a GAML error.",
 					"nil elements are converted to 'nil'." },
 			usages = @usage (
 					value = "concatenates a list of string into a string. More efficient than looping over the list and adding the strings individually",
@@ -253,6 +254,7 @@ public class Strings {
 	@tests ({ @test ("concatenate([]) = ''"), @test ("concatenate(['a']) = 'a'"),
 			@test ("concatenate(['a','b','c']) = 'abc'"), @test ("concatenate([\"a\", \"b\", \"c\"]) = \"abc\"") })
 	public static String opConcatenate(final IScope scope, final IList<String> strings) throws GamaRuntimeException {
+		if (strings == null) throw GamaRuntimeException.error("concatenate: the list must not be nil", scope);
 		StringBuilder sb = new StringBuilder();
 		for (String s : strings) { sb.append(s); }
 		return sb.toString();
@@ -293,6 +295,7 @@ public class Strings {
 	@doc (
 			returns = "a {@code string} with all elements joined by the separator.",
 			special_cases = { "If the list is empty, returns the empty string ''.",
+					"If the list or separator is nil, raises a GAML error.",
 					"If the separator is empty, equivalent to concatenate/1." },
 			usages = @usage (
 					value = "concatenates a list of string into a string, inserting the separator between each. More efficient than looping over the list and adding the strings individually",
@@ -304,6 +307,7 @@ public class Strings {
 	@test ("concatenate(['a','b'], '') = 'ab'")
 	public static String opConcatenateSep(final IScope scope, final IList<String> strings, final String separator)
 			throws GamaRuntimeException {
+		if (strings == null) throw GamaRuntimeException.error("concatenate: the list must not be nil", scope);
 		if (separator == null) throw GamaRuntimeException.error("concatenate: the separator must not be nil", scope);
 		StringJoiner sj = new StringJoiner(separator);
 		for (String s : strings) { sj.add(s); }
