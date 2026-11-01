@@ -17,10 +17,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
@@ -60,10 +63,14 @@ import gama.ui.shared.utils.WorkbenchHelper;
 /** A virtual native tree holds rows, not per-assertion editor composites. */
 public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Test {
 
+	private record ExperimentKey(String title, URI uri) {
+		ExperimentKey(final TestExperimentSummary summary) { this(summary.getTitle(), summary.getURI()); }
+	}
+
 	private final List<AbstractSummary<?>> experiments = new ArrayList<>();
 	private final Map<AbstractSummary<?>, List<AbstractSummary<?>>> children = new IdentityHashMap<>();
 	private final Map<AbstractSummary<?>, TreeItem> items = new IdentityHashMap<>();
-	private final Map<TestExperimentSummary, Boolean> liveExperiments = new IdentityHashMap<>();
+	private final Set<ExperimentKey> finalizedExperiments = new HashSet<>();
 	private final Map<TestExperimentSummary, IndividualTestSummary> pendingSummaries = new IdentityHashMap<>();
 	private List<AbstractSummary<?>> roots = List.of();
 	private final Map<TestState, Image> icons = new EnumMap<>(TestState.class);
@@ -329,7 +336,7 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		ui(() -> {
 			generation++;
 			synchronized (this) { pendingSummaries.clear(); }
-			liveExperiments.clear();
+			finalizedExperiments.clear();
 			running = true;
 			report = false;
 			currentName = "Preparing tests...";
@@ -359,18 +366,22 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 	}
 
 	private void upsertExperiment(final TestExperimentSummary experiment) {
-		for (int i = 0; i < experiments.size(); i++) {
-			final var existing = experiments.get(i);
-			if (existing == experiment || existing instanceof TestExperimentSummary test
-					&& liveExperiments.containsKey(test)
-					&& java.util.Objects.equals(test.getTitle(), experiment.getTitle())
-					&& java.util.Objects.equals(test.getURI(), experiment.getURI())) {
-				if (existing instanceof TestExperimentSummary test) { liveExperiments.remove(test); }
-				experiments.set(i, experiment);
-				return;
-			}
+		final var key = new ExperimentKey(experiment);
+		finalizedExperiments.add(key);
+		synchronized (this) {
+			pendingSummaries.keySet().removeIf(summary -> key.equals(new ExperimentKey(summary)));
 		}
-		experiments.add(experiment);
+		final int index = experimentIndex(key);
+		if (index < 0) { experiments.add(experiment); }
+		else { experiments.set(index, experiment); }
+	}
+
+	private int experimentIndex(final ExperimentKey key) {
+		for (int i = 0; i < experiments.size(); i++) {
+			if (experiments.get(i) instanceof TestExperimentSummary test
+					&& key.equals(new ExperimentKey(test))) return i;
+		}
+		return -1;
 	}
 
 	/** Queues live summaries for a coalesced SWT-thread refresh. */
@@ -429,18 +440,22 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 
 	private void refreshLiveSummaries(final Map<TestExperimentSummary, IndividualTestSummary> summaries) {
 		boolean rootsChanged = false;
+		boolean replaced = false;
 		for (final var experiment : summaries.keySet()) {
-			boolean found = false;
-			for (final var existing : experiments) {
-				if (existing == experiment) { found = true; break; }
-			}
-			if (!found) {
+			final var key = new ExperimentKey(experiment);
+			if (finalizedExperiments.contains(key)) continue;
+			final int index = experimentIndex(key);
+			if (index < 0) {
 				experiments.add(experiment);
-				liveExperiments.put(experiment, Boolean.TRUE);
 				rootsChanged = true;
+			} else if (experiments.get(index) != experiment) {
+				experiments.set(index, experiment);
+				replaced = true;
 			}
 		}
-		if (rootsChanged) {
+		if (replaced) {
+			refresh();
+		} else if (rootsChanged) {
 			children.clear();
 			roots = filtered(new ArrayList<>(experiments));
 			tree.setItemCount(roots.size());
@@ -448,7 +463,9 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		tree.setRedraw(false);
 		try {
 			for (final var entry : summaries.entrySet()) {
-				refreshLiveExperiment(entry.getKey(), entry.getValue());
+				if (!finalizedExperiments.contains(new ExperimentKey(entry.getKey()))) {
+					refreshLiveExperiment(entry.getKey(), entry.getValue());
+				}
 			}
 		} finally {
 			tree.setRedraw(true);
@@ -552,7 +569,7 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		experiments.clear();
 		children.clear();
 		items.clear();
-		liveExperiments.clear();
+		finalizedExperiments.clear();
 		synchronized (this) { pendingSummaries.clear(); }
 		roots = List.of();
 		icons.values().forEach(Image::dispose);

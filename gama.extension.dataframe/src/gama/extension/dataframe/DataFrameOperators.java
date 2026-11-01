@@ -535,7 +535,7 @@ public class DataFrameOperators {
 			category = { IDataframeConstants.CATEGORY },
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
-			value = "Returns a new dataframe containing only the specified columns.",
+			value = "Returns a new dataframe containing only the specified columns. A nil column list raises a GAML error.",
 			usages = { @usage (
 					value = "Select only 'name' and 'age' columns",
 					examples = { @example (
@@ -554,6 +554,7 @@ public class DataFrameOperators {
 			@test ("dataframe df8 <- dataframe_with( [\"name\", \"age\", \"city\", \"score\"], [[\"Alice\", 30, \"Paris\", 95], [\"Bob\", 25, \"Lyon\", 87], [\"Charlie\", 35, \"Paris\", 92], [\"Diana\", 28, \"Paris\", 78]] ); dataframe result2 <- select_columns(filter(df8, \"city\", \"Paris\"), [\"name\", \"score\"]); result2.keys = [\"name\", \"score\"]")
 	})
 	public static IDataFrame dfSelectColumns(final IScope scope, final IDataFrame df, final IList<String> columns) {
+		if (columns == null) throw GamaRuntimeException.error("select_columns: the column list must not be nil", scope);
 		return df.selectColumns(columns);
 	}
 

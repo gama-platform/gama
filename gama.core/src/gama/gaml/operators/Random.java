@@ -284,6 +284,7 @@ public class Random {
 					@usage (
 							value = "when truncated_gauss is called with a list of only one element mean, it will always return 0.0") },
 			special_cases = { "If the standard deviation is 0, the operator always returns the mean.",
+					"If the list is nil, raises a GAML error.",
 					"The result is always within ]mean-stddev, mean+stddev[." },
 			examples = { @example (
 					value = "truncated_gauss ([0.5, 0.0])",
@@ -296,6 +297,7 @@ public class Random {
 			@test ("float tgauss2 <- truncated_gauss([0.0, 1.0]); tgauss2 <= 1.0")
 	})
 	public static Double opTGauss(final IScope scope, final IList list) {
+		if (list == null) throw GamaRuntimeException.error("truncated_gauss: the parameter list must not be nil", scope);
 		if (list.size() < 2) return 0d;
 		final double mean = Cast.asFloat(scope, list.get(0));
 		final double range = Cast.asFloat(scope, list.get(1));

@@ -157,7 +157,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 								a_species(location: {10, 20});        // functional form: creates 1 agent with a given location
 								a_species(5, (location: {rnd(100), rnd(100)})); // creates 5 agents, each at a random location""",
 						isExecutable = false)),
-				@usage ("If `number` equals 0 or `species` cannot be resolved, the statement is silently ignored."),
+				@usage ("Without a `from:` source, a non-positive `number` creates no agents and assigns an empty list to `returns:`, if provided."),
 				@usage (
 						value = "Capturing created agents in a temporary variable with `returns:` — even a single agent is wrapped in a list:",
 						examples = @example (
@@ -408,7 +408,11 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 		// First, we compute the number of agents to create
 		final Integer max = number == null ? null : Cast.asInt(scope, number.value(scope));
-		if (from == null && max != null && max <= 0) return GamaListFactory.getEmptyList();
+		if (from == null && max != null && max <= 0) {
+			final IList<? extends IAgent> agents = GamaListFactory.getEmptyList();
+			if (returns != null) { scope.setVarValue(returns, agents); }
+			return agents;
+		}
 
 		// Next, we compute the species to instantiate
 		final IPopulation pop = findPopulation(scope);

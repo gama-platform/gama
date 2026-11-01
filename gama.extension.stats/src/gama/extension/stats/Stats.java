@@ -965,7 +965,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "returns the dynamic time warping between the two series of values (step pattern used: symetric1)",
+			value = "returns the dynamic time warping between the two series of values (step pattern used: symetric1). Nil series raise a GAML error.",
 			examples = { @example (
 					value = "dtw([32.0,5.0,1.0,3.0],[1.0,10.0,5.0,1.0])",
 					equals = "38.0") })
@@ -976,6 +976,8 @@ public class Stats {
 			@test ("list<float> series3 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled2 <- [2.0, 4.0, 6.0, 8.0, 10.0]; dtw(doubled2, series3) = dtw(series3, doubled2)") })
 	public static Double opDynamicTimeWarping(final IScope scope, final IList vals1, final IList vals2)
 			throws GamaRuntimeException {
+		if (vals1 == null || vals2 == null)
+			throw GamaRuntimeException.error("dtw requires non-nil series", scope);
 		final int n1 = vals1.size();
 		final int n2 = vals2.size();
 		final double[][] table = new double[2][n2 + 1];
@@ -2682,7 +2684,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Uses Type III Sum of Squares (orthogonal to order).",
+			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Uses Type III Sum of Squares (orthogonal to order). Nil input lists or response values raise a GAML error.",
 			examples = { @example (
 					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
 					isExecutable = false) })
@@ -2692,11 +2694,17 @@ public class Stats {
 			@test ("multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A:B'] < 0.05") })
 	public static GamaAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
 			final IList<?> factorB) {
+		if (y == null || factorA == null || factorB == null)
+			throw GamaRuntimeException.error("multi_anova requires non-nil input lists", scope);
 		if (y.size() != factorA.size() || y.size() != factorB.size())
 			throw GamaRuntimeException.error("All input lists must have the same size", scope);
 
 		double[] yData = new double[y.size()];
-		for (int i = 0; i < y.size(); i++) { yData[i] = y.get(i); }
+		for (int i = 0; i < y.size(); i++) {
+			if (y.get(i) == null)
+				throw GamaRuntimeException.error("multi_anova requires non-nil response values", scope);
+			yData[i] = y.get(i);
+		}
 
 		// Identify levels
 		List<Object> levelsA = new ArrayList<>(new LinkedHashSet<>(factorA));
@@ -2808,7 +2816,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence.",
+			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence. Nil input lists or observations raise a GAML error.",
 			examples = { @example (
 					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
 					isExecutable = false) })
@@ -2816,10 +2824,14 @@ public class Stats {
 			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])"),
 			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) <= 1.0") })
 	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y) {
+		if (x == null || y == null)
+			throw GamaRuntimeException.error("hsic requires non-nil input lists", scope);
 		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
 		double[] xData = new double[x.size()];
 		double[] yData = new double[y.size()];
 		for (int i = 0; i < x.size(); i++) {
+			if (x.get(i) == null || y.get(i) == null)
+				throw GamaRuntimeException.error("hsic requires non-nil observations", scope);
 			xData[i] = x.get(i);
 			yData[i] = y.get(i);
 		}
@@ -2931,7 +2943,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations.")
+			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations. A nil input list raises a GAML error.")
 	@tests ({ @test (
 			value = "list<float> data_vc_length <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lvc_length <- rolling_vc(data_vc_length); length(lvc_length) = length(data_vc_length) - 1",
 			name = "Rolling coefficient of variation length"),
@@ -2963,7 +2975,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
+			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations. A nil input list raises a GAML error.")
 	@tests ({ @test (
 			value = "list<float> data_se_length <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lse_length <- rolling_se(data_se_length); length(lse_length) = length(data_se_length) - 1",
 			name = "Rolling standard error length"),
@@ -3047,6 +3059,7 @@ public class Stats {
 	 * @return return the mean for each number of replicates
 	 */
 	private static IList<Double> meanList(final IList<Double> val, final IScope scope) {
+		if (val == null) throw GamaRuntimeException.error("Rolling statistics require a non-nil input list", scope);
 		IList<Double> mean = GamaListFactory.create(Types.FLOAT);
 		double tmp_mean = 0;
 		for (int i = 0; i < val.size(); i++) {
@@ -3141,7 +3154,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CLUSTERING })
 	@doc (
-			value = "returns skewness value computed from the operand list of values",
+			value = "returns skewness value computed from the operand list of values. A nil input list raises a GAML error.",
 			special_cases = "if the length of the list is lower than 3, returns NaN",
 			examples = { @example (
 					value = "skewness ([1,2,3,4,5])",
@@ -3152,6 +3165,7 @@ public class Stats {
 			@test ("list<float> spread <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; skewness(spread) > 0.81 and skewness(spread) < 0.82"),
 			@test ("list<float> spread2 <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; skew(spread2) = skewness(spread2)") })
 	public static Double opSkewness(final IScope scope, final IList data) throws GamaRuntimeException {
+		if (data == null) throw GamaRuntimeException.error("skewness requires a non-nil input list", scope);
 		final Skewness sk = new Skewness();
 		final double[] values = new double[data.length(scope)];
 		for (int i = 0; i < values.length; i++) { values[i] = Cast.asFloat(scope, data.get(i)); }
