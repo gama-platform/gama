@@ -12,7 +12,6 @@ package gama.ui.experiment.factories;
 
 import static gama.ui.shared.utils.ViewsHelper.hideView;
 
-import java.util.ConcurrentModificationException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -85,48 +84,36 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 					if (status != null) { status.informStatus(firstLine, IStatusMessage.SIMULATION_ICON); }
 				}
 			}
+			// Even view lookup can restore SWT controls; never do it on a console producer's thread.
+			WorkbenchHelper.asyncRun(() -> displayConsoleMessage(event, msg));
+		}
+
+		private void displayConsoleMessage(final ConsoleEvent event, final String msg) {
+			final IGamaView.Console console = (Console) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, false);
 			synchronized (bufferLock) {
-				if (replayingBuffer) {
-					bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
+				if (console != null && !replayingBuffer && consoleBuffer.isEmpty()) {
+					console.append(msg, event.agent(), event.color());
 					return;
 				}
-			}
-			IGamaView.Console[] console = new IGamaView.Console[1];
-			try {
-				console[0] = (Console) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, true);
-			} catch (final ConcurrentModificationException e) {
-				// See Issue #2812. With concurrent views opening, the view might be impossible to find
-			}
-			synchronized (bufferLock) {
-				if (console[0] == null) {
-					// Never block the producing (simulation) thread on the UI thread: buffer the message and
-					// schedule at most one asynchronous attempt to open the console.
-					bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
+				bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
+				if (replayingBuffer) return;
+				if (console == null) {
 					if (!openRequested && System.currentTimeMillis() - lastFailedOpenAttempt >= OPEN_RETRY_DELAY) {
 						openRequested = true;
 						WorkbenchHelper.asyncRun(this::openConsoleAndReplay);
 					}
 					return;
 				}
-				if (replayingBuffer) {
-					bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
-					return;
-				}
-				if (consoleBuffer.isEmpty()) {
-					console[0].append(msg, event.agent(), event.color());
-					return;
-				}
-				// The console has been opened by other means while messages were buffered: replay them first
-				bufferConsoleMessage(event.withColor(colorFor(event.agent(), event.color())), msg);
 				replayingBuffer = true;
 			}
-			replayBufferedMessages(console[0]);
+			replayBufferedMessages(console);
 		}
 
 		private void openConsoleAndReplay() {
 			IGamaView.Console console = null;
 			try {
-				if (PerspectiveHelper.showConsoles()) {
+				console = (Console) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, false);
+				if (console == null && PerspectiveHelper.showConsoles()) {
 					console = (Console) GAMA.getGui().showView(null, IGui.CONSOLE_VIEW_ID, null,
 							IWorkbenchPage.VIEW_ACTIVATE);
 				}
@@ -210,8 +197,10 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 
 		@Override
 		public void eraseConsole(final boolean setToNull) {
-			final IGamaView console = (IGamaView) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, false);
-			if (console != null) { WorkbenchHelper.run(() -> console.reset()); }
+			WorkbenchHelper.run(() -> {
+				final IGamaView console = (IGamaView) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, false);
+				if (console != null) { console.reset(); }
+			});
 			synchronized (bufferLock) {
 				consoleBuffer.clear();
 				bufferedCharacters = 0;
