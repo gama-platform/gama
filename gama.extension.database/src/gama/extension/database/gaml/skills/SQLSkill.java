@@ -121,7 +121,7 @@ public class SQLSkill extends Skill {
 							name = "values",
 							type = IType.LIST,
 							optional = true,
-							doc = @doc ("List of values that are used to replace question mark")) },
+							doc = @doc ("List of values that are used to replace question mark. Omitted, nil or empty means no parameters.")) },
 			doc = @doc (
 					value = "Action used to execute any update query (CREATE, DROP, INSERT...) to the database (query written in SQL).",
 					examples = {
@@ -134,7 +134,7 @@ public class SQLSkill extends Skill {
 		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
 		int row_count = -1;
 		try (final SqlConnection sqlConn = SqlUtils.createConnectionObject(scope);) {
-			if (values.size() > 0) {
+			if (values != null && !values.isEmpty()) {
 				row_count = sqlConn.executeUpdateDB(scope, updateComm, values);
 			} else {
 				row_count = sqlConn.executeUpdateDB(scope, updateComm);
@@ -265,7 +265,7 @@ public class SQLSkill extends Skill {
 							name = "values",
 							type = IType.LIST,
 							optional = true,
-							doc = @doc ("List of values that are used to replace question marks")) },
+							doc = @doc ("List of values that are used to replace question marks. Omitted, nil or empty means no parameters.")) },
 			doc = @doc (
 					value = "Action used to retrieve data from a database. The result is returned as a dataframe.",
 					examples = { @example ("dataframe t <- select(PARAMS, \"SELECT * FROM registration\");") }))
@@ -275,7 +275,7 @@ public class SQLSkill extends Skill {
 		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
 
 		try (final SqlConnection sqlConn = SqlUtils.createConnectionObject(scope);) {
-			return values.size() > 0 ? sqlConn.executeQueryDB(scope, selectComm, values)
+			return values != null && !values.isEmpty() ? sqlConn.executeQueryDB(scope, selectComm, values)
 					: sqlConn.selectDB(scope, selectComm);
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("SQLSkill.select_QM: " + e.toString(), scope);

@@ -87,8 +87,10 @@ experiment StatsInputRobustnessTest type: test autorun: true {
 		try { unknown result <- split_in([1, 2, 3], #max_int); } catch { problem <- #current_error; }
 		assert rejected(problem);
 		list<int> missing <- nil;
-		assert empty(missing);
-		assert split_in(missing, 1) = [[]];
+		problem <- nil;
+		try { unknown result <- split_in(missing, 1); } catch { problem <- #current_error; }
+		assert rejected(problem);
+		assert split_in(list<int>([]), 1) = [[]];
 		assert split_in([1, 2, 3], 1) = [[1, 2, 3]];
 		assert split_in([1, 2, 3], 2, true) = [[1], [2, 3]];
 		assert split_in([1, 2, 3], 2, false) = [[1, 2], [3]];

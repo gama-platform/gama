@@ -228,7 +228,7 @@ public class AgentDB extends GamlAgent {
 							name = "values",
 							type = IType.LIST,
 							optional = true,
-							doc = @doc ("List of values that are used to replace question marks")) },
+							doc = @doc ("List of values that are used to replace question marks. Omitted, nil or empty means no parameters.")) },
 			doc = @doc (
 					value = "Make a connection to DBMS and execute the select statement.",
 					returns = "Returns the result of the select statement as a dataframe."))
@@ -238,7 +238,7 @@ public class AgentDB extends GamlAgent {
 		final String selectComm = (String) scope.getArg("select", IType.STRING);
 		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
 		try {
-			return values.size() > 0 ? sqlConn.executeQueryDB(scope, conn, selectComm, values)
+			return values != null && !values.isEmpty() ? sqlConn.executeQueryDB(scope, conn, selectComm, values)
 					: sqlConn.selectDB(scope, conn, selectComm);
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("AgentDB.select: " + e.toString(), scope);
@@ -272,7 +272,7 @@ public class AgentDB extends GamlAgent {
 							name = "values",
 							type = IType.LIST,
 							optional = true,
-							doc = @doc ("List of values that are used to replace question mark")) },
+							doc = @doc ("List of values that are used to replace question mark. Omitted, nil or empty means no parameters.")) },
 			doc = @doc (
 					value = "- Make a connection to DBMS - Executes the SQL statement in this PreparedStatement object, which must be an SQL\n"
 							+ "	 INSERT, UPDATE or DELETE statement; or an SQL statement that returns nothing, such as a DDL statement.",
@@ -286,7 +286,7 @@ public class AgentDB extends GamlAgent {
 		int row_count = -1;
 		// get data
 		try {
-			if (values.size() > 0) {
+			if (values != null && !values.isEmpty()) {
 				row_count = sqlConn.executeUpdateDB(scope, conn, updateComm, values);
 			} else {
 				row_count = sqlConn.executeUpdateDB(scope, conn, updateComm);
