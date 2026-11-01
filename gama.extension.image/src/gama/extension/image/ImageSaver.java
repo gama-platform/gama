@@ -67,9 +67,14 @@ public class ImageSaver extends AbstractSaver {
 		if (value == null) return;
 		String t = "image".equals(options.type()) ? "png" : "jpeg".equals(options.type()) ? "jpg" : options.type();
 		if (value instanceof GamaImage image) {
+			if (options.async()) {
+				AsyncImageWriter.enqueue(image, t, file);
+				return;
+			}
 			ImageHelper.writeImage(image, t, file);
 			return;
 		}
+		if (options.async()) throw new IOException("The async facet requires a GamaImage value");
 		File f = file;
 		String path = f.getAbsolutePath();
 		if (!path.contains("." + t)) {
@@ -204,6 +209,9 @@ public class ImageSaver extends AbstractSaver {
 	public Set<String> computeFileTypes() {
 		return Sets.union(Set.of(ImageIO.getWriterFileSuffixes()), FILE_FORMATS);
 	}
+
+	@Override
+	public boolean supportsAsync() { return true; }
 
 	@Override
 	public IType getDataType() { return Types.get(GamaImageType.ID); }

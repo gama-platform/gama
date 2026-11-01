@@ -180,6 +180,13 @@ public interface ISaveDelegate {
 	}
 
 	/**
+	 * Whether this delegate supports the optional asynchronous save mode.
+	 *
+	 * @return true if the delegate supports asynchronous saving
+	 */
+	default boolean supportsAsync() { return false; }
+
+	/**
 	 * Returns the set of file type identifiers (extensions) supported by this delegate.
 	 *
 	 * <p>

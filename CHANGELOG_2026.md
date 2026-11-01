@@ -86,6 +86,60 @@ Mouse and keyboard event actions that refresh outputs no longer make the AWT
 event thread wait for rendering on itself, or consume the simulation's render
 acknowledgment. This affects interactive event-layer models such as Moving Agents.
 
+### Snapshots and image saving: faster, optionally asynchronous
+
+Display snapshots and image saves are faster (#740). The saved expression is evaluated only once,
+PNG files use fast lossless compression, OpenGL pixel readback and conversion are cheaper, and
+Java2D snapshots wait for the paint notification instead of polling.
+
+`save` accepts a new `async` facet (`false` by default) for image values, including snapshots.
+With `async: true`, the image is still computed and copied synchronously, but encoding and
+writing run on a background thread, so the simulation can continue during disk I/O:
+
+```gaml
+reflex capture {
+	save snapshot("my_display") to: "frames/frame_" + string(cycle) + ".png" format: "png" async: true;
+}
+```
+
+- Files are written in the order of the `save` statements, by a single background writer.
+- At most two images wait in the queue. If disk writing cannot keep up, the next asynchronous
+  `save` waits, which bounds memory use.
+- When the statement returns, the file may not exist yet. Do not read it back immediately
+  after an asynchronous save.
+- Write errors are reported to the runtime when they occur, not by the `save` statement itself.
+- `async: true` requires a `to:` destination and an image value. Fields, grids and other
+  file formats raise an error rather than being saved synchronously.
+
+GUI snapshots remain more expensive than headless ones. In headless mode every display is
+rendered offscreen as an `image` display, at 500×500 pixels by default. In the GUI, a snapshot
+waits for the on-screen display to render and then reads pixels back at native, possibly
+high-DPI, resolution. To reduce this cost, request a smaller image with
+`snapshot(agent, "my_display", {width, height})` and save it with `async: true`.
+
+### Extension API: asynchronous save delegates
+
+`ISaveDelegate` implementations can opt in to the `async` facet by overriding
+`supportsAsync()` to return `true` and reading `SaveOptions.async()` in `save(...)`. The default
+is `false`, and `save` rejects `async: true` for delegates that do not support it.
+`SaveOptions` gains a trailing `async` component and `withAsync(boolean)`; its former
+canonical constructor remains available and keeps saves synchronous.
+
+This is also an opportunity to speed up other file formats, such as CSV, shapefiles,
+GeoPackage or JSON. Delegates that write large files can move encoding and I/O off the
+simulation thread. An asynchronous implementation must:
+
+- read the agents, expressions and mutable values it needs synchronously, while `save` runs, and
+  copy them into data owned by the background task;
+- never use the `IScope` from the background task;
+- preserve the order of writes to the same file, for example with one writer per destination;
+- bound queued work, for example with a small queue that blocks when full;
+- report failures explicitly, because the `save` statement has already returned.
+
+`gama.extension.image.AsyncImageWriter` is the reference implementation. It copies pixels
+before queuing them and uses a single-thread executor with a two-item queue. A full queue blocks
+the caller, and errors are reported through `GAMA.reportError` with the current runtime scope.
+
 ### Editor Find/Replace
 
 The GAML editor toolbar now has a Find/Replace icon that opens the same search UI as

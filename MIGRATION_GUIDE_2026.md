@@ -231,6 +231,37 @@ See [Part 2, Section 5](#5-package-mapping-gamaapi-module) for the full import m
 
 ---
 
+## 6. Asynchronous File Saving
+
+`save` has an opt-in `async: true` facet (#740). The first implementation covers images and
+display snapshots: the value is computed synchronously, then encoded and written on a background
+thread. The same mechanism can be used to speed up other file formats.
+
+No migration is required. To support asynchronous saves in an extension's save delegate:
+
+```java
+@Override
+public boolean supportsAsync() { return true; }
+
+@Override
+public void save(IScope scope, IExpression item, Object value, File file, SaveOptions options)
+        throws IOException {
+    if (!options.async()) { writeNow(value, file); return; }
+    MyData copy = copyMutableState(scope, value); // synchronous, while the scope is valid
+    MyAsyncWriter.enqueue(copy, file);            // ordered, bounded, reports its own errors
+}
+```
+
+The background task must not use `IScope` and must not read agents or other mutable model
+values. Preserve write order, bound queued work, and report failures explicitly. `save` rejects
+`async: true` when `supportsAsync()` returns `false`, which is the default.
+`SaveOptions.withAsync(boolean)` creates options with the flag set; the former canonical
+constructor remains available and keeps saves synchronous. See
+`gama.extension.image.AsyncImageWriter` for a reference implementation and the
+[changelog](CHANGELOG_2026.md#extension-api-asynchronous-save-delegates) for the requirements.
+
+---
+
 # Part 2: Migration Reference
 
 Work through each section that applies to your plugin. Each section is self-contained.

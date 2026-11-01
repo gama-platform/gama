@@ -118,6 +118,11 @@ import gaml.compiler.expressions.ConstantExpression;
 						optional = true,
 						doc = @doc ("the numeric value to write as the no-data marker when saving a GeoTIFF raster. When omitted, the field no_data value is used if available")),
 				@facet (
+						name = "async",
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("when true, image encoding and writing happen on a background thread and the statement returns before the file is written. Currently supported only for GamaImage values; the image expression is still evaluated synchronously, writes are ordered, failures are reported asynchronously, and the bounded queue may pause the simulation when full")),
+				@facet (
 						name = IKeyword.ATTRIBUTES,
 						type = { IType.MAP, IType.LIST },
 						remote_context = true,
@@ -187,6 +192,11 @@ import gaml.compiler.expressions.ConstantExpression;
 								value = "save snapshot('my_display') to: 'frame.png' format: 'png';",
 								isExecutable = false) }),
 				@usage (
+						value = "For GamaImage values, async: true queues image encoding and writing on a background thread; evaluating the image (including taking a snapshot) remains synchronous.",
+						examples = { @example (
+								value = "save snapshot('my_display') to: 'frame_' + string(cycle) + '.png' format: 'png' async: true;",
+								isExecutable = false) }),
+				@usage (
 						value = "The save statement can be use in an init block, a reflex, an action or in a user command. Do not use it in experiments.") })
 @validator (SaveValidator.class)
 @SuppressWarnings ({ "rawtypes" })
@@ -219,6 +229,11 @@ public class SaveStatement extends AbstractStatementSequence {
 			final IExpressionDescription type = desc.getFacet(FORMAT);
 			final IExpression bufferingStrategy = desc.getFacetExpr(IKeyword.BUFFERING);
 			final IExpression noData = desc.getFacetExpr(IKeyword.NO_DATA);
+			final IExpression async = desc.getFacetExpr("async");
+
+			if (async != null && async.getGamlType() != Types.BOOL) {
+				desc.error("The async facet must be boolean", IGamlIssue.WRONG_TYPE, "async");
+			}
 
 			if (type != null) { desc.setFacetExprDescription(FORMAT, type); }
 			final IExpression format = type == null ? null : type.getExpression();
@@ -396,6 +411,9 @@ public class SaveStatement extends AbstractStatementSequence {
 	/** The encoding facet (only used when saving a dataframe to JSON). */
 	private final IExpression encodingFacet;
 
+	/** The asynchronous image writing facet. */
+	private final IExpression asyncFacet;
+
 	/**
 	 * Instantiates a new save statement.
 	 *
@@ -413,6 +431,7 @@ public class SaveStatement extends AbstractStatementSequence {
 		noDataFacet = getFacet(IKeyword.NO_DATA);
 		separatorFacet = getFacet("separator");
 		encodingFacet = getFacet("encoding");
+		asyncFacet = getFacet("async");
 	}
 
 	/**
@@ -462,9 +481,13 @@ public class SaveStatement extends AbstractStatementSequence {
 		if (item == null) return null;
 		final Object itemValue = item.value(scope);
 		if (itemValue == null) return null;
+		final boolean async = asyncFacet != null && Cast.asBool(scope, asyncFacet.value(scope));
 
 		// First case: we have no destination file, so it means the item is a file;
-		if (file == null) return saveFile(scope);
+		if (file == null) {
+			if (async) throw GamaRuntimeException.error("The async facet requires an explicit image destination", scope);
+			return saveFile(scope);
+		}
 
 		final String fileName = Cast.asString(scope, file.value(scope));
 		final String filePath = FileUtils.constructAbsoluteFilePath(scope, fileName, false);
@@ -533,6 +556,9 @@ public class SaveStatement extends AbstractStatementSequence {
 			if (delegate != null) {
 				var saveOptions = new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite,
 						getNoDataValue(scope));
+				if (async && !delegate.supportsAsync())
+					throw GamaRuntimeException.error("The async facet is only supported for image saves", scope);
+				saveOptions = saveOptions.withAsync(async);
 				if (separatorFacet != null) {
 					saveOptions = saveOptions.withSeparator(Cast.asString(scope, separatorFacet.value(scope)));
 				}
