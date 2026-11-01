@@ -12,9 +12,13 @@ GAMA when Eclipse requests it. License and signature checks are not bypassed.
 Diagramming installs the GAMA graphical modeling feature, including Graphiti,
 GEF and its EMF dependencies, from the 2026-06 graphical modeling update site.
 Copilot installs the optional `gama.feature.copilot` feature from its independent
-update site, <https://gama-platform.org/gama.copilot/>, with the upstream GitHub
-Copilot feature, its platform-specific agent and the GAMA integration plug-in. Both installers
-use the Eclipse 2026-03 repository for required platform dependencies.
+thin update site, <https://gama-platform.org/gama.copilot/>. That site supplies only
+the GAMA wrapper and integration plug-in; p2 obtains GitHub Copilot and its
+platform-specific agent from Microsoft's update site. Both installers use the
+named Eclipse 2026-03 repository for required platform dependencies, not a moving
+latest-Eclipse channel. Copilot is resolved to the newest version satisfying the
+wrapper's compatibility range and the installed platform's dependencies; a newer
+upstream release requiring newer Eclipse does not authorize upgrading that baseline.
 Already-installed features are reported rather than reinstalled; use
 **Support > Check for Updates** to update them.
 For Copilot, the installed check uses the GAMA wrapper feature: having only the
@@ -33,8 +37,9 @@ Copilot packaging, dependency baselines, publishing and integration-specific iss
 are maintained in [gama.copilot](https://github.com/gama-platform/gama.copilot).
 The feature is no longer built or published by GAMA's Maven reactor.
 Use that repository's documented build to publish Copilot updates independently.
-The wrapper includes the upstream feature rather than duplicating its
-platform-specific plug-in list.
+The wrapper requires the upstream feature rather than duplicating its
+platform-specific plug-in list. Third-party binaries are not mirrored on the
+GAMA Copilot site; installation needs access to Microsoft and Eclipse as well.
 
 For distribution maintainers: the Copilot update site must be published before
 distributing the installer command. Its integration uses the

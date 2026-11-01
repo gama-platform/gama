@@ -80,6 +80,11 @@ dependency documentation and publishing workflow now belong to
 p2 site <https://gama-platform.org/gama.copilot/>; use **Support > Check for Updates**
 after installation. Review the normal license and trust prompts. GitHub sign-in and
 Copilot entitlement are still handled by the upstream extension.
+The dedicated site contains only GAMA's wrapper and integration plug-in.
+p2 selects a compatible Copilot version from Microsoft's repository; platform
+dependencies remain on **Eclipse 2026-03**. Installation requires access to all
+three sites, and a newer Copilot requiring a newer Eclipse baseline cannot be
+installed merely because it is the latest upstream release.
 
 **Build migration:** remove references to the former core `gama.feature.copilot`
 directory and `-Pcopilot` profile from custom build scripts. Build the standalone

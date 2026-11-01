@@ -44,6 +44,8 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 	private static final String PLUGIN_ID = "gama.ui.navigator";
 	private static final URI ECLIPSE_REPOSITORY = URI.create("https://download.eclipse.org/releases/2026-03/");
 	private static final URI COPILOT_REPOSITORY = URI.create("https://gama-platform.org/gama.copilot/");
+	private static final URI COPILOT_UPSTREAM_REPOSITORY =
+			URI.create("https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
 	private static final URI GRAPHICAL_REPOSITORY =
 			URI.create("https://updates.gama-platform.org/plugin/2026-06/gama.graphical.modeling/");
 	private static final AtomicBoolean INSTALLING = new AtomicBoolean();
@@ -78,7 +80,8 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 				final IProfile profile = registry == null ? null : registry.getProfile(ui.getProfileId());
 				if (profile == null) return error("The GAMA installation profile is unavailable.");
 				final URI source = graphical ? GRAPHICAL_REPOSITORY : COPILOT_REPOSITORY;
-				final URI[] repositories = { source, ECLIPSE_REPOSITORY };
+				final URI[] repositories = graphical ? new URI[] { source, ECLIPSE_REPOSITORY }
+						: new URI[] { source, COPILOT_UPSTREAM_REPOSITORY, ECLIPSE_REPOSITORY };
 				for (final URI repository : repositories) {
 					ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
 				}

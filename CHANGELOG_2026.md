@@ -26,6 +26,10 @@ Copilot packaging and GAMA-specific integration move to
 Tycho build, dependency baseline, GitHub Actions publishing and dedicated p2 site
 at <https://gama-platform.org/gama.copilot/>. Copilot is still optional and is not
 included in the default GAMA product.
+The site is thin: it publishes only GAMA's wrapper and integration plug-in.
+p2 resolves compatible upstream Copilot components from Microsoft and platform
+dependencies from the fixed Eclipse 2026-03 repository, without mirroring them
+or moving GAMA to a newer Eclipse release.
 
 **Support > Install Copilot...** now uses that site rather than the running GAMA
 release's update repository; subsequent updates use **Support > Check for Updates**.

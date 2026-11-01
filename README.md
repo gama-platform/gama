@@ -37,6 +37,8 @@ GAMA itself compiles for and launches with Java 25.
 GitHub Copilot is maintained separately in
 [gama.copilot](https://github.com/gama-platform/gama.copilot), with its own dependency
 baseline, build workflow and p2 update site: <https://gama-platform.org/gama.copilot/>.
+This thin site hosts only GAMA's integration; p2 downloads compatible Copilot
+components from Microsoft and platform dependencies from Eclipse **2026-03**.
 It is not bundled with GAMA or built by this repository's Maven reactor.
 In a packaged installation, choose **Support > Install Copilot...**, review the
 licenses and trust prompts, then restart when requested. Use **Support > Check for
