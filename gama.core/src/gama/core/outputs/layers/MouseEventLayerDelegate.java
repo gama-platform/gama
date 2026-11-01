@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -23,6 +24,14 @@ import gama.api.ui.layers.ILayerStatement;
  */
 public class MouseEventLayerDelegate implements IEventLayerDelegate {
 
+	private final Set<String> events;
+
+	public MouseEventLayerDelegate() {
+		final Set<String> supportedEvents = new HashSet<>(MOUSE_EVENTS);
+		supportedEvents.add(MOUSE_LISTENER);
+		events = Set.copyOf(supportedEvents);
+	}
+
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
 		return Objects.equals(source, IKeyword.DEFAULT);
@@ -34,6 +43,6 @@ public class MouseEventLayerDelegate implements IEventLayerDelegate {
 	}
 
 	@Override
-	public Set<String> getEvents() { return MOUSE_EVENTS; }
+	public Set<String> getEvents() { return events; }
 
 }

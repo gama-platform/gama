@@ -19,18 +19,12 @@ This is the official repository of the GAMA platform, an open-source modeling an
 ### Install a release
 There's a detailed tutorial that covers all cases in the [documentation](https://gama-platform.org/wiki/Installation), but for most user you can just go straight to the [**releases**](https://github.com/gama-platform/gama/releases) section of this repository and download the version that corresponds to your needs, we recommend you take a version bundled with a JDK.
 
-### Run it from the source code
+### Develop or run from source
 
-To run it from the source code you can either use `maven` to build the program yourself, or run it from `eclipse` in case you want to inspect the code and/or modify it. In both cases you will first need to **clone this repository** and to get the [Temurin distribution of JDK21](https://adoptium.net).
-
-#### Using eclipse
-
-There is a more detailled explanation on the [website](https://gama-platform.org/wiki/InstallingGitVersion) about how to do so, here we will only give a fast and easy approach.
-
-The _highly recommended configuration_ for working on this branch is [Eclipse for Java and DSL 2025-03](https://www.eclipse.org/downloads/packages/release/2025-03/r/eclipse-ide-java-and-dsl-developers), using a different version may expose you to some bugs.
-
-Once you have imported the code base into your workspace, simply open the `gama.product` project and open either `gama.headless.product` or `gama.product` depending if you want to run gama with or without GUI.
-In the `Overview` pane of the file, click on `Synchronize` and then `Launch an Eclipse application` and GAMA should start.
+The recommended development environment is Eclipse 2026-03 running on Java 21, with JDK 25 configured
+for GAMA builds and launches, and [GAMA Developer Tools](https://github.com/gama-platform/gama.devtools).
+The tools can check out the sources, import the Eclipse projects, configure the workspace, and create launch configurations.
+See the [developer introduction](DEVELOPING.md) for setup, an overview of the codebase, and manual Maven builds.
 
 If the mandatory `gama.api` or `gama.core` generated `GamlAdditions` cannot be loaded, constructed or initialized,
 GAMA terminates the JVM with process exit status **42** (`GamaBundleLoader.EXIT_GAML_INITIALIZATION_FAILED`).
@@ -41,21 +35,6 @@ The status applies to both GUI and headless launches; GUI application routing do
 Optional-plugin loading errors remain logged without this fatal exit, and normal successful exits are unchanged.
 Status 42 is not a catch-all for startup failures: failures before the loader runs or outside mandatory-additions loading
 retain their existing handling, including the headless application's status 2 when its post-loading `ERRORED` check fails.
-
-#### Using maven
-
-First install [maven](https://maven.apache.org/) on your computer, then open a terminal at the root of project and follow those steps:
-1. go to the project `gama.annotations`
-2. run the command:
-```bash
-mvn clean install
-```
-3. go to the project `gama.processor`
-4. run the same mvn command
-5. go to the project `gama.parent`
-6. run the same mvn command one last time
-
-The produced release should be stored in the project `gama.product` under the `target` folder.
 
 ## Desktop startup
 

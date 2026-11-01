@@ -176,6 +176,15 @@ public interface IEventLayerListener {
 	/** Explicit combination events are separate from legacy single-key events. */
 	default void keyCombinationPressed(final KeyCombination combination) {}
 
+	/** A single native key press, independent of legacy key and combination dispatch. */
+	default void userKeyPressed(final String key) {}
+
+	/** Whether this listener needs the unfiltered mouse input stream. */
+	default boolean listensToUserMouseEvents() { return false; }
+
+	/** A mouse event with its original button and a snapshot of its coordinates. */
+	default void userMouseEvent(final UserInputEvent event, final int x, final int y) {}
+
 	/**
 	 * Special key pressed.
 	 *

@@ -82,6 +82,18 @@ import gama.api.ui.layers.ILayerStatement;
  */
 public interface IEventLayerDelegate {
 
+	@constant (
+			value = "key_listener",
+			category = IOperatorCategory.USER_CONTROL,
+			doc = @doc ("Triggers an event layer for each key press received by the focused display. Inside its block, #key_pressed contains the key as a string.")) String KEY_LISTENER =
+					"key_listener";
+
+	@constant (
+			value = "mouse_listener",
+			category = IOperatorCategory.USER_CONTROL,
+			doc = @doc ("Triggers an event layer for mouse input received by the display. Inside its block, #mouse_action and #mouse_button describe the event.")) String MOUSE_LISTENER =
+					"mouse_listener";
+
 	/** The Constant MOUSE_DOWN. */
 	@constant (
 			value = IKeyword.MOUSE_DOWN,

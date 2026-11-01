@@ -93,6 +93,17 @@ public class LayeredDisplayMultiListener {
 		view.requestOverlayUpdate();
 	}
 
+	/** Observe one native key press, without replaying held keys or consuming shortcuts. */
+	public void userKeyPressed(final String key) {
+		surface.dispatchUserKeyEvent(key);
+	}
+
+	/** Observe mouse input before the legacy interaction and modifier filters. */
+	public void userMouseEvent(final String action, final int x, final int y, final int button) {
+		if (!surface.hasUserMouseListeners()) return;
+		surface.dispatchUserMouseEvent(action, x, y, button);
+	}
+
 	/** Dispatch the native event's modifier snapshot, without tracking sticky modifier state. */
 	public void keyCombinationPressed(final String key, final boolean ctrl, final boolean shift,
 			final boolean alt, final boolean cmd) {

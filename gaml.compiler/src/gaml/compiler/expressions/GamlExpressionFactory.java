@@ -58,6 +58,7 @@ import gama.api.ui.IGamaView;
 import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.UserInputEvent;
 import gama.dev.DEBUG;
 import gaml.compiler.descriptions.ConstantExpressionDescription;
 import gaml.compiler.prototypes.OperatorArtefact;
@@ -457,15 +458,29 @@ public class GamlExpressionFactory implements IExpressionFactory {
 					if (g == null || g.is2D()) return null;
 					return ((IGraphics.ThreeD) g).getCameraRight().yNegated();
 				});
+			case "key_pressed":
+				return new CustomExpression<>(unit, Types.STRING, "", doc, UserInputEvent::keyPressed);
+			case "mouse_action":
+				return new CustomExpression<>(unit, Types.STRING, "", doc, UserInputEvent::mouseAction);
+			case "mouse_button":
+				return new CustomExpression<>(unit, Types.STRING, "", doc, UserInputEvent::mouseButton);
 			case "user_location":
 			case "user_location_in_world":
 				// Mouse cursor location in world coordinates
-				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc,
-						sc -> (sc == null ? GamaPointFactory.create() : sc.getGui().getMouseLocationInModel()));
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
+					if (sc == null) return GamaPointFactory.create();
+					final UserInputEvent event = UserInputEvent.current(sc);
+					return event != null && event.modelLocation() != null ? event.modelLocation().copy(sc)
+							: sc.getGui().getMouseLocationInModel();
+				});
 			case "user_location_in_display":
 				// Mouse cursor location in display coordinates
-				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc,
-						sc -> (sc == null ? GamaPointFactory.create() : sc.getGui().getMouseLocationInDisplay()));
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
+					if (sc == null) return GamaPointFactory.create();
+					final UserInputEvent event = UserInputEvent.current(sc);
+					return event != null && event.displayLocation() != null ? event.displayLocation().copy(sc)
+							: sc.getGui().getMouseLocationInDisplay();
+				});
 			case "current_error":
 				// Current error message if any
 				return new CustomExpression<>(unit, Types.STRING, "", doc,

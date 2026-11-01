@@ -58,25 +58,32 @@ public class ImageSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
 			throws IOException {
+		save(scope, item, item.value(scope), file, options);
+	}
+
+	@Override
+	public void save(final IScope scope, final IExpression item, final Object value, final File file,
+			final SaveOptions options) throws IOException {
+		if (value == null) return;
+		String t = "image".equals(options.type()) ? "png" : "jpeg".equals(options.type()) ? "jpg" : options.type();
+		if (value instanceof GamaImage image) {
+			ImageHelper.writeImage(image, t, file);
+			return;
+		}
 		File f = file;
 		String path = f.getAbsolutePath();
-		String t = "image".equals(options.type()) ? "png" : "jpeg".equals(options.type()) ? "jpg" : options.type();
-		if ("image".equals(t)) { t = "png"; }
-		if ("jpeg".equals(t)) { t = "jpg"; }
 		if (!path.contains("." + t)) {
 			path += "." + t;
 			f = new File(path);
 		}
 
-		if (f.exists() && !f.delete()) return;
-		Object v = item.value(scope);
 		boolean saved = false;
-		if (v instanceof IField gf) {
+		if (value instanceof IField gf) {
 			saveField(scope, gf, f, t);
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, f.getAbsolutePath());
 			saved = true;
 		} else {
-			final ISpecies species = Cast.asSpecies(scope, v);
+			final ISpecies species = Cast.asSpecies(scope, value);
 			if (species != null && species.isGrid()) {
 				saveGrid(scope, species, f, t);
 				ProjectionFactory.saveTargetCRSAsPRJFile(scope, f.getAbsolutePath());
@@ -84,9 +91,9 @@ public class ImageSaver extends AbstractSaver {
 			}
 		}
 		if (!saved) {
-			GamaImage image = GamaImageType.staticCast(scope, item.value(scope), false);
-			if (image == null) return;
-			ImageIO.write(image, t, file);
+			GamaImage image = GamaImageType.staticCast(scope, value, false);
+			if (image == null) throw new IOException("Cannot convert the value to an image");
+			ImageHelper.writeImage(image, t, file);
 		}
 	}
 
@@ -127,7 +134,7 @@ public class ImageSaver extends AbstractSaver {
 		// final IGridAgent ag = (IGridAgent) g;
 		// image.setRGB(ag.getX(), rows - 1 - ag.getY(), ag.getColor().getRGB());
 		// }
-		ImageIO.write(image, type, file);
+		ImageHelper.writeImage(image, type, file);
 
 	}
 
@@ -144,7 +151,11 @@ public class ImageSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	private void saveField(final IScope scope, final IField field, final File f, final String t) throws IOException {
-		if (field.isEmpty(scope)) return;
+		if (field.isEmpty(scope)) {
+			// An empty field removes the previous image without writing a replacement.
+			if (f.exists()) { ImageHelper.removeExistingImage(f); }
+			return;
+		}
 		final int cols = field.getCols(scope);
 		final int rows = field.getRows(scope);
 		IProjection worldProjection = scope.getSimulation().getProjectionFactory().getWorld();
@@ -178,7 +189,7 @@ public class ImageSaver extends AbstractSaver {
 				imageData[targetOffset + col] = 0x010101 * gray;
 			}
 		}
-		ImageIO.write(image, t, f);
+		ImageHelper.writeImage(image, t, f);
 
 	}
 

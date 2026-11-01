@@ -23,11 +23,74 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ImagingOpException;
 import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.util.Iterator;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageOutputStream;
 
 /**
  * The Class ImageHelper.
  */
 public class ImageHelper implements ImageConstants {
+
+	/** Favors encoding speed over file size without changing PNG pixels. */
+	private static final float PNG_COMPRESSION_QUALITY = 0.75f;
+
+	static void writeImage(final BufferedImage image, final String format, final File file) throws IOException {
+		BufferedImage outputImage = image;
+		if (("jpg".equalsIgnoreCase(format) || "jpeg".equalsIgnoreCase(format))
+				&& image.getColorModel().hasAlpha()) {
+			outputImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+			final Graphics2D graphics = outputImage.createGraphics();
+			try {
+				graphics.drawImage(image, 0, 0, null);
+			} finally {
+				graphics.dispose();
+			}
+		}
+		if (!"png".equalsIgnoreCase(format)) {
+			if (!ImageIO.write(outputImage, format, file))
+				throw new IOException("No image writer for format '" + format + "'");
+			return;
+		}
+
+		final Iterator<ImageWriter> writers =
+				ImageIO.getImageWriters(ImageTypeSpecifier.createFromRenderedImage(outputImage), format);
+		if (!writers.hasNext()) throw new IOException("No image writer for format '" + format + "'");
+		final ImageWriter writer = writers.next();
+		try {
+			final ImageWriteParam parameters = writer.getDefaultWriteParam();
+			if (parameters.canWriteCompressed()) {
+				final String[] types = parameters.getCompressionTypes();
+				if (types == null || types.length > 0) {
+					parameters.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+					if (types != null) { parameters.setCompressionType(types[0]); }
+					parameters.setCompressionQuality(PNG_COMPRESSION_QUALITY);
+				}
+			}
+			removeExistingImage(file);
+			try (FileImageOutputStream stream = new FileImageOutputStream(file)) {
+				writer.setOutput(stream);
+				writer.write(null, new IIOImage(outputImage, null, null), parameters);
+			}
+		} finally {
+			writer.dispose();
+		}
+	}
+
+	static void removeExistingImage(final File file) throws IOException {
+		if (Files.isDirectory(file.toPath(), LinkOption.NOFOLLOW_LINKS))
+			throw new IOException("Cannot replace a directory with an image: " + file);
+		Files.deleteIfExists(file.toPath());
+	}
 
 	/**
 	 * Used to apply a {@link BufferedImageOp}s to a given {@link GamaImage} and return the result.

@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,9 +33,11 @@ import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 
+import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.UserInputEvent;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
@@ -63,6 +68,13 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	/** The last event. */
 	KeyEvent lastEvent;
+
+	private volatile boolean awtMotionInput;
+	private volatile boolean awtButtonInput;
+	private volatile java.awt.Point awtDragOrigin;
+	private volatile boolean awtDragged;
+	private final Map<Integer, Point> mousePresses = new ConcurrentHashMap<>();
+	private final Set<Integer> draggedButtons = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Instantiates a new SWT layered display multi listener.
@@ -134,6 +146,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
 		lastEvent = e;
 		DEBUG.OUT("Key pressed " + e);
+		delegate.userKeyPressed(userKey(e.keyCode, e.character));
 		delegate.keyCombinationPressed(combinationKey(e.keyCode, e.character), (e.stateMask & SWT.CTRL) != 0,
 				(e.stateMask & SWT.SHIFT) != 0, (e.stateMask & SWT.ALT) != 0,
 				(e.stateMask & SWT.COMMAND) != 0);
@@ -261,6 +274,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 	public void mouseEnter(final MouseEvent e) {
 		if (!ok.get()) return;
 		filter(e);
+		observeSwtMouse(IEventLayerDelegate.MOUSE_ENTERED, e.x, e.y, swtButton(e));
 		delegate.mouseEnter(e.x, e.y, (e.stateMask & SWT.MODIFIER_MASK) != 0, e.button);
 	}
 
@@ -268,6 +282,9 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 	public void mouseExit(final MouseEvent e) {
 		if (!ok.get()) return;
 		filter(e);
+		observeSwtMouse(IEventLayerDelegate.MOUSE_EXITED, e.x, e.y, swtButton(e));
+		mousePresses.clear();
+		draggedButtons.clear();
 		delegate.mouseExit(e.x, e.y, (e.stateMask & SWT.MODIFIER_MASK) != 0, e.button);
 	}
 
@@ -283,6 +300,10 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		if (!ok.get()) return;
 		filter(e);
 		// DEBUG.OUT("Mouse move " + e);
+		final int button = swtButton(e);
+		trackDrags(e.x, e.y);
+		observeSwtMouse(button == 0 ? IEventLayerDelegate.MOUSE_MOVED : IEventLayerDelegate.MOUSE_DRAGGED,
+				e.x, e.y, button);
 		delegate.mouseMove(e.x, e.y, (e.stateMask & SWT.MODIFIER_MASK) != 0);
 	}
 
@@ -297,6 +318,11 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		if (!ok.get()) return;
 		filter(e);
 		DEBUG.OUT("Mouse down " + e);
+		if (!awtButtonInput && e.button > 0) {
+			mousePresses.put(e.button, new Point(e.x, e.y));
+			draggedButtons.remove(e.button);
+		}
+		observeSwtButton(IEventLayerDelegate.MOUSE_DOWN, e.x, e.y, e.button);
 		delegate.mouseDown(e.x, e.y, e.button, (e.stateMask & SWT.MODIFIER_MASK) != 0);
 	}
 
@@ -305,7 +331,14 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		if (!ok.get()) return;
 		filter(e);
 		DEBUG.OUT("Mouse up " + e);
+		final Point pressed = mousePresses.remove(e.button);
+		final boolean dragged = draggedButtons.remove(e.button);
+		final boolean clicked = pressed != null && !dragged && !awtDragged;
+		awtDragOrigin = null;
+		awtDragged = false;
+		observeSwtButton(IEventLayerDelegate.MOUSE_UP, e.x, e.y, e.button);
 		delegate.mouseUp(e.x, e.y, e.button, (e.stateMask & SWT.MODIFIER_MASK) != 0);
+		if (clicked) { observeSwtButton(IEventLayerDelegate.MOUSE_CLICKED, e.x, e.y, e.button); }
 	}
 
 	@Override
@@ -314,6 +347,11 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		// Verify if the same "filter" is not needed here too.
 		DEBUG.LOG("Menu detected ");
 		final Point p = control.toControl(e.x, e.y);
+		final int button = e.detail == SWT.MENU_KEYBOARD ? 0
+				: mousePresses.containsKey(3) ? 3 : mousePresses.containsKey(1) ? 1 : 0;
+		if (!awtButtonInput || e.detail == SWT.MENU_KEYBOARD) {
+			delegate.userMouseEvent(IEventLayerDelegate.MOUSE_MENU, p.x, p.y, button);
+		}
 		delegate.menuDetected(p.x, p.y);
 	}
 
@@ -321,6 +359,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 	public void dragDetected(final DragDetectEvent e) {
 		if (!ok.get()) return;
 		filter(e);
+		draggedButtons.addAll(mousePresses.keySet());
 		delegate.dragDetected(e.x, e.y);
 	}
 
@@ -331,7 +370,53 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 	@Override
 	public void focusLost(final FocusEvent e) {
+		mousePresses.clear();
+		draggedButtons.clear();
 		delegate.focusLost();
+	}
+
+	/**
+	 * Observe generic mouse motion (and, if {@code buttons} is true, button and menu events) from the embedded AWT
+	 * component instead of its SWT parent. SWT events still drive the existing display controls. On macOS, button
+	 * presses over an embedded AWT frame are only delivered to SWT, so buttons must stay on SWT there.
+	 */
+	public void useAwtMouseInput(final boolean buttons) {
+		awtMotionInput = true;
+		awtButtonInput = buttons;
+	}
+
+	private void observeSwtMouse(final String action, final int x, final int y, final int button) {
+		if (!awtMotionInput) { delegate.userMouseEvent(action, x, y, button); }
+	}
+
+	private void observeSwtButton(final String action, final int x, final int y, final int button) {
+		if (!awtButtonInput) { delegate.userMouseEvent(action, x, y, button); }
+	}
+
+	/** Remembers AWT drags when buttons come from SWT, so that a drag is not reported as a click. */
+	private void trackAwtDrag(final int x, final int y) {
+		if (awtButtonInput) return;
+		final java.awt.Point origin = awtDragOrigin;
+		if (origin == null) {
+			awtDragOrigin = new java.awt.Point(x, y);
+		} else if (Math.abs(x - origin.x) > 4 || Math.abs(y - origin.y) > 4) { awtDragged = true; }
+	}
+
+	private void trackDrags(final int x, final int y) {
+		for (final Map.Entry<Integer, Point> press : mousePresses.entrySet()) {
+			final Point origin = press.getValue();
+			if (Math.abs(x - origin.x) > 4 || Math.abs(y - origin.y) > 4) { draggedButtons.add(press.getKey()); }
+		}
+	}
+
+	private static int swtButton(final MouseEvent e) {
+		if (e.button > 0) return e.button;
+		if ((e.stateMask & SWT.BUTTON1) != 0) return 1;
+		if ((e.stateMask & SWT.BUTTON2) != 0) return 2;
+		if ((e.stateMask & SWT.BUTTON3) != 0) return 3;
+		if ((e.stateMask & SWT.BUTTON4) != 0) return 4;
+		if ((e.stateMask & SWT.BUTTON5) != 0) return 5;
+		return 0;
 	}
 
 	/**
@@ -355,6 +440,7 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				if (e.getWhen() == previous) return;
 				previous = e.getWhen();
 				DEBUG.LOG("Key received by the AWT listener. Code " + e.getKeyCode() + " Action ? " + e.isActionKey());
+				delegate.userKeyPressed(awtUserKey(e));
 				delegate.keyCombinationPressed(awtCombinationKey(e), e.isControlDown(), e.isShiftDown(),
 						e.isAltDown(), e.isMetaDown() || e.getKeyCode() == java.awt.event.KeyEvent.VK_WINDOWS);
 				if (e.isControlDown()) {
@@ -402,6 +488,98 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				}
 			}
 		};
+	}
+
+	static String userKey(final int code, final char character) {
+		if (code >= SWT.F1 && code <= SWT.F20) return "f" + (code - SWT.F1 + 1);
+		final String named = switch (code) {
+			case SWT.ARROW_UP -> "arrow_up";
+			case SWT.ARROW_DOWN -> "arrow_down";
+			case SWT.ARROW_LEFT -> "arrow_left";
+			case SWT.ARROW_RIGHT -> "arrow_right";
+			case SWT.PAGE_UP -> "page_up";
+			case SWT.PAGE_DOWN -> "page_down";
+			case SWT.ESC -> "escape";
+			case SWT.TAB -> "tab";
+			case SWT.CR, SWT.KEYPAD_CR -> "enter";
+			case SWT.SHIFT -> "shift";
+			case SWT.CTRL -> "ctrl";
+			case SWT.ALT -> "alt";
+			case SWT.COMMAND -> "cmd";
+			case SWT.BS -> "backspace";
+			case SWT.DEL -> "delete";
+			case SWT.INSERT -> "insert";
+			case SWT.HOME -> "home";
+			case SWT.END -> "end";
+			case SWT.CAPS_LOCK -> "caps_lock";
+			case SWT.NUM_LOCK -> "num_lock";
+			case SWT.SCROLL_LOCK -> "scroll_lock";
+			case SWT.PAUSE -> "pause";
+			case SWT.PRINT_SCREEN -> "print_screen";
+			default -> null;
+		};
+		if (named != null) return named;
+		final int symbol = code >= SWT.KEYPAD_0 && code <= SWT.KEYPAD_9 ? '0' + code - SWT.KEYPAD_0
+				: switch (code) {
+					case SWT.KEYPAD_MULTIPLY -> '*';
+					case SWT.KEYPAD_ADD -> '+';
+					case SWT.KEYPAD_SUBTRACT -> '-';
+					case SWT.KEYPAD_DECIMAL -> '.';
+					case SWT.KEYPAD_DIVIDE -> '/';
+					case SWT.KEYPAD_EQUAL -> '=';
+					default -> code;
+				};
+		return UserInputEvent.keyName(character, symbol, code);
+	}
+
+	static String awtUserKey(final java.awt.event.KeyEvent e) {
+		final int code = e.getKeyCode();
+		if (code >= java.awt.event.KeyEvent.VK_F1 && code <= java.awt.event.KeyEvent.VK_F12)
+			return "f" + (code - java.awt.event.KeyEvent.VK_F1 + 1);
+		if (code >= java.awt.event.KeyEvent.VK_F13 && code <= java.awt.event.KeyEvent.VK_F24)
+			return "f" + (code - java.awt.event.KeyEvent.VK_F13 + 13);
+		final String named = switch (code) {
+			case java.awt.event.KeyEvent.VK_UP, java.awt.event.KeyEvent.VK_KP_UP -> "arrow_up";
+			case java.awt.event.KeyEvent.VK_DOWN, java.awt.event.KeyEvent.VK_KP_DOWN -> "arrow_down";
+			case java.awt.event.KeyEvent.VK_LEFT, java.awt.event.KeyEvent.VK_KP_LEFT -> "arrow_left";
+			case java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.KeyEvent.VK_KP_RIGHT -> "arrow_right";
+			case java.awt.event.KeyEvent.VK_PAGE_UP -> "page_up";
+			case java.awt.event.KeyEvent.VK_PAGE_DOWN -> "page_down";
+			case java.awt.event.KeyEvent.VK_ESCAPE -> "escape";
+			case java.awt.event.KeyEvent.VK_TAB -> "tab";
+			case java.awt.event.KeyEvent.VK_ENTER -> "enter";
+			case java.awt.event.KeyEvent.VK_SHIFT -> "shift";
+			case java.awt.event.KeyEvent.VK_CONTROL -> "ctrl";
+			case java.awt.event.KeyEvent.VK_ALT, java.awt.event.KeyEvent.VK_ALT_GRAPH -> "alt";
+			case java.awt.event.KeyEvent.VK_META, java.awt.event.KeyEvent.VK_WINDOWS -> "cmd";
+			case java.awt.event.KeyEvent.VK_BACK_SPACE -> "backspace";
+			case java.awt.event.KeyEvent.VK_DELETE -> "delete";
+			case java.awt.event.KeyEvent.VK_INSERT -> "insert";
+			case java.awt.event.KeyEvent.VK_HOME -> "home";
+			case java.awt.event.KeyEvent.VK_END -> "end";
+			case java.awt.event.KeyEvent.VK_CAPS_LOCK -> "caps_lock";
+			case java.awt.event.KeyEvent.VK_NUM_LOCK -> "num_lock";
+			case java.awt.event.KeyEvent.VK_SCROLL_LOCK -> "scroll_lock";
+			case java.awt.event.KeyEvent.VK_PAUSE -> "pause";
+			case java.awt.event.KeyEvent.VK_PRINTSCREEN -> "print_screen";
+			case java.awt.event.KeyEvent.VK_CONTEXT_MENU -> "menu";
+			default -> null;
+		};
+		if (named != null) return named;
+		final int symbol = code >= java.awt.event.KeyEvent.VK_NUMPAD0 && code <= java.awt.event.KeyEvent.VK_NUMPAD9
+				? '0' + code - java.awt.event.KeyEvent.VK_NUMPAD0 : switch (code) {
+					case java.awt.event.KeyEvent.VK_MULTIPLY -> '*';
+					case java.awt.event.KeyEvent.VK_ADD -> '+';
+					case java.awt.event.KeyEvent.VK_SUBTRACT -> '-';
+					case java.awt.event.KeyEvent.VK_DECIMAL -> '.';
+					case java.awt.event.KeyEvent.VK_DIVIDE -> '/';
+					case java.awt.event.KeyEvent.VK_SEPARATOR -> ',';
+					default -> {
+						final String key = awtCombinationKey(e);
+						yield key != null && key.length() == 1 ? key.charAt(0) : 0;
+					}
+				};
+		return UserInputEvent.keyName(e.getKeyChar(), symbol, code);
 	}
 
 	static String combinationKey(final int code, final char character) {
@@ -477,14 +655,81 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 
 			@Override
 			public void mouseDragged(final java.awt.event.MouseEvent e) {
+				trackAwtDrag(e.getX(), e.getY());
+				if (awtMotionInput && ok.get()) {
+					delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DRAGGED, e.getX(), e.getY(), awtButton(e));
+				}
 				delegate.dragDetected(e.getX(), e.getY());
 			}
 
 			@Override
 			public void mouseMoved(final java.awt.event.MouseEvent e) {
+				final int button = awtButton(e);
+				if (button != 0) {
+					trackAwtDrag(e.getX(), e.getY());
+				} else {
+					awtDragOrigin = null;
+					awtDragged = false;
+				}
+				if (awtMotionInput && ok.get()) {
+					delegate.userMouseEvent(button == 0 ? IEventLayerDelegate.MOUSE_MOVED : IEventLayerDelegate.MOUSE_DRAGGED,
+							e.getX(), e.getY(), button);
+				}
 				delegate.mouseMove(e.getX(), e.getY(), e.getModifiers() != 0);
 			}
 		};
+	}
+
+	/** Gets the AWT listener reporting button, popup and enter/exit events from the embedded component. */
+	public java.awt.event.MouseListener getUserMouseAdapterForAWT() {
+		return new java.awt.event.MouseAdapter() {
+
+			private void observe(final String action, final java.awt.event.MouseEvent e) {
+				if (awtButtonInput && ok.get()) {
+					delegate.userMouseEvent(action, e.getX(), e.getY(), awtButton(e));
+				}
+			}
+
+			@Override
+			public void mousePressed(final java.awt.event.MouseEvent e) {
+				observe(IEventLayerDelegate.MOUSE_DOWN, e);
+				if (e.isPopupTrigger()) { observe(IEventLayerDelegate.MOUSE_MENU, e); }
+			}
+
+			@Override
+			public void mouseReleased(final java.awt.event.MouseEvent e) {
+				observe(IEventLayerDelegate.MOUSE_UP, e);
+				if (e.isPopupTrigger()) { observe(IEventLayerDelegate.MOUSE_MENU, e); }
+			}
+
+			@Override
+			public void mouseClicked(final java.awt.event.MouseEvent e) {
+				observe(IEventLayerDelegate.MOUSE_CLICKED, e);
+			}
+
+			@Override
+			public void mouseEntered(final java.awt.event.MouseEvent e) {
+				if (awtMotionInput && ok.get()) {
+					delegate.userMouseEvent(IEventLayerDelegate.MOUSE_ENTERED, e.getX(), e.getY(), awtButton(e));
+				}
+			}
+
+			@Override
+			public void mouseExited(final java.awt.event.MouseEvent e) {
+				if (awtMotionInput && ok.get()) {
+					delegate.userMouseEvent(IEventLayerDelegate.MOUSE_EXITED, e.getX(), e.getY(), awtButton(e));
+				}
+			}
+		};
+	}
+
+	private static int awtButton(final java.awt.event.MouseEvent e) {
+		if (e.getButton() > 0) return e.getButton();
+		final int modifiers = e.getModifiersEx();
+		for (int button = 1; button <= 20; button++) {
+			if ((modifiers & java.awt.event.InputEvent.getMaskForButton(button)) != 0) return button;
+		}
+		return 0;
 	}
 
 }

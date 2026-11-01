@@ -119,6 +119,28 @@ public interface ISaveDelegate {
 	void save(IScope scope, IExpression item, File file, SaveOptions saveOptions) throws IOException;
 
 	/**
+	 * Saves an expression whose value has already been evaluated by the save statement. Delegates that need the
+	 * expression itself may retain the existing behavior; others can reuse the value without evaluating it again.
+	 *
+	 * @param scope
+	 *            the runtime scope
+	 * @param item
+	 *            the original expression
+	 * @param value
+	 *            the previously evaluated value of the expression
+	 * @param file
+	 *            the target file
+	 * @param saveOptions
+	 *            options controlling the save operation
+	 * @throws IOException
+	 *             if writing fails
+	 */
+	default void save(final IScope scope, final IExpression item, final Object value, final File file,
+			final SaveOptions saveOptions) throws IOException {
+		save(scope, item, file, saveOptions);
+	}
+
+	/**
 	 * Returns the GAML type required for data saved by this delegate.
 	 *
 	 * <p>
