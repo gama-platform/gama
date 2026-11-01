@@ -12,7 +12,6 @@ package gama.ui.display.java2d.swing;
 
 import java.awt.Frame;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -70,9 +69,6 @@ public abstract class SwingControl extends Composite {
 	/** The swing mouse listener. */
 	MouseMotionListener swingMouseListener;
 
-	/** The AWT mouse listener for generic event layers. */
-	MouseListener swingUserMouseListener;
-
 	/** The frame. */
 	volatile Frame frame;
 
@@ -93,7 +89,6 @@ public abstract class SwingControl extends Composite {
 		surface = null;
 		frame = null;
 		swingMouseListener = null;
-		swingUserMouseListener = null;
 		swingKeyListener = null;
 		try {
 			removeListenerFrom(WorkbenchHelper.getDisplay());
@@ -238,7 +233,5 @@ public abstract class SwingControl extends Composite {
 	 *            the new mouse listener
 	 */
 	public void setMouseListener(final MouseMotionListener adapter) { swingMouseListener = adapter; }
-
-	public void setUserMouseListener(final MouseListener adapter) { swingUserMouseListener = adapter; }
 
 }

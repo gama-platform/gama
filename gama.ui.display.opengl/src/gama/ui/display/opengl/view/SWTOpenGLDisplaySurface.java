@@ -12,16 +12,21 @@ package gama.ui.display.opengl.view;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.image.DataBufferInt;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.geom.AffineTransform;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.SWT;
@@ -56,7 +61,6 @@ import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.KeyCombination;
-import gama.api.ui.layers.UserInputEvent;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -104,7 +108,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	protected boolean zoomFit = true;
 
 	/** The listeners. */
-	Set<IEventLayerListener> listeners = new CopyOnWriteArraySet<>();
+	Set<IEventLayerListener> listeners = new HashSet<>();
 
 	/** The output. */
 	final IOutput.Display output;
@@ -200,54 +204,51 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		if (desiredWidth == 0 || desiredHeight == 0 || !renderer.hasDrawnOnce()) return null;
 		final GLAutoDrawable glad = renderer.getCanvas();
 		if (glad == null) return null;
-		GL gl = glad.getGL();
+		GL2GL3 gl = glad.getGL().getGL2GL3();
 		if (gl == null) return null;
 		GLContext context = gl.getContext();
 		if (context == null) return null;
 		final boolean current = context.isCurrent();
-		if (!current && context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT) return null;
-		final GamaImage[] image = new GamaImage[1];
-		try {
-			glad.invoke(true, drawable -> {
-				// Read native framebuffer pixels, whose dimensions can differ from SWT's scaled bounds.
-				final int w = drawable.getSurfaceWidth();
-				final int h = drawable.getSurfaceHeight();
-				if (w <= 0 || h <= 0) return true;
-				final ByteBuffer buffer = getBuffer(w, h);
-				final GL2GL3 drawableGL = drawable.getGL().getGL2GL3();
-				drawableGL.glReadBuffer(GL.GL_BACK);
-				drawableGL.glReadPixels(0, 0, w, h, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buffer);
-				buffer.rewind();
-				final GamaImage frame = GamaImage.ofDimensions(w, h, true);
-				final int[] pixels = ((DataBufferInt) frame.getRaster().getDataBuffer()).getData();
-				final IntBuffer rgba = buffer.duplicate().order(ByteOrder.BIG_ENDIAN).asIntBuffer();
-				if (desiredWidth == w && desiredHeight == h) {
-					for (int y = h - 1; y >= 0; y--) { rgba.get(pixels, y * w, w); }
-				} else {
-					// Scaling must precede the vertical flip to preserve translucent-pixel interpolation.
-					rgba.get(pixels);
-				}
-				image[0] = frame;
-				return true;
-			});
-		} finally {
-			if (!current) { context.release(); }
-		}
-		final GamaImage frame = image[0];
-		if (frame == null) return null;
-		final int[] pixels = ((DataBufferInt) frame.getRaster().getDataBuffer()).getData();
-		for (int i = 0; i < pixels.length; i++) {
-			final int rgba = pixels[i];
-			pixels[i] = rgba >>> 8 | rgba << 24;
-		}
-		if (desiredWidth == frame.getWidth() && desiredHeight == frame.getHeight()) return frame;
-		final GamaImage scaled = ImageHelper.scaleImage(frame, desiredWidth, desiredHeight);
-		ImageHelper.flipImageVertically(scaled);
-		return scaled;
+		if (!current) { context.makeCurrent(); }
+		GamaImage[] image = new GamaImage[1];
+		glad.invoke(true, drawable -> {
+			// Read native framebuffer pixels, whose dimensions can differ from SWT's scaled bounds.
+			final int w = drawable.getSurfaceWidth();
+			final int h = drawable.getSurfaceHeight();
+			if (w <= 0 || h <= 0) return true;
+			// See #2628 and https://github.com/sgothel/jogl/commit/ca7f0fb61b0a608b6e684a5bbde71f6ecb6e3fe0
+			final ByteBuffer buffer = getBuffer(w, h);
+			// be sure we are reading from the right fbo (here is supposed to be the default one)
+			// bind the right buffer to read from
+			gl.glReadBuffer(GL.GL_BACK); // or GL.GL_FRONT ?
+			gl.glReadPixels(0, 0, w, h, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buffer);
+			ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+			ColorModel cm = new ComponentColorModel(cs, new int[] { 8, 8, 8, 8 }, true, false, Transparency.TRANSLUCENT,
+					DataBuffer.TYPE_BYTE);
+			SampleModel sm = cm.createCompatibleSampleModel(w, h);
+			WritableRaster raster = new WritableRaster(sm, dbuf, new Point()) {};
+			GamaImage im = GamaImage.from(cm, raster, false);
+			// TODO Seems to take a very long time -- verify
+
+			if (desiredWidth != w || desiredHeight != h) {
+				im = ImageHelper.scaleImage(im, desiredWidth, desiredHeight);
+			}
+			ImageHelper.flipImageVertically(im);
+			image[0] = im;
+			return true;
+		});
+		if (!current) { glad.getGL().getContext().release(); }
+		return image[0];
 	}
 
 	/** The buffer. */
 	ByteBuffer buffer;
+
+	/** The dbuf. */
+	DataBuffer dbuf;
+
+	/** The at. */
+	AffineTransform at;
 
 	/**
 	 * Gets the buffer.
@@ -259,9 +260,30 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @return the buffer
 	 */
 	protected ByteBuffer getBuffer(final int w, final int h) {
-		final int size = Math.multiplyExact(Math.multiplyExact(w, h), 4);
-		if (buffer == null || buffer.capacity() != size) { buffer = Buffers.newDirectByteBuffer(size); }
-		buffer.rewind();
+
+		if (buffer == null || buffer.capacity() != w * h * 4) {
+			buffer = Buffers.newDirectByteBuffer(w * h * 4);
+			// Build a wrapper around the buffer (to use for the raster of the image)
+			dbuf = new DataBuffer(DataBuffer.TYPE_BYTE, w * h * 4) {
+				@Override
+				public void setElem(final int bank, final int i, final int val) {
+					buffer.put(i, (byte) val);
+				}
+
+				@Override
+				public int getElem(final int bank, final int i) {
+					return buffer.get(i) & 0xFF;
+				}
+			};
+			// Build the affine transform to flip the image
+			at = new AffineTransform();
+			at.concatenate(AffineTransform.getScaleInstance(1, -1));
+			at.concatenate(AffineTransform.getTranslateInstance(0, h));
+
+		} else {
+			buffer.rewind();
+		}
+
 		return buffer;
 	}
 
@@ -753,27 +775,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public void dispatchKeyCombination(final KeyCombination combination) {
 		for (final IEventLayerListener listener : listeners) { listener.keyCombinationPressed(combination); }
-	}
-
-	@Override
-	public void dispatchUserKeyEvent(final String key) {
-		for (final IEventLayerListener listener : listeners) { listener.userKeyPressed(key); }
-	}
-
-	@Override
-	public boolean hasUserMouseListeners() {
-		for (final IEventLayerListener listener : listeners) {
-			if (listener.listensToUserMouseEvents()) return true;
-		}
-		return false;
-	}
-
-	@Override
-	public void dispatchUserMouseEvent(final String action, final int x, final int y, final int button) {
-		if (!hasUserMouseListeners()) return;
-		final UserInputEvent event =
-				UserInputEvent.mouse(action, button, getModelCoordinatesFrom(x, y, null, null), x, y);
-		for (final IEventLayerListener listener : listeners) { listener.userMouseEvent(event, x, y); }
 	}
 
 	@Override

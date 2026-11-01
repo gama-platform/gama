@@ -77,24 +77,16 @@ public class SwingControlLinux extends SwingControl {
 				// bypassing Swing's RepaintManager / double-buffer. See SwingControlWin for
 				// the full explanation.
 				frame.setIgnoreRepaint(true);
-				if (swingKeyListener != null) {
-					frame.addKeyListener(swingKeyListener);
-					surface.addKeyListener(swingKeyListener);
-				}
+				if (swingKeyListener != null) { frame.addKeyListener(swingKeyListener); }
 				if (swingMouseListener != null) { frame.addMouseMotionListener(swingMouseListener); }
-				if (swingUserMouseListener != null) { frame.addMouseListener(swingUserMouseListener); }
 				surface.setVisibility(() -> visible);
 				frame.add(surface);
 				WorkaroundForIssue2476.installOn(frame, surface);
 				frame.validate();
 				addListener(SWT.Dispose, e -> EventQueue.invokeLater(() -> {
 					try {
-						if (swingKeyListener != null) {
-							frame.removeKeyListener(swingKeyListener);
-							surface.removeKeyListener(swingKeyListener);
-						}
+						if (swingKeyListener != null) { frame.removeKeyListener(swingKeyListener); }
 						if (swingMouseListener != null) { frame.removeMouseMotionListener(swingMouseListener); }
-						if (swingUserMouseListener != null) { frame.removeMouseListener(swingUserMouseListener); }
 						frame.removeAll();
 						surface.dispose();
 						frame.dispose();

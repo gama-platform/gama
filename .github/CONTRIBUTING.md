@@ -1,8 +1,5 @@
 ## How to contribute to GAMA
 
-For development environment setup and an introduction to the codebase, see the
-[developer introduction](../DEVELOPING.md).
-
 #### **Did you write a patch that fixes a bug or adds a new feature?**
 
 * Open a new GitHub pull request with the patch if you think your addition is worth being included in the release.

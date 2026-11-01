@@ -347,44 +347,6 @@ workbench interception can still prevent delivery.
 See the runnable [Keyboard Combinations](gama.library/models/Recipes/User%20Interaction/models/Keyboard%20Combinations.gaml)
 recipe for string syntax, constant concatenation, multiple modifiers, named keys and unchanged single-key events.
 
-### Generic keyboard and mouse event listeners
-
-An event layer can observe all keyboard presses or all supported mouse actions without declaring a
-separate layer for each one. For example, inside a display:
-
-```gaml
-event #key_listener {
-    write "Key: " + #key_pressed;
-}
-event #mouse_listener {
-    write #mouse_action + " / " + #mouse_button + " at " + #user_location;
-}
-```
-
-`#key_pressed` is the character produced by the key, preserving case; the space bar produces a literal
-space (`" "`). Non-character keys use names such as `arrow_up`, `enter`, `backspace`, `ctrl` and `f1`.
-If a modifier produces a control character, the unmodified key is used when known. Unknown keys are
-reported as `key_<native code>`, whose code is platform-dependent. Modifiers can produce their own
-press events, and holding a key can trigger repeats.
-
-`#mouse_action` is one of `#mouse_down`, `#mouse_up`, `#mouse_click`, `#mouse_move`, `#mouse_drag`,
-`#mouse_enter`, `#mouse_exit` or `#mouse_menu`. `#mouse_button` is `"left"`, `"middle"`, `"right"`,
-`"button_N"` for an additional button, or `"none"` when the event has no associated button. A drag
-reports the first pressed button known to the backend; click and menu detection depend on the platform.
-Within a mouse callback, `#user_location` and `#user_location_in_display` are snapshots from the display
-that received the event.
-
-The three new input values are scoped to their corresponding callback, including nested `ask` blocks
-and called actions; outside it they are empty strings, not the last event. Store a value in a model
-variable to use it later. Blocks run in the experiment context, so use `ask simulation` to change global
-simulation state. Listeners observe rather than consume input: existing event layers, display navigation,
-context menus and shortcuts remain active. Mouse wheel and key-release events are not included, and the
-operating system or workbench may intercept input before it reaches the display.
-
-The [Keyboard Fireworks](gama.library/models/Recipes/User%20Interaction/models/Keyboard%20Fireworks.gaml)
-and [Mouse Garden](gama.library/models/Recipes/User%20Interaction/models/Mouse%20Garden.gaml) recipes
-demonstrate both listeners in Java2D and OpenGL displays.
-
 ### BEHAVIOR CHANGE: macOS 3D camera controls use CMD, not CTRL
 
 In **both OpenGL and OpenGL4**, the camera modifier is now **CMD only on macOS**. Previously, both CTRL and CMD

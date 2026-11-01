@@ -13,7 +13,6 @@ package gama.ui.display.java2d;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.api.runtime.SystemInfo;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.display.java2d.swing.SwingControl;
@@ -112,11 +111,6 @@ public class AWTDisplayView extends LayeredDisplayView {
 		control.addKeyListener(listener);
 		control.setKeyListener(listener.getKeyAdapterForAWT());
 		control.setMouseListener(listener.getMouseAdapterForAWT());
-		if (SystemInfo.isMac() || SystemInfo.isLinux()) {
-			// On macOS, button presses over the embedded frame only reach SWT
-			listener.useAwtMouseInput(SystemInfo.isLinux());
-			control.setUserMouseListener(listener.getUserMouseAdapterForAWT());
-		}
 		return listener;
 	}
 

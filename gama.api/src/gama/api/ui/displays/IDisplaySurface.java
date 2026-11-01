@@ -108,7 +108,7 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 *            the desired width of the image
 	 * @param height
 	 *            the desired height of the image
-	 * @return an image of size {width, height} with all layers drawn on it, independent of subsequent display updates
+	 * @return a BufferedImage of size {width, height} with all layers drawn on it
 	 */
 	default BufferedImage getImage(final int width, final int height) {
 		return null;
@@ -381,15 +381,6 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 
 	/** Dispatch an explicit key combination without consuming built-in shortcuts. */
 	default void dispatchKeyCombination(final KeyCombination combination) {}
-
-	/** Dispatch one observed key press without changing legacy shortcut dispatch. */
-	default void dispatchUserKeyEvent(final String key) {}
-
-	/** Whether an enabled event layer observes mouse input. */
-	default boolean hasUserMouseListeners() { return false; }
-
-	/** Dispatch an observed mouse event, retaining its native button. */
-	default void dispatchUserMouseEvent(final String action, final int x, final int y, final int button) {}
 
 	/**
 	 * Dispatch special key event.

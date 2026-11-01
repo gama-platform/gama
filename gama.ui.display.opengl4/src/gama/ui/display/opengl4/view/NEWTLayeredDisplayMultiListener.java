@@ -22,14 +22,12 @@ import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.event.WindowListener;
 import com.jogamp.newt.event.WindowUpdateEvent;
 
-import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.KeyCombination;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl.view.NEWTUserInput;
 import gama.ui.experiment.views.displays.LayeredDisplayDecorator;
 import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;
 
@@ -144,7 +142,6 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	public void keyPressed(final KeyEvent e) {
 		DEBUG.OUT("Key pressed in Newt listener: " + e);
 		if (!ok.get()) return;
-		delegate.userKeyPressed(NEWTUserInput.key(e));
 		delegate.keyCombinationPressed(combinationKey(e), e.isControlDown(), e.isShiftDown(),
 				e.isAltDown(), e.isMetaDown());
 		// Bug on Windows : the character returned contains the modifiers despite the documentation saying the contrary
@@ -205,33 +202,26 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void mouseEntered(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_ENTERED, e.getX(), e.getY(), NEWTUserInput.button(e));
 		delegate.mouseEnter(e.getX(), e.getY(), hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseExited(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_EXITED, e.getX(), e.getY(), NEWTUserInput.button(e));
 		delegate.mouseExit(e.getX(), e.getY(), hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseMoved(final MouseEvent e) {
 		if (!ok.get()) return;
-		final int button = NEWTUserInput.button(e);
-		delegate.userMouseEvent(button == 0 ? IEventLayerDelegate.MOUSE_MOVED : IEventLayerDelegate.MOUSE_DRAGGED,
-				e.getX(), e.getY(), button);
 		delegate.mouseMove(e.getX(), e.getY(), hasModifiers(e));
 	}
 
 	@Override
 	public void mousePressed(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DOWN, e.getX(), e.getY(), e.getButton());
 		// DEBUG.OUT("Mouse pressed with button " + e.getButton() + " modifiers " + e.getModifiersString(null));
 		if (e.getButton() == 3 || e.isControlDown()) {
-			delegate.userMouseEvent(IEventLayerDelegate.MOUSE_MENU, e.getX(), e.getY(), e.getButton());
 			delegate.menuDetected(e.getX(), e.getY());
 		} else {
 			delegate.mouseDown(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
@@ -241,14 +231,12 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void mouseReleased(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_UP, e.getX(), e.getY(), e.getButton());
 		delegate.mouseUp(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
 	}
 
 	@Override
 	public void mouseDragged(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DRAGGED, e.getX(), e.getY(), NEWTUserInput.button(e));
 		delegate.dragDetected(e.getX(), e.getY());
 	}
 
@@ -282,15 +270,12 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 	@Override
 	public void mouseClicked(final MouseEvent e) {
-		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_CLICKED, e.getX(), e.getY(), e.getButton());
-		delegate.mouseUp(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
+		this.mouseReleased(e);
 	}
 
 	@Override
 	public void mouseWheelMoved(final MouseEvent e) {
-		if (!ok.get()) return;
-		delegate.mouseMove(e.getX(), e.getY(), hasModifiers(e));
+		this.mouseMoved(e);
 	}
 
 }

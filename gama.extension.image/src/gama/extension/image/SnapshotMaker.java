@@ -18,7 +18,8 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.io.File;
-import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -76,11 +77,11 @@ public class SnapshotMaker implements ISnapshotMaker {
 		GamaImage image = captureImage(surface, customDimensions);
 		if (image == null) return;
 		String fileName = buildPath(scope, surface);
-		if (fileName == null) return;
 		try {
-			ImageHelper.writeImage(image, "png", new File(fileName));
+			if (fileName == null || !ImageIO.write(image, "png", new File(fileName)))
+				throw new RuntimeException("Impossible to write image");
 			image.flush();
-		} catch (final IOException ex) {
+		} catch (final Exception ex) {
 			final GamaRuntimeException e = GamaRuntimeException.create(ex, scope);
 			e.addContext("Unable to create output stream for snapshot image");
 			GAMA.reportError(GAMA.getRuntimeScope(), e, false);
@@ -228,7 +229,7 @@ public class SnapshotMaker implements ISnapshotMaker {
 		}
 
 		try {
-			ImageHelper.writeImage(image, "png", new File(fileName));
+			ImageIO.write(image, "png", new File(fileName));
 			image.flush();
 		} catch (final java.io.IOException ex) {
 			final GamaRuntimeException e = GamaRuntimeException.create(ex, scope);

@@ -25,6 +25,8 @@ import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.StringTokenizer;
 
+import javax.imageio.ImageIO;
+
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.data.PrjFileReader;
 
@@ -237,8 +239,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		try {
 			final File f = getFile(scope);
 			f.setWritable(true);
-			ImageHelper.writeImage(GamaIntMatrix.constructBufferedImageFromMatrix(scope, getBuffer()), getExtension(scope),
-					f);
+			ImageIO.write(GamaIntMatrix.constructBufferedImageFromMatrix(scope, getBuffer()), getExtension(scope), f);
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}

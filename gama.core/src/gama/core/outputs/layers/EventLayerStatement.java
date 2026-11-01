@@ -67,7 +67,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 				name = ILayerStatement.Event.TRIGGER,
 				type = { IType.STRING },
 				optional = false,
-				doc = @doc ("The trigger: #key_listener or #mouse_listener for generic input; a mouse-event constant, a keyboard-event constant, a single character, or an explicit keyboard combination such as 'ctrl+shift+a', 'alt+arrow_up', #ctrl + 'a', or #cmd + '+' + #enter. Keyboard constants include #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down, #ctrl, #cmd, #shift and #alt. Mouse constants include #mouse_up, #mouse_down, #mouse_click, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu and #mouse_drag.")),
+				doc = @doc ("The trigger: a mouse-event constant, a keyboard-event constant, a single character, or an explicit keyboard combination such as 'ctrl+shift+a', 'alt+arrow_up', #ctrl + 'a', or #cmd + '+' + #enter. Keyboard constants include #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down, #ctrl, #cmd, #shift and #alt. Mouse constants include #mouse_up, #mouse_down, #mouse_click, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu and #mouse_drag.")),
 				@facet (
 						name = IKeyword.TYPE,
 						type = IType.STRING,
@@ -84,10 +84,6 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 		value = "`" + IKeyword.EVENT
 				+ "` allows to interact with the simulation by capturing mouse or key events and doing an action. The name of this action can be defined with the 'action:' facet, in which case the action needs to be defined in 'global' or in the current experiment, without any arguments."
 				+ " The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location. The statements to execute can also be defined in the block at the end of this statement, in which case they will be executed in the context of the experiment. "
-				+ "Use `event #key_listener` to observe each key press reaching the focused display. Inside its block or called actions, #key_pressed is the produced character (a literal space for the space bar), a named key such as #enter or #arrow_up, or `key_<native code>` for an unrecognized key. Character case follows the input; when a modifier produces a control character, the unmodified key is used. Function keys are named f1, f2, etc. Pressing a modifier can generate its own event, and holding a key can generate repeated events. "
-				+ "Use `event #mouse_listener` to observe mouse input. #mouse_action is one of #mouse_down, #mouse_up, #mouse_click, #mouse_move, #mouse_drag, #mouse_enter, #mouse_exit or #mouse_menu. #mouse_button is 'left', 'middle', 'right', 'button_N' for another button, or 'none' when no button is associated. A drag reports the first pressed button known to the backend; a menu can report 'none'. A click follows its press and release; click detection and menu delivery depend on the platform. "
-				+ "These three input values belong only to the current generic-listener callback, including actions it calls and nested ask blocks; outside the corresponding listener they are empty strings, not the last input. During a mouse listener, #user_location and #user_location_in_display are snapshots for the originating display. Store values in a model variable if they are needed later. "
-				+ "Generic listeners observe rather than consume input: existing specific event layers, display navigation and contextual menus continue to operate. Mouse movement and drag callbacks can be frequent. Mouse wheel and key-release events are not included. Keyboard and mouse events intercepted by the operating system or workbench may never reach the display. "
 				+ "Keyboard combinations can be written as strings, e.g. 'ctrl+shift+a', 'alt+arrow_up' or 'cmd+enter'. "
 				+ "Modifiers (ctrl, shift, alt, cmd) are case-insensitive and must match exactly; modifier order does not matter. "
 				+ "For example, 'ctrl+a' does not match CTRL+SHIFT+A; declare 'ctrl+shift+a' for that combination. "
@@ -109,40 +105,6 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 				examples = { @example (
 						value = "event [event_type] action: myAction;",
 						isExecutable = false) }),
-				@usage (
-						value = "Observe any key received by the display. Use the same handler for all digits instead of declaring ten separate event layers:",
-						examples = { @example (
-								value = "event #key_listener {",
-								isExecutable = false),
-								@example (
-										value = "    if #key_pressed in ['0','1','2','3','4','5','6','7','8','9'] {",
-										isExecutable = false),
-								@example (
-										value = "        ask simulation { index <- int(#key_pressed); }",
-										isExecutable = false),
-								@example (
-										value = "    }",
-										isExecutable = false),
-								@example (
-										value = "}",
-										isExecutable = false) }),
-				@usage (
-						value = "Observe all supported mouse actions and distinguish buttons. The position is the one at the time of this event:",
-						examples = { @example (
-								value = "event #mouse_listener {",
-								isExecutable = false),
-								@example (
-										value = "    if #mouse_action = #mouse_down and #mouse_button = 'left' {",
-										isExecutable = false),
-								@example (
-										value = "        write 'Clicked at ' + #user_location;",
-										isExecutable = false),
-								@example (
-										value = "    }",
-										isExecutable = false),
-								@example (
-										value = "}",
-										isExecutable = false) }),
 				@usage (
 						value = "Keyboard combinations use one or more modifiers and a final key. These forms can be used inside a display; event blocks execute in the experiment context:",
 						examples = { @example (

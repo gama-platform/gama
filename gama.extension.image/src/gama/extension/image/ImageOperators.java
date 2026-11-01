@@ -81,7 +81,6 @@ public class ImageOperators implements ImageConstants {
 	@doc ("""
 			Takes a snapshot of the display whose name is passed in parameter and returns the image. \
 			The search for the display begins in the current agent's simulation and, if not found, its experiment. \
-			Capturing and saving every frame can slow down a simulation, especially with large or 3D displays. \
 			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final String displayName) {
@@ -117,8 +116,7 @@ public class ImageOperators implements ImageConstants {
 			can_be_const = false)
 	@doc ("""
 			Takes a snapshot of the display whose name is passed in parameter and returns the image. \
-			The search for the display begins in the agent passed in parameter and, if not found, its experiment. The size of the snapshot will be that of the view. \
-			Capturing and saving every frame can slow down a simulation, especially with large or 3D displays. \
+			The search for the display begins in the agent passed in parameter and, if not found, its experiment. The size of the snapshot will be that of the view\
 			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final IAgent exp, final String displayName) {
@@ -156,8 +154,7 @@ public class ImageOperators implements ImageConstants {
 			can_be_const = false)
 	@doc ("""
 			Takes a snapshot of the display whose name is passed in parameter and returns the image. \
-			The search for the display begins in the agent passed in parameter and, if not found, its experiment. A custom size (a point representing width x height) can be given. \
-			Capturing and saving every frame can slow down a simulation; smaller images reduce the cost of encoding. \
+			The search for the display begins in the agent passed in parameter and, if not found, its experiment. A custom size (a point representing width x height) can be given \
 			Returns nil if no display can be found or the snapshot cannot be taken.""")
 	@no_test
 	public static GamaImage snapshot(final IScope scope, final IAgent exp, final String displayName,

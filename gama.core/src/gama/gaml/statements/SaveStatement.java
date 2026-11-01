@@ -182,11 +182,6 @@ import gaml.compiler.expressions.ConstantExpression;
 						examples = { @example (
 								value = "save grid to: \"save_grid.png\" format: \"image\";") }),
 				@usage (
-						value = "PNG images use fast lossless compression, which may produce larger files. JPEG has no transparency: transparent pixels are composited onto black.",
-						examples = { @example (
-								value = "save snapshot('my_display') to: 'frame.png' format: 'png';",
-								isExecutable = false) }),
-				@usage (
 						value = "The save statement can be use in an init block, a reflex, an action or in a user command. Do not use it in experiments.") })
 @validator (SaveValidator.class)
 @SuppressWarnings ({ "rawtypes" })
@@ -459,9 +454,7 @@ public class SaveStatement extends AbstractStatementSequence {
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		// if item is null, there's nothing to write
-		if (item == null) return null;
-		final Object itemValue = item.value(scope);
-		if (itemValue == null) return null;
+		if (item == null || item.value(scope) == null) return null;
 
 		// First case: we have no destination file, so it means the item is a file;
 		if (file == null) return saveFile(scope);
@@ -474,7 +467,7 @@ public class SaveStatement extends AbstractStatementSequence {
 		// Second case: a filename is indicated but not the type. In that case,
 		// we try to build a new GamaFile from it and save it
 		if (typeExp == null) {
-			final Object contents = itemValue;
+			final Object contents = item.value(scope);
 			if (contents instanceof IContainer.Modifiable mc) {
 				try {
 					// We set a temporary flag to the scope, which should be readable by the GamaFile and indicate that
@@ -544,7 +537,7 @@ public class SaveStatement extends AbstractStatementSequence {
 						throw GamaRuntimeException.error("Unknown encoding: " + enc, scope);
 					}
 				}
-				delegate.save(scope, item, itemValue, fileToSave, saveOptions);
+				delegate.save(scope, item, fileToSave, saveOptions);
 				return Cast.asString(scope, file.value(scope));
 			}
 			throw GamaRuntimeException.error("Format not recognized: " + type, scope);

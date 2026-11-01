@@ -16,7 +16,6 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.IExecutable;
-import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplaySurface;
@@ -25,7 +24,6 @@ import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayerStatement;
 import gama.api.ui.layers.KeyCombination;
-import gama.api.ui.layers.UserInputEvent;
 import gama.dev.DEBUG;
 
 /**
@@ -114,7 +112,7 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 		this.surface = surface;
 		final IExpression eventType = definition.getFacet(ILayerStatement.Event.TRIGGER);
 		if (executionScope != null) { GAMA.releaseScope(executionScope); }
-		executionScope = surface.getScope().copyForGraphics("of event layer");
+		executionScope = surface.getScope().copy("of event layer");
 
 		// Evaluated in the display surface scope to gather variables defined in
 		// there
@@ -198,25 +196,20 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	 *            the y
 	 */
 	private void executeEvent(final int x, final int y) {
-		executeEvent(x, y, executionScope, false);
-	}
-
-	private void executeEvent(final int x, final int y, final IScope scope, final boolean observedInput) {
-		final IAgent agent = ((ILayerStatement.Event) definition).getExecuter(scope);
+		final IAgent agent = ((ILayerStatement.Event) definition).getExecuter(executionScope);
 		if (agent == null) return;
-		final IExecutable executer = ((ILayerStatement.Event) definition).getExecutable(scope);
+		final IExecutable executer = ((ILayerStatement.Event) definition).getExecutable(executionScope);
 		if (executer == null) return;
-		if (!observedInput && getModelCoordinatesFrom(x, y, surface) == null) return;
-		GAMA.runAndUpdateAll(() -> scope.execute(executer, agent, null));
-	}
+		final IPoint pp = getModelCoordinatesFrom(x, y, surface);
+		if (pp == null) return;
+		// DEBUG.OUT("Coordinates in env (before test)" + pp);
+		// if (pp.getX() < 0 || pp.getY() < 0 || pp.getX() >= surface.getEnvWidth()
+		// || pp.getY() >= surface.getEnvHeight()) {
+		// if (MOUSE_EXITED != listenedEvent && MOUSE_ENTERED != listenedEvent) return;
+		// }
+		// DEBUG.OUT("Coordinates in env (after test)" + pp);
+		GAMA.runAndUpdateAll(() -> executionScope.execute(executer, agent, null));
 
-	private void executeUserEvent(final int x, final int y, final UserInputEvent input) {
-		final IGraphicsScope source = executionScope;
-		if (source == null || source.isClosed()) return;
-		try (IGraphicsScope scope = source.copy("for user input")) {
-			scope.setData(UserInputEvent.SCOPE_KEY, input);
-			executeEvent(x, y, scope, true);
-		}
 	}
 
 	@Override
@@ -227,19 +220,6 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	@Override
 	public void keyCombinationPressed(final KeyCombination pressed) {
 		if (pressed.equals(combination)) { executeEvent(-1, -1); }
-	}
-
-	@Override
-	public void userKeyPressed(final String key) {
-		if (IEventLayerDelegate.KEY_LISTENER.equals(event)) { executeUserEvent(-1, -1, UserInputEvent.keyboard(key)); }
-	}
-
-	@Override
-	public boolean listensToUserMouseEvents() { return IEventLayerDelegate.MOUSE_LISTENER.equals(event); }
-
-	@Override
-	public void userMouseEvent(final UserInputEvent input, final int x, final int y) {
-		if (listensToUserMouseEvents()) { executeUserEvent(x, y, input); }
 	}
 
 	@Override

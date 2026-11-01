@@ -627,32 +627,11 @@ public interface GamlCoreConstants {
 	 */
 
 	@constant (
-			value = "key_pressed",
-			category = IConstantCategory.GRAPHIC,
-			concept = { IConcept.DISPLAY },
-			doc = @doc ("Inside an event #key_listener block or its called actions, the key of the current press as a string. Printable keys contain the produced character (including case and a literal space). Named keys include arrow_up, enter, escape, shift, ctrl, alt, cmd, backspace, delete, home, end and f1 through f24 when supported. If a modifier prevents a printable character, the unmodified key is used. Unrecognized keys are reported as key_<native code>, which is platform-dependent. Outside a key listener the value is the empty string."))
-	String key_pressed = "";
-
-	@constant (
-			value = "mouse_action",
-			category = IConstantCategory.GRAPHIC,
-			concept = { IConcept.DISPLAY },
-			doc = @doc ("Inside an event #mouse_listener block or its called actions, the current action as a string: mouse_down, mouse_up, mouse_click, mouse_move, mouse_drag, mouse_enter, mouse_exit or mouse_menu. Outside a mouse listener the value is the empty string."))
-	String mouse_action = "";
-
-	@constant (
-			value = "mouse_button",
-			category = IConstantCategory.GRAPHIC,
-			concept = { IConcept.DISPLAY },
-			doc = @doc ("Inside an event #mouse_listener block or its called actions, the button associated with the current event: left, middle, right, button_N for other buttons, or none when no button is associated. For a drag, it is the first reported pressed button. A menu event can have no identifiable button. Outside a mouse listener the value is the empty string."))
-	String mouse_button = "";
-
-	@constant (
 			value = "user_location",
 			altNames = { "user_location_in_world" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit holds the mouse's location in the world's coordinates. During a #mouse_listener callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used."))
+			doc = @doc ("This unit permanently holds the mouse's location in the world's coordinates. If it is outside a display window, its last position is used."))
 	@tests ({
 			@test ("#user_location is point")
 	})
@@ -664,7 +643,7 @@ public interface GamlCoreConstants {
 			value = "user_location_in_display",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit holds the mouse's location in the display's coordinates. During a #mouse_listener callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used.")) IPoint user_location_in_display =
+			doc = @doc ("This unit permanently holds the mouse's location in the display's coordinates. If it is outside a display window, its last position is used.")) IPoint user_location_in_display =
 					GamaPointFactory.create();
 
 	/** The camera location. */
