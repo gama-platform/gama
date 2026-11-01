@@ -33,6 +33,7 @@ import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 
 import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader.LoadingStatus;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
 import gama.api.utils.files.BufferingUtils;
@@ -164,6 +165,7 @@ public class Application implements IApplication {
 				}
 				if (EXIT_OK.equals(initializeWorkspace())) return EXIT_OK;
 				try {					
+					LoadingStatus.openingPlatform();
 					final int returnCode = Workbench.createAndRunWorkbench(display, createWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;
 				} catch (Exception t) {

@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -103,6 +105,39 @@ import one.util.streamex.StreamEx;
  *
  */
 public class GamaBundleLoader {
+
+	/** UI-independent startup messages; observing this class does not initialize the bundle loader. */
+	public static final class LoadingStatus {
+		private static final List<Consumer<String>> listeners = new CopyOnWriteArrayList<>();
+		private static volatile String message = "Initializing GAMA...";
+
+		private LoadingStatus() {}
+
+		public static void addListener(final Consumer<String> listener) {
+			listeners.add(listener);
+			listener.accept(message);
+		}
+
+		public static void removeListener(final Consumer<String> listener) {
+			listeners.remove(listener);
+		}
+
+		/** Keeps the extension summary visible while the workbench opens. */
+		public static void openingPlatform() {
+			report(message + "\nPlatform opening...");
+		}
+
+		private static void report(final String next) {
+			message = next;
+			for (final var listener : listeners) {
+				try {
+					listener.accept(next);
+				} catch (final RuntimeException e) {
+					DEBUG.ERR("Unable to display GAMA loading status", e);
+				}
+			}
+		}
+	}
 
 	static {
 		DEBUG.ON();
@@ -303,6 +338,8 @@ public class GamaBundleLoader {
 	 */
 	public static void buildContributions() {
 
+		final Set<Bundle> loadedExtensions = new LinkedHashSet<>();
+		LoadingStatus.report("Discovering GAMA extensions...");
 		DEBUG.BANNER(BANNER_CATEGORY.GAMA, "version " + SystemInfo.VERSION_NUMBER, "loading on",
 				SystemInfo.OS_NAME + " " + SystemInfo.OS_VERSION + ", processor " + SystemInfo.OS_ARCH + ", JDK "
 						+ SystemInfo.JAVA_VM_NAME + " " + SystemInfo.JAVA_VM_VENDOR + " version "
@@ -339,6 +376,7 @@ public class GamaBundleLoader {
 
 			try {
 				loadGamlExtensions(API_PLUGIN);
+				loadedExtensions.add(API_PLUGIN);
 			} catch (final Exception | LinkageError e2) {
 				ERROR("Error in loading GAML API. ", e2);
 				// We exit in case the core cannot be built, as there is no point in continuing past this point
@@ -348,6 +386,7 @@ public class GamaBundleLoader {
 
 			try {
 				loadGamlExtensions(CORE_PLUGIN);
+				loadedExtensions.add(CORE_PLUGIN);
 			} catch (final Exception | LinkageError e2) {
 				ERROR("Error in loading core GAML language definition. ", e2);
 				// We exit in case the core cannot be built, as there is no point in continuing past this point
@@ -360,6 +399,7 @@ public class GamaBundleLoader {
 					CURRENT_PLUGIN_NAME = addition.getSymbolicName();
 					try {
 						loadGamlExtensions(addition);
+						loadedExtensions.add(addition);
 					} catch (final Exception e1) {
 						ERROR("Error in loading plugin " + CURRENT_PLUGIN_NAME + ". ", e1);
 						// We do not systematically exit in case of additional plugins failing to load, so as to
@@ -369,6 +409,7 @@ public class GamaBundleLoader {
 					}
 				}
 				CURRENT_PLUGIN_NAME = null;
+				LoadingStatus.report("Registering language delegates...");
 				try {
 					loadCreateExt(registry);
 					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "data types",
@@ -400,6 +441,7 @@ public class GamaBundleLoader {
 					ERROR("Error in loading extensions to 'event'. ", e);
 				}
 				try {
+					LoadingStatus.report("Registering file content types...");
 					loadContentExtensions(registry);
 					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file content extensions", "file types",
 							StreamEx.of(HANDLED_FILE_EXTENSIONS.values()).remove(String::isBlank)
@@ -408,6 +450,7 @@ public class GamaBundleLoader {
 					ERROR("Error in loading content extensions. ", e);
 				}
 				try {
+					LoadingStatus.report("Registering file metadata...");
 					loadMetadataExt(registry);
 					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file metadata extensions", "file types",
 							StreamEx.of(GAMA.getMetadataProvider().getMetadataFileExtensions()).remove(String::isBlank)
@@ -416,6 +459,7 @@ public class GamaBundleLoader {
 					ERROR("Error in loading extensions to 'metadata'. ", e);
 				}
 				try {
+					LoadingStatus.report("Registering server commands...");
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'server_command'",
 							"completed in", () -> {
 								loadServerCommandExt(registry);
@@ -424,6 +468,7 @@ public class GamaBundleLoader {
 					ERROR("Error in loading extensions to 'server_command'. ", e);
 				}
 				try {
+					LoadingStatus.report("Gathering built-in models...");
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Gathering built-in models", "completed in",
 							() -> { loadModels(registry); });
 				} catch (RuntimeException e) {
@@ -433,6 +478,7 @@ public class GamaBundleLoader {
 				// CRUCIAL INITIALIZATIONS
 				// We init the meta-model of GAMA (i.e. abstract agent, model, experiment species)
 				try {
+					LoadingStatus.report("Building the GAMA metamodel...");
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Building metamodel", "completed in", () -> {
 						GamaMetaModel.build();
 
@@ -443,18 +489,23 @@ public class GamaBundleLoader {
 
 				// We init the type hierarchy, the units and the agent representing the GAMA platform
 				try {
+					LoadingStatus.report("Initializing types...");
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Initializing types", "completed in",
 							() -> { Types.init(); });
 				} catch (RuntimeException e) {
 					ERROR("Error in initializing types. ", e);
 				}
 				try {
+					LoadingStatus.report("Loading constants...");
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading constants", "completed in",
 							() -> { loadConstants(registry); });
 				} catch (RuntimeException e) {
 					ERROR("Error in loading constants. ", e);
 				}
 				GamaMetaModel.getSpeciesDescription(IKeyword.PLATFORM).validate();
+				LoadingStatus.report(loadedExtensions.size() + " GAMA "
+						+ (loadedExtensions.size() == 1 ? "extension loaded." : "extensions loaded.")
+						+ (ERRORED ? "\nInitialization errors. See the log." : ""));
 			}, Runnable::run);
 
 		});
@@ -784,6 +835,7 @@ public class GamaBundleLoader {
 	 */
 	@SuppressWarnings ("unchecked")
 	public static void loadGamlExtensions(final Bundle bundle) throws Exception {
+		LoadingStatus.report("Loading extension:\n" + bundle.getSymbolicName());
 		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Extensions in " + bundle.getSymbolicName(), "loaded in", () -> {
 			final String symbolicName = bundle.getSymbolicName();
 			GAMA_PLUGINS_NAMES.add(symbolicName);

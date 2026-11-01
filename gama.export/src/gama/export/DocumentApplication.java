@@ -17,6 +17,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.internal.WorkbenchPlugin;
 
 /** Default GUI entry point; package-only invocations never instantiate the modeling application. */
 public final class DocumentApplication implements IApplication {
@@ -30,6 +31,7 @@ public final class DocumentApplication implements IApplication {
 			System.setProperty("org.eclipse.swt.internal.gtk.disableWayland", "true");
 		Display.setAppName("Gama");
 		final Display display = Display.getCurrent() == null ? new Display() : Display.getCurrent();
+		StartupSplash.install(WorkbenchPlugin.getSplashShell(display));
 		final var documents = new ArrayList<String>();
 		final Listener listener = event -> {
 			if (event.text != null) documents.add(event.text);
@@ -38,8 +40,7 @@ public final class DocumentApplication implements IApplication {
 		try {
 			final Object supplied = context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
 			final var arguments = PackageDocuments.fromArguments(supplied instanceof String[] values ? values : new String[0]);
-			context.applicationRunning();
-			// Cocoa delivers the initial document event after the native launcher has completed its startup handshake.
+			// Pump initial Cocoa document events before choosing the application, without dismissing the splash.
 			if (PackageDocuments.shouldWaitForNativeDocuments(Platform.OS_MACOSX.equals(Platform.getOS()), arguments)) {
 				final long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(250);
 				do {
@@ -54,6 +55,8 @@ public final class DocumentApplication implements IApplication {
 				display.setData(PackageDocuments.ARGUMENTS_CONSUMED, !initial.isEmpty());
 				return startModeler(context);
 			}
+			// Package-only launches have no workbench to complete the startup handshake and dismiss the splash.
+			context.applicationRunning();
 			final Shell owner = new Shell(display);
 			try {
 				final var pending = new ArrayList<>(initial);

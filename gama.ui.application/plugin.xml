@@ -34,18 +34,6 @@
                value="Gama">
          </property>
          <property
-               name="startupProgressRect"
-               value="420,480,80,12">
-         </property>
-         <property
-               name="startupForegroundColor"
-               value="C56D45">
-         </property>
-         <property
-               name="startupMessageRect"
-               value="420,500,100,16">
-         </property>
-         <property
                name="preferenceCustomization"
                value="plugin_customization.ini">
          </property>

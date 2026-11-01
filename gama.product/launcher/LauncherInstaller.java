@@ -96,6 +96,18 @@ public final class LauncherInstaller {
 				+ (slash < 0 ? "" : previous.substring(0, slash + 1)) + "gama-launcher.jar"));
 		Files.writeString(ini, text, StandardCharsets.UTF_8);
 		if (install.toString().contains("Gama.app")) {
+			final Path splash = Files.createDirectories(install.resolve("splash"));
+			Files.copy(source.resolve("../extraresources/splash/splash-macos.png"), splash.resolve("splash.png"),
+					StandardCopyOption.REPLACE_EXISTING);
+			final Path config = install.resolve("configuration/config.ini");
+			final var configuration = new Properties();
+			try (var reader = Files.newBufferedReader(config)) {
+				configuration.load(reader);
+			}
+			configuration.setProperty("osgi.splashPath", "platform:/base/splash");
+			try (var writer = Files.newBufferedWriter(config)) {
+				configuration.store(writer, "GAMA product configuration");
+			}
 			final Path nativeSource = Files.createDirectories(install.resolve("launcher"));
 			Files.copy(source.resolve("cocoa/PackageLauncher.m"), nativeSource.resolve("PackageLauncher.m"),
 					StandardCopyOption.REPLACE_EXISTING);

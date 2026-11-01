@@ -132,9 +132,12 @@ JNIEXPORT void JNICALL Java_gama_launcher_PackageLauncher_composeSplash(
                             "Unable to read the GAMA splash logo");
             return;
         }
+        // Preserve the launcher's 900 x 560 point window while supplying Retina-resolution pixels.
+        const CGFloat backingScale = 2;
         NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
-            pixelsWide:900 pixelsHigh:560 bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
+            pixelsWide:900 * backingScale pixelsHigh:560 * backingScale bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
             isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:0 bitsPerPixel:0];
+        bitmap.size = NSMakeSize(900, 560);
         NSGraphicsContext *context = [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmap];
         [NSGraphicsContext saveGraphicsState];
         NSGraphicsContext.currentContext = context;
