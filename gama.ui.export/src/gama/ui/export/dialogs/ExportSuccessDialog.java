@@ -57,12 +57,15 @@ public final class ExportSuccessDialog extends Dialog {
 
 	@Override
 	protected void createButtonsForButtonBar(final Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, "Close", true);
-		createButton(parent, IDialogConstants.CLIENT_ID, "Open directory", false);
-		((GridLayout) parent.getLayout()).numColumns++;
+		parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		final GridLayout layout = (GridLayout) parent.getLayout();
+		layout.makeColumnsEqualWidth = false;
+		layout.numColumns++;
 		doNotShowAgain = new Button(parent, SWT.CHECK);
 		doNotShowAgain.setText("Do not show again");
-		doNotShowAgain.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		doNotShowAgain.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+		createButton(parent, IDialogConstants.OK_ID, "Close", true);
+		createButton(parent, IDialogConstants.CLIENT_ID, "Open directory", false);
 	}
 
 	@Override

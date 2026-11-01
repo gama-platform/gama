@@ -72,6 +72,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 
 	private GamaUIColor textColor;
 
+	private int horizontalPadding = INNER_MARGIN;
+
 	/** Dimensions. */
 	private int preferredHeight = SWT.DEFAULT, preferredWidth = SWT.DEFAULT, forcedWidth = SWT.DEFAULT,
 			minimalHeight = MINIMAL_HEIGHT;
@@ -282,7 +284,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		}
 		gc.setForeground(foreground);
 
-		float x = INNER_MARGIN;
+		float x = horizontalPadding;
 		final Image im = getImage();
 		float y_text = -1;
 		final String contents = newText(gc);
@@ -295,7 +297,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		gc.drawString(contents, Math.round(x), Math.round(y_text));
 		if (menu) {
 			float y_image = (getBounds().height - MENU_BOUNDS.height) / 2f;
-			x = INNER_MARGIN;
+			x = horizontalPadding;
 			x = rect.width - x - MENU_BOUNDS.width;
 			drawImage(MENU_IMAGE, gc, Math.round(x), Math.round(y_image));
 		}
@@ -477,7 +479,7 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 			}
 			if (text != null) {
 				Point extent = computeExtentOfText(gc, text);
-				preferredWidth += extent.x + INNER_MARGIN * 2;
+				preferredWidth += extent.x + horizontalPadding * 2;
 				preferredHeight = Math.max(preferredHeight, extent.y + INNER_MARGIN);
 				// DEBUG.OUT("text " + (extent.x + INNER_MARGIN * 2) + " x " + (extent.y + INNER_MARGIN) + "; ", false);
 			}
@@ -592,6 +594,14 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	 */
 	public FlatButton withHeight(final int height) {
 		minimalHeight = height;
+		return this;
+	}
+
+	public FlatButton withHorizontalPadding(final int padding) {
+		if (padding < 0) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		horizontalPadding = padding;
+		computeSize = true;
+		redraw();
 		return this;
 	}
 

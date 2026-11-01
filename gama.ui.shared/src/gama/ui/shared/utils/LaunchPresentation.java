@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -22,7 +23,7 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 
-/** The same presentation card is used before and during a simulation-player launch. */
+/** Shared Home/launch card; choosing an experiment starts it directly when several are available. */
 public final class LaunchPresentation extends Composite {
 
 	public static final String SHELL_DATA_KEY = LaunchPresentation.class.getName();
@@ -36,7 +37,7 @@ public final class LaunchPresentation extends Composite {
 	/** Bounds are relative to the workbench client area, so launching does not move the Home card. */
 	public record State(Content content, String selection, Rectangle bounds) {}
 
-	private final ToolBar actionBar;
+	private final Control actionControl;
 
 	public LaunchPresentation(final Composite parent, final Content content, final String selection,
 			final boolean launching, final Consumer<String> choose, final Runnable action) {
@@ -47,6 +48,8 @@ public final class LaunchPresentation extends Composite {
 		setBackgroundMode(SWT.INHERIT_FORCE);
 		final GridLayout layout = new GridLayout();
 		layout.marginWidth = layout.marginHeight = 0;
+		// Balance the extra title spacing below the card to keep the launch action in place when centered.
+		layout.marginBottom = 24;
 		layout.verticalSpacing = 4;
 		setLayout(layout);
 		final Label title = new Label(this, SWT.CENTER | SWT.WRAP);
@@ -59,29 +62,26 @@ public final class LaunchPresentation extends Composite {
 		title.setLayoutData(titleData);
 		final String experiment = content.experiments().stream().filter(entry -> entry.name().equals(selection))
 				.map(ExperimentMenu.Entry::label).findFirst().orElse(selection);
-		if (content.experiments().size() > 1) {
-			final FlatButton selector = FlatButton.menu(this, IGamaColors.OK, experiment).withHeight(24);
-			selector.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
-			selector.setToolTipText(launching ? "Launching " + experiment : "Choose an experiment");
-			selector.setEnabled(!launching);
-			if (!launching) {
-				final var menu = ExperimentMenu.create(selector, content.experiments(), next -> {
-					selector.setText(content.experiments().stream().filter(entry -> entry.name().equals(next))
-							.map(ExperimentMenu.Entry::label).findFirst().orElse(next));
-					choose.accept(next);
-					layout(true, true);
-				});
-				selector.setSelectionListener(event -> ExperimentMenu.open(menu, selector));
-			}
-		} else {
-			final Label subtitle = new Label(this, SWT.CENTER | SWT.WRAP);
-			subtitle.setText(experiment);
-			subtitle.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		}
-		actionBar = new ToolBar(this, SWT.FLAT);
+		final boolean multiple = content.experiments().size() > 1;
+		final Label subtitle = new Label(this, SWT.CENTER | SWT.WRAP);
+		subtitle.setText(multiple && !launching ? "" : experiment);
+		final GridData subtitleData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		subtitleData.verticalIndent = 24;
+		if (multiple) subtitleData.heightHint = 24;
+		subtitle.setLayoutData(subtitleData);
+		final Composite actions = new Composite(this, SWT.NONE);
+		final GridLayout actionsLayout = new GridLayout();
+		actionsLayout.marginWidth = actionsLayout.marginHeight = 0;
+		actionsLayout.verticalSpacing = 0;
+		actions.setLayout(actionsLayout);
 		final GridData actionData = new GridData(SWT.CENTER, SWT.CENTER, false, false);
 		actionData.verticalIndent = 8;
-		actionBar.setLayoutData(actionData);
+		actions.setLayoutData(actionData);
+		final ToolBar actionBar = new ToolBar(actions, SWT.FLAT);
+		final GridData toolbarData = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+		toolbarData.exclude = multiple && !launching;
+		actionBar.setLayoutData(toolbarData);
+		actionBar.setVisible(!toolbarData.exclude);
 		final ToolItem button = new ToolItem(actionBar, SWT.PUSH);
 		final GamaIcon icon = GamaIcon.named(launching ? IGamaIcons.EXPERIMENT_STOP : IGamaIcons.EXPERIMENT_RUN);
 		button.setImage(icon.image());
@@ -95,6 +95,36 @@ public final class LaunchPresentation extends Composite {
 				if (!button.isDisposed() && !launching) button.setEnabled(true);
 			}
 		});
+		if (multiple) {
+			final FlatButton selector = FlatButton.menu(actions, IGamaColors.OK, "Choose Experiment...")
+					.withHeight(24).withHorizontalPadding(12);
+			selector.setToolTipText("Choose an experiment to launch");
+			final GridData selectorData = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+			selectorData.exclude = launching;
+			selector.setLayoutData(selectorData);
+			selector.setVisible(!launching);
+			selector.setEnabled(!launching);
+			// Reserve the same action row in Home and the overlay, even though their controls differ.
+			final var selectorSize = selector.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			final var toolbarSize = actionBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			actionData.widthHint = Math.max(selectorSize.x, toolbarSize.x);
+			actionData.heightHint = Math.max(selectorSize.y, toolbarSize.y);
+			if (!launching) {
+				final var menu = ExperimentMenu.create(selector, content.experiments(), next -> {
+					selector.setEnabled(false);
+					try {
+						choose.accept(next);
+						action.run();
+					} finally {
+						if (!selector.isDisposed()) selector.setEnabled(true);
+					}
+				});
+				selector.setSelectionListener(event -> ExperimentMenu.open(menu, selector));
+			}
+			actionControl = launching ? actionBar : selector;
+		} else {
+			actionControl = actionBar;
+		}
 		if (!content.description().isBlank()) {
 			final Label description = new Label(this, SWT.CENTER | SWT.WRAP);
 			description.setText(content.description());
@@ -133,5 +163,5 @@ public final class LaunchPresentation extends Composite {
 	}
 
 	@Override
-	public boolean setFocus() { return actionBar.setFocus(); }
+	public boolean setFocus() { return actionControl.setFocus(); }
 }

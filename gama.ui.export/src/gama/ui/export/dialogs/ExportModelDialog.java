@@ -175,8 +175,10 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	private void createImageSection(final Composite container) {
+		final String splashHint = "Splash artwork area: 570 x 560 px; use this size or a larger image with the same roughly 1:1 aspect ratio. "
+				+ "Other aspect ratios are center-cropped, not stretched.";
 		final String imageHint = "Choose an image for the Home screen"
-				+ (format == Format.PACKAGE ? " and splash screen (center-cropped, not stretched)" : "");
+				+ (format == Format.PACKAGE ? " and splash screen.\n" + splashHint : "");
 		final Button browse = new Button(container, SWT.PUSH);
 		browse.setText("Image (optional)");
 		final GridData data = new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 2);
@@ -214,7 +216,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 				browse.setImage(preview);
 				browse.setText("");
 				browse.setToolTipText(selected
-						+ (format == Format.PACKAGE ? "\nThe splash screen center-crops the image without stretching." : "")
+						+ (format == Format.PACKAGE ? "\n" + splashHint : "")
 						+ "\nClick to change; right-click to remove.");
 				if (imagePreview != null) imagePreview.dispose();
 				imagePreview = preview;

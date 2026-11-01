@@ -538,10 +538,10 @@ public class LaunchingOverlay {
 			final Rectangle anchor = presentationState.bounds();
 			final int width = Math.min(Math.max(1, sz.x - 32), anchor == null ? 560 : anchor.width);
 			final var size = presentation.computeSize(width, SWT.DEFAULT);
-			final int availableHeight = Math.max(1, consoleY - 30);
-			final int height = Math.min(availableHeight, size.y);
 			final int desiredY = anchor == null ? (consoleY - size.y) / 2 : anchor.y + (sz.y - initialSize.y) / 2;
-			final int y = Math.max(12, Math.min(desiredY, consoleY - height - 18));
+			final int y = Math.max(12, Math.min(desiredY, consoleY - 19));
+			// Keep the Home title anchored; scroll the lower content rather than moving the whole card up.
+			final int height = Math.min(size.y, Math.max(1, consoleY - y - 18));
 			final int x = anchor == null ? (sz.x - width) / 2
 					: Math.max(0, Math.min(sz.x - width, anchor.x + (sz.x - initialSize.x) / 2));
 			presentationArea.setBounds(x, y, width, height);
