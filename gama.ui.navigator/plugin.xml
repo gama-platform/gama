@@ -4,6 +4,105 @@
    <extension point="gama.standard.distribution">
    </extension>
 
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.navigator.commands.DetailsHandler"
+            id="gama.ui.details"
+            name="Installation details">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.navigator.commands.InstallHandler"
+            id="gama.ui.install"
+            name="Install new plugins...">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.navigator.commands.InstallOptionalFeatureHandler"
+            id="gama.ui.install.graphical"
+            name="Install diagramming...">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.navigator.commands.InstallOptionalFeatureHandler"
+            id="gama.ui.install.copilot"
+            name="Install Copilot...">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.navigator.commands.UpdateHandler"
+            id="gama.ui.update"
+            name="Check for updates">
+      </command>
+   </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:support?after=gama.ui.shared.help.separator2">
+         <command
+               commandId="gama.ui.install.graphical"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.graphical.svg"
+               label="Install diagramming..."
+               style="push"
+               tooltip="Install the GAMA graphical editor and its Graphiti dependencies">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="gama.ui.install.copilot"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.copilot.svg"
+               label="Install Copilot..."
+               style="push"
+               tooltip="Install GitHub Copilot and its dependencies">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
+         </command>
+         <separator
+               name="gama.ui.shared.separator4"
+               visible="true">
+         </separator>
+         <command
+               commandId="gama.ui.update"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
+               label="Check for Updates"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="gama.ui.install"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.install.svg"
+               label="Install new Plugins..."
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="gama.ui.details"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.details.svg"
+               label="Installation Details"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
    <extension
          point="org.eclipse.ui.decorators">
       <decorator

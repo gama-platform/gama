@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * InstallOptionalFeatureHandler.java, in gama.ui.shared, is part of the source code of the GAMA modeling
+ * InstallOptionalFeatureHandler.java, in gama.ui.navigator, is part of the source code of the GAMA modeling
  * and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.ui.shared.commands;
+package gama.ui.navigator.commands;
 
 import java.net.URI;
 import java.util.List;
@@ -41,7 +41,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
  */
 public class InstallOptionalFeatureHandler extends AbstractHandler {
 
-	private static final String PLUGIN_ID = "gama.ui.shared";
+	private static final String PLUGIN_ID = "gama.ui.navigator";
 	private static final URI ECLIPSE_REPOSITORY = URI.create("https://download.eclipse.org/releases/2026-03/");
 	private static final URI COPILOT_REPOSITORY = URI.create(
 			"https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
