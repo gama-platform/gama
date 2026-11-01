@@ -47,6 +47,7 @@ import gama.api.types.list.IList;
 import gama.api.types.topology.ITopology;
 import gama.api.ui.IGui;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.UserInputEvent;
 import gama.api.utils.StringUtils;
 import gama.api.utils.benchmark.StopWatch;
 import gama.api.utils.random.IRandom;
@@ -748,6 +749,8 @@ public class ExecutionScope implements IScope {
 				// light (no frame or agent stack is copied) and its constant name avoids building a string per call.
 				final IScope copy = targetScope.copy(TARGET_SCOPE_NAME);
 				try {
+					// Input is part of the current call, not the target's long-lived scope.
+					copy.setData(UserInputEvent.SCOPE_KEY, getData(UserInputEvent.SCOPE_KEY));
 					return copy.execute(statement, target, false, args);
 				} finally {
 					copy.clear();

@@ -130,8 +130,18 @@ public class SwingControlMac extends SwingControl {
 				// the full explanation.
 				frame.setIgnoreRepaint(true);
 				surface.setVisibility(() -> visible);
-				if (swingKeyListener != null) { frame.addKeyListener(swingKeyListener); }
-				if (swingMouseListener != null) { frame.addMouseMotionListener(swingMouseListener); }
+				if (swingKeyListener != null) {
+					frame.addKeyListener(swingKeyListener);
+					surface.addKeyListener(swingKeyListener);
+				}
+				if (swingMouseListener != null) {
+					frame.addMouseMotionListener(swingMouseListener);
+					surface.addMouseMotionListener(swingMouseListener);
+				}
+				if (swingUserMouseListener != null) {
+					frame.addMouseListener(swingUserMouseListener);
+					surface.addMouseListener(swingUserMouseListener);
+				}
 				// long addSurfaceStart = System.currentTimeMillis();
 				frame.add(surface);
 				// long addSurfaceEnd = System.currentTimeMillis();
@@ -147,8 +157,18 @@ public class SwingControlMac extends SwingControl {
 			addListener(SWT.Dispose, e -> EventQueue.invokeLater(() -> {
 				try {
 					frame.removeMouseListener(ml);
-					if (swingKeyListener != null) { frame.removeKeyListener(swingKeyListener); }
-					if (swingMouseListener != null) { frame.removeMouseMotionListener(swingMouseListener); }
+					if (swingKeyListener != null) {
+						frame.removeKeyListener(swingKeyListener);
+						surface.removeKeyListener(swingKeyListener);
+					}
+					if (swingMouseListener != null) {
+						frame.removeMouseMotionListener(swingMouseListener);
+						surface.removeMouseMotionListener(swingMouseListener);
+					}
+					if (swingUserMouseListener != null) {
+						frame.removeMouseListener(swingUserMouseListener);
+						surface.removeMouseListener(swingUserMouseListener);
+					}
 					surface.removeMouseListener(ml);
 					frame.remove(surface);
 					surface.dispose();

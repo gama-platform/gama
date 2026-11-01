@@ -14,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.DataBufferInt;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -170,7 +171,11 @@ public class ImageDisplaySurface implements IDisplaySurface {
 				+ " in simulation " + scope.getSimulation().getIndex());
 		setSize(w, h);
 		drawAllDisplays();
-		return bufferImage;
+		final GamaImage image = GamaImage.ofDimensions(width, height, true);
+		final int[] source = ((DataBufferInt) bufferImage.getRaster().getDataBuffer()).getData();
+		final int[] target = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(source, 0, target, 0, target.length);
+		return image;
 	}
 
 	/*

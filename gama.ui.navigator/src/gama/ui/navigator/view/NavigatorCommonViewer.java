@@ -59,10 +59,11 @@ public class NavigatorCommonViewer extends CommonViewer {
 		}
 
 		private Object key(final Object element) {
-			if (element instanceof WrappedResource<?, ?> resource) return resource.getResource();
 			if (element instanceof VirtualContent<?> content) {
 				Object identifier = content.getName();
-				if (content instanceof WrappedSyntacticContent syntax && syntax.getURI() != null) {
+				if (content instanceof WrappedResource<?, ?> resource) {
+					identifier = resource.getResource();
+				} else if (content instanceof WrappedSyntacticContent syntax && syntax.getURI() != null) {
 					identifier = syntax.getURI();
 				} else if (content instanceof LinkedFile link && link.getTarget() != null) {
 					identifier = link.getTarget().getResource();

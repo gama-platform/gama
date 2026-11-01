@@ -25,9 +25,9 @@ import java.awt.geom.Rectangle2D;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.swing.JPanel;
 
@@ -38,6 +38,7 @@ import gama.annotations.display;
 import gama.annotations.doc;
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.SystemInfo;
@@ -54,6 +55,7 @@ import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.KeyCombination;
+import gama.api.ui.layers.UserInputEvent;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -62,7 +64,6 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.display.LayerManager;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
 import gama.extension.image.display.AWTDisplayGraphics;
@@ -135,10 +136,14 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	/** The rendered. */
 	private volatile boolean rendered = false;
 
+	private final Object renderLock = new Object();
+	private boolean renderFailed; // Guarded by renderLock.
+	private boolean painting; // Accessed only on the AWT event dispatch thread.
+
 	private final SwingRenderQueue renderQueue = new SwingRenderQueue(this::renderDisplay);
 
 	/** The listeners. */
-	Set<IEventLayerListener> listeners = new HashSet<>();
+	Set<IEventLayerListener> listeners = new CopyOnWriteArraySet<>();
 
 	/** The mouse position. */
 	Point mousePosition;
@@ -211,6 +216,26 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void dispatchKeyCombination(final KeyCombination combination) {
 		for (final IEventLayerListener listener : listeners) { listener.keyCombinationPressed(combination); }
+	}
+
+	@Override
+	public void dispatchUserKeyEvent(final String key) {
+		for (final IEventLayerListener listener : listeners) { listener.userKeyPressed(key); }
+	}
+
+	@Override
+	public boolean hasUserMouseListeners() {
+		for (final IEventLayerListener listener : listeners) {
+			if (listener.listensToUserMouseEvents()) return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void dispatchUserMouseEvent(final String action, final int x, final int y, final int button) {
+		if (!hasUserMouseListeners()) return;
+		final UserInputEvent event = UserInputEvent.mouse(action, button, getModelCoordinatesAt(x, y), x, y);
+		for (final IEventLayerListener listener : listeners) { listener.userMouseEvent(event, x, y); }
 	}
 
 	/**
@@ -323,35 +348,62 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public GamaImage getImage(final int w, final int h) {
+		if (!awaitRendering()) return null;
 		final int previousWidth = getWidth();
 		final int previousHeight = getHeight();
 		final int width = w == -1 ? previousWidth : w;
 		final int height = h == -1 ? previousHeight : h;
+		if (width <= 0 || height <= 0) return null;
 		final boolean sameSize = width == previousWidth && height == previousHeight;
 		final GamaImage newImage = ImageHelper.createCompatibleImage(width, height, false);
-		final Graphics g = newImage.getGraphics();
-
-		while (!rendered) { THREADS.WAIT(20, "Surface is not rendered yet in Java2DDisplaySurface().getImage"); }
-		try {
-			EventQueue.invokeAndWait(() -> {
-				final Rectangle old = new Rectangle(viewPort);
+		final boolean[] captured = { false };
+		final Runnable capture = () -> {
+			if (disposed || iGraphics == null) return;
+			final Graphics g = newImage.getGraphics();
+			final Rectangle old = new Rectangle(viewPort);
+			try {
 				if (!sameSize) {
 					viewPort.x = viewPort.y = 0;
 					final int[] point = computeBoundsFrom(width, height);
 					viewPort.width = point[0];
 					viewPort.height = point[1];
 				}
-				// Use printComponent() instead of print() as it prevents from
-				// changing the clip (see #3570)
+				// Use printComponent() instead of print() as it prevents from changing the clip (see #3570).
 				printComponent(g);
+				captured[0] = true;
+			} finally {
 				if (!sameSize) { viewPort.setBounds(old); }
-
-			});
-		} catch (InvocationTargetException | InterruptedException e) {
-			e.printStackTrace();
+				g.dispose();
+			}
+		};
+		try {
+			if (EventQueue.isDispatchThread()) {
+				capture.run();
+			} else {
+				EventQueue.invokeAndWait(capture);
+			}
+			return captured[0] ? newImage : null;
+		} catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return null;
+		} catch (final InvocationTargetException e) {
+			throw GamaRuntimeException.create(e.getCause(), getScope());
 		}
-		g.dispose();
-		return newImage;
+	}
+
+	private boolean awaitRendering() {
+		if (EventQueue.isDispatchThread()) return rendered && !disposed && !painting;
+		synchronized (renderLock) {
+			while (!rendered && !disposed && !renderFailed) {
+				try {
+					renderLock.wait();
+				} catch (final InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return false;
+				}
+			}
+			return rendered && !disposed;
+		}
 	}
 
 	/**
@@ -410,9 +462,21 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		// Hidden or uninitialized displays cannot paint, but must still acknowledge updates.
 		if (disposed || iGraphics == null || !isVisible() || !isShowing() || getWidth() <= 0 || getHeight() <= 0)
 			return;
-		rendered = false;
+		synchronized (renderLock) {
+			rendered = false;
+			renderFailed = false;
+		}
 		// Paint within this EDT task instead of leaving another deferred repaint behind mouse events.
-		paintImmediately(0, 0, getWidth(), getHeight());
+		try {
+			paintImmediately(0, 0, getWidth(), getHeight());
+		} finally {
+			synchronized (renderLock) {
+				if (!rendered) {
+					renderFailed = true;
+					renderLock.notifyAll();
+				}
+			}
+		}
 	}
 
 	@Override
@@ -550,15 +614,30 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		// final long t0 = System.currentTimeMillis();
 		// DEBUG.OUT("[paintComponent] START for " + output.getName() + " thread=" + Thread.currentThread().getName());
 		// DEBUG.OUT("-- Surface effectively painting on Java2D context");
-		super.paintComponent(g);
-		final Graphics2D g2d = (Graphics2D) g.create(getOrigin().x, getOrigin().y, (int) Math.round(getDisplayWidth()),
-				(int) Math.round(getDisplayHeight()));
-		gg.setGraphics2D(g2d);
-		gg.setUntranslatedGraphics2D((Graphics2D) g);
-		layerManager.drawLayersOn(gg);
-		g2d.dispose();
-		frames++;
-		rendered = true;
+		final boolean wasPainting = painting;
+		painting = true;
+		boolean painted = false;
+		try {
+			super.paintComponent(g);
+			final Graphics2D g2d = (Graphics2D) g.create(getOrigin().x, getOrigin().y,
+					(int) Math.round(getDisplayWidth()), (int) Math.round(getDisplayHeight()));
+			try {
+				gg.setGraphics2D(g2d);
+				gg.setUntranslatedGraphics2D((Graphics2D) g);
+				layerManager.drawLayersOn(gg);
+			} finally {
+				g2d.dispose();
+			}
+			frames++;
+			painted = true;
+		} finally {
+			painting = wasPainting;
+			synchronized (renderLock) {
+				rendered = painted;
+				renderFailed = !painted;
+				renderLock.notifyAll();
+			}
+		}
 		// DEBUG.OUT("[paintComponent] END for " + output.getName() + " took " + (System.currentTimeMillis() - t0) +
 		// "ms");
 		// getOutput().setRendered(true);
@@ -574,11 +653,14 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public IPoint getModelCoordinates() {
-		final Point origin = getOrigin();
 		final Point mouse = getMousePosition();
-		if (mouse == null) return null;
-		final int xc = mouse.x - origin.x;
-		final int yc = mouse.y - origin.y;
+		return mouse == null ? null : getModelCoordinatesAt(mouse.x, mouse.y);
+	}
+
+	private IPoint getModelCoordinatesAt(final int x, final int y) {
+		final Point origin = getOrigin();
+		final int xc = x - origin.x;
+		final int yc = y - origin.y;
 		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
 		for (final ILayer layer : layers) {
 			if (layer.isProvidingWorldCoordinates()) return layer.getModelCoordinatesFrom(xc, yc, this);
@@ -745,8 +827,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void dispose() {
-		if (disposed) return;
-		disposed = true;
+		synchronized (renderLock) {
+			if (disposed) return;
+			disposed = true;
+			renderLock.notifyAll();
+		}
 		renderQueue.close();
 		getData().removeListener(this);
 		if (layerManager != null) { layerManager.dispose(); }
