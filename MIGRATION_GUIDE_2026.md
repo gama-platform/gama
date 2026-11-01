@@ -502,8 +502,8 @@ Direct instantiation of core GAMA types is **no longer allowed**. You must use t
 | `IMap` | `new GamaMap<>()` | `GamaMapFactory.create(Types.STRING, Types.INT)` |
 | `IPoint` | `new GamaPoint(1.0, 2.0)` | `GamaPointFactory.create(1.0, 2.0)` |
 | `IShape` (circle) | `GamaGeometryType.buildCircle(10, pt)` | `GamaShapeFactory.buildCircle(10, pt)` |
-| `IColor` | `new GamaColor(255, 0, 0)` | `GamaColorFactory.create(255, 0, 0)` |
-| `IGraph` | `new GamaSpatialGraph(...)` | `GamaGraphFactory.createSpatialGraph(...)` |
+| `IColor` | `new GamaColor(255, 0, 0)` | `GamaColorFactory.get(255, 0, 0)` |
+| `IGraph` | `new GamaSpatialGraph(...)` | `GamaGraphFactory.createFromList(scope, edges, true)` |
 
 **Note:** When creating typed collections, always provide the element type(s) using constants from the `Types` class (e.g. `Types.STRING`, `Types.INT`, `Types.AGENT`).
 

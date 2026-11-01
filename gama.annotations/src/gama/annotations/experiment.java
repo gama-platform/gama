@@ -18,9 +18,9 @@ import java.lang.annotation.Target;
 public @interface experiment {
 
 	/**
-	 * The keyword that will allow to open this display in GAML (in "display type: keyword").
+	 * The keyword identifying this experiment type in GAML (in "experiment name type: keyword").
 	 *
-	 * @return
+	 * @return the experiment type keyword
 	 */
 	String value();
 }

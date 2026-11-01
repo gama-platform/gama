@@ -39,8 +39,8 @@ public @interface type {
 	String[] concept() default {};
 
 	/**
-	 * @return the unique identifier for this type. User-added types can be chosen between IType.AVAILABLE_TYPE and
-	 *         IType.SPECIES_TYPE (exclusive)
+	 * @return the unique identifier for this type. Choose a free ID starting at IType.BEGINNING_OF_CUSTOM_TYPES
+	 *         and below IType.BEGINNING_OF_SPECIES_TYPES.
 	 */
 	int id();
 
