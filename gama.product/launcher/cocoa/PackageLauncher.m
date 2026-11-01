@@ -93,51 +93,92 @@ JNIEXPORT jobjectArray JNICALL Java_gama_launcher_PackageLauncher_startupDocumen
     }
 }
 
+static NSString *normalizedText(NSString *text) {
+    NSArray<NSString *> *words = [text componentsSeparatedByCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    return [[words filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]] componentsJoinedByString:@" "];
+}
+
+static NSDictionary *textAttributes(NSFont *font, NSColor *color) {
+    NSMutableParagraphStyle *paragraph = [NSMutableParagraphStyle new];
+    paragraph.lineBreakMode = NSLineBreakByWordWrapping;
+    return @{ NSFontAttributeName: font, NSForegroundColorAttributeName: color,
+              NSParagraphStyleAttributeName: paragraph };
+}
+
+static NSRect topRect(CGFloat x, CGFloat y, CGFloat width, CGFloat height) {
+    return NSMakeRect(x, 560 - y - height, width, height);
+}
+
 JNIEXPORT void JNICALL Java_gama_launcher_PackageLauncher_composeSplash(
-        JNIEnv *env, jclass type, jstring imagePath, jstring titleValue, jstring descriptionValue, jstring output) {
+        JNIEnv *env, jclass type, jstring imagePath, jstring titleValue, jstring descriptionValue,
+        jbyteArray logoBytes, jstring output) {
     @autoreleasepool {
-        NSString *title = string(env, titleValue);
+        NSString *title = normalizedText(string(env, titleValue));
         if (title.length == 0) title = @"Simulation";
         NSString *image = string(env, imagePath);
         NSImage *illustration = image.length == 0 ? nil : [[NSImage alloc] initWithContentsOfFile:image];
-        if (image.length > 0 && illustration == nil) {
+        if (image.length > 0 && (illustration == nil || illustration.size.width <= 0 || illustration.size.height <= 0)) {
             (*env)->ThrowNew(env, (*env)->FindClass(env, "java/io/IOException"),
                             "Unable to read the package presentation image");
             return;
         }
+        jbyte *bytes = (*env)->GetByteArrayElements(env, logoBytes, NULL);
+        if (bytes == NULL) return;
+        NSData *logoData = [NSData dataWithBytes:bytes length:(NSUInteger)(*env)->GetArrayLength(env, logoBytes)];
+        (*env)->ReleaseByteArrayElements(env, logoBytes, bytes, JNI_ABORT);
+        NSImage *logo = [[NSImage alloc] initWithData:logoData];
+        if (logo == nil || logo.size.width <= 0 || logo.size.height <= 0) {
+            (*env)->ThrowNew(env, (*env)->FindClass(env, "java/io/IOException"),
+                            "Unable to read the GAMA splash logo");
+            return;
+        }
         NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
-            pixelsWide:680 pixelsHigh:520 bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
+            pixelsWide:900 pixelsHigh:560 bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES
             isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:0 bitsPerPixel:0];
         NSGraphicsContext *context = [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmap];
         [NSGraphicsContext saveGraphicsState];
         NSGraphicsContext.currentContext = context;
-        [[NSColor colorWithWhite:0.98 alpha:1] setFill];
-        NSRectFill(NSMakeRect(0, 0, 680, 520));
-        if (illustration != nil && illustration.size.width > 0 && illustration.size.height > 0) {
-            double scale = MIN(1.0, MIN(560.0 / illustration.size.width, 240.0 / illustration.size.height));
-            NSSize size = NSMakeSize(illustration.size.width * scale, illustration.size.height * scale);
-            [illustration drawInRect:NSMakeRect((680 - size.width) / 2, 110 + (240 - size.height) / 2,
-                                               size.width, size.height)];
+        context.imageInterpolation = NSImageInterpolationHigh;
+        [[NSColor colorWithSRGBRed:247.0/255 green:246.0/255 blue:242.0/255 alpha:1] setFill];
+        NSRectFill(NSMakeRect(0, 0, 900, 560));
+        [[NSColor colorWithSRGBRed:227.0/255 green:237.0/255 blue:235.0/255 alpha:1] setFill];
+        NSRectFill(NSMakeRect(330, 0, 570, 560));
+        if (illustration == nil) {
+            [logo drawInRect:topRect(495, 160, 240, 240)];
+        } else {
+            double scale = MAX(570.0 / illustration.size.width, 560.0 / illustration.size.height);
+            NSSize crop = NSMakeSize(570 / scale, 560 / scale);
+            [illustration drawInRect:NSMakeRect(330, 0, 570, 560)
+                fromRect:NSMakeRect((illustration.size.width - crop.width) / 2,
+                                    (illustration.size.height - crop.height) / 2, crop.width, crop.height)
+                operation:NSCompositingOperationSourceOver fraction:1 respectFlipped:NO hints:nil];
         }
-        NSMutableParagraphStyle *paragraph = [NSMutableParagraphStyle new];
-        paragraph.alignment = NSTextAlignmentCenter;
-        paragraph.lineBreakMode = NSLineBreakByTruncatingTail;
-        [title drawInRect:NSMakeRect(30, 450, 620, 35) withAttributes:@{
-            NSFontAttributeName: [NSFont boldSystemFontOfSize:24],
-            NSForegroundColorAttributeName: NSColor.darkGrayColor,
-            NSParagraphStyleAttributeName: paragraph }];
-        [string(env, descriptionValue) drawInRect:NSMakeRect(60, 365, 560, 70) withAttributes:@{
-            NSFontAttributeName: [NSFont systemFontOfSize:14],
-            NSForegroundColorAttributeName: NSColor.darkGrayColor,
-            NSParagraphStyleAttributeName: paragraph }];
-        [@"Opening simulation..." drawInRect:NSMakeRect(30, 55, 620, 22) withAttributes:@{
-            NSFontAttributeName: [NSFont systemFontOfSize:13],
-            NSForegroundColorAttributeName: NSColor.grayColor,
-            NSParagraphStyleAttributeName: paragraph }];
-        [@"Powered by GAMA" drawInRect:NSMakeRect(30, 25, 620, 22) withAttributes:@{
-            NSFontAttributeName: [NSFont systemFontOfSize:13],
-            NSForegroundColorAttributeName: NSColor.grayColor,
-            NSParagraphStyleAttributeName: paragraph }];
+        NSColor *ink = [NSColor colorWithSRGBRed:14.0/255 green:43.0/255 blue:53.0/255 alpha:1];
+        NSColor *muted = [NSColor colorWithSRGBRed:81.0/255 green:105.0/255 blue:112.0/255 alpha:1];
+        NSStringDrawingOptions options = NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading;
+        CGFloat fontSize = 32;
+        NSDictionary *attributes = textAttributes([NSFont boldSystemFontOfSize:fontSize], ink);
+        CGFloat titleHeight = [title boundingRectWithSize:NSMakeSize(274, CGFLOAT_MAX)
+            options:options attributes:attributes].size.height;
+        while (fontSize > 18 && titleHeight > 200) {
+            attributes = textAttributes([NSFont boldSystemFontOfSize:--fontSize], ink);
+            titleHeight = [title boundingRectWithSize:NSMakeSize(274, CGFLOAT_MAX)
+                options:options attributes:attributes].size.height;
+        }
+        titleHeight = MIN(200, ceil(titleHeight));
+        [title drawWithRect:topRect(28, 42, 274, titleHeight)
+            options:options | NSStringDrawingTruncatesLastVisibleLine attributes:attributes];
+        CGFloat descriptionTop = 42 + titleHeight + 20;
+        [normalizedText(string(env, descriptionValue)) drawWithRect:topRect(28, descriptionTop, 274, MIN(120, 364 - descriptionTop))
+            options:options | NSStringDrawingTruncatesLastVisibleLine
+            attributes:textAttributes([NSFont systemFontOfSize:14], muted)];
+        [@"Opening simulation..." drawInRect:topRect(28, 392, 274, 18)
+            withAttributes:textAttributes([NSFont systemFontOfSize:12], muted)];
+        [logo drawInRect:topRect(28, 430, 96, 96)];
+        [@"powered by" drawInRect:topRect(136, 451, 166, 22)
+            withAttributes:textAttributes([NSFont systemFontOfSize:15], muted)];
+        [@"GAMA" drawInRect:topRect(136, 470, 166, 36)
+            withAttributes:textAttributes([NSFont boldSystemFontOfSize:26], ink)];
         [NSGraphicsContext restoreGraphicsState];
         NSData *png = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
         NSError *error = nil;

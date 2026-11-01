@@ -16,7 +16,7 @@ import java.util.Properties;
 public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 
 	private static native String[] startupDocuments(boolean debug);
-	private static native void composeSplash(String image, String title, String description, String output);
+	private static native void composeSplash(String image, String title, String description, byte[] logo, String output);
 	private static native void showError(String message);
 
 	public static void main(final String[] args) { System.exit(new PackageLauncher().run(args)); }
@@ -92,7 +92,7 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 			final String description = System.getProperty("gama.package.description", "");
 			final Path splash = Path.of(System.getProperty("gama.package.content")).resolve("player-splash.png");
 			if (mac) {
-				composeSplash(System.getProperty("gama.package.splash", ""), title, description, splash.toString());
+				composeSplash(System.getProperty("gama.package.splash", ""), title, description, logo(), splash.toString());
 			} else {
 				SplashImage.write(System.getProperty("gama.package.splash", ""), title, description, splash);
 			}
@@ -135,6 +135,13 @@ public final class PackageLauncher extends org.eclipse.equinox.launcher.Main {
 				}
 			}
 			return 1;
+		}
+	}
+
+	static byte[] logo() throws IOException {
+		try (var input = PackageLauncher.class.getResourceAsStream("logo.png")) {
+			if (input == null) throw new IOException("The GAMA splash logo is missing from the launcher");
+			return input.readAllBytes();
 		}
 	}
 

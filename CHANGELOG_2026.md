@@ -19,6 +19,28 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### GitHub Copilot: independent optional integration
+
+Copilot packaging and GAMA-specific integration move to
+[gama.copilot](https://github.com/gama-platform/gama.copilot), with a standalone
+Tycho build, dependency baseline, GitHub Actions publishing and dedicated p2 site
+at <https://gama-platform.org/gama.copilot/>. Copilot is still optional and is not
+included in the default GAMA product.
+
+**Support > Install Copilot...** now uses that site rather than the running GAMA
+release's update repository; subsequent updates use **Support > Check for Updates**.
+License acceptance, trust checks, GitHub sign-in and entitlement requirements remain.
+The installer checks for the GAMA wrapper feature, so an upstream-only Copilot
+installation can also acquire the GAMA integration.
+
+The main Maven reactor no longer builds or publishes `gama.feature.copilot` and
+does not consult the upstream Copilot repository. Copilot-specific startup preferences
+and UI adaptations belong to the standalone integration; generic GAML editor
+extension support stays in GAMA. A new `gama.ui.application.startup` extension
+point runs optional `Runnable` contributions before workspace selection and workbench
+creation. See the [migration notes](MIGRATION_GUIDE_2026.md#optional-copilot-integration-and-pre-workbench-initialization)
+and [installation documentation](.github/SUPPORT.md#installing-optional-diagramming-or-copilot).
+
 ### Benchmark statement: individual durations and optional console output
 
 `benchmark` now accepts `returns:` to declare a temporary `list<float>` containing one

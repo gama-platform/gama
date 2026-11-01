@@ -5,7 +5,10 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-/** JDK-only tests; compile with the launcher's two sources and the Equinox launcher JAR. */
+/**
+ * JDK-only tests; compile with the launcher's two sources and the Equinox launcher JAR.
+ * Include gama/launcher/logo.png on the classpath, as packaged by LauncherInstaller.
+ */
 public final class PackageLauncherTest {
 
 	public static void main(final String[] args) throws Exception {
@@ -33,9 +36,9 @@ public final class PackageLauncherTest {
 				SplashImage.write(path, "A very long title ".repeat(20),
 						"A description with spaces, accents \u00e9 and a second line.\n".repeat(10), output);
 				final var splash = ImageIO.read(output.toFile());
-				check(splash.getWidth() == 680 && splash.getHeight() == 520, "Stable presentation size");
-				check(path.isEmpty() || splash.getRGB(340, 290) == java.awt.Color.RED.getRGB(),
-						"Keep the author's illustration centered without changing its aspect ratio");
+				check(splash.getWidth() == 900 && splash.getHeight() == 560, "Stable presentation size");
+				check(path.isEmpty() || splash.getRGB(615, 280) == java.awt.Color.RED.getRGB(),
+						"Fill the illustration panel without changing the image's aspect ratio");
 			}
 			final var invalid = root.resolve("invalid");
 			Files.writeString(invalid, "not an image");

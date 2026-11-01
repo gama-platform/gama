@@ -11,27 +11,35 @@ GAMA when Eclipse requests it. License and signature checks are not bypassed.
 
 Diagramming installs the GAMA graphical modeling feature, including Graphiti,
 GEF and its EMF dependencies, from the 2026-06 graphical modeling update site.
-Copilot installs the optional `gama.feature.copilot` feature from the running
-GAMA release's update site (or `SNAPSHOT` for development builds), with the
-upstream GitHub Copilot feature and its platform-specific agent. Both installers
+Copilot installs the optional `gama.feature.copilot` feature from its independent
+update site, <https://gama-platform.org/gama.copilot/>, with the upstream GitHub
+Copilot feature, its platform-specific agent and the GAMA integration plug-in. Both installers
 use the Eclipse 2026-03 repository for required platform dependencies.
 Already-installed features are reported rather than reinstalled; use
 **Support > Check for Updates** to update them.
+For Copilot, the installed check uses the GAMA wrapper feature: having only the
+upstream extension installed does not prevent adding the GAMA integration.
 
 These commands cover installation only. GitHub sign-in, Copilot entitlement,
 and graphical/Copilot integration with GAML are separate from installation.
-Before opening the workbench, GAMA seeds Copilot's configuration preferences to
+Before opening the workbench, the optional integration seeds Copilot's configuration preferences to
 skip Quick Start and disable automatic What's New pages. Existing settings are
 preserved; users can re-enable What's New in Copilot's General preferences.
 The Quick Start marker is based on Copilot 0.21 and should be reviewed on upgrades.
 Network, unavailable-feature and dependency-resolution failures are reported;
-they do not trigger installation from another GAMA release.
+they do not trigger installation from another update channel.
 
-For distribution maintainers: build and publish the GAMA update repository
-before distributing these commands, so it contains `gama.feature.copilot`.
-The Copilot wrapper includes the upstream feature rather than duplicating its
-platform-specific plug-in list. The p2 repository build includes transitive
-dependencies so users do not need to locate additional downloads manually.
+Copilot packaging, dependency baselines, publishing and integration-specific issues
+are maintained in [gama.copilot](https://github.com/gama-platform/gama.copilot).
+The feature is no longer built or published by GAMA's Maven reactor.
+Use that repository's documented build to publish Copilot updates independently.
+The wrapper includes the upstream feature rather than duplicating its
+platform-specific plug-in list.
+
+For distribution maintainers: the Copilot update site must be published before
+distributing the installer command. Its integration uses the
+`gama.ui.application.startup` extension point for pre-workbench preference setup;
+generic GAML editor extension support remains in GAMA.
 Rebuild and publish the graphical modeling repository as well to apply its
 transitive-dependency packaging setting. These baselines must be reviewed when
 GAMA moves to a different Eclipse release or graphical modeling update channel.

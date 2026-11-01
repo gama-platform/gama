@@ -32,6 +32,25 @@ See [Developing GAMA](https://github.com/gama-platform/gama/wiki/developingGAMA)
 the codebase map and Maven build commands. Eclipse and the annotation processor can run on Java 21;
 GAMA itself compiles for and launches with Java 25.
 
+### Optional GitHub Copilot integration
+
+GitHub Copilot is maintained separately in
+[gama.copilot](https://github.com/gama-platform/gama.copilot), with its own dependency
+baseline, build workflow and p2 update site: <https://gama-platform.org/gama.copilot/>.
+It is not bundled with GAMA or built by this repository's Maven reactor.
+In a packaged installation, choose **Support > Install Copilot...**, review the
+licenses and trust prompts, then restart when requested. Use **Support > Check for
+Updates** for subsequent updates. GitHub sign-in and a Copilot entitlement are
+managed by the upstream extension.
+
+See the [installation and maintainer notes](.github/SUPPORT.md#installing-optional-diagramming-or-copilot)
+and the standalone repository's README for dependencies and source builds.
+Report GAMA-specific Copilot packaging and integration problems in
+[gama.copilot's issue tracker](https://github.com/gama-platform/gama.copilot/issues);
+general GAML editor problems remain in this repository.
+
+### Source-launch initialization failures
+
 If the mandatory `gama.api` or `gama.core` generated `GamlAdditions` cannot be loaded, constructed or initialized,
 GAMA terminates the JVM with process exit status **42** (`GamaBundleLoader.EXIT_GAML_INITIALIZATION_FAILED`).
 This includes missing generated classes, incompatible classes/methods, and linkage or static-initializer failures

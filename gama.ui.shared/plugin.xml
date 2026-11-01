@@ -49,16 +49,6 @@
       <activityPatternBinding
             activityId="disabled"
             isEqualityPattern="true"
-            pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.ui.statusBar">
-      </activityPatternBinding>
-      <activityPatternBinding
-            activityId="disabled"
-            isEqualityPattern="true"
-            pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.commands.showStatusBarMenu">
-      </activityPatternBinding>
-      <activityPatternBinding
-            activityId="disabled"
-            isEqualityPattern="true"
             pattern="org.eclipse.ui.ide.application/org.eclipse.ui.projectConfigure">
       </activityPatternBinding>
       <activityPatternBinding

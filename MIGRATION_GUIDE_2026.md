@@ -65,10 +65,46 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | New **OpenGL 4.1** display plugin (`gama.ui.display.opengl4`) | Modern shader-based rendering; legacy OpenGL 2 pipeline removed |
 | New **launching overlay** | Visual improvement only, no code changes needed |
 | Improved **concurrency** support | Internal threading improved; some scheduling APIs changed |
+| **Copilot integration extracted** to `gama.copilot` | Install from its dedicated p2 site; no Copilot feature/module in the core reactor |
 
 ---
 
 # Part 1: What's New and Why It Matters
+
+## Optional Copilot integration and pre-workbench initialization
+
+GitHub Copilot remains optional, but its wrapper feature, integration plug-in,
+dependency documentation and publishing workflow now belong to
+[gama.copilot](https://github.com/gama-platform/gama.copilot). Packaged GAMA installs
+`gama.feature.copilot` through **Support > Install Copilot...**, using the dedicated
+p2 site <https://gama-platform.org/gama.copilot/>; use **Support > Check for Updates**
+after installation. Review the normal license and trust prompts. GitHub sign-in and
+Copilot entitlement are still handled by the upstream extension.
+
+**Build migration:** remove references to the former core `gama.feature.copilot`
+directory and `-Pcopilot` profile from custom build scripts. Build the standalone
+repository using its documented Maven procedure. Custom products that explicitly
+include `gama.feature.copilot` must resolve it from the dedicated p2 site rather
+than expecting a feature module in the core reactor. Ordinary GAMA builds have no
+Copilot dependency. Generic GAML editor support for external providers remains in
+the core repository; report integration-specific issues in the standalone tracker.
+
+**Optional integration API:** `gama.ui.application.startup` accepts contributions
+of the following form:
+
+```xml
+<extension point="gama.ui.application.startup">
+   <startup class="example.integration.StartupPreferences"/>
+</extension>
+```
+
+The class must implement `java.lang.Runnable` and have a public no-argument
+constructor. GAMA invokes it synchronously on the UI thread after creating the
+display, before workspace selection or workbench creation. Keep initialization
+brief and independent of contribution order; do not access the workspace or
+workbench at this stage. Contribution failures are logged without preventing other
+contributions from running. The Copilot integration uses this hook to seed its
+configuration preferences without overwriting existing user settings.
 
 ## 1. JDK 25 & Eclipse 2026-03
 

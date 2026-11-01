@@ -43,8 +43,7 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 
 	private static final String PLUGIN_ID = "gama.ui.navigator";
 	private static final URI ECLIPSE_REPOSITORY = URI.create("https://download.eclipse.org/releases/2026-03/");
-	private static final URI COPILOT_REPOSITORY = URI.create(
-			"https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
+	private static final URI COPILOT_REPOSITORY = URI.create("https://gama-platform.org/gama.copilot/");
 	private static final URI GRAPHICAL_REPOSITORY =
 			URI.create("https://updates.gama-platform.org/plugin/2026-06/gama.graphical.modeling/");
 	private static final AtomicBoolean INSTALLING = new AtomicBoolean();
@@ -78,9 +77,12 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 						ui.getSession().getProvisioningAgent().getService(IProfileRegistry.class);
 				final IProfile profile = registry == null ? null : registry.getProfile(ui.getProfileId());
 				if (profile == null) return error("The GAMA installation profile is unavailable.");
-				final String installedId = graphical ? featureId
-						: "com.microsoft.copilot.eclipse.feature.feature.group";
-				if (!profile.query(QueryUtil.createIUQuery(installedId), progress.split(5)).isEmpty()) {
+				final URI source = graphical ? GRAPHICAL_REPOSITORY : COPILOT_REPOSITORY;
+				final URI[] repositories = { source, ECLIPSE_REPOSITORY };
+				for (final URI repository : repositories) {
+					ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
+				}
+				if (!profile.query(QueryUtil.createIUQuery(featureId), progress.split(5)).isEmpty()) {
 					display.asyncExec(() -> {
 						try {
 							if (!shell.isDisposed()) {
@@ -94,21 +96,6 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 					return Status.OK_STATUS;
 				}
 
-				final URI source;
-				final URI[] repositories;
-				if (graphical) {
-					source = GRAPHICAL_REPOSITORY;
-					repositories = new URI[] { source, ECLIPSE_REPOSITORY };
-				} else {
-					// Release packaging sets gama.version; development builds use the snapshot channel.
-					final String version = System.getProperty("gama.version", "SNAPSHOT");
-					final String channel = version.endsWith("-SNAPSHOT") ? "SNAPSHOT" : version;
-					source = URI.create("https://updates.gama-platform.org/" + channel + "/");
-					repositories = new URI[] { source, COPILOT_REPOSITORY, ECLIPSE_REPOSITORY };
-				}
-				for (final URI repository : repositories) {
-					ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
-				}
 				final var repository = ui.loadMetadataRepository(source, false, progress.split(40));
 				final var matches = repository.query(
 						QueryUtil.createLatestQuery(QueryUtil.createIUQuery(featureId)), progress.split(5));

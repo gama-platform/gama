@@ -59,6 +59,8 @@ public final class LauncherInstaller {
 					source.resolve("src/gama/launcher/PackageLauncher.java").toString(),
 					source.resolve("src/gama/launcher/SplashImage.java").toString());
 			if (code != 0) throw new IOException("Unable to compile the package launcher");
+			Files.copy(source.resolve("../../gama.ui.application/icons/window/icon256@2x.png"),
+					classes.resolve("gama/launcher/logo.png"));
 			final var manifest = new Manifest();
 			final var attributes = manifest.getMainAttributes();
 			attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");

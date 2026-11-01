@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="gama.ui.application" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appinfo>
+         <meta.schema plugin="gama.ui.application" id="startup" name="Pre-workbench initialization"/>
+      </appinfo>
+      <documentation>
+         Optional integrations can initialize preferences before the workbench opens.
+         Contributions run once per application start, synchronously on the UI thread after
+         the display is created and before workspace selection. They must not access the
+         workbench or workspace. Execution order is unspecified; contributions must be
+         independent and brief. Failures are logged without preventing other contributions.
+      </documentation>
+   </annotation>
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="startup" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+   <element name="startup">
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>A public, no-argument implementation of java.lang.Runnable.</documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":java.lang.Runnable"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+</schema>

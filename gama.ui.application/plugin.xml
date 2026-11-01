@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="startup" name="Pre-workbench initialization" schema="schema/startup.exsd"/>
    <extension point="gama.standard.distribution">
    </extension>
 

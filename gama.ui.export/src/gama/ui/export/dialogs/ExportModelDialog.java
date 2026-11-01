@@ -175,12 +175,14 @@ public class ExportModelDialog extends TitleAreaDialog {
 	}
 
 	private void createImageSection(final Composite container) {
+		final String imageHint = "Choose an image for the Home screen"
+				+ (format == Format.PACKAGE ? " and splash screen (center-cropped, not stretched)" : "");
 		final Button browse = new Button(container, SWT.PUSH);
 		browse.setText("Image (optional)");
 		final GridData data = new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 2);
 		data.widthHint = data.heightHint = 104;
 		browse.setLayoutData(data);
-		browse.setToolTipText("Choose an image for the Home screen");
+		browse.setToolTipText(imageHint);
 		browse.addDisposeListener(event -> {
 			if (imagePreview != null) imagePreview.dispose();
 		});
@@ -195,7 +197,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 			imagePreview = null;
 			imagePath = "";
 			browse.setText("Image (optional)");
-			browse.setToolTipText("Choose an image for the Home screen");
+			browse.setToolTipText(imageHint);
 			remove.setEnabled(false);
 		});
 		browse.addListener(SWT.Selection, event -> {
@@ -211,7 +213,9 @@ public class ExportModelDialog extends TitleAreaDialog {
 						Math.max(1, (int) Math.round(original.height * scale))));
 				browse.setImage(preview);
 				browse.setText("");
-				browse.setToolTipText(selected + "\nClick to change; right-click to remove.");
+				browse.setToolTipText(selected
+						+ (format == Format.PACKAGE ? "\nThe splash screen center-crops the image without stretching." : "")
+						+ "\nClick to change; right-click to remove.");
 				if (imagePreview != null) imagePreview.dispose();
 				imagePreview = preview;
 				imagePath = selected;
