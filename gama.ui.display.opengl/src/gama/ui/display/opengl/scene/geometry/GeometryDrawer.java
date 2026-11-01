@@ -167,6 +167,11 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 					} else {
 						drawPolygon((Polygon) geom, border, true, true);
 					}
+				} else if (geom instanceof GeometryCollection gc) {
+					for (int i = 0; i < gc.getNumGeometries(); i++) {
+						final Geometry sub = gc.getGeometryN(i);
+						drawGeometry(sub, border, height, getTypeOf(sub));
+					}
 				}
 				break;
 			case LINESTRING:

@@ -16,6 +16,7 @@ import static gama.api.utils.geometry.GeometryUtils.getTypeOf;
 import static gama.api.utils.geometry.GeometryUtils.getYNegatedCoordinates;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 
 import gama.api.types.color.GamaColorFactory;
@@ -164,6 +165,11 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 						drawPolyhedron((Polygon) geom, height, border);
 					} else {
 						drawPolygon((Polygon) geom, border, true, true);
+					}
+				} else if (geom instanceof GeometryCollection gc) {
+					for (int i = 0; i < gc.getNumGeometries(); i++) {
+						final Geometry sub = gc.getGeometryN(i);
+						drawGeometry(sub, border, height, getTypeOf(sub));
 					}
 				}
 				break;
