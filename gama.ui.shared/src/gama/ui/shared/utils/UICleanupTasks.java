@@ -555,7 +555,14 @@ public class UICleanupTasks {
 							new Object[] { element });
 				}
 			}
-
+			r = (AbstractExtensionWizardRegistry) workbench.getImportWizardRegistry();
+			cats.clear();
+			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
+			for (final IWizardDescriptor wizard : getAllWizards(cats.toArray(new IWizardCategory[0]))) {
+				final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
+				r.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
+						new Object[] { element });
+			}
 		}
 
 		/**

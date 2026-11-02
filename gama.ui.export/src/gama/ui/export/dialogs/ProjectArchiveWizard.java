@@ -26,21 +26,24 @@ import gama.ui.export.commands.ImportProject;
 public class ProjectArchiveWizard extends Wizard implements IImportWizard, IExportWizard {
 
 	public static final class Import extends ProjectArchiveWizard {
-		public Import() { super(true); }
+		public Import() { this(""); }
+		public Import(final String group) { super(true, group); }
 	}
 
 	public static final class Export extends ProjectArchiveWizard {
-		public Export() { super(false); }
+		public Export() { super(false, ""); }
 	}
 
 	private final boolean importing;
+	private final String group;
 	private IWorkbench workbench;
 	private IProject selected;
 	private Text archive;
 	private Combo projects;
 
-	protected ProjectArchiveWizard(final boolean importing) {
+	protected ProjectArchiveWizard(final boolean importing, final String group) {
 		this.importing = importing;
+		this.group = group;
 		setWindowTitle(importing ? "Import GAMA project (.gamp or .zip)" : "Export GAMA project");
 	}
 
@@ -86,7 +89,7 @@ public class ProjectArchiveWizard extends Wizard implements IImportWizard, IExpo
 
 	@Override public boolean performFinish() {
 		if (importing) {
-			try { return ImportProject.open(java.nio.file.Path.of(archive.getText().trim()), ""); }
+			try { return ImportProject.open(java.nio.file.Path.of(archive.getText().trim()), group); }
 			catch (final java.nio.file.InvalidPathException e) {
 				((WizardPage) getContainer().getCurrentPage()).setErrorMessage(e.getMessage());
 				return false;

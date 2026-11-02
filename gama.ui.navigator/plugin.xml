@@ -35,6 +35,15 @@
             id="gama.ui.update"
             name="Check for updates">
       </command>
+      <command
+            categoryId="gama.category"
+            id="gama.ui.navigator.chooseFileImport"
+            name="Import individual file">
+      </command>
+   </extension>
+   <extension point="org.eclipse.ui.handlers">
+      <handler commandId="gama.ui.navigator.chooseFileImport"
+            class="gama.ui.navigator.commands.ChooseFileImportHandler"/>
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution
@@ -304,78 +313,17 @@
                label="Import..."
                mnemonic=" ">
             <command
-                  commandId="gama.ui.export.importProject"
+                  commandId="gama.ui.export.chooseProjectImport"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
-                  label="Project (.gamp or .zip)..."
+                  label="Project..."
                   style="push">
-               <visibleWhen
-                     checkEnabled="false">
-                  <with
-                        variable="selection">
-                     <iterate
-                           ifEmpty="true"
-                           operator="and">
-                        <or>
-                           <instanceof
-                                 value="gama.ui.navigator.view.contents.UserProjectsFolder">
-                           </instanceof>
-                           <instanceof value="gama.ui.navigator.view.contents.UserGroupFolder"/>
-                        </or>
-                     </iterate>
-                  </with>
-               </visibleWhen>
             </command>
             <command
-                  commandId="org.eclipse.ui.file.import"
+                  commandId="gama.ui.navigator.chooseFileImport"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.disk.svg"
-                  label="From disk..."
-                  style="push">
-               <parameter
-                     name="importWizardId"
-                     value="gama.ui.import.ExternalFile">
-               </parameter>
-            </command>
-            <command
-                  commandId="org.eclipse.ui.file.import"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
-                  label="From archive..."
-                  style="push">
-               <parameter
-                     name="importWizardId"
-                     value="gama.ui.import.ZipFile">
-               </parameter>
-            </command>
-            <separator
-                  name="gama.application.separator1"
-                  visible="true">
-            </separator>
-            <command
-                  commandId="org.eclipse.ui.file.import"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.import.svg"
-                  label="Other..."
+                  label="Individual file..."
                   style="push">
             </command>
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="selection">
-                  <iterate
-                        ifEmpty="true"
-                        operator="and">
-                     <or>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.WrappedProject">
-                        </instanceof>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.WrappedFolder">
-                        </instanceof>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.UserProjectsFolder">
-                        </instanceof>
-                     </or>
-                  </iterate>
-               </with>
-            </visibleWhen>
          </menu>
          <separator
                name="gama.ui.gamaNavigator.separator1"
@@ -915,34 +863,6 @@ properties="cbready"
 type="java.lang.Object">
 </propertyTester>
 </extension>
-    <extension
-          point="org.eclipse.ui.importWizards">
-       <wizard
-             category="gama.ui.wizards.GAMA"
-             class="gama.ui.navigator.wizards.ImportProjectWizard"
-             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
-             id="gama.ui.import.DirectoryProject"
-             name="Existing project folder (advanced)">
-       </wizard>
-       <wizard
-             category="gama.ui.wizards.GAMA"
-             class="gama.ui.navigator.wizards.FileImportWizard"
-             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.disk.svg"
-             id="gama.ui.import.ExternalFile"
-             name="External files from disk">
-       </wizard>
-       <wizard
-             category="gama.ui.wizards.GAMA"
-             class="gama.ui.navigator.wizards.ZipImportWizard"
-             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
-             id="gama.ui.import.ZipFile"
-             name="External files from archive">
-       </wizard>
-       <category
-             id="gama.ui.wizards.GAMA"
-             name="GAMA">
-       </category>
-    </extension>
     <extension
           point="org.eclipse.ui.navigator.linkHelper">
        <linkHelper

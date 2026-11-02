@@ -195,6 +195,7 @@ public class GamaActionBarAdvisor extends ActionBarAdvisor {
 		}
 
 		menu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+		menu.add(new GroupMarker("gama.import"));
 		menu.add(new Separator());
 
 		menu.add(closeAction);

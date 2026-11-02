@@ -66,12 +66,13 @@
    </extension>
    <extension point="org.eclipse.ui.commands">
       <command id="gama.ui.export.exportProject" name="Export as GAMA project" categoryId="gama.category"/>
+      <command id="gama.ui.export.chooseProjectImport" name="Import project" categoryId="gama.category"/>
       <command id="gama.ui.export.importProject" name="Import GAMA project (.gamp or .zip)" categoryId="gama.category">
          <commandParameter id="gama.ui.export.projectPath" name="Project archive path" optional="true"/>
          <commandParameter id="gama.ui.export.projectGroup" name="Navigator group" optional="true"/>
       </command>
       <command id="gama.ui.export.playSelection" name="Play" categoryId="gama.category"/>
-      <command id="gama.ui.export.openPackage" name="Play exported model" categoryId="gama.category">
+      <command id="gama.ui.export.openPackage" name="Play model" categoryId="gama.category">
          <commandParameter id="gama.ui.export.packagePath" name="Playable model path" optional="true"/>
       </command>
       <command id="gama.ui.export.model" name="Export as playable model" categoryId="gama.category"/>
@@ -142,6 +143,7 @@
       <handler commandId="gama.ui.export.exportProject" class="gama.ui.export.commands.ExportProject">
          <enabledWhen><reference definitionId="gama.ui.export.isProjectSelection"/></enabledWhen>
       </handler>
+      <handler commandId="gama.ui.export.chooseProjectImport" class="gama.ui.export.commands.ChooseProjectImportHandler"/>
       <handler commandId="gama.ui.export.importProject" class="gama.ui.export.commands.ImportProject"/>
       <handler commandId="gama.ui.export.playSelection" class="gama.ui.export.commands.OpenSimulationPackage">
          <enabledWhen><reference definitionId="gama.ui.export.isPlayableArchive"/></enabledWhen>
@@ -160,12 +162,18 @@
       </handler>
    </extension>
    <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:file?after=gama.import">
+         <separator name="gama.ui.export.import.separator" visible="true"/>
+         <menu id="gama.ui.export.importMenu" label="Import..." mnemonic=" "
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.import.svg">
+            <command commandId="gama.ui.export.chooseProjectImport" label="Project..."
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"/>
+            <command commandId="gama.ui.navigator.chooseFileImport" label="Individual file..."
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.disk.svg"/>
+         </menu>
+      </menuContribution>
       <menuContribution locationURI="menu:file?after=additions">
-         <command commandId="gama.ui.export.importProject" label="Import GAMA project (.gamp or .zip)..."
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg">
-            <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
-         </command>
-         <command commandId="gama.ui.export.openPackage" label="Play exported model..."
+         <command commandId="gama.ui.export.openPackage" label="Play model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.play.svg"
                tooltip="Choose an external .gamx file to play without importing it into the workspace">
             <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
@@ -196,11 +204,6 @@
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isProjectSelection"/></visibleWhen>
          </command>
       </menuContribution>
-   </extension>
-   <extension point="org.eclipse.ui.importWizards">
-      <wizard category="gama.ui.wizards.GAMA" class="gama.ui.export.dialogs.ProjectArchiveWizard$Import"
-            id="gama.ui.import.ExternalProject" name="GAMA project archive (.gamp or .zip)"
-            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"/>
    </extension>
    <extension point="org.eclipse.ui.exportWizards">
       <wizard category="gama.ui.wizards.GAMA" class="gama.ui.export.dialogs.ProjectArchiveWizard$Export"
