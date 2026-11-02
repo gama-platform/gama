@@ -497,7 +497,7 @@ public class SpatialTransformations {
 	 * of the matrix is then applied). The predefined properties of the shape (depth, 3D type: sphere, cone, etc.) are
 	 * kept, adapted to the transformation, or lost when the transformation is not compatible with them (shear).
 	 */
-	private static IShape applyMatrix(final IShape g, final double[][] m) {
+	private static IShape applyMatrix(final IScope scope, final IShape g, final double[][] m) {
 		if (g == null) return null;
 		final IShape result = GamaShapeFactory.createFrom(g);
 		final Geometry geom = result.getInnerGeometry();
@@ -506,7 +506,8 @@ public class SpatialTransformations {
 		result.copyShapeAttributesFrom(g);
 		final IEnvelope env = g.getEnvelope();
 		final double px = (env.getMinX() + env.getMaxX()) / 2, py = (env.getMinY() + env.getMaxY()) / 2;
-		final double pz = Double.isNaN(g.getLocation().getZ()) ? 0 : g.getLocation().getZ();
+		final IPoint location = requireLocation(scope, g);
+		final double pz = Double.isNaN(location.getZ()) ? 0 : location.getZ();
 		geom.apply((final Coordinate c) -> {
 			final double x = c.x - px, y = c.y - py, z = (Double.isNaN(c.z) ? 0 : c.z) - pz;
 			final double nx = m[0][0] * x + m[0][1] * y + m[0][2] * z + m[0][3] + px;
@@ -524,6 +525,12 @@ public class SpatialTransformations {
 		}
 		if (isShear(m)) { result.losePredefinedProperty(); }
 		return result;
+	}
+
+	private static IPoint requireLocation(final IScope scope, final IShape shape) {
+		final IPoint location = shape.getLocation();
+		if (location == null) throw GamaRuntimeException.error("The shape location must not be nil", scope);
+		return location;
 	}
 
 	private static boolean isShear(final double[][] m) {
@@ -686,7 +693,7 @@ public class SpatialTransformations {
 	@no_test
 	public static IShape transformed_by(final IScope scope, final IShape g, final IMatrix<?> matrix) {
 		if (g == null) return null;
-		return applyMatrix(g, toHomogeneous(scope, matrix));
+		return applyMatrix(scope, g, toHomogeneous(scope, matrix));
 	}
 
 	@operator (
@@ -702,7 +709,7 @@ public class SpatialTransformations {
 			see = { "vertical_flip", "rotated_by" })
 	@test ("horizontal_flip(polyline([{0,0},{10,0},{10,5}])).points[0] = {10,0}")
 	public static IShape horizontal_flip(final IScope scope, final IShape g) {
-		return applyMatrix(g, H_FLIP);
+		return applyMatrix(scope, g, H_FLIP);
 	}
 
 	@operator (
@@ -718,7 +725,7 @@ public class SpatialTransformations {
 			see = { "horizontal_flip", "rotated_by" })
 	@test ("vertical_flip(polyline([{0,0},{10,0},{10,5}])).points[0] = {0,5}")
 	public static IShape vertical_flip(final IScope scope, final IShape g) {
-		return applyMatrix(g, V_FLIP);
+		return applyMatrix(scope, g, V_FLIP);
 	}
 
 	/**
@@ -875,9 +882,11 @@ public class SpatialTransformations {
 	@no_test
 	public static IShape rotated_by(final IScope scope, final IShape g1, final Double rotation, final IPoint vector) {
 		if (g1 == null) return null;
+		if (vector == null) throw GamaRuntimeException.error("The rotation axis must not be nil", scope);
+		SpatialCommon.requireFinite(scope, rotation, "The rotation angle");
 		if (vector.getX() == 0d && vector.getY() == 0d && vector.getZ() == 0d) return g1;
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(vector, rotation))
-				.withLocation(g1.getLocation());
+				.withLocation(requireLocation(scope, g1));
 	}
 
 	/**
@@ -904,6 +913,8 @@ public class SpatialTransformations {
 		if (p1 == null) return null;
 		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
 				.cast(scope, rotation, null, false);
+		if (rot == null || rot.key() == null || rot.value() == null)
+			throw GamaRuntimeException.error("The rotation must contain a non-nil angle and axis", scope);
 		final IPoint p2 = GamaPointFactory.create(p1);
 		new Rotation3D(rot.value(), Math.PI / 180.0 * rot.key()).applyTo(p2);
 		return p2;
@@ -936,8 +947,10 @@ public class SpatialTransformations {
 		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
 				.cast(scope, rotation, null, false);
 		if (g1 == null || rot == null) return null;
+		if (rot.key() == null || rot.value() == null)
+			throw GamaRuntimeException.error("The rotation must contain a non-nil angle and axis", scope);
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(rot.value(), rot.key()))
-				.withLocation(g1.getLocation());
+				.withLocation(requireLocation(scope, g1));
 	}
 
 	/**
@@ -999,6 +1012,7 @@ public class SpatialTransformations {
 	@no_test
 	public static IShape transformed_by(final IScope scope, final IShape g, final IPoint p) {
 		if (g == null) return null;
+		if (p == null) throw GamaRuntimeException.error("The transformation vector must not be nil", scope);
 		return scaled_by(scope, rotated_by(scope, g, p.getX()), p.getY());
 	}
 
@@ -1027,7 +1041,8 @@ public class SpatialTransformations {
 	})
 	public static IShape translated_by(final IScope scope, final IShape g, final IPoint p) throws GamaRuntimeException {
 		if (g == null) return null;
-		return at_location(scope, g, g.getLocation().plus(p));
+		if (p == null) throw GamaRuntimeException.error("The translation vector must not be nil", scope);
+		return at_location(scope, g, requireLocation(scope, g).plus(p));
 	}
 
 	/**

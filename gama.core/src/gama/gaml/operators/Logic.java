@@ -491,7 +491,7 @@ public class Logic {
 	public static Object iff(final IScope scope, final Boolean left, final IExpression right)
 			throws GamaRuntimeException {
 		final IOperator expr = (IOperator) right;
-		return left ? expr.arg(0).value(scope) : expr.arg(1).value(scope);
+		return Boolean.TRUE.equals(left) ? expr.arg(0).value(scope) : expr.arg(1).value(scope);
 	}
 
 	/**

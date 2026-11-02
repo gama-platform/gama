@@ -9,19 +9,7 @@
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import static gama.api.utils.geometry.GeometryUtils.getFirstPointOf;
-import static gama.api.utils.geometry.GeometryUtils.getLastPointOf;
-import static gama.api.utils.geometry.GeometryUtils.getPointsOf;
-import static org.apache.commons.lang3.ArrayUtils.contains;
-import static org.apache.commons.lang3.ArrayUtils.indexOf;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-
-import org.locationtech.jts.algorithm.Distance;
-import org.locationtech.jts.geom.Coordinate;
 
 import gama.annotations.action;
 import gama.annotations.arg;
@@ -34,7 +22,6 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
-import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -42,7 +29,6 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
@@ -56,9 +42,6 @@ import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
 import gama.api.types.topology.GamaTopologyFactory;
 import gama.api.types.topology.ITopology;
-import gama.api.utils.collections.Collector;
-import gama.api.utils.interfaces.IAgentFilter;
-import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.topology.graph.GraphTopology;
 import gama.core.topology.grid.GamaSpatialMatrix;
@@ -68,43 +51,49 @@ import gama.core.util.path.GamaSpatialPath;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialPunctal;
-import gama.gaml.operators.spatial.SpatialRelations;
 
 /**
  * MovingSkill - Core skill providing movement capabilities for GAMA agents.
- * 
- * <p>This skill defines the fundamental behaviors required for agent movement across different topologies
- * including continuous space, graphs, and grids. It provides four main movement actions:</p>
- * 
+ *
+ * <p>
+ * This skill defines the fundamental behaviors required for agent movement across different topologies including
+ * continuous space, graphs, and grids. It provides four main movement actions:
+ * </p>
+ *
  * <ul>
- *   <li><b>wander</b>: Random movement with optional bounds and amplitude constraints</li>
- *   <li><b>move</b>: Simple forward movement in the current heading direction</li>
- *   <li><b>follow</b>: Movement along a predefined path</li>
- *   <li><b>goto</b>: Goal-directed movement with automatic pathfinding</li>
+ * <li><b>wander</b>: Random movement with optional bounds and amplitude constraints</li>
+ * <li><b>move</b>: Simple forward movement in the current heading direction</li>
+ * <li><b>follow</b>: Movement along a predefined path</li>
+ * <li><b>goto</b>: Goal-directed movement with automatic pathfinding</li>
  * </ul>
- * 
+ *
  * <h3>Managed Attributes</h3>
- * <p>The skill maintains several attributes for each agent:</p>
+ * <p>
+ * The skill maintains several attributes for each agent:
+ * </p>
  * <ul>
- *   <li><b>location</b>: Current position (IPoint)</li>
- *   <li><b>speed</b>: Desired speed in meters/second</li>
- *   <li><b>real_speed</b>: Actual speed achieved in last move</li>
- *   <li><b>heading</b>: Direction in degrees (0-360)</li>
- *   <li><b>current_path</b>: Active path being followed</li>
- *   <li><b>current_edge</b>: Current edge on graph/path</li>
+ * <li><b>location</b>: Current position (IPoint)</li>
+ * <li><b>speed</b>: Desired speed in meters/second</li>
+ * <li><b>real_speed</b>: Actual speed achieved in last move</li>
+ * <li><b>heading</b>: Direction in degrees (0-360)</li>
+ * <li><b>current_path</b>: Active path being followed</li>
+ * <li><b>current_edge</b>: Current edge on graph/path</li>
  * </ul>
- * 
+ *
  * <h3>Architecture</h3>
- * <p>Path movement operations are delegated to {@link PathMovementHelper} for improved modularity.
- * Movement attributes are centralized in the {@link MovementAttributes} inner class.</p>
- * 
+ * <p>
+ * Path movement operations are delegated to {@link PathMovementHelper} for improved modularity. Movement attributes are
+ * centralized in the {@link MovementAttributes} inner class.
+ * </p>
+ *
  * <h3>Usage Example</h3>
+ *
  * <pre>
  * species my_agent skills: [moving] {
  *     reflex move_around {
  *         do wander amplitude: 90.0 speed: 2.0;
  *     }
- *     
+ *
  *     reflex go_home when: hungry {
  *         do goto target: home speed: 5.0 on: road_network;
  *     }
@@ -155,22 +144,22 @@ import gama.gaml.operators.spatial.SpatialRelations;
 public class MovingSkill extends Skill {
 
 	/**
-	 * Inner class to centralize movement-related attribute names and management.
-	 * This provides a single source of truth for all attribute keys used in movement.
+	 * Inner class to centralize movement-related attribute names and management. This provides a single source of truth
+	 * for all attribute keys used in movement.
 	 */
 	protected static class MovementAttributes {
 		/** Attribute key for storing the current path */
 		public static final String CURRENT_PATH = "current_path";
-		
+
 		/** Attribute key for storing the current edge */
 		public static final String CURRENT_EDGE = "current_edge";
-		
+
 		/** Attribute key for storing the index on the path */
 		public static final String INDEX_ON_PATH = "index_on_path";
-		
+
 		/** Attribute key for storing the segment index on the path */
 		public static final String INDEX_ON_PATH_SEGMENT = "index_on_path_segment";
-		
+
 		/** Attribute key for storing the reverse direction flag */
 		public static final String REVERSE = "reverse";
 	}
@@ -416,21 +405,23 @@ public class MovingSkill extends Skill {
 	public void setCurrentEdge(final IAgent agent, final IGraph graph) {
 		if (graph != null) {
 			final Integer index = (Integer) agent.getAttribute(MovementAttributes.INDEX_ON_PATH);
-			if (index < graph.getEdges().size()) { 
-				agent.setAttribute(MovementAttributes.CURRENT_EDGE, graph.getEdges().get(index)); 
+			if (index < graph.getEdges().size()) {
+				agent.setAttribute(MovementAttributes.CURRENT_EDGE, graph.getEdges().get(index));
 			}
 		}
 	}
 
 	/**
-	 * Computes a new heading from the current heading with random amplitude variation.
-	 * The new heading is calculated by adding a random value within [-amplitude/2, amplitude/2] 
-	 * to the current heading, creating a wandering behavior.
-	 * 
-	 * @param scope the execution scope
-	 * @param agent the agent whose heading is being computed
+	 * Computes a new heading from the current heading with random amplitude variation. The new heading is calculated by
+	 * adding a random value within [-amplitude/2, amplitude/2] to the current heading, creating a wandering behavior.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent whose heading is being computed
 	 * @return the new heading value in degrees
-	 * @throws GamaRuntimeException if computation fails
+	 * @throws GamaRuntimeException
+	 *             if computation fails
 	 */
 	protected double computeHeadingFromAmplitude(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final double ampl = scope.hasArg("amplitude") ? scope.getFloatArg("amplitude") : 359;
@@ -439,14 +430,16 @@ public class MovingSkill extends Skill {
 	}
 
 	/**
-	 * Computes the heading for an agent's movement.
-	 * If a heading argument is provided in the scope, it updates the agent's heading.
-	 * Otherwise, returns the agent's current heading.
+	 * Computes the heading for an agent's movement. If a heading argument is provided in the scope, it updates the
+	 * agent's heading. Otherwise, returns the agent's current heading.
 	 *
-	 * @param scope the execution scope
-	 * @param agent the agent whose heading is being computed
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent whose heading is being computed
 	 * @return the heading value in degrees (0-360)
-	 * @throws GamaRuntimeException if computation fails
+	 * @throws GamaRuntimeException
+	 *             if computation fails
 	 */
 	protected double computeHeading(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final Double heading = scope.hasArg(IKeyword.HEADING) ? scope.getFloatArg(IKeyword.HEADING) : null;
@@ -455,16 +448,18 @@ public class MovingSkill extends Skill {
 	}
 
 	/**
-	 * Computes the maximum distance an agent can travel in the current step.
-	 * The distance is calculated by multiplying the agent's speed (from argument or attribute)
-	 * by the simulation timestep duration in seconds.
-	 * 
+	 * Computes the maximum distance an agent can travel in the current step. The distance is calculated by multiplying
+	 * the agent's speed (from argument or attribute) by the simulation timestep duration in seconds.
+	 *
 	 * Note: The agent's speed attribute is not modified; only the movement primitive is affected.
 	 *
-	 * @param scope the execution scope
-	 * @param agent the agent whose travel distance is being computed
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent whose travel distance is being computed
 	 * @return the maximum distance the agent can travel in meters
-	 * @throws GamaRuntimeException if computation fails
+	 * @throws GamaRuntimeException
+	 *             if computation fails
 	 */
 	protected Double computeDistance(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		// We do not change the speed of the agent anymore. Only the current
@@ -478,32 +473,34 @@ public class MovingSkill extends Skill {
 	}
 
 	/**
-	 * Extracts the target shape from the scope arguments.
-	 * The target can be any IShape (geometry, agent, location).
+	 * Extracts the target shape from the scope arguments. The target can be any IShape (geometry, agent, location).
 	 *
-	 * @param scope the execution scope
-	 * @param agent the agent for which the target is computed
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent for which the target is computed
 	 * @return the target shape or null if not found
-	 * @throws GamaRuntimeException if target extraction fails
+	 * @throws GamaRuntimeException
+	 *             if target extraction fails
 	 */
 	protected IShape computeTarget(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final Object target = scope.getArg("target", IType.NONE);
 		IShape result = null;
-		if (target instanceof IShape) {
-			result = (IShape) target;
-		}
+		if (target instanceof IShape) { result = (IShape) target; }
 		return result;
 	}
 
 	/**
-	 * Computes the topology for agent movement.
-	 * If an 'on' argument is provided, tries to cast it to a topology.
+	 * Computes the topology for agent movement. If an 'on' argument is provided, tries to cast it to a topology.
 	 * Otherwise, returns the default topology from the scope.
 	 *
-	 * @param scope the execution scope
-	 * @param agent the agent for which the topology is computed
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent for which the topology is computed
 	 * @return the topology to use for movement
-	 * @throws GamaRuntimeException if topology computation fails
+	 * @throws GamaRuntimeException
+	 *             if topology computation fails
 	 */
 	protected ITopology computeTopology(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final Object on = scope.getArg("on", IType.NONE);
@@ -513,12 +510,14 @@ public class MovingSkill extends Skill {
 	}
 
 	/**
-	 * Extracts movement weights from scope arguments.
-	 * Weights can be used to modify edge traversal costs in graph-based movement.
+	 * Extracts movement weights from scope arguments. Weights can be used to modify edge traversal costs in graph-based
+	 * movement.
 	 *
-	 * @param scope the execution scope
+	 * @param scope
+	 *            the execution scope
 	 * @return a map of weights or null if not provided
-	 * @throws GamaRuntimeException if weight extraction fails
+	 * @throws GamaRuntimeException
+	 *             if weight extraction fails
 	 */
 	protected Map computeMoveWeights(final IScope scope) throws GamaRuntimeException {
 		return scope.hasArg("move_weights") ? (Map) scope.getArg("move_weights", IType.MAP) : null;
@@ -526,27 +525,35 @@ public class MovingSkill extends Skill {
 
 	/**
 	 * Moves the agent randomly within its environment (wander action).
-	 * 
-	 * <p>The agent moves toward a random heading chosen within an amplitude range around its current heading.
-	 * The movement can be constrained by:</p>
+	 *
+	 * <p>
+	 * The agent moves toward a random heading chosen within an amplitude range around its current heading. The movement
+	 * can be constrained by:
+	 * </p>
 	 * <ul>
-	 *   <li><b>bounds</b>: A geometry restricting the agent's movement area</li>
-	 *   <li><b>on</b>: A graph on which the agent must move</li>
-	 * </ul>
-	 * 
-	 * <p>When moving on a graph, the agent randomly selects edges at intersections, 
-	 * optionally weighted by the proba_edges parameter.</p>
-	 * 
-	 * <p><b>Edge cases:</b></p>
-	 * <ul>
-	 *   <li>If destination is unreachable, the agent turns 180 degrees</li>
-	 *   <li>If bounds constraint is violated, the agent computes a safe location</li>
-	 *   <li>For 3D movement, the Z-coordinate is preserved</li>
+	 * <li><b>bounds</b>: A geometry restricting the agent's movement area</li>
+	 * <li><b>on</b>: A graph on which the agent must move</li>
 	 * </ul>
 	 *
-	 * @param scope the execution scope
+	 * <p>
+	 * When moving on a graph, the agent randomly selects edges at intersections, optionally weighted by the proba_edges
+	 * parameter.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Edge cases:</b>
+	 * </p>
+	 * <ul>
+	 * <li>If destination is unreachable, the agent turns 180 degrees</li>
+	 * <li>If bounds constraint is violated, the agent computes a safe location</li>
+	 * <li>For 3D movement, the Z-coordinate is preserved</li>
+	 * </ul>
+	 *
+	 * @param scope
+	 *            the execution scope
 	 * @return true if movement was successful
-	 * @throws GamaRuntimeException if movement computation fails
+	 * @throws GamaRuntimeException
+	 *             if movement computation fails
 	 */
 	@action (
 			name = "wander",
@@ -596,10 +603,11 @@ public class MovingSkill extends Skill {
 				if (scope.hasArg("proba_edges")) {
 					probaDeplacement = (IMap<IShape, Double>) scope.getVarValue("proba_edges");
 				}
-				PathMovementHelper.MovementResult result = 
+				PathMovementHelper.MovementResult result =
 						PathMovementHelper.moveAlongGraph(scope, agent, graph, dist, probaDeplacement);
 				if (result != null) {
-					agent.setAttribute(IKeyword.REAL_SPEED, result.travelledDistance / scope.getClock().getStepInSeconds());
+					agent.setAttribute(IKeyword.REAL_SPEED,
+							result.travelledDistance / scope.getClock().getStepInSeconds());
 					agent.setAttribute(MovementAttributes.INDEX_ON_PATH, result.finalIndex);
 					setCurrentEdge(agent, graph);
 					agent.setAttribute(MovementAttributes.INDEX_ON_PATH_SEGMENT, result.finalIndexSegment);
@@ -647,26 +655,34 @@ public class MovingSkill extends Skill {
 
 	/**
 	 * Moves the agent forward in its current heading direction (move action).
-	 * 
-	 * <p>The agent moves straight ahead based on its current heading and speed.
-	 * The movement distance is calculated as: speed * timestep_duration</p>
-	 * 
-	 * <p><b>Parameters:</b></p>
+	 *
+	 * <p>
+	 * The agent moves straight ahead based on its current heading and speed. The movement distance is calculated as:
+	 * speed * timestep_duration
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Parameters:</b>
+	 * </p>
 	 * <ul>
-	 *   <li><b>speed</b>: Override the agent's speed for this move</li>
-	 *   <li><b>heading</b>: Override the agent's heading for this move</li>
-	 *   <li><b>bounds</b>: Geometry constraint to keep the agent inside</li>
-	 * </ul>
-	 * 
-	 * <p><b>Edge cases:</b></p>
-	 * <ul>
-	 *   <li>If destination is unreachable, agent turns 180 degrees</li>
-	 *   <li>Updates real_speed with actual distance traveled</li>
+	 * <li><b>speed</b>: Override the agent's speed for this move</li>
+	 * <li><b>heading</b>: Override the agent's heading for this move</li>
+	 * <li><b>bounds</b>: Geometry constraint to keep the agent inside</li>
 	 * </ul>
 	 *
-	 * @param scope the execution scope
+	 * <p>
+	 * <b>Edge cases:</b>
+	 * </p>
+	 * <ul>
+	 * <li>If destination is unreachable, agent turns 180 degrees</li>
+	 * <li>Updates real_speed with actual distance traveled</li>
+	 * </ul>
+	 *
+	 * @param scope
+	 *            the execution scope
 	 * @return the path followed (always null for simple moves)
-	 * @throws GamaRuntimeException if movement fails
+	 * @throws GamaRuntimeException
+	 *             if movement fails
 	 */
 	@action (
 			name = "move",
@@ -721,29 +737,37 @@ public class MovingSkill extends Skill {
 
 	/**
 	 * Moves the agent along a predefined path (follow action).
-	 * 
-	 * <p>The agent follows the given path, moving up to the maximum distance determined by
-	 * its speed and the timestep. If the path is longer than the distance the agent can cover
-	 * in one step, the agent will continue from its current position on the path in the next step.</p>
-	 * 
-	 * <p><b>Parameters:</b></p>
+	 *
+	 * <p>
+	 * The agent follows the given path, moving up to the maximum distance determined by its speed and the timestep. If
+	 * the path is longer than the distance the agent can cover in one step, the agent will continue from its current
+	 * position on the path in the next step.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Parameters:</b>
+	 * </p>
 	 * <ul>
-	 *   <li><b>path</b>: Required. The path to follow (IPath)</li>
-	 *   <li><b>speed</b>: Override the agent's speed for this move</li>
-	 *   <li><b>move_weights</b>: Custom weights for edge traversal (map)</li>
-	 *   <li><b>return_path</b>: If true, returns the segment of path actually traveled</li>
-	 * </ul>
-	 * 
-	 * <p><b>Behavior:</b></p>
-	 * <ul>
-	 *   <li>Updates current_path and current_edge attributes</li>
-	 *   <li>Handles 3D paths with Z-coordinate interpolation</li>
-	 *   <li>Sets real_speed based on actual distance traveled</li>
+	 * <li><b>path</b>: Required. The path to follow (IPath)</li>
+	 * <li><b>speed</b>: Override the agent's speed for this move</li>
+	 * <li><b>move_weights</b>: Custom weights for edge traversal (map)</li>
+	 * <li><b>return_path</b>: If true, returns the segment of path actually traveled</li>
 	 * </ul>
 	 *
-	 * @param scope the execution scope
+	 * <p>
+	 * <b>Behavior:</b>
+	 * </p>
+	 * <ul>
+	 * <li>Updates current_path and current_edge attributes</li>
+	 * <li>Handles 3D paths with Z-coordinate interpolation</li>
+	 * <li>Sets real_speed based on actual distance traveled</li>
+	 * </ul>
+	 *
+	 * @param scope
+	 *            the execution scope
 	 * @return the path segment followed if return_path is true, null otherwise
-	 * @throws GamaRuntimeException if path following fails
+	 * @throws GamaRuntimeException
+	 *             if path following fails
 	 */
 	@action (
 			name = "follow",
@@ -778,13 +802,13 @@ public class MovingSkill extends Skill {
 		final IMap weigths = (IMap) computeMoveWeights(scope);
 		final GamaPath path = scope.hasArg("path") ? (GamaPath) scope.getArg("path", IType.PATH) : null;
 		if (path != null && !path.getEdgeList().isEmpty()) {
-			PathMovementHelper.MovementResult result = PathMovementHelper.moveAlongPath(
-					scope, agent, path, dist, weigths, returnPath != null && returnPath);
+			PathMovementHelper.MovementResult result = PathMovementHelper.moveAlongPath(scope, agent, path, dist,
+					weigths, returnPath != null && returnPath);
 			if (result == null) {
 				notMoving(agent);
 				return null;
 			}
-			
+
 			// Update agent attributes
 			path.setIndexSegementOf(agent, result.finalIndexSegment);
 			path.setIndexOf(agent, result.finalIndex);
@@ -793,7 +817,7 @@ public class MovingSkill extends Skill {
 			setLocation(agent, result.finalLocation);
 			setHeading(agent, result.computedHeading);
 			path.setSource(agent.getLocation());
-			
+
 			return result.pathFollowed;
 		}
 		notMoving(agent);
@@ -802,41 +826,51 @@ public class MovingSkill extends Skill {
 
 	/**
 	 * Moves the agent toward a target location (goto action).
-	 * 
-	 * <p>This is the most versatile movement action, supporting pathfinding on various topologies:</p>
+	 *
+	 * <p>
+	 * This is the most versatile movement action, supporting pathfinding on various topologies:
+	 * </p>
 	 * <ul>
-	 *   <li><b>Continuous space</b>: Direct movement toward target</li>
-	 *   <li><b>Graph topology</b>: Pathfinding using graph algorithms</li>
-	 *   <li><b>Grid topology</b>: Grid-based pathfinding (A*, Dijkstra, etc.)</li>
-	 * </ul>
-	 * 
-	 * <p><b>Path caching:</b> The computed path is cached and reused in subsequent steps unless:</p>
-	 * <ul>
-	 *   <li>The target changes</li>
-	 *   <li>recompute_path is true</li>
-	 *   <li>The graph is modified (version change detected)</li>
-	 * </ul>
-	 * 
-	 * <p><b>Parameters:</b></p>
-	 * <ul>
-	 *   <li><b>target</b>: Required. Destination (agent, geometry, or location)</li>
-	 *   <li><b>on</b>: Graph, topology, or geometry list constraining movement</li>
-	 *   <li><b>speed</b>: Override agent's speed</li>
-	 *   <li><b>move_weights</b>: Custom edge weights for pathfinding</li>
-	 *   <li><b>recompute_path</b>: Force path recomputation (default: true)</li>
-	 *   <li><b>return_path</b>: Return the traveled path segment (default: false)</li>
-	 * </ul>
-	 * 
-	 * <p><b>Special cases:</b></p>
-	 * <ul>
-	 *   <li>If source equals target, no movement occurs (real_speed = 0)</li>
-	 *   <li>If no path exists, agent doesn't move</li>
-	 *   <li>Grid topology: target is snapped to nearest grid cell</li>
+	 * <li><b>Continuous space</b>: Direct movement toward target</li>
+	 * <li><b>Graph topology</b>: Pathfinding using graph algorithms</li>
+	 * <li><b>Grid topology</b>: Grid-based pathfinding (A*, Dijkstra, etc.)</li>
 	 * </ul>
 	 *
-	 * @param scope the execution scope
+	 * <p>
+	 * <b>Path caching:</b> The computed path is cached and reused in subsequent steps unless:
+	 * </p>
+	 * <ul>
+	 * <li>The target changes</li>
+	 * <li>recompute_path is true</li>
+	 * <li>The graph is modified (version change detected)</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * <b>Parameters:</b>
+	 * </p>
+	 * <ul>
+	 * <li><b>target</b>: Required. Destination (agent, geometry, or location)</li>
+	 * <li><b>on</b>: Graph, topology, or geometry list constraining movement</li>
+	 * <li><b>speed</b>: Override agent's speed</li>
+	 * <li><b>move_weights</b>: Custom edge weights for pathfinding</li>
+	 * <li><b>recompute_path</b>: Force path recomputation (default: true)</li>
+	 * <li><b>return_path</b>: Return the traveled path segment (default: false)</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * <b>Special cases:</b>
+	 * </p>
+	 * <ul>
+	 * <li>If source equals target, no movement occurs (real_speed = 0)</li>
+	 * <li>If no path exists, agent doesn't move</li>
+	 * <li>Grid topology: target is snapped to nearest grid cell</li>
+	 * </ul>
+	 *
+	 * @param scope
+	 *            the execution scope
 	 * @return the path segment followed if return_path is true, null otherwise
-	 * @throws GamaRuntimeException if pathfinding or movement fails
+	 * @throws GamaRuntimeException
+	 *             if pathfinding or movement fails
 	 */
 	@action (
 			name = "goto",
@@ -898,9 +932,14 @@ public class MovingSkill extends Skill {
 					((IList) on).addAll(ags);
 					onV = ((IAgent) ags.get(0)).getSpecies();
 				}
-			} else if (onV instanceof IMap) {
+			} else if (onV instanceof IMap monV) {
 				on = GamaMapFactory.wrap(Types.AGENT, Types.NO_TYPE, (IMap) onV);
-				onV = ((IAgent) ((IMap) onV).getKeys().get(scope, 0)).getSpecies();
+				if (monV.isEmpty())
+					throw GamaRuntimeException.error("The 'on' map must contain at least one agent", scope);
+				final Object firstKey = monV.getKeys().get(scope, 0);
+				if (!(firstKey instanceof IAgent a))
+					throw GamaRuntimeException.error("The keys of the 'on' map must be agents", scope);
+				onV = a.getSpecies();
 			}
 			rt = GamaTopologyFactory.castToTopology(scope, onV instanceof IMap i ? i.keySet() : onV);
 		}
@@ -966,11 +1005,11 @@ public class MovingSkill extends Skill {
 
 		final IMap weigths = (IMap) computeMoveWeights(scope);
 		if (returnPath) {
-			PathMovementHelper.MovementResult result = PathMovementHelper.moveAlongPath(
-					scope, agent, path, maxDist, weigths, true);
+			PathMovementHelper.MovementResult result =
+					PathMovementHelper.moveAlongPath(scope, agent, path, maxDist, weigths, true);
 			if (result == null) return GamaPathFactory.createFrom(scope, topo, source, source,
 					GamaListFactory.<IShape> create(Types.GEOMETRY), false);
-			
+
 			// Update agent attributes
 			path.setIndexSegementOf(agent, result.finalIndexSegment);
 			path.setIndexOf(agent, result.finalIndex);
@@ -979,12 +1018,12 @@ public class MovingSkill extends Skill {
 			path.setSource(result.finalLocation.copy(scope));
 			agent.setAttribute(IKeyword.REAL_SPEED, result.travelledDistance / scope.getClock().getStepInSeconds());
 			setHeading(agent, result.computedHeading);
-			
+
 			return result.pathFollowed;
 		}
-		
-		PathMovementHelper.MovementResult result = PathMovementHelper.moveAlongPath(
-				scope, agent, path, maxDist, weigths, false);
+
+		PathMovementHelper.MovementResult result =
+				PathMovementHelper.moveAlongPath(scope, agent, path, maxDist, weigths, false);
 		if (result != null) {
 			// Update agent attributes
 			path.setIndexSegementOf(agent, result.finalIndexSegment);
@@ -999,10 +1038,11 @@ public class MovingSkill extends Skill {
 	}
 
 	/**
-	 * Resets movement-related attributes when agent cannot move.
-	 * Sets real_speed to 0 and clears current_edge and current_path.
+	 * Resets movement-related attributes when agent cannot move. Sets real_speed to 0 and clears current_edge and
+	 * current_path.
 	 *
-	 * @param agent the agent that is not moving
+	 * @param agent
+	 *            the agent that is not moving
 	 */
 	private void notMoving(final IAgent agent) {
 		setRealSpeed(agent, 0.0);
@@ -1010,35 +1050,28 @@ public class MovingSkill extends Skill {
 		agent.setAttribute(MovementAttributes.CURRENT_PATH, null);
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
 	/**
-	 * Computes a safe forward location when bounds constraint is active.
-	 * If the proposed location would violate the bounds geometry, this method
-	 * finds the closest valid point on the boundary.
-	 * 
-	 * <p><b>Algorithm:</b></p>
+	 * Computes a safe forward location when bounds constraint is active. If the proposed location would violate the
+	 * bounds geometry, this method finds the closest valid point on the boundary.
+	 *
+	 * <p>
+	 * <b>Algorithm:</b>
+	 * </p>
 	 * <ol>
-	 *   <li>Creates a line from current location to proposed location</li>
-	 *   <li>If line is fully covered by bounds, returns proposed location</li>
-	 *   <li>Otherwise, finds closest point on bounds exterior ring</li>
-	 *   <li>Returns that point if it intersects bounds, else returns current location</li>
+	 * <li>Creates a line from current location to proposed location</li>
+	 * <li>If line is fully covered by bounds, returns proposed location</li>
+	 * <li>Otherwise, finds closest point on bounds exterior ring</li>
+	 * <li>Returns that point if it intersects bounds, else returns current location</li>
 	 * </ol>
 	 *
-	 * @param scope the execution scope
-	 * @param dist the intended travel distance (currently unused)
-	 * @param loc the proposed new location
-	 * @param geom the bounds geometry constraining movement
+	 * @param scope
+	 *            the execution scope
+	 * @param dist
+	 *            the intended travel distance (currently unused)
+	 * @param loc
+	 *            the proposed new location
+	 * @param geom
+	 *            the bounds geometry constraining movement
 	 * @return a safe location within or on the bounds
 	 */
 	protected IPoint computeLocationForward(final IScope scope, final double dist, final IPoint loc,

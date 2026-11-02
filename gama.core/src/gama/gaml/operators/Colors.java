@@ -116,6 +116,12 @@ import gama.core.util.color.GamaScale;
  */
 public class Colors {
 
+	private static IColor requireColor(final IColor color) {
+		if (color == null)
+			throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
+		return color;
+	}
+
 	/**
 	 * Adds the.
 	 *
@@ -143,6 +149,8 @@ public class Colors {
 	@test ("rgb([0,0,0]) + rgb([0,0,0]) = rgb([0,0,0])")
 	@test ("rgb([10,20,30]) + rgb([0,0,0]) = rgb([10,20,30])")
 	public static IColor add(final IColor c1, final IColor c2) {
+		requireColor(c1);
+		requireColor(c2);
 		return GamaColorFactory.createWithRGBA(c1.red() + c2.red(), c1.green() + c2.green(), c1.blue() + c2.blue(),
 				c1.alpha());
 	}
@@ -173,6 +181,8 @@ public class Colors {
 	@test ("rgb([255, 128, 32]) + 3 = rgb([255,131,35]) ")
 	@test ("rgb([10,20,30]) + 0 = rgb([10,20,30])")
 	public static IColor add(final IColor c, final Integer i) {
+		requireColor(c);
+		if (i == null) throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA(c.red() + i, c.green() + i, c.blue() + i, c.alpha());
 	}
 
@@ -199,6 +209,8 @@ public class Colors {
 							equals = "rgb([252,125,29])") }))
 	@test ("rgb([255, 128, 32]) - 3 = rgb([252,125,29]) ")
 	public static IColor subtract(final IColor c, final Integer i) {
+		requireColor(c);
+		if (i == null) throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA(c.red() - i, c.green() - i, c.blue() - i, c.alpha());
 	}
 
@@ -229,6 +241,8 @@ public class Colors {
 	@test ("rgb([50,100,150]) - rgb([50,100,150]) = rgb([0,0,0])")
 	@test ("rgb([10,20,30]) - rgb([0,0,0]) = rgb([10,20,30])")
 	public static IColor subtract(final IColor c1, final IColor c) {
+		requireColor(c1);
+		requireColor(c);
 		return GamaColorFactory.createWithRGBA(c1.red() - c.red(), c1.green() - c.green(), c1.blue() - c.blue(),
 				c1.alpha());
 	}
@@ -259,6 +273,8 @@ public class Colors {
 	@test ("rgb([255, 128, 32]) * 2 = rgb([255,255,64])")
 	@test ("rgb([10,20,30]) * 1 = rgb([10,20,30])")
 	public static IColor multiply(final IColor c, final Integer i) {
+		requireColor(c);
+		if (i == null) throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA(c.red() * i, c.green() * i, c.blue() * i, c.alpha());
 	}
 
@@ -285,6 +301,8 @@ public class Colors {
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2.0 = rgb([255,255,64])")
 	public static IColor multiply(final IColor c, final Double i) {
+		requireColor(c);
+		if (i == null) throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA((int) (c.red() * i), (int) (c.green() * i), (int) (c.blue() * i),
 				c.alpha());
 	}
@@ -315,6 +333,8 @@ public class Colors {
 	@test ("rgb([255, 128, 32]) / 2 = rgb([127,64,16])")
 	@test ("rgb([10,20,30]) / 1 = rgb([10,20,30])")
 	public static IColor divide(final IColor c, final Integer i) {
+		requireColor(c);
+		if (i == null) throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
 		if (i == 0) throw GamaRuntimeException.error("Cannot divide a color by zero", GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA(c.red() / i, c.green() / i, c.blue() / i, c.alpha());
 	}
@@ -344,6 +364,8 @@ public class Colors {
 							equals = "rgb([102,51,13])") }))
 	@test ("rgb([255, 128, 32]) / 2.5 = rgb([102,51,13])")
 	public static IColor divide(final IColor c, final Double i) {
+		requireColor(c);
+		if (i == null) throw GamaRuntimeException.error("Color operands must not be nil", GAMA.getRuntimeScope());
 		if (i == 0.0 || !Double.isFinite(i))
 			throw GamaRuntimeException.error("Cannot divide a color by zero or a non-finite value",
 					GAMA.getRuntimeScope());

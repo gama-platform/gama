@@ -2701,6 +2701,7 @@ public class Maths {
 			@test ("5 mod -3 = 2")
 	})
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
+		if (a == null || b == null) throw GamaRuntimeException.error("Operands of mod must not be nil", scope);
 		if (b == 0) {
 			throw GamaRuntimeException.error("Division by zero", scope);
 		}
@@ -2757,6 +2758,7 @@ public class Maths {
 			@test ("(17 div 5) * 5 + 17 mod 5 = 17")
 	})
 	public static Integer div(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
+		if (a == null || b == null) throw GamaRuntimeException.error("Operands of div must not be nil", scope);
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
 	}
@@ -2789,6 +2791,7 @@ public class Maths {
 			@test ("5.5 div 2 = 2")
 	})
 	public static Integer div(final IScope scope, final Double a, final Integer b) throws GamaRuntimeException {
+		if (a == null || b == null) throw GamaRuntimeException.error("Operands of div must not be nil", scope);
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return (int) (a / b);
 	}
@@ -2817,7 +2820,8 @@ public class Maths {
 					value = "40 div 4.1",
 					equals = "9"))
 	public static Integer div(final IScope scope, final Integer a, final Double b) throws GamaRuntimeException {
-		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
+		if (a == null || b == null) throw GamaRuntimeException.error("Operands of div must not be nil", scope);
+		if (b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return (int) (a / b);
 	}
 
@@ -2848,7 +2852,8 @@ public class Maths {
 			@test ("div(100.0, 10.0) = 10")
 	})
 	public static Integer div(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
-		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
+		if (a == null || b == null) throw GamaRuntimeException.error("Operands of div must not be nil", scope);
+		if (b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return (int) (a / b);
 	}
 

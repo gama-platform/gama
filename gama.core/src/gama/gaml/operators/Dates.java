@@ -2090,7 +2090,7 @@ public class Dates {
 	})
 	public static boolean greater_than(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return date1.isGreaterThan(date2, true);
+		return requireDate(scope, date1).isGreaterThan(requireDate(scope, date2), true);
 	}
 
 	/**
@@ -2136,7 +2136,7 @@ public class Dates {
 	})
 	public static boolean greater_than_or_equal(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return date1.isGreaterThan(date2, false);
+		return requireDate(scope, date1).isGreaterThan(requireDate(scope, date2), false);
 	}
 
 	/**
@@ -2185,7 +2185,7 @@ public class Dates {
 	})
 	public static boolean smaller_than(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return date1.isSmallerThan(date2, true);
+		return requireDate(scope, date1).isSmallerThan(requireDate(scope, date2), true);
 	}
 
 	/**
@@ -2232,7 +2232,7 @@ public class Dates {
 	})
 	public static boolean smaller_than_or_equal(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return date1.isSmallerThan(date2, false);
+		return requireDate(scope, date1).isSmallerThan(requireDate(scope, date2), false);
 	}
 
 	/**
@@ -2274,7 +2274,7 @@ public class Dates {
 					equals = "false") })
 	@test ("(#now = (#now minus_hours 1)) = false")
 	public static boolean equal(final IScope scope, final IDate date1, final IDate date2) throws GamaRuntimeException {
-		return date1.equals(date2);
+		return requireDate(scope, date1).equals(requireDate(scope, date2));
 	}
 
 	/**
@@ -2317,7 +2317,7 @@ public class Dates {
 	@test ("(#now != (#now minus_hours 1)) = true")
 	public static boolean different(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return !date1.equals(date2);
+		return !requireDate(scope, date1).equals(requireDate(scope, date2));
 	}
 
 	/**

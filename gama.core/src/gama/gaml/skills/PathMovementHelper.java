@@ -472,9 +472,11 @@ public class PathMovementHelper {
 	 * @return the weight value for movement calculation
 	 */
 	public static double computeWeight(final IGraph graph, final IPath path, final IShape line) {
-		if (graph == null) return 1.0;
+		if (graph == null || path == null || line == null) return 1.0;
 		final IShape realShape = path.getRealObject(line);
-		return realShape == null ? 1 : graph.getEdgeWeight(realShape) / realShape.getGeometry().getPerimeter();
+		if (realShape == null || realShape.getGeometry() == null
+				|| realShape.getGeometry().getPerimeter() == 0) return 1;
+		return graph.getEdgeWeight(realShape) / realShape.getGeometry().getPerimeter();
 	}
 
 	/**
@@ -516,7 +518,8 @@ public class PathMovementHelper {
 				coords = coords2;
 			}
 
-			final double weight = graph.getEdgeWeight(edge) / edge.getGeometry().getPerimeter();
+			final double perimeter = edge.getGeometry() == null ? 0 : edge.getGeometry().getPerimeter();
+			final double weight = perimeter == 0 ? 1 : graph.getEdgeWeight(edge) / perimeter;
 			for (int j = indexSegment; j < coords.length; j++) {
 				final IPoint pt = GamaPointFactory.create(coords[j]);
 				final double dis = pt.distance3D(currentLocation);
@@ -642,8 +645,10 @@ public class PathMovementHelper {
 				weight = computeWeight(graph, path, line);
 			} else {
 				final IShape realShape = path.getRealObject(line);
-				final Double w = realShape == null ? null
-						: (Double) weights.get(realShape) / realShape.getGeometry().getPerimeter();
+				final double perimeter =
+						realShape == null || realShape.getGeometry() == null ? 0 : realShape.getGeometry().getPerimeter();
+				final Double edgeWeight = realShape == null ? null : (Double) weights.get(realShape);
+				final Double w = edgeWeight == null || perimeter == 0 ? null : edgeWeight / perimeter;
 				weight = w == null ? computeWeight(graph, path, line) : w;
 			}
 

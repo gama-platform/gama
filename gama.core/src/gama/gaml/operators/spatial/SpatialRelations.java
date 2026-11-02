@@ -132,11 +132,14 @@ public class SpatialRelations {
 	@no_test // Test already done in Spatial tests models
 	public static Double distance_between(final IScope scope, final ITopology t,
 			final IContainer<?, IShape> geometries) {
+		if (geometries == null) throw GamaRuntimeException.error("Geometries must not be nil", scope);
+		if (t == null) throw GamaRuntimeException.error("Topology must not be nil", scope);
 		final int size = geometries.length(scope);
 		if (size == 0 || size == 1) return 0d;
 		IShape previous = null;
 		double distance = 0d;
 		for (final IShape obj : geometries.iterable(scope)) {
+			if (obj == null) throw GamaRuntimeException.error("Geometries must not contain nil values", scope);
 			if (previous != null) {
 				final Double d = t.distanceBetween(scope, previous, obj);
 				if (d == null) return null;
@@ -174,10 +177,14 @@ public class SpatialRelations {
 	@test ("topology(world) direction_between([{0,0},{50,50}]) = 45.0")
 	public static Double direction_between(final IScope scope, final ITopology t,
 			final IContainer<?, IShape> geometries) throws GamaRuntimeException {
+		if (geometries == null) throw GamaRuntimeException.error("Geometries must not be nil", scope);
+		if (t == null) throw GamaRuntimeException.error("Topology must not be nil", scope);
 		final int size = geometries.length(scope);
 		if (size == 0 || size == 1) return 0.0;
 		final IShape g1 = geometries.firstValue(scope);
 		final IShape g2 = geometries.lastValue(scope);
+		if (g1 == null || g2 == null)
+			throw GamaRuntimeException.error("Geometries must not contain nil values", scope);
 		return t.directionInDegreesTo(scope, g1, g2);
 	}
 
@@ -213,6 +220,8 @@ public class SpatialRelations {
 	@no_test // Test already done in Spatial Tests Models.
 	public static IPath path_between(final IScope scope, final ITopology graph, final IShape source,
 			final IShape target) throws GamaRuntimeException {
+		if (graph == null || source == null || target == null)
+			throw GamaRuntimeException.error("Topology and path endpoints must not be nil", scope);
 		return graph.pathBetween(scope, source, target);
 
 	}
@@ -252,16 +261,21 @@ public class SpatialRelations {
 	})
 	public static IPath path_between(final IScope scope, final ITopology topo, final IContainer<?, IShape> nodes)
 			throws GamaRuntimeException {
+		if (topo == null || nodes == null)
+			throw GamaRuntimeException.error("Topology and path nodes must not be nil", scope);
 		if (nodes.isEmpty(scope)) return null;
 		final int n = nodes.length(scope);
 		final IShape source = nodes.firstValue(scope);
+		if (source == null) throw GamaRuntimeException.error("Path nodes must not contain nil values", scope);
 		if (n == 1) return GamaPathFactory.createFrom(scope, scope.getTopology(), source, source,
 				GamaListFactory.<IShape> create(Types.GEOMETRY));
 		final IShape target = nodes.lastValue(scope);
+		if (target == null) throw GamaRuntimeException.error("Path nodes must not contain nil values", scope);
 		if (n == 2) return topo.pathBetween(scope, source, target);
 		final IList<IShape> edges = GamaListFactory.create(Types.GEOMETRY);
 		IShape previous = null;
 		for (final IShape gg : nodes.iterable(scope)) {
+			if (gg == null) throw GamaRuntimeException.error("Path nodes must not contain nil values", scope);
 			if (previous != null) {
 				// TODO Take the case of GamaPoint
 				final IPath path = topo.pathBetween(scope, previous, gg);
@@ -303,16 +317,20 @@ public class SpatialRelations {
 	@no_test // test already done in Spatial tests models
 	public static IPath path_between(final IScope scope, final IList<IAgent> cells, final IContainer<?, IShape> nodes)
 			throws GamaRuntimeException {
+		if (nodes == null) throw GamaRuntimeException.error("Path nodes must not be nil", scope);
 		if (cells == null || cells.isEmpty() || nodes.isEmpty(scope)) return null;
+		if (cells.get(0) == null) throw GamaRuntimeException.error("Path cells must not contain nil values", scope);
 		final ITopology topo = cells.get(0).getTopology();
 
 		final int n = nodes.length(scope);
 		final IShape source = nodes.firstValue(scope);
+		if (source == null) throw GamaRuntimeException.error("Path nodes must not contain nil values", scope);
 		if (n == 1) {
 			if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, source, cells);
 			return scope.getTopology().pathBetween(scope, source, source);
 		}
 		final IShape target = nodes.lastValue(scope);
+		if (target == null) throw GamaRuntimeException.error("Path nodes must not contain nil values", scope);
 		if (n == 2) {
 			if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, target, cells);
 			return scope.getTopology().pathBetween(scope, source, target);
@@ -321,6 +339,7 @@ public class SpatialRelations {
 		IShape previous = null;
 		double weight = 0;
 		for (final IShape gg : nodes.iterable(scope)) {
+			if (gg == null) throw GamaRuntimeException.error("Path nodes must not contain nil values", scope);
 			if (previous != null) {
 				// TODO Take the case of GamaPoint
 				if (topo instanceof GridTopology gt) {
@@ -367,6 +386,7 @@ public class SpatialRelations {
 	@no_test // test already done in Spatial tests models
 	public static IPath path_between(final IScope scope, final IMap<IAgent, Object> cells,
 			final IContainer<?, IShape> nodes) throws GamaRuntimeException {
+		if (nodes == null) throw GamaRuntimeException.error("Path nodes must not be nil", scope);
 		if (cells == null || cells.isEmpty() || nodes.isEmpty(scope)) return null;
 		return path_between(scope, cells.getKeys(), nodes);
 	}
@@ -402,6 +422,7 @@ public class SpatialRelations {
 	public static IPath path_between(final IScope scope, final IList<IAgent> cells, final IShape source,
 			final IShape target) throws GamaRuntimeException {
 		if (cells == null || cells.isEmpty() || source == null || target == null) return null;
+		if (cells.get(0) == null) throw GamaRuntimeException.error("Path cells must not contain nil values", scope);
 		final ITopology topo = cells.get(0).getTopology();
 		if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, target, cells);
 		return scope.getTopology().pathBetween(scope, source, target);
@@ -438,6 +459,8 @@ public class SpatialRelations {
 	public static IPath path_between(final IScope scope, final IMap<IAgent, Object> cells, final IShape source,
 			final IShape target) throws GamaRuntimeException {
 		if (cells == null || cells.isEmpty()) return null;
+		if (cells.getKeys().get(scope, 0) == null)
+			throw GamaRuntimeException.error("Path cells must not contain nil values", scope);
 		return path_between(scope, cells.getKeys(), source, target);
 	}
 
@@ -537,7 +560,7 @@ public class SpatialRelations {
 			see = { "towards", "direction_to", "distance_between", "direction_between", "path_between", "distance_to" })
 	@no_test // test already done in Spatial tests models
 	public static IPath path_to(final IScope scope, final IShape g, final IShape g1) throws GamaRuntimeException {
-		if (g == null) return null;
+		if (g == null || g1 == null) return null;
 		return scope.getTopology().pathBetween(scope, g, g1);
 	}
 
@@ -565,7 +588,7 @@ public class SpatialRelations {
 	// optimized for points?)
 	@no_test // test already done in Spatial tests models
 	public static IPath path_to(final IScope scope, final IPoint g, final IPoint g1) throws GamaRuntimeException {
-		if (g == null) return null;
+		if (g == null || g1 == null) return null;
 		return scope.getTopology().pathBetween(scope, g, g1);
 	}
 

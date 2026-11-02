@@ -224,6 +224,7 @@ public class Graphs {
 		 */
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
+			if (p1 == null || p2 == null || p1.getGeometry() == null || p2.getGeometry() == null) return false;
 			return SpatialProperties.intersects(SpatialTransformations.enlarged_by(scope, p1.getGeometry(), tolerance),
 					SpatialTransformations.enlarged_by(scope, p2.getGeometry(), tolerance));
 		}
@@ -241,7 +242,9 @@ public class Graphs {
 		 */
 		@Override
 		public boolean equivalent(final IScope scope, final IShape p1, final IShape p2) {
-			return p1 == null ? p2 == null : p1.getGeometry().equals(p2.getGeometry());
+			if (p1 == null) return p2 == null;
+			if (p2 == null || p1.getGeometry() == null) return false;
+			return p2.getGeometry() != null && p1.getGeometry().equals(p2.getGeometry());
 		}
 	}
 
