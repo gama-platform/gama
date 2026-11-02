@@ -30,10 +30,15 @@ public final class StartupSplash {
 		final String family = display.getFontList("Helvetica Neue", true).length == 0
 				? splash.getFont().getFontData()[0].getName() : "Helvetica Neue";
 		final Font font = new Font(display, family, 14, SWT.NORMAL);
-		// A foreign Cocoa shell has bottom-up coordinates; a full-size SWT container normalizes its children.
-		final Composite content = new Composite(splash, SWT.NO_BACKGROUND);
 		final var area = splash.getClientArea();
-		content.setBounds(0, 0, area.width, area.height);
+		final Composite content;
+		if (!"gtk".equals(SWT.getPlatform())) {
+			// A foreign Cocoa shell has bottom-up coordinates; a full-size SWT container normalizes its children.
+			content = new Composite(splash, SWT.NO_BACKGROUND);
+			content.setBounds(0, 0, area.width, area.height);
+		} else {
+			content = splash;
+		}
 		final double scaleX = area.width / 900d;
 		final double scaleY = area.height / 560d;
 		final int width = Math.max(1, (int) Math.round(274 * scaleX));
@@ -53,7 +58,7 @@ public final class StartupSplash {
 			event.gc.setForeground(foreground);
 			messageLayout.draw(event.gc, 0, Math.max(0, (bounds.height - messageLayout.getBounds().height) / 2));
 		});
-		content.moveAbove(null);
+		if (content != splash) content.moveAbove(null);
 		final Runnable paint = new Runnable() {
 			private boolean dispatching;
 
