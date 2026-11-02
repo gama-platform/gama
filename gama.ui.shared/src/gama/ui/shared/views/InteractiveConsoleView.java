@@ -150,6 +150,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public void ownCreatePartControl(final Composite p) {
 		msgConsole = new IOConsole("GAMA Console", null);
+		if (ThemeHelper.usesCustomBackgrounds()) { msgConsole.setBackground(IGamaColors.LIST_BACKGROUND.color()); }
 		reader = new BufferedReader(new InputStreamReader(msgConsole.getInputStream()));
 		var stream = msgConsole.newOutputStream();
 		stream.setColor(ThemeHelper.isDark() ? IGamaColors.NEUTRAL.lighter() : IGamaColors.NEUTRAL.color());

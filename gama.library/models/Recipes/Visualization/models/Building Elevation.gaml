@@ -36,7 +36,7 @@ global {
 	graph the_graph;
 
 	init {
-		create building(type: string(read('NATURE')), height: 10+rnd(90)) from: shape_file_buildings {
+		create building(type: string(read('NATURE')), height: 10+rnd(90)) from: shape_file_buildings { 
 			if type = "Industrial" {
 				color <- #blue;
 			}

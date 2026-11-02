@@ -20,13 +20,16 @@ import org.eclipse.ui.IStartup;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 
-import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.font.GamaFontFactory;
 import gama.api.types.font.IFont;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.access.HeapControl;
+import gama.ui.shared.utils.SyntaxHighlightingPreferences;
+import gama.ui.shared.utils.WorkbenchHelper;
+import gaml.compiler.ui.highlight.DelegateHighlightingConfiguration;
 
 /**
  * The Class AutoStartup.
@@ -37,17 +40,14 @@ public class AutoStartup implements IStartup {
 		DEBUG.OFF();
 	}
 
-	/**
-	 * Gets the default background.
-	 *
-	 * @return the default background
-	 */
-	private static IColor getDefaultBackground() {
-		EditorsPlugin.getDefault().getPreferenceStore()
-				.setValue(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT, false);
-		final RGB rgb = PreferenceConverter.getColor(EditorsPlugin.getDefault().getPreferenceStore(),
-				AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-		return GamaColorFactory.get(rgb.red, rgb.green, rgb.blue);
+	/** Applies the active palette's background to open editors and their rulers. */
+	private static void applyEditorBackground() {
+		final var store = EditorsPlugin.getDefault().getPreferenceStore();
+		store.setValue(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT, false);
+		final IColor color = SyntaxHighlightingPreferences.current().backgrounds()
+				.get(ThemeHelper.isDark() ? "dark" : "light");
+		PreferenceConverter.setValue(store, AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND,
+				new RGB(color.red(), color.green(), color.blue()));
 	}
 
 	/**
@@ -63,19 +63,16 @@ public class AutoStartup implements IStartup {
 	@Override
 	public void earlyStartup() {
 		DEBUG.OUT("Startup of editor plugin begins");
+		DelegateHighlightingConfiguration.addListener(
+				() -> WorkbenchHelper.asyncRun(AutoStartup::applyEditorBackground));
+		ThemeHelper.addListener(light -> WorkbenchHelper.asyncRun(AutoStartup::applyEditorBackground));
+		WorkbenchHelper.asyncRun(AutoStartup::applyEditorBackground);
 
 		GamaPreferences.Modeling.EDITOR_BASE_FONT.init(AutoStartup::getDefaultFontData).onChange(font -> {
 			try {
 				final FontData newValue = new FontData(font.getName(), font.getSize(), font.getStyle());
 				setValue(EditorsPlugin.getDefault().getPreferenceStore(), TEXT_FONT, newValue);
 			} catch (final Exception e) {}
-		});
-		GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.init(AutoStartup::getDefaultBackground).onChange(c -> {
-			final RGB rgb = new RGB(c.red(), c.green(), c.blue());
-			PreferenceConverter.setValue(EditorsPlugin.getDefault().getPreferenceStore(),
-					AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, rgb);
-			// GamaPreferences.Modeling.OPERATORS_MENU_SORT
-			// .onChange(newValue -> OperatorsReferenceMenu.byName = "Name".equals(newValue));
 		});
 		// GamlRuntimeModule.staticInitialize();
 		// GamlEditorBindings.install();

@@ -49,6 +49,7 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.random.IRandom;
 import gama.core.util.color.GamaGradient;
 import gama.core.util.color.GamaPalette;
@@ -1002,6 +1003,32 @@ public class Colors {
 					return new GamaPalette(colors);
 				}
 			});
+
+	@operator (
+			value = "vintage_colors",
+			type = IType.LIST,
+			content_type = IType.COLOR,
+			can_be_const = false,
+			category = { IOperatorCategory.COLOR },
+			concept = { IConcept.COLOR })
+	@doc (
+			value = "Returns a fresh palette of eight categorical vintage inks. Names are case-sensitive: "
+					+ "'Swiss' (scientific poster), 'Warm Amber' (ochre and terracotta), "
+					+ "and 'Mineral' (slate and muted teal). These are not sequential or diverging data scales. "
+					+ "Use a pale paper background for a vintage presentation. Unknown names raise an error.",
+			examples = { @example (
+					value = "list<rgb> inks <- vintage_colors('Swiss');",
+					isExecutable = false) },
+			see = { "brewer_colors", "palette" })
+	@no_test
+	public static GamaPalette vintageColors(final IScope scope, final String name) {
+		if (name == null || !GamaPreferences.VINTAGE_PALETTES.containsKey(name))
+			throw GamaRuntimeException.error("Unknown vintage palette '" + name
+					+ "'. Available palettes: Swiss, Warm Amber, Mineral", scope);
+		final IList<IColor> colors = GamaListFactory.create(Types.COLOR);
+		for (final var ink : GamaPreferences.VINTAGE_PALETTES.get(name)) { colors.add(ink.get()); }
+		return new GamaPalette(colors);
+	}
 
 	/**
 	 * Brewer palette colors.

@@ -54,7 +54,8 @@ public class ParameterExpandItem extends Item {
 	int closePosition = -1;
 
 	/** The header color. */
-	Color headerColor = ThemeHelper.isDark() ? IGamaColors.DARK_GRAY.color() : IGamaColors.VERY_LIGHT_GRAY.color();
+	Color headerColor = ThemeHelper.usesCustomBackgrounds() ? IGamaColors.WIDGET_BACKGROUND.color()
+			: ThemeHelper.isDark() ? IGamaColors.DARK_GRAY.color() : IGamaColors.VERY_LIGHT_GRAY.color();
 
 	/** The image width. */
 	private int imageHeight = 16, imageWidth = 16;

@@ -192,6 +192,24 @@ public class GamaPreferences {
 					() -> GamaColorFactory.get(128, 203, 196), () -> GamaColorFactory.get(244, 143, 177),
 					() -> GamaColorFactory.get(206, 147, 216), () -> GamaColorFactory.get(230, 238, 156) };
 
+	public static final String SWISS = "Swiss";
+	public static final String WARM_AMBER = "Warm Amber";
+	public static final String MINERAL = "Mineral";
+
+	/** Cream paper shared by light UI surfaces and default display/chart backgrounds. */
+	public static final Supplier<IColor> CREAM_PAPER = () -> GamaColorFactory.get(248, 246, 240);
+
+	/** Categorical vintage inks, shared by simulation identities, charts and GAML vintage_colors. */
+	public static final Map<String, List<Supplier<IColor>>> VINTAGE_PALETTES = Map.of(
+			SWISS, inks(0x28516a, 0xc75d36, 0x70805a, 0xd7ab53, 0x8c6584, 0x4f9290, 0x9a432e, 0x77756b),
+			WARM_AMBER, inks(0x426e85, 0xce784b, 0xa28432, 0x797b4c, 0x9f4f40, 0x659591, 0x996c83, 0x645951),
+			MINERAL, inks(0x456d86, 0x61948c, 0xa96b53, 0x8a789b, 0x9a8b48, 0x526955, 0xa65e73, 0x6a737b));
+
+	private static List<Supplier<IColor>> inks(final int... colors) {
+		return Arrays.stream(colors).<Supplier<IColor>>mapToObj(
+				rgb -> () -> GamaColorFactory.get(rgb >> 16, rgb >> 8 & 255, rgb & 255)).toList();
+	}
+
 	/**
 	 * The preference key used to retrieve the default buffering strategy applied to the GAML {@code save} statement.
 	 * The actual {@link Pref} is declared in {@link Experimental#DEFAULT_SAVE_BUFFERING_STRATEGY}.
@@ -429,7 +447,8 @@ public class GamaPreferences {
 		/**
 		 * Switches the active simulation color scheme to the named scheme and rebuilds the {@link #SIMULATION_COLORS}
 		 * palette. Supported scheme names include {@link #VIVID}, {@link #TABLEAU}, {@link #NEON}, {@link #PASTEL},
-		 * {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, and {@link #PIVOT}. Legacy names or unknown schemes
+		 * {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, {@link #PIVOT}, and the categorical
+		 * {@link #VINTAGE_PALETTES}. Legacy names or unknown schemes
 		 * delegate to {@link #setPivot(IColor)}.
 		 *
 		 * @param scheme
@@ -437,6 +456,10 @@ public class GamaPreferences {
 		 */
 		public static void setColorScheme(final String scheme) {
 			if (scheme != null) {
+				if (VINTAGE_PALETTES.containsKey(scheme)) {
+					SIMULATION_COLORS = VINTAGE_PALETTES.get(scheme).stream().map(Supplier::get).toArray(IColor[]::new);
+					return;
+				}
 				if (scheme.startsWith("Vivid") || VIVID.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[VIVID_COLORS.length];
 					for (int i = 0; i < VIVID_COLORS.length; i++) { SIMULATION_COLORS[i] = VIVID_COLORS[i].get(); }
@@ -508,8 +531,9 @@ public class GamaPreferences {
 		 * The default color scheme used for distinguishing simulations in the UI.
 		 */
 		public static final Pref<String> CORE_SIMULATION_COLOR =
-				create("pref_simulation_colors", "Default color scheme for simulations in UI", VIVID, IType.STRING,
-						true).among(VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE, DIVERGING, BASIC, PIVOT)
+				create("pref_simulation_colors", "Default color scheme for simulations in UI", SWISS, IType.STRING,
+						true).among(SWISS, WARM_AMBER, MINERAL, VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE,
+								DIVERGING, BASIC, PIVOT)
 								.in(NAME, SIMULATIONS).onChange(Interface::setColorScheme);
 
 		/**
@@ -631,10 +655,10 @@ public class GamaPreferences {
 				.create("pref_editor_font", "Font of editors", (IFont) null, IType.FONT, false).in(NAME, TEXT)
 				.inPlayer(false);
 
-		/** The background color of GAML editors. A {@code null} value means the IDE default background is used. */
+		/** Legacy editor background, migrated to the active syntax palette's per-theme background. */
 		public static final Pref<IColor> EDITOR_BACKGROUND_COLOR =
 				create("pref_editor_background_color", "Background color of editors", (IColor) null, IType.COLOR, false)
-						.in(NAME, TEXT).inPlayer(false);
+						.in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Whether the editor should highlight all occurrences of the symbol under the cursor. */
 		public static final Pref<Boolean> EDITOR_MARK_OCCURRENCES = GamaPreferences
@@ -988,7 +1012,7 @@ public class GamaPreferences {
 		/** Custom default background color for charts (when not matching display background). */
 		public static final Pref<IColor> CHART_BACKGROUND_COLOR =
 				create("pref_chart_background_color", "Custom default chart background color",
-						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+						CREAM_PAPER, IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Chart default text color. */
 		public static final Pref<IColor> CHART_TEXT_COLOR = create("pref_chart_text_color", "Default chart text color",
@@ -1041,8 +1065,9 @@ public class GamaPreferences {
 
 		/** Default color palette scheme for chart series. */
 		public static final Pref<String> CHART_COLOR_PALETTE = create("pref_chart_color_palette",
-				"Default color palette for chart series", CHART_PALETTE_VIVID, IType.STRING, true)
-						.in(NAME, CHARTS_GROUP).among(CHART_PALETTE_VIVID, CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON,
+				"Default color palette for chart series", SWISS, IType.STRING, true)
+						.in(NAME, CHARTS_GROUP).among(SWISS, WARM_AMBER, MINERAL, CHART_PALETTE_VIVID,
+								CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON,
 								CHART_PALETTE_PASTEL, CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING,
 								CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
 
@@ -1079,12 +1104,12 @@ public class GamaPreferences {
 		/** The Constant CORE_BACKGROUND. */
 		public static final Pref<IColor> CORE_BACKGROUND =
 				create("pref_display_background_color", "Default background color ('background' facet of 'display')",
-						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, DRAWING);
+						CREAM_PAPER, IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The default highlight color used when an agent is highlighted in a display. */
 		public static final Pref<IColor> CORE_HIGHLIGHT =
 				create("pref_display_highlight_color", "Default highlight color",
-						() -> GamaColorFactory.get(0, 200, 200), IType.COLOR, true).in(NAME, DRAWING);
+						() -> GamaColorFactory.get(199, 93, 54), IType.COLOR, true).in(NAME, DRAWING);
 
 		/** The default shape used to render agents that have no explicit shape definition in their species. */
 		public static final Pref<String> CORE_SHAPE =
@@ -1098,7 +1123,7 @@ public class GamaPreferences {
 
 		/** The default fill color used to render agents that have no explicit color in their species. */
 		public static final Pref<IColor> CORE_COLOR = create("pref_display_default_color", "Default color of agents",
-				() -> GamaColorFactory.get("yellow"), IType.COLOR, true).in(NAME, DRAWING);
+				() -> GamaColorFactory.get(40, 81, 106), IType.COLOR, true).in(NAME, DRAWING);
 
 		/**
 		 * Whether hardware acceleration for Java2D should be disabled. Useful on configurations where acceleration

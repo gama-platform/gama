@@ -13,6 +13,9 @@
 model ODE_LotkaVolterra
 
 global {
+	list<rgb> inks <- vintage_colors("Swiss");
+	rgb paper <- rgb(248, 246, 240);
+	rgb ink <- rgb(57, 66, 61);
 
 	float prey_birth_rate<- 0.05 ; 		// natural birth rate of preys
 	float predation_rate <- 0.001; 			// death rate of preys due to predators
@@ -59,15 +62,15 @@ experiment maths type: gui {
 
 	output {
  		display TimeSeries  type: 2d  {																	// creation of a display to show time series of the model, values are plotted at every step
-			chart "Lotka Volterra Time Series" type: series background: #white {  						// the chart, of type 'serie', is named Lotka Volterra Time Series, it shows quantities according to time, and the background is white
-				data 'Number of preys' value: first(LotkaVolterra_agent).nb_prey color: #green ;			// number of preys is plotted in green
-				data 'Number of predators' value: first(LotkaVolterra_agent).nb_predator color: #red ; 	// number of predators is plotted in red
+			chart "Lotka Volterra Time Series" type: series background: paper axes: ink {
+				data 'Number of preys' value: first(LotkaVolterra_agent).nb_prey color: inks[0];
+				data 'Number of predators' value: first(LotkaVolterra_agent).nb_predator color: inks[1];
 			}
 		}
 		display PhasePortrait  type: 2d  {																// creation of a display to show the phase portait, values are plotted at every time step
-			chart "Lotka Volterra Phase Portrait" type: xy background: #white {							// the chart, os type 'xy', is named Lotka Volterra Phase portrait, it shows a quantity according to another one, and the background is white
-			data ' ' value: {predator_death_rate / predation_efficiency, prey_birth_rate/predation_rate} color: #blue; // equilibrium point
-			data 'Number of preys according to number of predators' value:{first(LotkaVolterra_agent).nb_prey, first(LotkaVolterra_agent).nb_predator} color: #black ;	// number of predators according to the number of preys plotted in black
+			chart "Lotka Volterra Phase Portrait" type: xy background: paper axes: ink {
+			data ' ' value: {predator_death_rate / predation_efficiency, prey_birth_rate/predation_rate} color: inks[1]; // equilibrium point
+			data 'Number of preys according to number of predators' value:{first(LotkaVolterra_agent).nb_prey, first(LotkaVolterra_agent).nb_predator} color: inks[0];
 			}
 		}
 	}

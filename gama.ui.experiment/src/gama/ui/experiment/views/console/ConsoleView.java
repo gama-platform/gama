@@ -119,6 +119,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	public void ownCreatePartControl(final Composite parent) {
 		setCharacterLimit(GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue());
 		GamaPreferences.Interface.CORE_CONSOLE_SIZE.addChangeListener(sizeListener);
+		if (ThemeHelper.usesCustomBackgrounds()) { msgConsole.setBackground(IGamaColors.LIST_BACKGROUND.color()); }
 		viewer = new IOConsoleViewer(parent, msgConsole);
 		viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
 		ConsoleContextMenuHelper.install(viewer.getTextWidget(), this::reset, false);

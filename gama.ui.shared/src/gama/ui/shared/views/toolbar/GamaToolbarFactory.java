@@ -168,7 +168,7 @@ public class GamaToolbarFactory {
 		toolbarComposite.setLayout(layout);
 		// toolbarComposite.setBackground(IGamaColors.WHITE.color());
 		GamaColors.setBackground(
-				ThemeHelper.isDark() ? composite.getShell().getBackground() : IGamaColors.WHITE.color(),
+				ThemeHelper.isDark() ? composite.getShell().getBackground() : IGamaColors.LIST_BACKGROUND.color(),
 				toolbarComposite);
 		return toolbarComposite;
 

@@ -132,7 +132,6 @@ import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.ui.shared.access.GamlAccessContents2;
 import gama.ui.shared.commands.SearchGamlReferenceHandler;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -991,8 +990,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	protected void handlePreferenceStoreChanged(final PropertyChangeEvent event) {
 		super.handlePreferenceStoreChanged(event);
-		if (PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty())) {
-			final var bg = GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color();
+		if (PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty()) && getSourceViewer() != null
+				&& getSourceViewer().getTextWidget() != null && !getSourceViewer().getTextWidget().isDisposed()) {
+			final var bg = getSourceViewer().getTextWidget().getBackground();
 			this.getVerticalRuler().getControl().setBackground(bg);
 			final Iterator e = ((CompositeRuler) getVerticalRuler()).getDecoratorIterator();
 			while (e.hasNext()) {
@@ -1191,8 +1191,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					text = getWordAtCaret();
 				}
 				GamlAccessContents2.open(text);
-			}, () -> org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn(getSite().getShell(),
-					"gaml.compiler.Gaml", null, null).open(),
+			}, () -> gama.ui.shared.views.GamaPreferencesView.show(GamaPreferences.Modeling.NAME),
 			GamaIcon.named("editor/command.find").descriptor(), GamaIcon.named("editor/preferences").descriptor());
 
 	}

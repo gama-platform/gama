@@ -103,7 +103,7 @@ public class GamaToolbar2 extends Composite {
 	public void setBackgroundColor(final Color c) {
 		// Calls super explicitly
 		Color color = c;
-		if (color == null) { color = isDark() ? getShell().getBackground() : IGamaColors.WHITE.color(); }
+		if (color == null) { color = isDark() ? getShell().getBackground() : IGamaColors.LIST_BACKGROUND.color(); }
 		super.setBackground(color);
 		GamaColors.setBackground(color, this, left, right);
 	}

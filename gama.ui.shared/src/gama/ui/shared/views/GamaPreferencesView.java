@@ -108,6 +108,10 @@ public class GamaPreferencesView {
 	 * Show.
 	 */
 	public static void show() {
+		show(null);
+	}
+
+	public static void show(final String tabName) {
 		if (instance == null || instance.shell == null || instance.shell.isDisposed()) {
 			instance = new GamaPreferencesView(WorkbenchHelper.getShell());
 		}
@@ -118,7 +122,7 @@ public class GamaPreferencesView {
 			instance.checkActivables(p, Cast.asBool(null, p.getValue()));
 		}
 		instance.resetSyntaxConfiguration();
-		instance.open();
+		instance.open(tabName);
 	}
 
 	/**
@@ -205,7 +209,8 @@ public class GamaPreferencesView {
 	private void buildContentsFor(final CTabItem tab, final Map<String, List<Pref<?>>> entries) {
 		final var viewer = new ParameterExpandBar(tab.getParent(), SWT.V_SCROLL);
 		viewer.setBackground(
-				!ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.DARK_GRAY.darker());
+				ThemeHelper.usesCustomBackgrounds() ? IGamaColors.WIDGET_BACKGROUND.color()
+						: !ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.DARK_GRAY.darker());
 		viewer.setSpacing(10);
 		tab.setControl(viewer);
 
@@ -364,7 +369,8 @@ public class GamaPreferencesView {
 			final Path path = Path.of(file);
 			final String name = path.getFileName().toString().replaceFirst("\\.gama-syntax$", "");
 			final Configuration configuration =
-					new Configuration(name, SyntaxHighlightingPreferences.staged(modelValues).themes());
+					new Configuration(name, SyntaxHighlightingPreferences.staged(modelValues).themes(),
+							SyntaxHighlightingPreferences.staged(modelValues).backgrounds());
 			try {
 				SyntaxHighlightingPreferences.save(path, configuration);
 				modelValues.put(SyntaxHighlightingPreferences.CONFIGURATION_KEY, name);
@@ -397,6 +403,7 @@ public class GamaPreferencesView {
 						markSyntaxCustom();
 					}, false);
 			editors.put(colorKey, editor);
+			if (colorKey.equals(SyntaxHighlightingPreferences.backgroundKey(theme))) continue;
 			final Composite row = editor.getEditor().getParent();
 			((GridLayout) row.getLayout()).numColumns = 3;
 			for (final String property : List.of("bold", "italic")) {
@@ -428,7 +435,8 @@ public class GamaPreferencesView {
 
 	private void markSyntaxCustom() {
 		final Configuration configuration = SyntaxHighlightingPreferences.staged(modelValues);
-		SyntaxHighlightingPreferences.stage(new Configuration("Custom", configuration.themes()), modelValues);
+		SyntaxHighlightingPreferences.stage(
+				new Configuration("Custom", configuration.themes(), configuration.backgrounds()), modelValues);
 		refreshSyntaxConfigurationName();
 	}
 
@@ -440,6 +448,9 @@ public class GamaPreferencesView {
 
 	private void refreshSyntaxControls() {
 		for (final String theme : SyntaxHighlightingPreferences.THEMES) {
+			final String backgroundKey = SyntaxHighlightingPreferences.backgroundKey(theme);
+			final IParameterEditor background = editors.get(backgroundKey);
+			if (background != null) background.displayValue(modelValues.get(backgroundKey));
 			for (final String id : SyntaxHighlightingPreferences.categories().keySet()) {
 				final String key = SyntaxHighlightingPreferences.key(id, "color", theme);
 				final IParameterEditor editor = editors.get(key);
@@ -455,7 +466,9 @@ public class GamaPreferencesView {
 		final Configuration configuration = SyntaxHighlightingPreferences.staged(modelValues);
 		String name = configuration.name();
 		for (final String builtIn : SyntaxHighlightingPreferences.BUILT_INS) {
-			if (configuration.themes().equals(SyntaxHighlightingPreferences.builtIn(builtIn).themes())) {
+			final Configuration candidate = SyntaxHighlightingPreferences.builtIn(builtIn);
+			if (configuration.themes().equals(candidate.themes())
+					&& configuration.backgrounds().equals(candidate.backgrounds())) {
 				name = builtIn;
 				break;
 			}
@@ -678,6 +691,10 @@ public class GamaPreferencesView {
 	 * Open.
 	 */
 	public void open() {
+		open(null);
+	}
+
+	private void open(final String tabName) {
 		final var loc = DIALOG_LOCATION.getValue();
 		final var size = DIALOG_SIZE.getValue();
 		final int tab = DIALOG_TAB.getValue();
@@ -698,6 +715,14 @@ public class GamaPreferencesView {
 		}
 
 		tabFolder.setSelection(tab >= 0 && tab < tabFolder.getItemCount() ? tab : 0);
+		if (tabName != null) {
+			for (final CTabItem item : tabFolder.getItems()) {
+				if (tabName.equals(item.getText())) {
+					tabFolder.setSelection(item);
+					break;
+				}
+			}
+		}
 		shell.setLocation(x, y);
 		shell.setSize(width, height);
 		shell.open();

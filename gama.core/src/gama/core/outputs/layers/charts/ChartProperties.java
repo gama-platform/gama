@@ -745,11 +745,15 @@ public class ChartProperties {
 	}
 
 	/**
-	 * Returns default series color based on the selected ColorBrewer palette preference.
+	 * Returns the default series color from the selected chart palette preference.
 	 */
 	public static IColor getDefaultSeriesColor(final IScope scope, final int index) {
 		String palette = GamaPreferences.Displays.CHART_COLOR_PALETTE.getValue();
 		int idx = Math.max(0, index);
+		if (palette != null && GamaPreferences.VINTAGE_PALETTES.containsKey(palette)) {
+			final var colors = GamaPreferences.VINTAGE_PALETTES.get(palette);
+			return colors.get(idx % colors.size()).get();
+		}
 		if (GamaPreferences.Displays.CHART_PALETTE_VIVID.equals(palette) && GamaPreferences.VIVID_COLORS.length > 0)
 			return GamaPreferences.VIVID_COLORS[idx % GamaPreferences.VIVID_COLORS.length].get();
 		if (GamaPreferences.Displays.CHART_PALETTE_TABLEAU.equals(palette) && GamaPreferences.TABLEAU_COLORS.length > 0)

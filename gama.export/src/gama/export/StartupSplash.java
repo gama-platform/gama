@@ -25,8 +25,8 @@ public final class StartupSplash {
 				|| Boolean.TRUE.equals(splash.getData(INSTALLED))) return;
 		splash.setData(INSTALLED, Boolean.TRUE);
 		final Display display = splash.getDisplay();
-		final Color background = new Color(display, 24, 60, 85);
-		final Color foreground = new Color(display, 204, 219, 214);
+		final Color background = new Color(display, 248, 246, 240);
+		final Color foreground = new Color(display, 57, 66, 61);
 		final String family = display.getFontList("Helvetica Neue", true).length == 0
 				? splash.getFont().getFontData()[0].getName() : "Helvetica Neue";
 		final Font font = new Font(display, family, 14, SWT.NORMAL);

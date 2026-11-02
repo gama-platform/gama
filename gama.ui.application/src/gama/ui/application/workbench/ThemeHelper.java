@@ -50,6 +50,8 @@ import com.google.common.collect.Iterables;
 
 import gama.api.gaml.types.IType;
 import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
 
@@ -111,6 +113,34 @@ public class ThemeHelper {
 						chooseThemeBasedOnPreferences();
 					}).withLabels("Light", "Dark")
 					.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("black"));
+
+	public static final Pref<Boolean> CUSTOM_BACKGROUNDS = create("pref_theme_custom_backgrounds",
+			"Use custom theme backgrounds (requires restart)", false, IType.BOOL, false)
+					.in(NAME, UI).restartRequired().activates("pref_theme_background_light", "pref_theme_background_dark")
+					.withLabels("Custom", "System");
+
+	public static final Pref<IColor> LIGHT_BACKGROUND = create("pref_theme_background_light",
+			"Light theme background (requires restart)", GamaPreferences.CREAM_PAPER, IType.COLOR, false)
+					.in(NAME, UI).restartRequired();
+
+	public static final Pref<IColor> DARK_BACKGROUND = create("pref_theme_background_dark",
+			"Dark theme background (requires restart)", () -> GamaColorFactory.get(38, 43, 42), IType.COLOR, false)
+					.in(NAME, UI).restartRequired();
+
+	// Freeze the applied settings for this process: saving preferences only affects the next launch.
+	private static class Backgrounds {
+		static final boolean ENABLED = CUSTOM_BACKGROUNDS.getValue();
+		static final IColor LIGHT = LIGHT_BACKGROUND.getValue();
+		static final IColor DARK = DARK_BACKGROUND.getValue();
+	}
+
+	public static boolean usesCustomBackgrounds() { return Backgrounds.ENABLED; }
+
+	public static Color backgroundColor(final int systemColor) {
+		if (!usesCustomBackgrounds()) return Display.getDefault().getSystemColor(systemColor);
+		final IColor color = isDark() ? Backgrounds.DARK : Backgrounds.LIGHT;
+		return new Color(color.red(), color.green(), color.blue());
+	}
 
 	/**
 	 * Chooses a light/dark theme based on the GAMA preferences and the actual theme
@@ -329,7 +359,23 @@ public class ThemeHelper {
 		ExtendedDocumentCSS doc = (ExtendedDocumentCSS) engine.getDocumentCSS();
 
 		try {
-			Reader reader = new StringReader(cssText);
+			final Color background = backgroundColor(SWT.COLOR_WIDGET_BACKGROUND);
+			final String color = String.format("#%02x%02x%02x",
+					background.getRed(), background.getGreen(), background.getBlue());
+			Reader reader = new StringReader((!usesCustomBackgrounds() ? "" : """
+					Shell, Composite, Label, Group, Sash, SashForm, ScrolledComposite,
+					ToolBar, CTabFolder, TabFolder, ExpandBar, Tree, Table, List, Text {
+						background-color: %s;
+					}
+					.MTrimmedWindow, .MPart, .MPartStack, .MTrimBar, .MToolControl,
+					.MPartSashContainer, .MPartStack.active, .MPartStack.inactive {
+						background-color: %s;
+					}
+					.MPartStack {
+						swt-selected-tabs-background: %s;
+						swt-unselected-tabs-color: %s;
+					}
+					""".formatted(color, color, color, color)) + cssText);
 			doc.addStyleSheet(engine.parseStyleSheet(reader));
 			engine.reapply();
 
@@ -357,7 +403,7 @@ public class ThemeHelper {
 	 * @return the original backgound
 	 */
 	public static Color getOriginalBackgound() {
-		return getDisplay().getSystemColor(isDark() ? SWT.COLOR_BLACK : SWT.COLOR_WHITE);
+		return backgroundColor(isDark() ? SWT.COLOR_BLACK : SWT.COLOR_WHITE);
 	}
 
 	/**

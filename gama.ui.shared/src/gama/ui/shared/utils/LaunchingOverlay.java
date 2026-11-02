@@ -318,8 +318,8 @@ public class LaunchingOverlay {
 	 * Builds all SWT widgets, installs listeners, and opens the overlay shell. Must be called on the UI thread.
 	 */
 	private void buildAndOpen() {
-		final Color bg = parent.getBackground();
-		final Color fg = parent.getForeground();
+		final Color bg = LaunchPresentation.backgroundColor();
+		final Color fg = LaunchPresentation.foregroundColor();
 
 		// Keep the overlay as an owned, undecorated child shell instead of a modal one so
 		// it still covers the workbench client area while leaving the native window frame

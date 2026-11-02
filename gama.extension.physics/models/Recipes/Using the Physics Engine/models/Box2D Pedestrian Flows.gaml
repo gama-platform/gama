@@ -50,9 +50,9 @@ global parent: physical_world {
 				location <- {2, rnd(size * 0.35, size * 0.65)};
 				color <- rgb(133, 177, 205);
 				detour_side <- location.y >= size / 2 ? 1 : -1;
-				preferred_speed <- rnd(min_pedestrian_speed, max_pedestrian_speed);
+				preferred_speed <- rnd(min_pedestrian_speed, max_pedestrian_speed); 
 			}
-		}
+		} 
 		if (length(pedestrian where (!each.horizontal_flow)) < max_per_flow) {
 			create pedestrian (horizontal_flow: false) {
 				location <- {rnd(size * 0.35, size * 0.65), 2};

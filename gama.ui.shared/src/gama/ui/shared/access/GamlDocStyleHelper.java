@@ -251,6 +251,10 @@ public class GamlDocStyleHelper {
 			css.append("th, td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #e1e4e8; }\n");
 			css.append("th { background-color: #f0f4f8; color: #2c3e50; font-weight: 600; }\n");
 		}
+		if (ThemeHelper.usesCustomBackgrounds()) {
+			final var background = ThemeHelper.backgroundColor(org.eclipse.swt.SWT.COLOR_LIST_BACKGROUND);
+			css.append("body { ").append(ThemeHelper.getCSSProperty("background-color", background)).append(" }\n");
+		}
 		return css.toString();
 	}
 }

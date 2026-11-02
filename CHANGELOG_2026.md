@@ -19,6 +19,25 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Swiss-inspired simulation and editor palettes
+
+Swiss, Warm Amber and Mineral add eight-color categorical palettes alongside
+the existing simulation/chart schemes, also available through
+`vintage_colors(name)` in GAML. Swiss becomes the default for unset simulation
+and chart preferences; default agents use muted blue and highlights burnt orange.
+Saved preferences and explicit model colors are preserved.
+Box2D's cream paper (`#f8f6f0`) is used by the splash and default simulation/chart
+backgrounds. Theme > UI offers an opt-in custom-background switch (off by default)
+and separate light/dark UI colors, all requiring restart. System mode restores
+the original Eclipse/SWT backgrounds.
+
+The same families provide optional light/dark editor configurations alongside
+GAMA 2026 and GAMA 2025. Each configuration includes independently editable
+light/dark editor backgrounds, applied on Save and included in version 2 exports;
+version 1 imports remain supported. Game of Life (grid agents), the basic agent-based SIR
+and simple Lotka-Volterra demos receive a paper-and-ink visual treatment.
+See [palette documentation and examples](PALETTES.md).
+
 ### GitHub Copilot: independent optional integration
 
 Copilot packaging and GAMA-specific integration move to

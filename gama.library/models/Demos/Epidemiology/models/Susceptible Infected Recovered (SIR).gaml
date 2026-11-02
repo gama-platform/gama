@@ -13,6 +13,11 @@
 model si
 
 global { 
+	list<rgb> inks <- vintage_colors("Swiss");
+	rgb susceptible_ink <- inks[2];
+	rgb infected_ink <- inks[1];
+	rgb immune_ink <- inks[0];
+	rgb paper <- rgb(248, 246, 240);
 	//Number of susceptible host at init
     int number_S <- 495;
     //Number of infected host at init
@@ -41,21 +46,21 @@ global {
         	is_susceptible <- true;
         	is_infected <-  false;
             is_immune <-  false; 
-            color <-  rgb(46,204,113);
+            color <- susceptible_ink;
         }
         //Creation of all the infected Host
         create Host number: number_I {
             is_susceptible <-  false;
             is_infected <-  true;
             is_immune <-  false; 
-            color <-  rgb(231,76,60); 
+            color <- infected_ink;
        }
        //Creation of all the resistant Host
        create Host number: number_R {
             is_susceptible <-  false;
             is_infected <-  false;
             is_immune <-  true; 
-            color <-  rgb(52,152,219); 
+            color <- immune_ink;
        }
        
        
@@ -72,7 +77,7 @@ global {
 
 //Grid used to discretize space 
 grid sir_grid width: 50 height: 50 use_individual_shapes: false use_regular_agents: false frequency: 0{
-	rgb color <- #white;
+	rgb color <- paper;
 	list<sir_grid> neighbours <- (self neighbors_at neighbours_size) ;       
 }
 
@@ -82,7 +87,7 @@ species Host  {
 	bool is_susceptible <- true;
 	bool is_infected <- false;
     bool is_immune <- false;
-    rgb color <- rgb(46,204,113);
+    rgb color <- susceptible_ink;
     sir_grid myPlace;
     
     init {
@@ -114,7 +119,7 @@ species Host  {
         	is_susceptible <-  false;
             is_infected <-  true;
             is_immune <-  false;
-            color <-  rgb(231,76,60);    
+            color <- infected_ink;
         }
     }
     //Reflex to make the agent recovered if it is infected and if it success the probability
@@ -122,7 +127,7 @@ species Host  {
     	is_susceptible <- false;
     	is_infected <- false;
         is_immune <- true;
-        color <- rgb(52,152,219);
+        color <- immune_ink;
     }
     //Reflex to kill the agent according to the probability of dying
     reflex shallDie when: flip(nu) {
@@ -153,16 +158,16 @@ experiment Simulation type: gui {
 	parameter "Size of the neighbours" var:neighbours_size unit: "cells";
  	output { 
  		layout #split;
-	    display sir_display  type:2d antialias:false {
-	        grid sir_grid border: #lightgray;
+	    display sir_display background: paper type:2d antialias:false {
+	        grid sir_grid border: rgb(218, 210, 192);
 	        species Host aspect: basic;
 	    }
 	        
-	    display chart refresh: every(10#cycles) type: 2d {
-			chart "Susceptible" type: series background: #white style: exploded {
-				data "susceptible" value: Host count (each.is_susceptible) color: rgb(46,204,113);
-				data "infected" value: Host count (each.is_infected) color: rgb(231,76,60);
-				data "immune" value: Host count (each.is_immune) color: rgb(52,152,219);
+	    display chart background: paper refresh: every(10#cycles) type: 2d {
+			chart "Susceptible" type: series background: paper axes: rgb(57, 66, 61) style: exploded {
+				data "susceptible" value: Host count (each.is_susceptible) color: susceptible_ink;
+				data "infected" value: Host count (each.is_infected) color: infected_ink;
+				data "immune" value: Host count (each.is_immune) color: immune_ink;
 			}
 		}
 			

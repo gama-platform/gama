@@ -65,6 +65,9 @@ retain their existing handling, including the headless application's status 2 wh
 
 ## Desktop startup
 
+See [Vintage color palettes](PALETTES.md) for Swiss, Warm Amber and Mineral
+simulation/chart palettes, optional editor configurations and paper-and-ink demos.
+
 Navigator project/folder wrappers load their immediate children on demand instead of recursively wrapping
 the workspace. Model-count labels and problem overlays scan Eclipse resources without constructing hidden
 wrappers. Search and expand-all still traverse the tree when requested, and restoring expanded folders or

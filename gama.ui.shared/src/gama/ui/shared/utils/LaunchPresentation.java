@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -20,10 +21,11 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import gama.dev.DEBUG;
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.ExperimentMenu;
 import gama.ui.shared.resources.GamaIcon;
-import gama.ui.shared.resources.IGamaColors;
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaIcons;
 
 /** Shared Home/launch card; choosing an experiment starts it directly when several are available. */
@@ -42,19 +44,23 @@ public final class LaunchPresentation extends Composite {
 
 	private final Control actionControl;
 
+	public static Color backgroundColor() {
+		return ThemeHelper.backgroundColor(SWT.COLOR_WIDGET_BACKGROUND);
+	}
+
+	public static Color foregroundColor() {
+		return (ThemeHelper.isDark() ? GamaColors.get(235, 231, 219) : GamaColors.get(36, 40, 35)).color();
+	}
+
 	/** Installs a centered watermark; descendants can inherit it without obscuring it with solid backgrounds. */
 	public static void installBackground(final Composite surface) {
+		GamaColors.setBackground(backgroundColor(), surface);
+		surface.setForeground(foregroundColor());
 		final ImageDescriptor descriptor =
 				AbstractUIPlugin.imageDescriptorFromPlugin("gama.ui.shared", "welcome/welcome.png");
 		if (descriptor == null) throw new IllegalStateException("The GAMA welcome image is missing");
-		final Image original = descriptor.createImage(false, surface.getDisplay());
-		if (original == null) throw new IllegalStateException("Unable to load the GAMA welcome image");
-		final Image watermark;
-		try {
-			watermark = new Image(surface.getDisplay(), original, SWT.IMAGE_GRAY);
-		} finally {
-			original.dispose();
-		}
+		final Image watermark = descriptor.createImage(false, surface.getDisplay());
+		if (watermark == null) throw new IllegalStateException("Unable to load the GAMA welcome image");
 		class Background implements Runnable {
 			private Image image;
 
@@ -96,7 +102,7 @@ public final class LaunchPresentation extends Composite {
 	public LaunchPresentation(final Composite parent, final Content content, final String selection,
 			final boolean launching, final Consumer<String> choose, final Runnable action) {
 		super(parent, SWT.NONE);
-		setForeground(parent.getShell().getForeground());
+		setForeground(foregroundColor());
 		setFont(parent.getShell().getFont());
 		setBackgroundMode(SWT.INHERIT_FORCE);
 		final GridLayout layout = new GridLayout();
@@ -106,6 +112,7 @@ public final class LaunchPresentation extends Composite {
 		layout.verticalSpacing = 4;
 		setLayout(layout);
 		final Label title = new Label(this, SWT.CENTER | SWT.WRAP);
+		title.setForeground(foregroundColor());
 		title.setText(content.title());
 		final Font font = new Font(getDisplay(), getFont().getFontData()[0].getName(), 20, SWT.BOLD);
 		title.setFont(font);
@@ -117,6 +124,7 @@ public final class LaunchPresentation extends Composite {
 				.map(ExperimentMenu.Entry::label).findFirst().orElse(selection);
 		final boolean multiple = content.experiments().size() > 1;
 		final Label subtitle = new Label(this, SWT.CENTER | SWT.WRAP);
+		subtitle.setForeground(foregroundColor());
 		subtitle.setText(multiple && !launching ? "" : experiment);
 		final GridData subtitleData = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		subtitleData.verticalIndent = 24;
@@ -149,7 +157,8 @@ public final class LaunchPresentation extends Composite {
 			}
 		});
 		if (multiple) {
-			final FlatButton selector = FlatButton.menu(actions, IGamaColors.OK, "Choose Experiment...")
+			final var accent = ThemeHelper.isDark() ? GamaColors.get(139, 177, 195) : GamaColors.get(40, 81, 106);
+			final FlatButton selector = FlatButton.menu(actions, accent, "Choose Experiment...")
 					.withHeight(24).withHorizontalPadding(12);
 			selector.setToolTipText("Choose an experiment to launch");
 			final GridData selectorData = new GridData(SWT.CENTER, SWT.CENTER, true, true);
@@ -180,6 +189,7 @@ public final class LaunchPresentation extends Composite {
 		}
 		if (!content.description().isBlank()) {
 			final Label description = new Label(this, SWT.CENTER | SWT.WRAP);
+			description.setForeground(foregroundColor());
 			description.setText(content.description());
 			final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 			data.widthHint = 560;

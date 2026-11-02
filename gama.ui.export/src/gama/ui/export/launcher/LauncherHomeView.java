@@ -11,6 +11,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import gama.api.GAMA;
 import gama.dev.DEBUG;
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.utils.LaunchPresentation;
 
 public final class LauncherHomeView extends ViewPart {
@@ -46,8 +47,8 @@ public final class LauncherHomeView extends ViewPart {
 		selectedExperiment = configuration.startupExperiment().isBlank() ? helper.getSelections().getFirst()
 				: configuration.startupExperiment();
 		final var scroll = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
-		scroll.setBackground(parent.getShell().getBackground());
-		scroll.setForeground(parent.getShell().getForeground());
+		GamaColors.setBackground(LaunchPresentation.backgroundColor(), scroll);
+		scroll.setForeground(LaunchPresentation.foregroundColor());
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
 		scroll.setBackgroundMode(SWT.INHERIT_FORCE);

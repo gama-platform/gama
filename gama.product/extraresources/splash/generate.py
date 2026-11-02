@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Regenerate the blueprint splashes: python3 -m pip install cairosvg Pillow; python3 generate.py.
+"""Regenerate the Swiss balanced splashes: python3 -m pip install cairosvg Pillow; python3 generate.py.
 
 Run on macOS with Gotham Black, Avenir Next and Helvetica Neue installed (not bundled).
-Uses artwork.svg, 40% colored fills, pale outlines, a 20px grid and seeded paper grain.
+Blends the pale Swiss artwork and original multiply-blended inks equally on cream paper, with seeded grain and no grid.
 Text uses a 60px left margin, matching the artwork's right margin and StartupSplash.
 Outputs 900x560 at 72 DPI and 1800x1120 at 144 DPI (900x560 logical points on macOS).
 No renderer is needed at build or startup. Update the version and copyright below for a release.
@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 
 import cairocffi as cairo
 import cairosvg
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops
 
 
 ROOT = Path(__file__).resolve().parent
@@ -27,8 +27,8 @@ ET.register_namespace("", SVG)
 artwork = ET.parse(ROOT / "artwork.svg").getroot()
 artwork.attrib.update(x="390", y="62.5", width="450", height="435")
 palette = {
-    "#3570a0": "#428ac0", "#3770a1": "#428ac0", "#d3673a": "#dc7849",
-    "#efb54f": "#e6b958", "#f8b332": "#f0b63e", "#a14423": "#bf623e",
+    "#3570a0": "#28516a", "#3770a1": "#28516a", "#d3673a": "#c75d36",
+    "#efb54f": "#d7ab53", "#f8b332": "#e6b23d", "#a14423": "#9a432e",
 }
 for element in artwork.iter():
     for attribute in ("fill", "stroke"):
@@ -39,12 +39,12 @@ for element in artwork.iter():
 splash = ET.Element(f"{{{SVG}}}svg", {
     "width": "900", "height": "560", "viewBox": "0 0 900 560",
 })
-ET.SubElement(splash, f"{{{SVG}}}rect", {
-    "width": "900", "height": "560", "fill": "#183c55",
+paper = ET.SubElement(splash, f"{{{SVG}}}rect", {
+    "width": "900", "height": "560", "fill": "#f8f6f0",
 })
 
 
-def text(value, y, size, color="#ccdbd6", family="Helvetica Neue", weight="normal"):
+def text(value, y, size, color="#39423d", family="Helvetica Neue", weight="normal"):
     element = ET.SubElement(splash, f"{{{SVG}}}text", {
         "x": "60", "y": str(y), "font-family": family,
         "font-size": str(size), "fill": color, "font-weight": weight,
@@ -60,14 +60,15 @@ title_width = metrics.text_extents("GAMA")[2]
 metrics.select_font_face("Avenir Next", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 version_size = 72 * title_width / metrics.text_extents("2026-11")[2]
 
-text("GAMA", 110, 72, "#f0e9d8", "Gotham Black", "normal")
-version = text(None, 170, version_size, "#428ac0", "Avenir Next", "normal")
+text("GAMA", 110, 72, "#242823", "Gotham Black", "normal")
+version = text(None, 170, version_size, "#28516a", "Avenir Next", "normal")
 ET.SubElement(version, f"{{{SVG}}}tspan").text = "2026-"
-ET.SubElement(version, f"{{{SVG}}}tspan", {"fill": "#bf623e"}).text = "11"
+ET.SubElement(version, f"{{{SVG}}}tspan", {"fill": "#9a432e"}).text = "11"
 text("https://gama-platform.org", 488, 18)
 text("\u00a9 UMMISCO & Partners 2007-2026", 516, 16)
 
 source = ET.tostring(splash)
+original_source = ET.tostring(splash)
 
 
 def render(document, scale):
@@ -78,6 +79,7 @@ def render(document, scale):
 
 # Preserve each arc's transparency and its separate outline-only path.
 layers = []
+original_layers = []
 for group in artwork.findall(".//{*}g[@id='Canevas_1_Calque_3']/{*}g"):
     layer_artwork = deepcopy(artwork)
     container = layer_artwork.find(".//{*}g[@id='Canevas_1_Calque_3']")
@@ -86,11 +88,24 @@ for group in artwork.findall(".//{*}g[@id='Canevas_1_Calque_3']/{*}g"):
     container.append(deepcopy(group))
     layer = ET.Element(f"{{{SVG}}}svg", {"width": "900", "height": "560", "viewBox": "0 0 900 560"})
     layer.append(layer_artwork)
+    original_layers.append(ET.tostring(layer))
     for element in layer_artwork.iter(f"{{{SVG}}}path"):
-        element.set("fill-opacity", str(float(element.get("fill-opacity", "1")) * 0.4))
-        element.set("stroke", "#d4dfd8")
-        element.set("stroke-width", "0.8")
+        element.set("fill-opacity", str(float(element.get("fill-opacity", "1")) * 0.38))
+        element.set("stroke", "#979b90")
+        element.set("stroke-width", "0.5")
+        element.set("stroke-opacity", "0.45")
     layers.append(ET.tostring(layer))
+
+
+def grain(image):
+    image = image.convert("RGB")
+    noise = random.Random(202611)
+    image.putdata([
+        tuple(max(0, min(255, round(channel + noise.gauss(0, 0.8)))) for channel in pixel)
+        for pixel in image.getdata()
+    ])
+    return image
+
 
 for scale, dpi, destination in (
     (1, 72, REPO / "gama.ui.application/splash.png"),
@@ -99,17 +114,11 @@ for scale, dpi, destination in (
     image = render(source, scale)
     for layer in layers:
         image = Image.alpha_composite(image, render(layer, scale))
-    grid = Image.new("RGBA", image.size)
-    draw = ImageDraw.Draw(grid)
-    for x in range(0, image.width, 20 * scale):
-        draw.line((x, 0, x, image.height), fill=(195, 220, 220, 14), width=scale)
-    for y in range(0, image.height, 20 * scale):
-        draw.line((0, y, image.width, y), fill=(195, 220, 220, 14), width=scale)
-    image = Image.alpha_composite(image, grid).convert("RGB")
-    noise = random.Random(202611)
-    image.putdata([
-        tuple(max(0, min(255, round(channel + noise.gauss(0, 0.8)))) for channel in pixel)
-        for pixel in image.getdata()
-    ])
+    original = render(original_source, scale).convert("RGB")
+    for layer in original_layers:
+        foreground = render(layer, scale)
+        multiplied = ImageChops.multiply(original, foreground.convert("RGB"))
+        original = Image.composite(multiplied, original, foreground.getchannel("A"))
+    image = Image.blend(grain(image), grain(original), 0.5)
     image.save(destination, dpi=(dpi, dpi))
     print(destination)

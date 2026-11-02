@@ -15,6 +15,7 @@ import static gama.ui.shared.resources.GamaColors.system;
 
 import org.eclipse.swt.SWT;
 
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 
 /**
@@ -75,19 +76,21 @@ public interface IGamaColors {
 	GamaUIColor BLACK = new GamaUIColor(system(SWT.COLOR_BLACK));
 
 	/** The parameters background. */
-	GamaUIColor PARAMETERS_BACKGROUND = isDark() ? get(120, 120, 120) : get(255, 255, 255);
+	GamaUIColor PARAMETERS_BACKGROUND = ThemeHelper.usesCustomBackgrounds()
+			? get(ThemeHelper.backgroundColor(SWT.COLOR_WIDGET_BACKGROUND))
+			: isDark() ? get(120, 120, 120) : get(255, 255, 255);
 
 	/** The dark orange. */
 	GamaUIColor DARK_ORANGE = get(225, 92, 15);
 
 	/** The widget background. */
-	GamaUIColor WIDGET_BACKGROUND = get(system(SWT.COLOR_WIDGET_BACKGROUND));
+	GamaUIColor WIDGET_BACKGROUND = get(ThemeHelper.backgroundColor(SWT.COLOR_WIDGET_BACKGROUND));
 
 	/** The widget foreground. */
 	GamaUIColor WIDGET_FOREGROUND = get(system(SWT.COLOR_WIDGET_FOREGROUND));
 
 	/** The list background. */
-	GamaUIColor LIST_BACKGROUND = get(system(SWT.COLOR_LIST_BACKGROUND));
+	GamaUIColor LIST_BACKGROUND = get(ThemeHelper.backgroundColor(SWT.COLOR_LIST_BACKGROUND));
 
 	/** The list foreground. */
 	GamaUIColor LIST_FOREGROUND = get(system(SWT.COLOR_LIST_FOREGROUND));
