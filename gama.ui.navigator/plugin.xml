@@ -19,18 +19,6 @@
       </command>
       <command
             categoryId="gama.category"
-            defaultHandler="gama.ui.navigator.commands.InstallOptionalFeatureHandler"
-            id="gama.ui.install.graphical"
-            name="Install diagramming...">
-      </command>
-      <command
-            categoryId="gama.category"
-            defaultHandler="gama.ui.navigator.commands.InstallOptionalFeatureHandler"
-            id="gama.ui.install.copilot"
-            name="Install Copilot...">
-      </command>
-      <command
-            categoryId="gama.category"
             defaultHandler="gama.ui.navigator.commands.UpdateHandler"
             id="gama.ui.update"
             name="Check for updates">
@@ -49,30 +37,15 @@
       <menuContribution
             allPopups="false"
             locationURI="menu:support?after=gama.ui.shared.help.separator2">
-         <command
-               commandId="gama.ui.install.graphical"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.graphical.svg"
-               label="Install diagramming..."
-               style="push"
-               tooltip="Install the GAMA graphical editor and its Graphiti dependencies">
+         <dynamic
+               class="gama.ui.navigator.commands.InstallExtensionsContribution"
+               id="gama.ui.install.extensions">
             <visibleWhen checkEnabled="false">
                <not>
                   <systemTest property="exported_runner" value="true"/>
                </not>
             </visibleWhen>
-         </command>
-         <command
-               commandId="gama.ui.install.copilot"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.copilot.svg"
-               label="Install Copilot..."
-               style="push"
-               tooltip="Install GitHub Copilot and its dependencies">
-            <visibleWhen checkEnabled="false">
-               <not>
-                  <systemTest property="exported_runner" value="true"/>
-               </not>
-            </visibleWhen>
-         </command>
+         </dynamic>
          <separator
                name="gama.ui.shared.separator4"
                visible="true">

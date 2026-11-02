@@ -50,7 +50,7 @@ p2 resolves compatible upstream Copilot components from Microsoft and platform
 dependencies from the fixed Eclipse 2026-03 repository, without mirroring them
 or moving GAMA to a newer Eclipse release.
 
-**Support > Install Copilot...** now uses that site rather than the running GAMA
+**Support > Install GAMA extensions... > Install Copilot extension** now uses that site rather than the running GAMA
 release's update repository; subsequent updates use **Support > Check for Updates**.
 License acceptance, trust checks, GitHub sign-in and entitlement requirements remain.
 The installer checks for the GAMA wrapper feature, so an upstream-only Copilot
@@ -62,7 +62,7 @@ and UI adaptations belong to the standalone integration; generic GAML editor
 extension support stays in GAMA. A new `gama.ui.application.startup` extension
 point runs optional `Runnable` contributions before workspace selection and workbench
 creation. See the [migration notes](MIGRATION_GUIDE_2026.md#optional-copilot-integration-and-pre-workbench-initialization)
-and [installation documentation](.github/SUPPORT.md#installing-optional-diagramming-or-copilot).
+and [installation documentation](.github/SUPPORT.md#installing-gama-extensions).
 
 ### Benchmark statement: individual durations and optional console output
 

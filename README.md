@@ -40,12 +40,12 @@ baseline, build workflow and p2 update site: <https://gama-platform.org/gama.cop
 This thin site hosts only GAMA's integration; p2 downloads compatible Copilot
 components from Microsoft and platform dependencies from Eclipse **2026-03**.
 It is not bundled with GAMA or built by this repository's Maven reactor.
-In a packaged installation, choose **Support > Install Copilot...**, review the
+In a packaged installation, choose **Support > Install GAMA extensions... > Install Copilot extension**, review the
 licenses and trust prompts, then restart when requested. Use **Support > Check for
 Updates** for subsequent updates. GitHub sign-in and a Copilot entitlement are
 managed by the upstream extension.
 
-See the [installation and maintainer notes](.github/SUPPORT.md#installing-optional-diagramming-or-copilot)
+See the [installation and maintainer notes](.github/SUPPORT.md#installing-gama-extensions)
 and the standalone repository's README for dependencies and source builds.
 Report GAMA-specific Copilot packaging and integration problems in
 [gama.copilot's issue tracker](https://github.com/gama-platform/gama.copilot/issues);

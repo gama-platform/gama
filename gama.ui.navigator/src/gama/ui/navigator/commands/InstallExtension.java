@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * InstallOptionalFeatureHandler.java, in gama.ui.navigator, is part of the source code of the GAMA modeling
+ * InstallExtension.java, in gama.ui.navigator, is part of the source code of the GAMA modeling
  * and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -14,9 +14,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
@@ -33,43 +30,39 @@ import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.ui.ProvisioningUI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 /**
  * Resolves an optional feature before opening p2's preselected installation wizard.
  */
-public class InstallOptionalFeatureHandler extends AbstractHandler {
+final class InstallExtension {
 
-	private static final String PLUGIN_ID = "gama.ui.navigator";
+	static final String PLUGIN_ID = "gama.ui.navigator";
 	private static final URI ECLIPSE_REPOSITORY = URI.create("https://download.eclipse.org/releases/2026-03/");
-	private static final URI COPILOT_REPOSITORY = URI.create("https://gama-platform.org/gama.copilot/");
+	static final URI COPILOT_REPOSITORY = URI.create("https://gama-platform.org/gama.copilot/");
 	private static final URI COPILOT_UPSTREAM_REPOSITORY =
 			URI.create("https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
-	private static final URI GRAPHICAL_REPOSITORY =
-			URI.create("https://updates.gama-platform.org/plugin/2026-06/gama.graphical.modeling/");
 	private static final AtomicBoolean INSTALLING = new AtomicBoolean();
 
-	@Override
-	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		final boolean graphical = switch (event.getCommand().getId()) {
-			case "gama.ui.install.graphical" -> true;
-			case "gama.ui.install.copilot" -> false;
-			default -> throw new ExecutionException("Unknown optional feature installation command");
-		};
-		final String label = graphical ? "Diagramming" : "GitHub Copilot";
-		final String featureId = graphical ? "gama.ui.feature.diagram.feature.group"
-				: "gama.feature.copilot.feature.group";
-		final Shell shell = HandlerUtil.getActiveShellChecked(event);
+	record Extension(URI repository, String featureId, String label) {}
+
+	private InstallExtension() {}
+
+	static void install(final Shell shell, final Extension extension) {
+		final String label = extension.label();
+		final String featureId = extension.featureId();
 		final var display = shell.getDisplay();
 		final ProvisioningUI ui = ProvisioningUI.getDefaultUI();
 		if (ui == null || ui.getProfileId() == null) {
-			throw new ExecutionException("Optional features can only be installed in a provisioned GAMA installation.");
+			StatusManager.getManager().handle(
+					error("Extensions can only be installed in a provisioned GAMA installation."),
+					StatusManager.LOG | StatusManager.SHOW);
+			return;
 		}
 		if (ui.hasScheduledOperations() || !INSTALLING.compareAndSet(false, true)) {
 			MessageDialog.openInformation(shell, "Installation in progress",
 					"Please finish the current software installation or update before installing another feature.");
-			return null;
+			return;
 		}
 
 		final Job job = Job.create("Preparing installation: " + label, monitor -> {
@@ -79,9 +72,10 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 						ui.getSession().getProvisioningAgent().getService(IProfileRegistry.class);
 				final IProfile profile = registry == null ? null : registry.getProfile(ui.getProfileId());
 				if (profile == null) return error("The GAMA installation profile is unavailable.");
-				final URI source = graphical ? GRAPHICAL_REPOSITORY : COPILOT_REPOSITORY;
-				final URI[] repositories = graphical ? new URI[] { source, ECLIPSE_REPOSITORY }
-						: new URI[] { source, COPILOT_UPSTREAM_REPOSITORY, ECLIPSE_REPOSITORY };
+				final URI source = extension.repository();
+				final URI[] repositories = source.equals(COPILOT_REPOSITORY)
+						? new URI[] { source, COPILOT_UPSTREAM_REPOSITORY, ECLIPSE_REPOSITORY }
+						: new URI[] { source, ECLIPSE_REPOSITORY };
 				for (final URI repository : repositories) {
 					ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
 				}
@@ -144,7 +138,6 @@ public class InstallOptionalFeatureHandler extends AbstractHandler {
 		});
 		job.setUser(true);
 		job.schedule();
-		return null;
 	}
 
 	private static IStatus error(final String message) {

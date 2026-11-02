@@ -76,7 +76,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 GitHub Copilot remains optional, but its wrapper feature, integration plug-in,
 dependency documentation and publishing workflow now belong to
 [gama.copilot](https://github.com/gama-platform/gama.copilot). Packaged GAMA installs
-`gama.feature.copilot` through **Support > Install Copilot...**, using the dedicated
+`gama.feature.copilot` through **Support > Install GAMA extensions... > Install Copilot extension**, using the dedicated
 p2 site <https://gama-platform.org/gama.copilot/>; use **Support > Check for Updates**
 after installation. Review the normal license and trust prompts. GitHub sign-in and
 Copilot entitlement are still handled by the upstream extension.

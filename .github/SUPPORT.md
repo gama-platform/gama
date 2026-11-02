@@ -1,9 +1,27 @@
 ## Support
 
-#### **Installing optional diagramming or Copilot**
+#### **Installing GAMA extensions**
 
-Use **Support > Install diagramming...** or **Support > Install Copilot...**
-in a packaged GAMA installation. GAMA selects the feature and update sites,
+Use **Support > Install GAMA extensions...** in a packaged GAMA installation,
+then choose the extension to install. The submenu discovers installable features
+from <https://updates.gama-platform.org/plugin/2026-06/> and
+<https://gama-platform.org/gama.copilot/> in the background when first opened.
+It keeps the list in memory and refreshes it on opening after an hour; use
+**Refresh extension list** to check immediately. The two sites load independently,
+and entries appear as each site finishes. Refresh jobs are visible in Eclipse's
+Progress view; **Cancel refresh** requests cancellation of outstanding reads.
+Entries are grouped by their source repository, with its last word capitalized
+(for example, `Inrae` or `Copilot`) shown as a disabled gray heading.
+Groups and their entries are sorted alphabetically. Entries are temporarily named
+**Install &lt;Name&gt; extension**, using the last one or two
+words of the repository name after `plugin`, `extension` or `gama`. Repositories
+publishing multiple features use feature identifiers to distinguish their entries.
+Only features advertised in p2 metadata are listed: a directory on the web server
+that is not included in the composite repository does not appear.
+Unavailable sites are reported, and any previously discovered entries for those
+sites remain available until a successful refresh.
+
+GAMA selects the feature and update sites,
 resolves dependencies in the background, and opens an installation review without
 requiring you to browse repositories or select individual plug-ins. Review the
 changes, accept the applicable licenses, confirm trust when prompted, and restart
@@ -24,7 +42,7 @@ Already-installed features are reported rather than reinstalled; use
 For Copilot, the installed check uses the GAMA wrapper feature: having only the
 upstream extension installed does not prevent adding the GAMA integration.
 
-These commands cover installation only. GitHub sign-in, Copilot entitlement,
+These entries cover installation only. GitHub sign-in, Copilot entitlement,
 and graphical/Copilot integration with GAML are separate from installation.
 Before opening the workbench, the optional integration seeds Copilot's configuration preferences to
 skip Quick Start and disable automatic What's New pages. Existing settings are
