@@ -65,7 +65,7 @@ version = text(None, 170, version_size, "#428ac0", "Avenir Next", "normal")
 ET.SubElement(version, f"{{{SVG}}}tspan").text = "2026-"
 ET.SubElement(version, f"{{{SVG}}}tspan", {"fill": "#bf623e"}).text = "11"
 text("https://gama-platform.org", 488, 18)
-text("(c) UMMISCO & Partners 2007-2026", 516, 16)
+text("\u00a9 UMMISCO & Partners 2007-2026", 516, 16)
 
 source = ET.tostring(splash)
 

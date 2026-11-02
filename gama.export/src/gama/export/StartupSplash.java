@@ -5,9 +5,10 @@ import java.util.function.Consumer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import gama.api.additions.GamaBundleLoader.LoadingStatus;
@@ -36,10 +37,22 @@ public final class StartupSplash {
 		final double scaleX = area.width / 900d;
 		final double scaleY = area.height / 560d;
 		final int width = Math.max(1, (int) Math.round(274 * scaleX));
-		final Label text = new Label(content, SWT.WRAP);
+		final Canvas text = new Canvas(content, SWT.DOUBLE_BUFFERED);
 		text.setBackground(background);
 		text.setForeground(foreground);
-		text.setFont(font);
+		text.setBounds((int) Math.round(60 * scaleX), (int) Math.round(200 * scaleY),
+				width, (int) Math.round(160 * scaleY));
+		final TextLayout messageLayout = new TextLayout(display);
+		messageLayout.setFont(font);
+		messageLayout.setWidth(width);
+		// Measure and draw with the same layout instead of relying on native Label sizing at high DPI.
+		text.addPaintListener(event -> {
+			final var bounds = text.getClientArea();
+			event.gc.setBackground(background);
+			event.gc.fillRectangle(bounds);
+			event.gc.setForeground(foreground);
+			messageLayout.draw(event.gc, 0, Math.max(0, (bounds.height - messageLayout.getBounds().height) / 2));
+		});
 		content.moveAbove(null);
 		final Runnable paint = new Runnable() {
 			private boolean dispatching;
@@ -61,8 +74,8 @@ public final class StartupSplash {
 		final Consumer<String> listener = message -> {
 			final Runnable update = () -> {
 				if (text.isDisposed()) return;
-				text.setText(message);
-				final int height = text.computeSize(width, SWT.DEFAULT).y;
+				messageLayout.setText(message);
+				final int height = Math.max(text.getSize().y, messageLayout.getBounds().height);
 				text.setBounds((int) Math.round(60 * scaleX),
 						(int) Math.round(280 * scaleY) - height / 2, width, height);
 				text.redraw();
@@ -77,6 +90,7 @@ public final class StartupSplash {
 		};
 		text.addDisposeListener(event -> {
 			LoadingStatus.removeListener(listener);
+			messageLayout.dispose();
 			font.dispose();
 			foreground.dispose();
 			background.dispose();

@@ -49,6 +49,7 @@ import com.google.common.cache.CacheBuilder;
 
 import gama.api.GAMA;
 import gama.api.constants.GamlFileExtension;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
@@ -298,6 +299,8 @@ public class NavigatorSearchControl {
 		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		data.widthHint = 120;
 		find.setLayoutData(data);
+		// Windows sizes toolbar rows from buttons, ignoring controls hosted in separators.
+		if (SystemInfo.isWindows()) { toolbar.space(1, parent.computeSize(SWT.DEFAULT, SWT.DEFAULT).y); }
 		toolbar.control(parent, SWT.DEFAULT);
 
 		final IFocusService focusService = navigator.getSite().getService(IFocusService.class);
