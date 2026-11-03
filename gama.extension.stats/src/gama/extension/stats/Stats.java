@@ -2789,17 +2789,6 @@ public class Stats {
 	}
 
 	/**
-	 * Computes the Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param x
-	 *            the first variable
-	 * @param y
-	 *            the second variable
-	 * @return the HSIC value
-	 */
-	/**
 	 * Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
 	 *
 	 * @param scope
@@ -2816,7 +2805,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence. Nil input lists or observations raise a GAML error.",
+			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence. Requires equally sized lists of at least two finite observations.",
 			examples = { @example (
 					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
 					isExecutable = false) })
@@ -2824,17 +2813,10 @@ public class Stats {
 			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])"),
 			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) <= 1.0") })
 	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y) {
-		if (x == null || y == null)
-			throw GamaRuntimeException.error("hsic requires non-nil input lists", scope);
-		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
-		double[] xData = new double[x.size()];
-		double[] yData = new double[y.size()];
-		for (int i = 0; i < x.size(); i++) {
-			if (x.get(i) == null || y.get(i) == null)
-				throw GamaRuntimeException.error("hsic requires non-nil observations", scope);
-			xData[i] = x.get(i);
-			yData[i] = y.get(i);
-		}
+		final double[] xData = finiteSample(scope, x, "hsic");
+		final double[] yData = finiteSample(scope, y, "hsic");
+		if (xData.length != yData.length)
+			throw GamaRuntimeException.error("Input lists must have the same size", scope);
 		return HSIC.computeNormalizedHSIC(xData, yData);
 	}
 
@@ -2857,29 +2839,20 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence. Requires equally sized lists of at least two finite observations and a positive permutation count. Runtime grows with the number of permutations; cancellation raises an error instead of returning a partial p-value.",
+			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test drawn from the simulation's random number generator. A small p-value (< 0.05) indicates strong evidence of dependence. Requires equally sized lists of at least two finite observations and a positive permutation count. Runtime grows with the number of permutations; cancellation raises an error instead of returning a partial p-value.",
 			examples = { @example (
-					value = "hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
+					value = "hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], 100)",
 					isExecutable = false) })
-	@test ("hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
+	@test ("seed <- 1.0; hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], 100) < 0.05")
 	@no_fuzz_test ("The permutation count controls runtime; generic #max_int inputs request billions of permutations. Covered by bounded HSIC regression tests.")
 	public static Double opHSICPValue(final IScope scope, final IList<Double> x, final IList<Double> y,
 			final Integer permutations) {
 		if (permutations == null || permutations <= 0)
 			throw GamaRuntimeException.error("hsic_p_value requires a positive permutation count", scope);
-		if (x == null || y == null)
-			throw GamaRuntimeException.error("hsic_p_value requires non-nil input lists", scope);
-		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
-		if (x.size() < 2)
-			throw GamaRuntimeException.error("hsic_p_value requires at least two observations", scope);
-		double[] xData = new double[x.size()];
-		double[] yData = new double[y.size()];
-		for (int i = 0; i < x.size(); i++) {
-			if (x.get(i) == null || y.get(i) == null)
-				throw GamaRuntimeException.error("hsic_p_value requires non-nil observations", scope);
-			xData[i] = x.get(i);
-			yData[i] = y.get(i);
-		}
+		final double[] xData = finiteSample(scope, x, "hsic_p_value");
+		final double[] yData = finiteSample(scope, y, "hsic_p_value");
+		if (xData.length != yData.length)
+			throw GamaRuntimeException.error("Input lists must have the same size", scope);
 		return HSIC.computePValue(scope, xData, yData, permutations);
 	}
 
