@@ -25,6 +25,9 @@ public class HSIC {
 	/** Relative tolerance for floating-point tie comparisons in permutation tests. */
 	private static final double TIE_TOLERANCE = 1e-12;
 
+	/** Threshold beyond which pairwise differences could overflow Double.MAX_VALUE on subtraction. */
+	private static final double OVERFLOW_SAFE_BOUND = Double.MAX_VALUE / 2.0;
+
 	/**
 	 * Computes the normalized HSIC value (R2-HSIC) for two sets of observations. This value is bounded between 0 and 1,
 	 * making it comparable across variables.
@@ -71,11 +74,14 @@ public class HSIC {
 				throw new IllegalArgumentException("Input arrays must contain finite values");
 		}
 
-		final double halfSigmaX = estimateHalfBandwidth(x);
-		final double halfSigmaY = estimateHalfBandwidth(y);
+		final double scaleX = computeScale(x);
+		final double scaleY = computeScale(y);
 
-		final double[][] K = computeGramMatrix(x, halfSigmaX);
-		final double[][] L = computeGramMatrix(y, halfSigmaY);
+		final double sigmaX = estimateBandwidth(x, scaleX);
+		final double sigmaY = estimateBandwidth(y, scaleY);
+
+		final double[][] K = computeGramMatrix(x, sigmaX, scaleX);
+		final double[][] L = computeGramMatrix(y, sigmaY, scaleY);
 
 		if (unbiased) {
 			// Unbiased estimator formula according to Song et al. (2007)
@@ -146,8 +152,10 @@ public class HSIC {
 			throw GamaRuntimeException.error("hsic_p_value computation was interrupted", scope);
 
 		final int n = x.length;
-		final double[][] Kc = centerMatrix(computeGramMatrix(x, estimateHalfBandwidth(x)));
-		final double[][] Lc = centerMatrix(computeGramMatrix(y, estimateHalfBandwidth(y)));
+		final double scaleX = computeScale(x);
+		final double scaleY = computeScale(y);
+		final double[][] Kc = centerMatrix(computeGramMatrix(x, estimateBandwidth(x, scaleX), scaleX));
+		final double[][] Lc = centerMatrix(computeGramMatrix(y, estimateBandwidth(y, scaleY), scaleY));
 
 		double observedTrace = 0.0;
 		double normK = 0.0;
@@ -184,23 +192,44 @@ public class HSIC {
 	}
 
 	/**
-	 * Computes the RBF Gram matrix using half-scaled differences {@code 0.5 * x_i - 0.5 * x_j} and
-	 * {@code halfSigma = 0.5 * sigma} so extreme finite values (up to {@link Double#MAX_VALUE}) never overflow.
+	 * Determines whether the sample contains extreme values that require 0.5 pre-scaling to prevent
+	 * overflow on pairwise subtraction, or whether direct subtraction can be used to preserve full precision
+	 * for subnormal numbers (down to {@link Double#MIN_VALUE}).
 	 *
 	 * @param data
 	 *            the observations
-	 * @param halfSigma
-	 *            half of the RBF bandwidth ({@code > 0})
+	 * @return 0.5 if extreme values exceed {@code Double.MAX_VALUE / 2}, 1.0 otherwise
+	 */
+	private static double computeScale(final double[] data) {
+		double max = 0.0;
+		for (final double v : data) {
+			final double abs = Math.abs(v);
+			if (abs > max) { max = abs; }
+		}
+		return max > OVERFLOW_SAFE_BOUND ? 0.5 : 1.0;
+	}
+
+	/**
+	 * Computes the RBF Gram matrix. When {@code scale == 0.5}, differences are pre-scaled by 0.5 to avoid
+	 * overflow on extreme values; when {@code scale == 1.0}, direct differences preserve exact subnormal precision.
+	 *
+	 * @param data
+	 *            the observations
+	 * @param sigma
+	 *            the RBF bandwidth in the scaled coordinate space ({@code > 0})
+	 * @param scale
+	 *            the scale factor (1.0 or 0.5)
 	 * @return the symmetric Gram matrix
 	 */
-	private static double[][] computeGramMatrix(final double[] data, final double halfSigma) {
+	private static double[][] computeGramMatrix(final double[] data, final double sigma, final double scale) {
 		final int n = data.length;
 		final double[][] gram = new double[n][n];
 		for (int i = 0; i < n; i++) {
 			gram[i][i] = 1.0;
-			final double halfXi = 0.5 * data[i];
+			final double xi = scale == 1.0 ? data[i] : scale * data[i];
 			for (int j = i + 1; j < n; j++) {
-				final double ratio = (halfXi - 0.5 * data[j]) / halfSigma;
+				final double xj = scale == 1.0 ? data[j] : scale * data[j];
+				final double ratio = (xi - xj) / sigma;
 				final double val = Math.exp(-0.5 * ratio * ratio);
 				gram[i][j] = val;
 				gram[j][i] = val;
@@ -235,30 +264,34 @@ public class HSIC {
 	}
 
 	/**
-	 * Median heuristic for half the RBF bandwidth ({@code 0.5 * sigma}), computed on half-scaled pairwise distances so
-	 * finite extremes never overflow or underflow due to intermediate squaring. Falls back to the median of strictly
-	 * positive pairwise distances when ties dominate, and to {@code 0.5} (i.e. {@code sigma = 1.0}) when constant.
+	 * Median heuristic for the RBF bandwidth in the given scale. Uses direct pairwise distances when
+	 * {@code scale == 1.0} (preventing subnormal precision loss) and half-scaled distances when {@code scale == 0.5}
+	 * (preventing overflow). Falls back to the median of strictly positive distances when ties dominate, and to 1.0
+	 * when all values are identical.
 	 */
-	private static double estimateHalfBandwidth(final double[] data) {
+	private static double estimateBandwidth(final double[] data, final double scale) {
 		final int n = data.length;
-		if (n < 2) return 0.5;
+		if (n < 2) return 1.0;
 		final long pairCount = (long) n * (n - 1) / 2;
 		if (pairCount > Integer.MAX_VALUE - 8)
 			throw new IllegalArgumentException("Sample size exceeds maximum supported capacity");
 		final int size = (int) pairCount;
-		final double[] halfDists = new double[size];
+		final double[] dists = new double[size];
 		int idx = 0;
 		for (int i = 0; i < n; i++) {
-			final double halfXi = 0.5 * data[i];
-			for (int j = i + 1; j < n; j++) { halfDists[idx++] = Math.abs(halfXi - 0.5 * data[j]); }
+			final double xi = scale == 1.0 ? data[i] : scale * data[i];
+			for (int j = i + 1; j < n; j++) {
+				final double xj = scale == 1.0 ? data[j] : scale * data[j];
+				dists[idx++] = Math.abs(xi - xj);
+			}
 		}
-		Arrays.sort(halfDists);
-		final double median = medianSlice(halfDists, 0, size);
+		Arrays.sort(dists);
+		final double median = medianSlice(dists, 0, size);
 		if (median > 0.0) return median;
 		for (int k = 0; k < size; k++) {
-			if (halfDists[k] > 0.0) return medianSlice(halfDists, k, size);
+			if (dists[k] > 0.0) return medianSlice(dists, k, size);
 		}
-		return 0.5;
+		return 1.0;
 	}
 
 	/**

@@ -50,6 +50,22 @@ experiment HSICRobustnessTest type: test autorun: true {
 		assert hsic_p_value([1.0, 2.0], [1.0, 2.0], 2) = 1.0;
 	}
 
+	test "Degenerate zero-variance samples return zero HSIC and unit p-value" {
+		// Both X and Y constant
+		assert hsic([2.0, 2.0, 2.0], [5.0, 5.0, 5.0]) = 0.0;
+		assert hsic_p_value([2.0, 2.0, 2.0], [5.0, 5.0, 5.0], 10) = 1.0;
+
+		// One constant, one varying
+		assert hsic([1.0, 1.0, 1.0, 1.0], [1.0, 2.0, 3.0, 4.0]) = 0.0;
+		assert hsic([1.0, 2.0, 3.0, 4.0], [1.0, 1.0, 1.0, 1.0]) = 0.0;
+		assert hsic_p_value([1.0, 1.0, 1.0], [1.0, 2.0, 3.0], 10) = 1.0;
+		assert hsic_p_value([1.0, 2.0, 3.0], [1.0, 1.0, 1.0], 10) = 1.0;
+
+		// Smallest degenerate sample (n = 2)
+		assert hsic([1.0, 1.0], [2.0, 2.0]) = 0.0;
+		assert hsic_p_value([1.0, 1.0], [2.0, 2.0], 2) = 1.0;
+	}
+
 	test "Seed makes hsic_p_value deterministic across RNGs" {
 		list<float> sample_x <- [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 		list<float> sample_y <- [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
@@ -71,8 +87,11 @@ experiment HSICRobustnessTest type: test autorun: true {
 
 	test "Normalized hsic handles small and extreme finite samples" {
 		assert hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0]) = 1.0;
-		assert hsic([1.0, 1.0, 1.0, 1.0], [1.0, 2.0, 3.0, 4.0]) = 0.0;
 		float extreme <- hsic([-#max_float, 0.0, 1.0, #max_float], [-#max_float, 0.0, 1.0, #max_float]);
 		assert extreme = 1.0;
+
+		// Subnormal numbers near minimum non-zero double
+		list<float> subnormals <- [#min_float, 2.0 * #min_float, 3.0 * #min_float];
+		assert hsic(subnormals, subnormals) = 1.0;
 	}
 }
