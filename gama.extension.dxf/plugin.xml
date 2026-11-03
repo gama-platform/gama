@@ -4,5 +4,8 @@
    <extension
          point="gaml.extension">
    </extension>
+   <extension
+         point="gama.standard.distribution">
+   </extension>
 
 </plugin>
