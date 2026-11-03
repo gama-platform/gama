@@ -298,6 +298,7 @@ global {
       action update_after_destruction(obstacle the_obstacle){
          remove the_obstacle from: obstacles;
          obstacle_height <- compute_highest_obstacle();
+        
       }
        
    }
@@ -311,7 +312,7 @@ experiment Run type: gui {
    parameter "Diffusion rate" var:diffusion_rate category:"Water dynamic";
    parameter "Vertical exaggeration (display only)" var: vertical_exaggeration min: 1.0 max: 20.0 category: "Visualization";
    output { 
- 	   layout vertical([0::7778,1::2222]) tabs:false editors: false;
+ 	  layout vertical([0::7778,1::2222]) tabs:false editors: false;
       display map type: 3d background: paper axes: false {
          camera 'default' location: {8352.5541,7067.0558,2635.9505} target: {5189.4135,3903.9151,0.0};
          light #ambient intensity: 150;

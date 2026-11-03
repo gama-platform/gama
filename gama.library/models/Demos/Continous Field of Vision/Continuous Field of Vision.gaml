@@ -6,6 +6,8 @@
 *   agents, and returns the visible sub-geometry after masking out areas hidden behind obstacles. The resulting
 *   visible area is displayed in real time as the agent moves. This is the standard approach for implementing
 *   line-of-sight perception in GAMA.
+*   A translucent amber cone shows the potential field of vision; teal marks the area actually visible.
+*   Obstacles are extruded for readability only: perception remains a two-dimensional calculation.
 * Tags: perception, spatial_computation, masked_by, field_of_vision, obstacle, line_of_sight, agent_movement
 */
 
@@ -20,6 +22,15 @@ global {
 	
 	//precision used for the masked_by operator (default value: 120): the higher the most accurate the perception will be, but it will require more computation
 	int precision <- 600;
+	bool show_full_cone <- true;
+	bool show_target <- true;
+	float obstacle_height <- 2.5;
+	rgb ground <- rgb(23, 33, 47);
+	rgb walls <- rgb(107, 124, 143);
+	rgb wall_edges <- rgb(166, 185, 201);
+	rgb visible <- rgb(70, 214, 188);
+	rgb hidden <- rgb(231, 173, 86);
+	rgb agent_color <- rgb(239, 247, 250);
 	
 	//space where the agent can move.
 	geometry free_space <- copy(shape);
@@ -37,7 +48,7 @@ global {
 
 species obstacle {
 	aspect default {
-		draw shape color: #gray border: #black;
+		draw shape color: walls border: wall_edges depth: obstacle_height;
 	}
 }
 species people skills: [moving]{
@@ -79,30 +90,54 @@ species people skills: [moving]{
 	}
 	
 	aspect body {
-		draw triangle(2) rotate:90 + heading color: #red;
+		draw circle(1.7) at: location + {0, 0, 0.3} color: rgb(visible, 0.15);
+		draw triangle(1.6) at: location + {0, 0, 0.4} rotate: 90 + heading
+			color: agent_color border: visible depth: 0.4;
 	}
 	aspect perception {
+		if (show_full_cone) {
+			geometry full_cone <- (cone(heading - 30, heading + 30) intersection world.shape)
+				intersection circle(perception_distance);
+			draw full_cone color: rgb(hidden, 0.12) border: rgb(hidden, 0.4);
+		}
 		if (perceived_area != nil) {
-			draw perceived_area color: #green;
-			draw circle(1) at: target color: #magenta;
+			draw perceived_area at: perceived_area.location + {0, 0, 0.05}
+				color: rgb(visible, 0.32) border: rgb(visible, 0.8);
+		}
+		if (show_target and target != nil) {
+			draw line([location + {0, 0, 0.15}, target + {0, 0, 0.15}])
+				color: rgb(agent_color, 0.45) width: 1.5;
+			draw circle(0.9) at: target + {0, 0, 0.2} color: hidden wireframe: true width: 2;
+			draw circle(0.25) at: target + {0, 0, 0.2} color: hidden;
 		}
 	}
 }
 
 experiment fieldofvision type: gui {
 	
-	parameter var:nb_obstacles;
+	parameter "Number of obstacles" var: nb_obstacles category: "Environment";
 	
-	parameter var:perception_distance;
+	parameter "Perception distance" var: perception_distance category: "Perception";
 	
-	parameter var:precision;
+	parameter "Mask precision" var: precision category: "Perception";
+	parameter "Show potential vision cone" var: show_full_cone category: "Visualization";
+	parameter "Show target and direction" var: show_target category: "Visualization";
+	parameter "Obstacle height (display only)" var: obstacle_height min: 0.0 max: 8.0 category: "Visualization";
 	
 	float minimum_cycle_duration <- 0.05;
 	output synchronized: true {
-		display view{
+		display view type: 3d background: ground axes: false camera: #from_up_front {
+			light #ambient intensity: 170;
+			species people aspect: perception;
 			species obstacle;
-			species people aspect: perception transparency: 0.5;
 			species people aspect: body;
+			overlay position: {14#px, 14#px} size: {228#px, 94#px} background: ground rounded: true {
+				draw "LINE OF SIGHT" at: {14#px, 22#px} color: agent_color font: font("Helvetica", 12, #bold);
+				draw square(9#px) at: {20#px, 44#px} color: visible;
+				draw "Visible area" at: {36#px, 48#px} color: agent_color font: font("Helvetica", 12);
+				draw square(9#px) at: {20#px, 70#px} color: hidden;
+				draw "Potential cone / target" at: {36#px, 74#px} color: agent_color font: font("Helvetica", 12);
+			}
 		}
 	}
 }
