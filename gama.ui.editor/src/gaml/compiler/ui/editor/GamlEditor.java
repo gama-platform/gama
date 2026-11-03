@@ -132,6 +132,7 @@ import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.ui.shared.access.GamlAccessContents2;
 import gama.ui.shared.commands.SearchGamlReferenceHandler;
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -471,6 +472,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		editor.setLayoutData(data);
 		editor.setLayout(new FillLayout());
 		super.createPartControl(editor);
+		updateToolbarBackground();
 		Menu contextMenu = getSourceViewer().getTextWidget().getMenu();
 		contextMenu.addListener(SWT.Show, event -> {
 			if (contextMenu.getData(MenuManager.MANAGER_KEY) instanceof MenuManager manager) {
@@ -990,15 +992,32 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	protected void handlePreferenceStoreChanged(final PropertyChangeEvent event) {
 		super.handlePreferenceStoreChanged(event);
-		if (PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty()) && getSourceViewer() != null
+		if ((PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty())
+				|| PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT.equals(event.getProperty())) && getSourceViewer() != null
 				&& getSourceViewer().getTextWidget() != null && !getSourceViewer().getTextWidget().isDisposed()) {
 			final var bg = getSourceViewer().getTextWidget().getBackground();
+			updateToolbarBackground();
 			this.getVerticalRuler().getControl().setBackground(bg);
 			final Iterator e = ((CompositeRuler) getVerticalRuler()).getDecoratorIterator();
 			while (e.hasNext()) {
 				final var column = (IVerticalRulerColumn) e.next();
 				column.getControl().setBackground(bg);
 				column.redraw();
+			}
+		}
+	}
+
+	private void updateToolbarBackground() {
+		if (toolbar == null || toolbar.isDisposed() || getSourceViewer() == null) return;
+		final StyledText text = getSourceViewer().getTextWidget();
+		if (text == null || text.isDisposed()) return;
+		final var background = text.getBackground();
+		toolbar.setBackgroundColor(background);
+		GamaColors.setBackground(background, toolbar.getParent(), toolbar.getParent().getParent(), toolbarParent);
+		for (final int side : new int[] { SWT.LEFT, SWT.RIGHT }) {
+			for (final Control child : toolbar.getToolbar(side).getChildren()) {
+				GamaColors.setBackground(background, child);
+				child.redraw();
 			}
 		}
 	}
