@@ -6,6 +6,8 @@
 *   pedestrians are invisible while inside and are released at the exit after the computed travel time. The
 *   other corridor lets pedestrians navigate freely (pure ABM). Running both side by side illustrates the
 *   trade-off between computational efficiency (hybrid) and spatial accuracy (ABM) in pedestrian simulation.
+*   Teal marks individual agents in the ABM lane; amber marks the hybrid lane.
+*   The hybrid corridor's occupancy bar represents captured agents, not individual positions.
 * Tags: multi_level, agent_movement, hybrid, ABM, corridor, pedestrian, capture, release
 */
 
@@ -18,6 +20,10 @@ global
 	int environment_width <- 200 const: true;
 	int environment_height <- 100 const: true;
 	geometry shape <- rectangle(environment_width, environment_height);	
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb lettering <- rgb(220, 231, 242);
+	rgb abm_color <- rgb(83, 218, 196);
+	rgb hybrid_color <- rgb(244, 191, 100);
 	
 	
 	float pedestrian_speed <- 2.0;
@@ -176,14 +182,23 @@ species corridor_info_drawer
 	
 	aspect base 
 	{
+		rgb tint <- target.capture_pedestrians ? hybrid_color : abm_color;
+		point label_position <- {target.location.x - target.shape.width / 2, target.location.y + 13};
 		if target.capture_pedestrians 
 		{
-			draw 'Hybrid model (coupling: ABM and Mathematical Model)' color: #yellow at: {(target.location).x - target.shape.width/2, (target.location).y - 10} font: font("Helvetica", 20 * #zoom, #bold);
-			draw  'Captured agents: ' + string(length(target.members)) color: #yellow at: {(target.location).x + 1 - target.shape.width/2, (target.location).y + 1} font: font("Helvetica", 20 * #zoom, 0);
+			draw "HYBRID / timed capture & release" color: tint at: label_position
+				anchor: #left_center font: font("Helvetica", 12, #bold);
+			draw "Captured: " + length(target.members) color: lettering
+				at: {target.location.x + target.shape.width / 2, label_position.y}
+				anchor: #right_center font: font("Helvetica", 11);
 		} 
 		else 
 		{
-			draw 'Agent-Based Model (ABM)' color: #yellow size: 7 at: {(target.location).x - target.shape.width/2, (target.location).y - 10} font: font("Helvetica", 20 * #zoom, #bold);
+			draw "ABM / individual movement" color: tint at: label_position
+				anchor: #left_center font: font("Helvetica", 12, #bold);
+			draw "Walking: " + (pedestrian count (each.location.y < environment_height / 2)) color: lettering
+				at: {target.location.x + target.shape.width / 2, label_position.y}
+				anchor: #right_center font: font("Helvetica", 11);
 		}
 	}
 }
@@ -193,15 +208,34 @@ experiment default_experiment type: gui autorun: true
 	float minimum_cycle_duration <- 10 #msec;
 	output 
 	{
-		display default_display background: #black toolbar: false fullscreen: true type:2d
+		display default_display background: backdrop type: 2d
 		{
-			species pedestrian {
-				draw circle(2) color: color;
+			graphics direction {
+				loop lane over: [corridor_location_0, corridor_location_1] {
+					draw line([{3, lane.y}, {17, lane.y}]) color: lettering end_arrow: 2;
+					draw line([{183, lane.y}, {197, lane.y}]) color: lettering end_arrow: 2;
+				}
 			}
 			species corridor {
-				draw shape wireframe: true color: #white;
+				rgb tint <- capture_pedestrians ? hybrid_color : abm_color;
+				draw shape color: rgb(tint, 0.08) border: rgb(tint, 0.65) width: 1.5;
+				if (capture_pedestrians and !empty(members)) {
+					float occupied_width <- min(float(corridor_width), float(length(members)) * 2.0);
+					draw rectangle(occupied_width, 1.5)
+						at: {location.x - corridor_width / 2 + occupied_width / 2, location.y + 3.5}
+						color: rgb(tint, 0.6);
+				}
+			}
+			species pedestrian {
+				rgb tint <- location.y < environment_height / 2 ? abm_color : hybrid_color;
+				draw circle(1.3) color: tint border: rgb(lettering, 0.6);
 			}
 			species corridor_info_drawer aspect: base;
+			overlay position: {12#px, 12#px} size: {340#px, 64#px} background: backdrop rounded: true {
+				draw "TWO LEVELS / TWO TRANSIT MODELS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Teal: ABM / Amber: hybrid occupancy (not positions)" at: {12#px, 47#px}
+					color: lettering font: font("Helvetica", 11);
+			}
 		}
 	}
 }

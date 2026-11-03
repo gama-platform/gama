@@ -7,6 +7,7 @@
 *   The model runs on a toroidal grid (edges wrap around). Despite each individual preferring only a modest
 *   majority of same-type neighbors, highly segregated spatial patterns emerge at the macro level.
 *   Uses bounded integer sampling for group assignment; seeded configurations differ from legacy rnd.
+*   Colored cells identify groups, black cells are vacant, and white insets mark unhappy residents.
 * Tags: grid, cellular_automaton, segregation, Schelling, emergence, social, torus
 */
 model segregation
@@ -54,6 +55,11 @@ global torus: true{
 //Grid species representing the places and the people in each cell
 grid space parent: base width: dimensions height: dimensions neighbors: 8  {
 	rgb color <- #black;
+	aspect happiness {
+		if (color != #black and !is_happy) {
+			draw square(0.82) color: lettering wireframe: true;
+		}
+	}
 	//List of the neighbours of the places
 	list<space> my_neighbours <- self neighbors_at neighbours_distance;
 	//Action to migrate the agent in another cell if it is not happy
@@ -76,19 +82,30 @@ grid space parent: base width: dimensions height: dimensions neighbors: 8  {
 
 experiment schelling type: gui parent:base_exp{
 	output {
-		display Segregation type:2d antialias:false{
+		display Segregation type: 2d background: backdrop antialias: false {
 			grid space;
+			species space aspect: happiness visible: show_unhappy;
+			overlay position: {12#px, 12#px} size: {300#px, 116#px} background: backdrop rounded: true {
+				draw "SCHELLING / CELLULAR AUTOMATON" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Fill: group / White inset: unhappy" at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+				draw "Black: vacant / Environment wraps at edges" at: {12#px, 72#px} color: lettering font: font("Helvetica", 11);
+				draw "Residents: " + number_of_people + "   Happy: "
+					+ string(with_precision(100.0 * sum_happy_people / max(1, number_of_people), 1)) + "%"
+					at: {12#px, 97#px} color: happy_color font: font("Helvetica", 11);
+			}
 		}
 
-		display Charts  type: 2d {
-			chart "Proportion of happiness" type: pie background: #lightgray style: exploded position: { 0, 0 } size: { 1.0, 0.5 } {
-				data "Unhappy" value: number_of_people - sum_happy_people color: #green;
-				data "Happy" value: sum_happy_people color: #yellow;
+		display Charts type: 2d background: backdrop {
+			chart "Resident satisfaction" type: pie background: backdrop color: lettering
+				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {1.0,0.5} {
+				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;
+				data "Happy" value: sum_happy_people color: happy_color;
 			}
 
-			chart "Global happiness and similarity" type: series background: #lightgray axes: #white position: { 0, 0.5 } size: { 1.0, 0.5 }  x_range: 50{
-				data "happy" color: #blue value: (sum_happy_people / number_of_people) * 100 style: spline;
-				data "similarity" color: #red value: (sum_similar_neighbours / sum_total_neighbours) * 100 style: step;
+			chart "Happiness and neighborhood similarity" type: series background: backdrop color: lettering axes: lettering
+				position: {0,0.5} size: {1.0,0.5} y_range: {0,100} x_label: "Cycle" y_label: "Percent" {
+				data "Happy (%)" color: happy_color value: 100.0 * sum_happy_people / max(1, number_of_people) style: line;
+				data "Similar neighbors (%)" color: similarity_color value: 100.0 * sum_similar_neighbours / max(1, sum_total_neighbours) style: step;
 			}
 
 		}

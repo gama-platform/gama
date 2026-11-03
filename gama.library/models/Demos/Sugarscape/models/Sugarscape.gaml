@@ -7,12 +7,21 @@
 *   at a fixed rate each step. Agents die when their sugar reserve reaches zero or when they exhaust their
 *   maximum lifespan. The model demonstrates how simple resource-seeking rules lead to complex spatial
 *   resource distribution patterns and population dynamics.
+*   A slate-to-gold scale shows available sugar. Teal agents have more than eight units of reserve;
+*   coral agents have eight or fewer. Optional rings show each agent's vision radius.
 * Tags: grid, sugarscape, resource, agent, metabolism, emergence, Epstein, artificial_societies
 */
 model sugarscape
 
   
 global {
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb lettering <- rgb(220, 231, 242);
+	rgb strong_color <- rgb(83, 218, 196);
+	rgb weak_color <- rgb(255, 139, 112);
+	list<rgb> sugar_palette <- [rgb(28, 40, 56), rgb(77, 74, 57), rgb(130, 110, 61),
+		rgb(191, 153, 72), rgb(244, 198, 102)];
+	bool show_vision <- false;
 	// Parameters 
 	
 	//Growth rate of the sugar
@@ -37,10 +46,6 @@ global {
 	geometry shape <- rectangle(50, 50);
 		
 	file<int> types  <- file<int>('../images/sugarscape.pgm');
-	rgb FFFFAA const: true <- rgb('#FFFFAA');
-	rgb FFFF55 const: true <- rgb('#FFFF55');
-	rgb dark_yellow const: true <- rgb('#EEB422');
-	rgb less_red const: true <- rgb('#FF5F5F');
 	
 	init {
 		
@@ -51,7 +56,7 @@ global {
 		ask sugar_cell {
 			maxSugar <- (types at {grid_x,grid_y});
 			sugar <- maxSugar;
-			color <- [#white,FFFFAA,FFFF55,#yellow,dark_yellow] at sugar;
+			color <- sugar_palette at sugar;
 		}
 	}
 }
@@ -62,7 +67,7 @@ global {
 		int maxSugar;
 		//Sugar contained in thecell
 		int sugar update: sugar + sugarGrowthRate max: maxSugar;
-		rgb color update: [#white,FFFFAA,FFFF55,#yellow,dark_yellow] at sugar;
+		rgb color update: sugar_palette at sugar;
 		map<int,list<sugar_cell>> neighbours;
 		
 		//Initialization of the neighbours
@@ -118,7 +123,14 @@ species animal {
 		do die();
 	}
 	aspect default {
-		draw circle(0.5) color: #red;
+		rgb tint <- sugar > 8 ? strong_color : weak_color;
+		if (show_vision) {
+			draw circle(vision) color: rgb(tint, 0.025) border: rgb(tint, 0.15);
+		}
+		draw circle(0.34) color: tint border: backdrop;
+		if (sugar <= 8) {
+			draw circle(0.44) color: tint wireframe: true;
+		}
 	}
 }
 
@@ -133,22 +145,38 @@ experiment sugarscape type: gui{
 	parameter 'Maximum range of vision:' var: maxRange <- 6 category: 'Agents' unit: "cells";
 	parameter 'Replace dead agents ?' var: replace <- true category: 'Agents';
 	parameter 'Number of agents:' var: numberOfAgents <- 400 category: 'Agents';
+	parameter "Show vision ranges" var: show_vision category: "Appearance";
 	
 	output {
-		display grille  type:2d antialias:false{
+		display grille type: 2d background: backdrop {
 			grid sugar_cell;
 			species animal;
-		}
-		display chart refresh: every(5#cycles)  type: 2d {
-			chart 'Energy' type: pie background: #white style: exploded label_background_color:#white{
-				data "strong" value: (animal as list) count (each.sugar > 8) color: #green;
-				data "weak" value: (animal as list) count (each.sugar < 9) color: #red;
+			overlay position: {12#px, 12#px} size: {320#px, 142#px} background: backdrop rounded: true {
+				draw "SUGARSCAPE / RESOURCES & RESERVES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Teal: reserve > 8 / Coral rings: reserve <= 8" at: {12#px, 47#px}
+					color: lettering font: font("Helvetica", 11);
+				draw "Population: " + length(animal) + "   Low reserve: " + (animal count (each.sugar <= 8))
+					at: {12#px, 72#px} color: lettering font: font("Helvetica", 11);
+				loop level from: 0 to: 4 {
+					draw rectangle(25#px, 12#px) at: {(26 + level * 29)#px, 97#px}
+						color: sugar_palette[level] border: rgb(lettering, 0.3);
+				}
+				draw "Cell sugar: 0 (slate) to 4 (gold)" at: {12#px, 126#px}
+					color: lettering font: font("Helvetica", 11);
 			}
 		}
-		display chart2 refresh: every(5#cycles) type: 2d  {
-			chart 'Energy' type: histogram background: #white label_background_color:#white{
-				data "strong" value: (animal as list) count (each.sugar > 8)  color: #green;
-				data "weak" value: (animal as list) count (each.sugar < 9)  color: #red;
+		display chart refresh: every(5#cycles) type: 2d background: backdrop {
+			chart "Sugar reserve / population share" type: pie background: backdrop color: lettering
+				style: ring label_background_color: backdrop label_text_color: lettering {
+				data "Reserve > 8" value: (animal as list) count (each.sugar > 8) color: strong_color;
+				data "Reserve <= 8" value: (animal as list) count (each.sugar < 9) color: weak_color;
+			}
+		}
+		display chart2 refresh: every(5#cycles) type: 2d background: backdrop {
+			chart "Sugar reserve / agent counts" type: histogram background: backdrop color: lettering axes: lettering
+				label_background_color: backdrop label_text_color: lettering gap: 0.2 y_label: "Agents" {
+				data "Reserve > 8" value: (animal as list) count (each.sugar > 8) color: strong_color;
+				data "Reserve <= 8" value: (animal as list) count (each.sugar < 9) color: weak_color;
 			}
 		}
 	}

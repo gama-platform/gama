@@ -7,6 +7,8 @@
 *   nearest road, and the distance to the city center (measured along the road network). The model uses real
 *   GIS data and raster grids to represent the urban fabric, road network, and city center, producing realistic
 *   patterns of suburban expansion.
+*   Ochre cells show the initial urban footprint, coral cells show subsequent development, blue cells
+*   show water, and slate cells are undeveloped. Road and city-center overlays can be toggled.
 * Tags: gis, shapefile, grid, graph, urban_growth, cellular_automaton, constructability, land_use
 */
 
@@ -15,6 +17,16 @@ model raster3
 
 global
 { 
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb lettering <- rgb(220, 231, 242);
+	rgb existing_color <- rgb(191, 153, 95);
+	rgb expansion_color <- rgb(255, 139, 112);
+	rgb water_color <- rgb(48, 101, 143);
+	rgb center_color <- rgb(83, 218, 196);
+	bool show_roads <- true;
+	bool show_centers <- true;
+	int initial_built_plots;
+	int developed_plots <- 0;
 	//File for the ascii grid
 	grid_file asc_grid <- grid_file("../includes/cantho_1999_v6.asc");
 	//Shapefile for the road
@@ -30,9 +42,9 @@ global
 	list<plot> empty_plots <- plot where (each.grid_value = 0.0) update: shuffle(plot where (each.grid_value = 0.0));
 	
 	list<rgb> plot_colors <- [ 
-		#lightgray, //empty
-		#orange, // 1 built
-		#blue // 2 River-lake
+		rgb(36, 49, 61), //empty
+		existing_color, // 1 built
+		water_color // 2 River-lake
 	];
 	//Radius of density
 	int density_radius <- 4;
@@ -64,6 +76,7 @@ global
 		}
 		//Normalization of the distance
 		do normalize_distances();
+		initial_built_plots <- plot count (each.grid_value = 1.0);
 	}
 	//Action to normalize the distance
 	action normalize_distances() {
@@ -97,7 +110,10 @@ global
 //Species representing the city center
 species city_center {
 	aspect default {
-		draw circle(300) color: #cyan;
+		draw circle(600) color: rgb(center_color, 0.15) border: rgb(center_color, 0.6);
+		draw circle(230) color: center_color border: backdrop;
+		draw "CITY CENTER" at: location + {0, -850} anchor: #center
+			color: lettering font: font("Helvetica", 10, #bold);
 	}	
 }
 //Species representing the roads
@@ -112,13 +128,13 @@ species roads
 		}
 	}
 	aspect default {
-		draw shape color: #black;	
+		draw shape color: rgb(lettering, 0.65) width: 1.2;
 	}
 }
 //Grid species to represent the different building plots
 grid plot file: asc_grid use_individual_shapes: false use_regular_agents: false neighbors: 4
 {
-	rgb color <- grid_value = -1 ? #white : plot_colors[int(grid_value)];
+	rgb color <- grid_value = -1 ? backdrop : plot_colors[int(grid_value)];
 	//Distance from the road
 	float dist_route <- 0.0;
 	//Distance from the city center
@@ -135,7 +151,8 @@ grid plot file: asc_grid use_individual_shapes: false use_regular_agents: false 
 	//Action to build on the cell
 	action build() {
 		grid_value <- 1.0;
-		color <- plot_colors[1];
+		color <- expansion_color;
+		developed_plots <- developed_plots + 1;
 	}
 	//Action to compute the constructability of the plot cell
 	float compute_constructability()
@@ -152,12 +169,28 @@ experiment raster type: gui {
  	parameter "Weight of the density criteria" var: weight_density;
  	parameter "Weight of the distance to roads criteria" var: weight_road_dist;
  	parameter "Weight of the distance to city center criteria" var: weight_cc_dist;
- 	output {
- 		display map type: 2d axes:false antialias:false {
+	parameter "Show road network" var: show_roads category: "Appearance";
+	parameter "Show city centers" var: show_centers category: "Appearance";
+	output synchronized: true {
+		display map type: 2d background: backdrop axes: false antialias: false {
 			grid plot;
-			species roads;
-			species city_center;
+			species roads visible: show_roads;
+			species city_center visible: show_centers;
+			overlay position: {12#px, 12#px} size: {295#px, 222#px} background: backdrop rounded: true {
+				draw "URBAN GROWTH / CAN THO" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Initial urban plots: " + initial_built_plots at: {12#px, 48#px}
+					color: existing_color font: font("Helvetica", 11);
+				draw "New development: " + developed_plots at: {12#px, 72#px}
+					color: expansion_color font: font("Helvetica", 11);
+				loop row from: 0 to: 4 {
+					string entry <- ["Undeveloped", "Initial urban footprint", "New development", "Water", "City center"][row];
+					rgb tint <- [plot_colors[0], existing_color, expansion_color, water_color, center_color][row];
+					draw square(10#px) at: {18#px, (102 + row * 22)#px} color: tint border: rgb(lettering, 0.3);
+					draw entry at: {32#px, (106 + row * 22)#px} color: lettering font: font("Helvetica", 11);
+				}
+				draw "Pale lines: road network" at: {12#px, 212#px}
+					color: lettering font: font("Helvetica", 11);
+			}
 		}
 	}
 }
-

@@ -7,36 +7,43 @@
 *   and unchaseble for a period. After the dwell time they are released in an 'invisible' state for another
 *   duration before resuming normal wandering. This demonstrates multi-level architecture as a mechanism
 *   for modeling temporary hiding/refuge behaviors.
+*   Teal discs are wandering prey, amber discs are fleeing, muted rings are temporarily invisible,
+*   and coral arrows are predators. Blue shelter outlines show their current occupancy.
+*   Sheltered prey and perception ranges can be shown independently.
 * Tags: multi_level, agent_movement, capture, release, predator, prey, shelter, refuge
 */
 
 model preys_predators_shelters
 
 global { 
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb lettering <- rgb(220, 231, 242);
+	bool show_sheltered_preys <- true;
+	bool show_perception <- false;
 	//Parameters for the prey species
-	rgb prey_color <- #green const: true;
+	rgb prey_color <- rgb(83, 218, 196) const: true;
 	float prey_perception <- 20.0;
 	float prey_size <- 2.0 const: true;
 	float prey_speed <- 1.0;
-	rgb prey_flee_color <- #orange;
+	rgb prey_flee_color <- rgb(244, 191, 100);
 	float prey_invisible_speed <- 3 * prey_speed;
-	rgb prey_invisible_color <- #darkgray;  
+	rgb prey_invisible_color <- rgb(133, 153, 177);
 	int prey_in_shelter_max_time min: 1 init: 200;
 	int prey_invisible_max_time min: 1 max: 100 init: 70; 
 	int number_of_preys min: 1 max: 1000 init: 500;
 	
 	//Parameters for the predator species
-	rgb predator_color <- #red const: true;
+	rgb predator_color <- rgb(255, 139, 112) const: true;
 	float predator_perception <- 3.0;
 	float predator_size <- 4.0;
 	float predator_speed <- 1.5;
 	int number_of_predators min: 1 max: 100 init: 30; 
 	geometry shape <- square(400);
 	
-	rgb predator_in_shelter_color <- #yellow const: true;
+	rgb predator_in_shelter_color <- rgb(188, 216, 255) const: true;
 	 
 	//Parameters for the shelter species
-	rgb shelter_color <- #blue const: true; 
+	rgb shelter_color <- rgb(91, 174, 245) const: true;
 	float shelter_speed <- 1.5 const: true;
 	geometry shelter_shape <- square (50.0);
 	int number_of_shelter <- 2 const: true;
@@ -94,7 +101,11 @@ species prey skills: [moving] control: fsm {
 	}
 	
 	aspect default {
-		draw  shape color: color;
+		if (show_perception) {
+			draw circle(prey_perception) color: rgb(color, 0.025) border: rgb(color, 0.12);
+		}
+		draw circle(prey_size) color: state = 'invisible' ? rgb(color, 0.15) : color
+			border: state = 'invisible' ? color : rgb(lettering, 0.4);
 	}
 }
 
@@ -118,7 +129,7 @@ species predator skills: [moving] schedules: shuffle (list (predator)) {
 	reflex chase_prey when: (target_prey != nil) { do move(heading: self towards target_prey, speed: predator_speed);}
 	
 	aspect default {
-		draw shape color: predator_color;
+		draw triangle(predator_size * 2) rotate: heading + 90 color: predator_color border: rgb(lettering, 0.6);
 	} 
 } 
 
@@ -156,23 +167,42 @@ species shelter skills: [moving]  frequency: 2 {
 		}
 		
 		aspect default {
-			draw  shape color: predator_in_shelter_color;
+			if (show_sheltered_preys) {
+				draw circle(prey_size) color: rgb(predator_in_shelter_color, 0.65);
+			}
 		} 
 	}
 	
 	aspect default {
-		draw shape color: shelter_color;
-		draw (string (length ((members)))) color: rgb ('white') size: 6 at: location anchor: #center font: font("Helvetica", int(12*#zoom), #bold);
+		draw shape color: rgb(shelter_color, 0.12) border: shelter_color width: 2;
+		draw "Sheltered: " + length(members) color: lettering
+			at: {max(32.0, min(world.shape.width - 32, location.x)), max(8.0, location.y - shape.height / 2 - 7)}
+			anchor: #center font: font("Helvetica", 11, #bold);
 	}
 }
 
 experiment default_experiment type: gui {
+	parameter "Show sheltered prey" var: show_sheltered_preys category: "Appearance";
+	parameter "Show prey perception" var: show_perception category: "Appearance";
 	output {
-		display default_display background: #black type: 3d{
-			species prey aspect: default;
-			species predator transparency: 0.5 aspect: default;
-			species shelter transparency: 0.5 aspect: default { 
-				species prey_in_shelter aspect: default;
+		display default_display background: backdrop type: 3d axes: false camera: #from_above {
+			species shelter aspect: default {
+				species prey_in_shelter aspect: default position: {0, 0, 0.1};
+			}
+			species prey aspect: default position: {0, 0, 0.2};
+			species predator aspect: default position: {0, 0, 0.3};
+			overlay position: {14#px, 14#px} size: {300#px, 170#px} background: backdrop rounded: true {
+				draw "PREDATORS / PREY / SHELTERS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Teal discs: wandering / Amber: fleeing" at: {12#px, 48#px}
+					color: prey_color font: font("Helvetica", 11);
+				draw "Coral arrows: predators / Rings: invisible" at: {12#px, 72#px}
+					color: predator_color font: font("Helvetica", 11);
+				draw "Blue areas: shelters / Pale dots: sheltered" at: {12#px, 96#px}
+					color: shelter_color font: font("Helvetica", 11);
+				draw "Outside: " + length(prey) + "   Sheltered: " + sum(shelter collect length(each.members))
+					at: {12#px, 124#px} color: lettering font: font("Helvetica", 11);
+				draw "Fleeing: " + (prey count (each.state = 'flee_predator')) + "   Predators: " + length(predator)
+					at: {12#px, 148#px} color: prey_flee_color font: font("Helvetica", 11);
 			}
 		}
 	}

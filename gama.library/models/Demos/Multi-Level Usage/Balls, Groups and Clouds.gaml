@@ -7,6 +7,8 @@
 *   groups are nearby they are captured into a cloud. When a group gets too large, it 'releases' its balls
 *   repulsively. This model demonstrates the 'capture' and 'release' operators and how macro-level behavior
 *   emerges from micro-level interactions.
+*   Coordinated views distinguish free balls, translucent group envelopes and outlined clouds.
+*   Each view includes a live count of the corresponding level.
 * Tags: multi_level, agent_movement, capture, release, group, emergence, hierarchy
 */
 model balls_groups_clouds
@@ -15,6 +17,11 @@ global {
 // Parameters
 	bool create_group <- true;
 	bool create_cloud <- true;
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb lettering <- rgb(220, 231, 242);
+	rgb cloud_accent <- rgb(192, 166, 255);
+	list<rgb> group_palette <- [rgb(91, 174, 245), rgb(244, 191, 100), rgb(194, 146, 230),
+		rgb(242, 141, 155), rgb(110, 201, 188)];
 
 	// Environment
 	point environment_bounds <- {500, 500};
@@ -30,8 +37,8 @@ global {
 	float MAX_DISTANCE <- environment_bounds.x + environment_bounds.y;
 
 	//Global variables for ball agents
-	rgb ball_color <- #green;
-	rgb chaos_ball_color <- #red;
+	rgb ball_color <- rgb(83, 218, 196);
+	rgb chaos_ball_color <- rgb(255, 139, 112);
 	float ball_size <- float(3);
 	float ball_speed <- float(1);
 	float chaos_ball_speed <- 8 * ball_speed; 
@@ -57,7 +64,6 @@ global {
 
 	init {
 		create ball number: ball_number;
-		create group_agents_viewer;
 	}
 
 	//The simulation will try to create group at each frequence cycle
@@ -184,12 +190,13 @@ species ball control: fsm {
 	}
 
 	aspect default {
-		draw ball_shape color: color size: ball_size at: self.location;
+		draw circle(ball_size) color: color border: rgb(lettering, 0.5);
 	} }
 
 	//Species representing the group of balls
 species group {
 	rgb color <- rgb([rnd(255), rnd(255), rnd(255)]);
+	rgb display_color <- group_palette[index mod length(group_palette)];
 	geometry shape <- any_point_in(host) update: convex_hull(polygon(ball_in_group collect each.location));
 	float speed update: float(group_base_speed);
 
@@ -239,7 +246,7 @@ species group {
 		}
 
 		aspect default {
-			draw circle(my_age) color: ((host as group).color).darker;
+			draw circle(min(ball_size, my_age)) color: (host as group).display_color border: lettering;
 		}
 
 	}
@@ -343,7 +350,7 @@ species group {
 	}
 
 	aspect default {
-		draw shape color: color;
+		draw shape color: rgb(display_color, 0.16) border: display_color width: 1.5;
 	}
 
 }
@@ -389,6 +396,7 @@ species cloud {
 			}
 
 			aspect default {
+				draw circle(ball_size) color: (host as group_delegation).display_color border: lettering;
 			}
 
 		}
@@ -458,41 +466,45 @@ species cloud {
 	}
 
 	aspect default {
-		draw shape color: color wireframe: true;
-		draw (name + ' with ' + (string(length(members))) + ' groups.') size: 15 color: color at: {location.x - 65, location.y};
+		draw shape color: rgb(cloud_accent, 0.06) border: cloud_accent width: 2;
+		draw string(length(members)) + " groups" at: location anchor: #center
+			color: lettering font: font("Helvetica", 11, #bold);
 	}
 
 }
-
-species group_agents_viewer {
-
-	aspect default {
-		draw ('Number of groups: ' + (string(length(group)))) at: {(environment_bounds.x) / 2 - 210, (environment_bounds.y) / 2} color: #blue size: 40;
-	}
-
-}
-
 
 experiment group_experiment type: gui {
 	parameter 'Create groups?' var: create_group <- true;
 	parameter 'Create clouds?' var: create_cloud <- false;
 	output {
 		layout horizontal([vertical([1::5000, 0::5000])::5000, 2::5000]) tabs: true editors: false;
-		display 'Standard display' {
-			species ball aspect: default transparency: 0.5;
-			species group aspect: default transparency: 0.5 {
+		display 'Standard display' type: 2d background: backdrop {
+			species group aspect: default {
 				species ball_in_group;
 			}
- 
+			species ball;
+			overlay position: {12#px, 12#px} size: {270#px, 92#px} background: backdrop rounded: true {
+				draw "BALLS / GROUPS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Teal: free / Coral: released" at: {12#px, 47#px} color: ball_color font: font("Helvetica", 11);
+				draw "Free: " + length(ball) + "   Groups: " + length(group)
+					at: {12#px, 72#px} color: lettering font: font("Helvetica", 11);
+			}
 		}
  
-		display 'Ball display' {
+		display 'Ball display' type: 2d background: backdrop {
 			species ball;
+			overlay position: {12#px, 12#px} size: {220#px, 64#px} background: backdrop rounded: true {
+				draw "FREE BALLS" at: {12#px, 22#px} color: ball_color font: font("Helvetica", 12, #bold);
+				draw "Uncaptured: " + length(ball) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+			}
 		}
 
-		display 'Group display' {
+		display 'Group display' type: 2d background: backdrop {
 			species group;
-			species group_agents_viewer; 
+			overlay position: {12#px, 12#px} size: {250#px, 64#px} background: backdrop rounded: true {
+				draw "GROUP ENVELOPES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Active groups: " + length(group) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+			}
 		}
 
 	} 
@@ -504,36 +516,49 @@ experiment cloud_experiment type: gui {
 	parameter 'Create clouds?' var: create_cloud <- true;
 	output {
 		layout vertical([horizontal([0::5000, 1::5000])::5000, horizontal([2::5000, 3::5000])::5000]) tabs: true toolbars: true editors: false;
-		display 'Standard display'  background: #black{
-			species ball aspect: default transparency: 0.5;
-			species group aspect: default transparency: 0.5 {
-				species ball_in_group;
-			}
-
+		display 'Standard display' type: 2d background: backdrop {
 			species cloud aspect: default {
-				species group_delegation transparency: 0.9 {
+				species group_delegation {
 					species ball_in_cloud;
 					species ball_in_group;
 				} 
-
 			}
-
-		}
-
-		display 'Ball display'  {
+			species group {
+				species ball_in_group;
+			}
 			species ball;
+			overlay position: {12#px, 12#px} size: {280#px, 92#px} background: backdrop rounded: true {
+				draw "BALLS / GROUPS / CLOUDS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Teal: free / Coral: released / Violet: cloud" at: {12#px, 47#px} color: lettering font: font("Helvetica", 10);
+				draw "Free: " + length(ball) + "   Groups: " + length(group) + "   Clouds: " + length(cloud)
+					at: {12#px, 72#px} color: cloud_accent font: font("Helvetica", 11);
+			}
 		}
 
-		display 'Group display'  {
+		display 'Ball display' type: 2d background: backdrop {
+			species ball;
+			overlay position: {12#px, 12#px} size: {220#px, 64#px} background: backdrop rounded: true {
+				draw "FREE BALLS" at: {12#px, 22#px} color: ball_color font: font("Helvetica", 12, #bold);
+				draw "Uncaptured: " + length(ball) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+			}
+		}
+
+		display 'Group display' type: 2d background: backdrop {
 			species group;
-			species group_agents_viewer;
+			overlay position: {12#px, 12#px} size: {250#px, 64#px} background: backdrop rounded: true {
+				draw "GROUP ENVELOPES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Uncaptured groups: " + length(group) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+			}
 		}
 
-		display 'Cloud display'  {
+		display 'Cloud display' type: 2d background: backdrop {
 			species cloud;
+			overlay position: {12#px, 12#px} size: {250#px, 64#px} background: backdrop rounded: true {
+				draw "CLOUD ENVELOPES" at: {12#px, 22#px} color: cloud_accent font: font("Helvetica", 12, #bold);
+				draw "Active clouds: " + length(cloud) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+			}
 		}
 
 	}
 
 }
-

@@ -6,6 +6,8 @@
 *   possible residential locations. Agents of two groups are placed on these cells, and unhappy agents move
 *   to free cells on the map. The map image provides a realistic geographic context for the segregation
 *   dynamics, blending the cellular automata approach with image-based environment initialization.
+*   Opaque group-colored markers remain readable over the map; white outlines mark unhappy residents.
+*   Residential colors are compared as opaque RGB values, independently of the image pixel alpha.
 * Tags: grid, image, segregation, Schelling, emergence, social, raster, map_background
 */
 model segregation
@@ -42,7 +44,8 @@ global {
 	action initialize_places() { 
 		map_colors <- (bitmap_file_name) as_matrix {dimensions,dimensions} ;
 		ask space as list {
-			color <- rgb(map_colors at {grid_x,grid_y}) ;
+			// Resized RGB image buffers can contain pixels with an unset alpha channel.
+			color <- rgb(map_colors at {grid_x,grid_y}) with_alpha 255;
 		}
 		all_places <- shuffle (space where (each.color in google_buildings)) ;
 		free_places <- copy(all_places);
@@ -70,10 +73,10 @@ species people parent: base  {
 		remove location as space from: free_places;
 	}
 	aspect geom {
-		draw square(1) color: color  ;
+		draw circle(0.46) color: color border: (show_unhappy and !is_happy) ? lettering : backdrop;
 	}
 	aspect default {
-		draw  square(2) color: #black ;
+		draw circle(0.46) color: color border: (show_unhappy and !is_happy) ? lettering : backdrop;
 	}
 }
 
@@ -84,19 +87,31 @@ experiment schelling type: gui parent:base_exp{
 	 parameter "Name of image file to load:" var:bitmap_file_name category: "Environment";
 	
 	output {
-		display Segregation type:2d{
+		display Segregation type: 2d background: backdrop {
 			picture bitmap_file_name.path ;
-			species people transparency: 0.5 aspect: geom;
+			graphics map_tint {
+				draw shape color: rgb(backdrop, 0.35);
+			}
+			species people aspect: geom;
+			overlay position: {12#px, 12#px} size: {290#px, 92#px} background: backdrop rounded: true {
+				draw "SCHELLING / MAP NEIGHBORHOODS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Fill: group / White outline: unhappy" at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+				draw "Residents: " + number_of_people + "   Happy: "
+					+ string(with_precision(100.0 * sum_happy_people / max(1, number_of_people), 1)) + "%"
+					at: {12#px, 72#px} color: happy_color font: font("Helvetica", 11);
+			}
 		}	
-		display Charts  type: 2d {
-			chart "Proportion of happiness" type: pie background: #lightgray style: exploded position: { 0, 0 } size: { 1.0, 0.5 } {
-				data "Unhappy" value: number_of_people - sum_happy_people color: #green;
-				data "Happy" value: sum_happy_people color: #yellow;
+		display Charts type: 2d background: backdrop {
+			chart "Resident satisfaction" type: pie background: backdrop color: lettering
+				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {1.0,0.5} {
+				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;
+				data "Happy" value: sum_happy_people color: happy_color;
 			}
 
-			chart "Global happiness and similarity" type: series background: #lightgray axes: #white position: { 0, 0.5 } size: { 1.0, 0.5 } x_range: 20 y_range: 20 {
-				data "happy" color: #blue value: (sum_happy_people / number_of_people) * 100 style: spline fill: false;
-				data "similarity" color: #red value: (sum_similar_neighbours / sum_total_neighbours) * 100 style: line fill: true ;
+			chart "Happiness and neighborhood similarity" type: series background: backdrop color: lettering axes: lettering
+				position: {0,0.5} size: {1.0,0.5} y_range: {0,100} x_label: "Cycle" y_label: "Percent" {
+				data "Happy (%)" color: happy_color value: 100.0 * sum_happy_people / max(1, number_of_people) style: line;
+				data "Similar neighbors (%)" color: similarity_color value: 100.0 * sum_similar_neighbours / max(1, sum_total_neighbours) style: step;
 			}
 		}
 	}

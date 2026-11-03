@@ -7,6 +7,7 @@
 *   Despite starting from a random mixed distribution, even a low preference for neighbors of the same group
 *   (e.g., 30%) leads to highly segregated patterns. This version uses individual agent objects to represent
 *   residents — compare with the cellular automata and GIS variants.
+*   Fill colors identify groups; white outlines identify unhappy residents.
 * Tags: grid, segregation, Schelling, emergence, social, agent_based, residential
 */
 
@@ -66,7 +67,7 @@ species people parent: base  {
 	}
 	
 	aspect default{ 
-		draw circle (0.5) color: color; 
+		draw circle(0.42) color: color border: (show_unhappy and !is_happy) ? lettering : backdrop;
 	}
 }
 
@@ -74,17 +75,26 @@ species people parent: base  {
 
 experiment schelling type: gui parent:base_exp{	
 	output {
-		display Segregation {
+		display Segregation type: 2d background: backdrop {
 			species people;
-		}	
-		display Charts  type: 2d {
-			chart "Proportion of happiness" type: pie background: #gray style: exploded position: {0,0} size: {1.0,0.5}{
-				data "Unhappy" value: number_of_people - sum_happy_people color: #green;
-				data "Happy" value: sum_happy_people color: #yellow;
+			overlay position: {12#px, 12#px} size: {290#px, 92#px} background: backdrop rounded: true {
+				draw "SCHELLING / INDIVIDUAL RESIDENTS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Fill: group / White outline: unhappy" at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+				draw "Residents: " + number_of_people + "   Happy: "
+					+ string(with_precision(100.0 * sum_happy_people / max(1, number_of_people), 1)) + "%"
+					at: {12#px, 72#px} color: happy_color font: font("Helvetica", 11);
 			}
-			chart "Global happiness and similarity" type: series background: #gray axes: #white position: {0,0.5} size: {1.0,0.5} {
-				data "happy" color: #blue value:  (sum_happy_people / number_of_people) * 100 style: spline ;
-				data "similarity" color: #red value:  (sum_similar_neighbours / sum_total_neighbours) * 100 style: step ;
+		}	
+		display Charts type: 2d background: backdrop {
+			chart "Resident satisfaction" type: pie background: backdrop color: lettering
+				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {1.0,0.5} {
+				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;
+				data "Happy" value: sum_happy_people color: happy_color;
+			}
+			chart "Happiness and neighborhood similarity" type: series background: backdrop color: lettering axes: lettering
+				position: {0,0.5} size: {1.0,0.5} y_range: {0,100} x_label: "Cycle" y_label: "Percent" {
+				data "Happy (%)" color: happy_color value: 100.0 * sum_happy_people / max(1, number_of_people) style: line;
+				data "Similar neighbors (%)" color: similarity_color value: 100.0 * sum_similar_neighbours / max(1, sum_total_neighbours) style: step;
 			}
 		}
 	}

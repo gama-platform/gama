@@ -7,6 +7,9 @@
 *   the corridor agent releases them back as 'pedestrian' at the exit. This pattern models areas where
 *   individual movement details are unnecessary (e.g., buildings, transport vehicles) and only entry/exit
 *   timing matters.
+*   A clickable status light switches capture on and off. Ghost markers indicate captured agents
+*   at their entry positions, not their estimated positions inside the corridor.
+*   Pedestrian colors distinguish arrival cohorts; the panel reports the current step duration.
 * Tags: multi_level, agent_movement, capture, release, pedestrian, corridor
 */
 model corridor
@@ -14,12 +17,17 @@ model corridor
 global {
 //Capture pedestrians parameter to define if wall will capture pedestrians
 	bool capture_pedestrians <- false;
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb floor_color <- rgb(28, 40, 56);
+	rgb lettering <- rgb(220, 231, 242);
+	rgb accent <- rgb(83, 218, 196);
+	rgb amber <- rgb(244, 191, 100);
 	int environment_width init: 8000;
 	int environment_height init: 3000;
 	geometry shape <- rectangle(environment_width, environment_height);
 
 	//Pedestrians parameters
-	rgb pedestrian_color <- #green;
+	rgb pedestrian_color <- accent;
 	float pedestrian_speed <- 10.0;
 
 	//Wall parameters
@@ -124,47 +132,60 @@ experiment "Corridor" type: gui autorun: true {
 	geometry corridor_wall_1_display <- rectangle({corridor_width-30, corridor_wall_height-30}) at_location {environment_width / 2, environment_height - (corridor_wall_height / 2)};
 	
 	init {
-		button_location <- {simulation.corridor_left_bounds + 100, 100};  
+		button_location <- {simulation.environment_width / 2 - 600,
+			simulation.environment_height - simulation.corridor_wall_height / 2};
 	}
 	output {
-		display defaut_display type: 2d background: #black fullscreen: true toolbar: false {
+		display defaut_display type: 3d background: backdrop axes: false {
+			camera 'default' location: {4000.0,1500.1331,7628.0284} target: {4000.0,1500.0,0.0};
 			graphics back {
-				draw shape color: #black wireframe: false;
-				draw corridor_wall_0_display color: #gray wireframe: true;
-				draw corridor_wall_1_display color: #gray wireframe: true ;
+				draw corridor_wall_0_display color: floor_color border: rgb(68, 87, 109);
+				draw corridor_wall_1_display color: floor_color border: rgb(68, 87, 109);
 			}
 
 			species corridor {
-				draw shape color: #black;
+				draw shape color: rgb(accent, 0.06) border: rgb(accent, 0.4);
+				draw line([{corridor_left_bounds, environment_height / 2},
+					{corridor_right_bounds, environment_height / 2}]) color: rgb(accent, 0.3) end_arrow: 90;
 			}
 			
-			agents "Captured" value: list(corridor(0).captured_pedestrian) transparency: 0.5 {
-				draw square(30) wireframe: false color: #white;
+			agents "Captured" value: list(corridor(0).captured_pedestrian) {
+				draw circle(16) color: rgb(amber, 0.25) border: rgb(amber, 0.6);
 			}
 
 			species pedestrian { 
-				draw square(20) wireframe: false color: color;
+				draw circle(13) color: blend(color, lettering, 0.75) border: rgb(lettering, 0.4);
 			}
 
 			graphics front {
-				draw (capture_pedestrians ? "Capturing":"Not capturing") anchor: #left_center at: {corridor_left_bounds + 200, 100} color: !capture_pedestrians ? #darkred : #darkgreen font: font("Helvetica", 20 * #zoom, 0);
-				draw ("Captured: " + length(corridor(0).captured_pedestrian)) anchor: #left_center at: {corridor_left_bounds + 200, 250} color: #white font: font("Helvetica", 20 * #zoom, 0);
-				draw ("Pedestrians: " + length(pedestrian)) anchor: #left_center at: {corridor_left_bounds + 200, 400} color: #white font: font("Helvetica", 20 * #zoom, 0);
-				draw ("Step duration (ms): " + (duration copy_between (0, 4))) anchor: #left_center at: {corridor_left_bounds + 200, 550} color: #white font: font("Helvetica", 20 * #zoom, 0);
+				draw "ENTRY" at: {corridor_left_bounds - 180, environment_height / 2}
+					anchor: #right_center color: lettering font: font("Helvetica", 11);
+				draw "EXIT" at: {corridor_right_bounds + 180, environment_height / 2}
+					anchor: #left_center color: lettering font: font("Helvetica", 11);
 			}
 
 			graphics button {
-				draw circle(50) color: #darkgray at: button_location;
-				draw circle(40) color: !capture_pedestrians ? (button_hover ? #yellow : #red) : (button_hover ? #lightgreen : #darkgreen) at:  button_location;
+				draw circle(65) color: button_hover ? lettering : rgb(68, 87, 109) at: button_location;
+				draw circle(48) color: capture_pedestrians ? accent : amber at: button_location;
+				draw (capture_pedestrians ? "CAPTURE ON" : "CAPTURE OFF") at: button_location + {120, 0}
+					anchor: #left_center color: lettering font: font("Helvetica", 12, #bold);
 			}
 
 			event #mouse_down {
-				if (button_location distance_to #user_location <= 50) {
+				if (button_location distance_to #user_location <= 65) {
 					capture_pedestrians <- !capture_pedestrians;
 				}
 			}
 			event #mouse_move {
-				button_hover <- (button_location distance_to #user_location <= 50);
+				button_hover <- (button_location distance_to #user_location <= 65);
+			}
+			overlay position: {12#px, 8#px} size: {440#px, 70#px} background: backdrop rounded: true {
+				draw "CORRIDOR / CAPTURE & RELEASE" at: {12#px, 19#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Walking: " + length(pedestrian) + "   Captured: " + length(corridor(0).captured_pedestrian)
+					+ "   Step: " + (duration copy_between (0, 4)) + " ms"
+					at: {12#px, 40#px} color: lettering font: font("Helvetica", 11);
+				draw "Amber ghosts: entry positions / Click status light to toggle capture"
+					at: {12#px, 59#px} color: amber font: font("Helvetica", 10);
 			}
 		}
 	}

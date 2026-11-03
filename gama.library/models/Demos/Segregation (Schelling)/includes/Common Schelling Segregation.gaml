@@ -1,15 +1,21 @@
 model segregation_base
 
 global {
+	rgb backdrop <- rgb(18, 26, 40);
+	rgb lettering <- rgb(220, 231, 242);
+	rgb happy_color <- rgb(83, 218, 196);
+	rgb unhappy_color <- rgb(255, 139, 112);
+	rgb similarity_color <- rgb(244, 191, 100);
+	bool show_unhappy <- true;
 	//Different colors for the group
-	rgb color_1 <- rgb ("yellow");
-	rgb color_2 <- rgb ("red");
-	rgb color_3 <- rgb ("blue");
-	rgb color_4 <- rgb ("orange");
-	rgb color_5 <- rgb ("green");
-	rgb color_6 <- rgb ("pink");   
-	rgb color_7 <- rgb ("magenta");
-	rgb color_8 <- rgb ("cyan");
+	rgb color_1 <- rgb(83, 218, 196);
+	rgb color_2 <- rgb(255, 139, 112);
+	rgb color_3 <- rgb(112, 163, 255);
+	rgb color_4 <- rgb(244, 191, 100);
+	rgb color_5 <- rgb(167, 201, 111);
+	rgb color_6 <- rgb(232, 161, 206);
+	rgb color_7 <- rgb(184, 155, 240);
+	rgb color_8 <- rgb(126, 211, 235);
     list colors <- [color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8] of: rgb;
 
 	
@@ -78,6 +84,7 @@ species base {
 }
 
 experiment base_exp virtual:true{
+	parameter "Outline unhappy residents" category: "User interface" var: show_unhappy;
 	
 	parameter "Color of group 1:" category: "User interface" var:color_1;
 	parameter "Color of group 2:" category: "User interface" var:color_2;
@@ -95,6 +102,5 @@ experiment base_exp virtual:true{
 	parameter "Distance of perception:" var:neighbours_distance category: "Population" unit: "cells";
 
 }
-
 
 

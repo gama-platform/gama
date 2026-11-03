@@ -6,6 +6,8 @@
 *   parcels) where residents live. Agents of two groups are assigned to these spatial units, and unhappy
 *   agents (whose same-group neighbor percentage is below the threshold) move to a free unit selected from
 *   the GIS data. This gives the segregation dynamics a realistic geographic footprint.
+*   Building fills show mean resident colors; individual markers show groups and white outlines mark
+*   unhappy residents. Empty buildings use a neutral slate fill.
 * Tags: gis, shapefile, segregation, Schelling, emergence, social, agent_based, residential
 */
 model segregation
@@ -77,7 +79,7 @@ species people parent: base {
 	}
 
 	aspect simple {
-		draw circle(5) color: color border: #black;
+		draw circle(5) color: color border: (show_unhappy and !is_happy) ? lettering : backdrop;
 	}
 }
 
@@ -103,16 +105,15 @@ species space {
 		capacity <- capacity + 1;
 	}
 	aspect simple {
-		color <- empty(insiders) ? #white : rgb ([mean (insiders collect each.red), mean (insiders collect each.green), mean (insiders collect each.blue)]);
-		draw  square(40) color: color;
+		color <- empty(insiders) ? rgb(43, 56, 73) : rgb ([mean (insiders collect each.red), mean (insiders collect each.green), mean (insiders collect each.blue)]);
+		draw square(40) color: color border: rgb(68, 87, 109);
 	}
 	aspect gis {
-		color <- empty(insiders) ? #white : rgb( [mean (insiders collect each.red), mean (insiders collect each.green), mean (insiders collect each.blue)]);
-		draw shape color: color border: #black;
+		color <- empty(insiders) ? rgb(43, 56, 73) : rgb( [mean (insiders collect each.red), mean (insiders collect each.green), mean (insiders collect each.blue)]);
+		draw shape color: blend(color, backdrop, 0.45) border: rgb(68, 87, 109);
 	} 
 	aspect highlighted {
-		color <- #blue;
-		draw shape+10 color: color;
+		draw shape + 10 color: rgb(lettering, 0.3) border: lettering;
 	}
 }
 
@@ -123,18 +124,28 @@ experiment schelling type: gui parent:base_exp{
 	parameter "Occupancy of people:" var:square_meters_per_people category: "GIS specific" unit: "m²";
 	
 	output {
-		display Town_display type:2d  {
+		display Town_display type: 2d background: backdrop {
 			species space aspect: gis;
 			species people  aspect: simple;
-		}
-		display Charts  type: 2d {
-			chart "Proportion of happiness" type: histogram background: #lightgray gap:0.05 position: {0,0} size: {1.0,0.5}{
-				data "Unhappy" value: number_of_people - sum_happy_people color: #green;
-				data "Happy" value: sum_happy_people color: #yellow ;
+			overlay position: {12#px, 12#px} size: {310#px, 116#px} background: backdrop rounded: true {
+				draw "SCHELLING / RESIDENTIAL GEOGRAPHY" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
+				draw "Dots: groups / White outline: unhappy" at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
+				draw "Buildings: blended resident colors" at: {12#px, 72#px} color: lettering font: font("Helvetica", 11);
+				draw "Residents: " + number_of_people + "   Happy: "
+					+ string(with_precision(100.0 * sum_happy_people / max(1, number_of_people), 1)) + "%"
+					at: {12#px, 97#px} color: happy_color font: font("Helvetica", 11);
 			}
-			chart "Global happiness and similarity" type: series background: #lightgray axes: #white position: {0,0.5} size: {1.0,0.5} {
-				data "happy" color: #blue value:  ((sum_happy_people * 100) / number_of_people)  style: spline ;
-				data "similarity" color: #red value:  (sum_similar_neighbours / sum_total_neighbours) * 100 style: step ;
+		}
+		display Charts type: 2d background: backdrop {
+			chart "Resident satisfaction" type: histogram background: backdrop color: lettering axes: lettering
+				gap: 0.2 position: {0,0} size: {1.0,0.5} y_label: "Residents" {
+				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;
+				data "Happy" value: sum_happy_people color: happy_color;
+			}
+			chart "Happiness and neighborhood similarity" type: series background: backdrop color: lettering axes: lettering
+				position: {0,0.5} size: {1.0,0.5} y_range: {0,100} x_label: "Cycle" y_label: "Percent" {
+				data "Happy (%)" color: happy_color value: 100.0 * sum_happy_people / max(1, number_of_people) style: line;
+				data "Similar neighbors (%)" color: similarity_color value: 100.0 * sum_similar_neighbours / max(1, sum_total_neighbours) style: step;
 			}
 		}
 	}
