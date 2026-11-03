@@ -110,8 +110,8 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 		entries.values().forEach(extension -> extension.categories().forEach(category ->
 				groups.computeIfAbsent(category, _ -> new ArrayList<>()).add(extension)));
 		groups.forEach((category, extensions) -> {
-			if (!menu.isEmpty()) menu.add(new Separator());
-			addMessage(menu, category);
+			final MenuManager categoryMenu = new MenuManager(category);
+			menu.add(categoryMenu);
 			extensions.stream().sorted(Comparator.comparing(Extension::label, String.CASE_INSENSITIVE_ORDER))
 					.forEach(extension -> {
 						final Version version = installed.get(extension.featureId());
@@ -124,7 +124,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 							}
 						};
 						action.setEnabled(!current);
-						menu.add(action);
+						categoryMenu.add(action);
 					});
 		});
 		if (pending > 0) {

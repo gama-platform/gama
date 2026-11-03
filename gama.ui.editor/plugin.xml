@@ -940,7 +940,7 @@
            hasPages="true"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
            id="gama.ui.wizards.NewFileWizard"
-           name="GAML file"
+           name="Model"
            project="false">
      </wizard>
   </extension>

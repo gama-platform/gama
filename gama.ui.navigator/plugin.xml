@@ -205,61 +205,10 @@
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
                id="menu.new"
                label="New...">
-            <command
-                  commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.project2.svg"
-                  label="Project..."
-                  style="push">
-               <parameter
-                     name="newWizardId"
-                     value="gama.ui.wizards.newProjectWizard">
-               </parameter>
-               <visibleWhen
-                     checkEnabled="false">
-                  <with
-                        variable="selection">
-                     <iterate
-                           ifEmpty="true"
-                           operator="and">
-                        <or>
-                           <instanceof
-                                 value="gama.ui.navigator.view.contents.UserProjectsFolder">
-                           </instanceof>
-                        </or>
-                     </iterate>
-                  </with>
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-                  label="GAML file…"
-                  style="push">
-               <parameter
-                     name="newWizardId"
-                     value="gama.ui.wizards.NewFileWizard">
-               </parameter>
-            </command>
-            <command
-                  commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-                  label="Test…"
-                  style="push">
-               <parameter
-                     name="newWizardId"
-                     value="gama.ui.wizards.NewTestExperimentWizard">
-               </parameter>
-            </command>
-            <separator
-                  name="gama.application.separator22"
-                  visible="true">
-            </separator>
-            <command
-                  commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
-                  label="Other..."
-                  style="push">
-            </command>
+            <dynamic
+                  class="gama.ui.navigator.view.actions.NewMenuContribution"
+                  id="gama.ui.navigator.new.context">
+            </dynamic>
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -273,6 +222,12 @@
                         </instanceof>
                         <instanceof
                               value="gama.ui.navigator.view.contents.WrappedFolder">
+                        </instanceof>
+                        <instanceof
+                              value="gama.ui.navigator.view.contents.UserProjectsFolder">
+                        </instanceof>
+                        <instanceof
+                              value="gama.ui.navigator.view.contents.UserGroupFolder">
                         </instanceof>
                      </or>
                   </iterate>
@@ -445,61 +400,10 @@
       <menuContribution
             allPopups="false"
             locationURI="menu:new?after=new">
-         <command
-               commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.project2.svg"
-               label="Project..."
-               style="push">
-            <parameter
-                  name="newWizardId"
-                  value="gama.ui.wizards.newProjectWizard">
-            </parameter>
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="selection">
-                  <iterate
-                        ifEmpty="true"
-                        operator="and">
-                     <or>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.UserProjectsFolder">
-                        </instanceof>
-                     </or>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
-         <command
-               commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-               label="GAML file…"
-               style="push">
-            <parameter
-                  name="newWizardId"
-                  value="gama.ui.wizards.NewFileWizard">
-            </parameter>
-         </command>
-         <command
-               commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-               label="Test…"
-               style="push">
-            <parameter
-                  name="newWizardId"
-                  value="gama.ui.wizards.NewTestExperimentWizard">
-            </parameter>
-         </command>
-         <separator
-               name="gama.application.separator10"
-               visible="true">
-         </separator>
-         <command
-               commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
-               label="Other..."
-               style="push">
-         </command>
+         <dynamic
+               class="gama.ui.navigator.view.actions.NewMenuContribution"
+               id="gama.ui.navigator.new.main">
+         </dynamic>
       </menuContribution>
    </extension>
    <extension

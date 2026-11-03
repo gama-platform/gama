@@ -61,12 +61,7 @@ public final class LauncherHomeView extends ViewPart {
 		layout.marginHeight = 32;
 		content.setLayout(layout);
 		scroll.setContent(content);
-		final Composite center = new Composite(content, SWT.NONE);
-		center.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-		final GridLayout centerLayout = new GridLayout();
-		centerLayout.verticalSpacing = 18;
-		center.setLayout(centerLayout);
-		presentation = new LaunchPresentation(center, helper.getPresentation(), selectedExperiment, false,
+		presentation = new LaunchPresentation(content, helper.getPresentation(), selectedExperiment, false,
 				selection -> selectedExperiment = selection, () -> {
 			final var shell = parent.getShell();
 			final var origin = shell.toControl(presentation.toDisplay(0, 0));
@@ -80,7 +75,7 @@ public final class LauncherHomeView extends ViewPart {
 				GAMA.getGui().getDialogFactory().error("Unable to launch the experiment: " + e.getMessage());
 			}
 		});
-		presentation.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
+		presentation.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		scroll.addListener(SWT.Resize, event -> {
 			final int width = Math.max(300, scroll.getClientArea().width);
 			scroll.setMinSize(content.computeSize(width, SWT.DEFAULT));

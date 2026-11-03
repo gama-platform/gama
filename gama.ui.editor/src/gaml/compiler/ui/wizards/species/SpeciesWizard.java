@@ -50,8 +50,6 @@ public class SpeciesWizard extends DeclarationWizard<SpeciesDraft> {
 	private final ModelDocumentation documentation;
 	private ModelDocumentation documentationResult;
 	private ModelLocation locationResult;
-	private boolean modelNameEdited;
-	private boolean syncingModelName;
 	private FormHost host;
 	private final Function<SpeciesDraft, String> validator;
 	private final boolean editBody;
@@ -256,10 +254,6 @@ public class SpeciesWizard extends DeclarationWizard<SpeciesDraft> {
 		Text name = WizardWidgets.textField(basic, "Name", modelName, explanation("Model name"),
 				"species.field", "Model name", 180);
 		header.put("name", name);
-		name.addModifyListener(event -> {
-			if (!syncingModelName) modelNameEdited = true;
-			changed();
-		});
 		if (location != null) {
 			Composite place = composite(form, 5);
 			place.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -277,14 +271,9 @@ public class SpeciesWizard extends DeclarationWizard<SpeciesDraft> {
 			field(place, "File name", location.fileName(), null);
 			Text file = (Text) header.get("file name");
 			file.setEditable(locationEditable);
-			if (locationEditable) file.addModifyListener(event -> {
-				if (modelNameEdited) return;
-				syncingModelName = true;
-				try {
-					((Text) header.get("name")).setText(modelNameFor(file.getText()));
-				} finally { syncingModelName = false; }
-			});
+			if (locationEditable) name.addModifyListener(event -> file.setText(name.getText().trim() + ".gaml"));
 		}
+		name.addModifyListener(event -> changed());
 	}
 
 	/** Model identifier derived from a file name, as the former New Model File wizard did. */

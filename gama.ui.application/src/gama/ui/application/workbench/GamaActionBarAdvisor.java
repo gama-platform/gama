@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
-import java.util.List;
-
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionItem;
@@ -25,7 +23,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
-import org.eclipse.ui.actions.BaseNewWizardMenu;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -92,9 +89,6 @@ public class GamaActionBarAdvisor extends ActionBarAdvisor {
 
 	/** The project property dialog action. */
 	private IWorkbenchAction projectPropertyDialogAction;
-
-	/** The new wizard menu. */
-	private BaseNewWizardMenu newWizardMenu;
 
 	/** The status line item. */
 	// @issue class is workbench internal
@@ -182,14 +176,6 @@ public class GamaActionBarAdvisor extends ActionBarAdvisor {
 			newMenu.setActionDefinitionId("org.eclipse.ui.file.newQuickMenu"); //$NON-NLS-1$
 			newMenu.setImageDescriptor(icons.desc("navigator/navigator.new2"));
 			newMenu.add(new Separator(newId));
-			this.newWizardMenu = new BaseNewWizardMenu(getWindow(), null) {
-
-				@Override
-				protected void addItems(final List<IContributionItem> list) {
-					addShortcuts(list);
-				}
-			};
-			newMenu.add(this.newWizardMenu);
 			newMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 			menu.add(newMenu);
 		}
@@ -302,10 +288,6 @@ public class GamaActionBarAdvisor extends ActionBarAdvisor {
 		quitAction = null;
 		openWorkspaceAction = null;
 		projectPropertyDialogAction = null;
-		if (newWizardMenu != null) {
-			newWizardMenu.dispose();
-			newWizardMenu = null;
-		}
 		statusLineItem = null;
 		super.dispose();
 	}

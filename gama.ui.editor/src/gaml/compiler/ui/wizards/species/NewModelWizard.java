@@ -57,7 +57,7 @@ public class NewModelWizard extends Wizard implements INewWizard {
 	@Override
 	public void init(final IWorkbench workbench, final IStructuredSelection currentSelection) {
 		selection = currentSelection;
-		setWindowTitle("New GAML file");
+		setWindowTitle("New model");
 		setNeedsProgressMonitor(true);
 	}
 
@@ -218,7 +218,7 @@ public class NewModelWizard extends Wizard implements INewWizard {
 
 		ModelPage() {
 			super("model");
-			setTitle("New GAML file");
+			setTitle("New model");
 			setDescription("Create a model or a standalone experiment.");
 			setPageComplete(false);
 		}

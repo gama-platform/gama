@@ -16,6 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -32,6 +33,7 @@ import gama.ui.shared.resources.IGamaIcons;
 public final class LaunchPresentation extends Composite {
 
 	public static final String SHELL_DATA_KEY = LaunchPresentation.class.getName();
+	private static final String BACKGROUND_SURFACE_KEY = SHELL_DATA_KEY + ".background";
 
 	public record Content(String title, String description, Path image, List<ExperimentMenu.Entry> experiments) {
 		public Content {
@@ -54,6 +56,7 @@ public final class LaunchPresentation extends Composite {
 
 	/** Installs a centered watermark; descendants can inherit it without obscuring it with solid backgrounds. */
 	public static void installBackground(final Composite surface) {
+		surface.setData(BACKGROUND_SURFACE_KEY, true);
 		GamaColors.setBackground(backgroundColor(), surface);
 		surface.setForeground(foregroundColor());
 		final ImageDescriptor descriptor =
@@ -131,6 +134,7 @@ public final class LaunchPresentation extends Composite {
 		if (multiple) subtitleData.heightHint = 24;
 		subtitle.setLayoutData(subtitleData);
 		final Composite actions = new Composite(this, SWT.NONE);
+		actions.setBackgroundMode(SWT.INHERIT_FORCE);
 		final GridLayout actionsLayout = new GridLayout();
 		actionsLayout.marginWidth = actionsLayout.marginHeight = 0;
 		actionsLayout.verticalSpacing = 0;
@@ -208,6 +212,55 @@ public final class LaunchPresentation extends Composite {
 			} catch (final RuntimeException e) {
 				DEBUG.ERR("Unable to load launcher image " + content.image(), e);
 				new Label(this, SWT.WRAP).setText("Unable to load the home page image: " + content.image());
+			}
+		}
+		Composite surface = parent;
+		while (surface != null && surface.getData(BACKGROUND_SURFACE_KEY) == null) {
+			surface = surface.getParent();
+		}
+		if (surface != null) installControlBackgrounds(this, surface);
+	}
+
+	/** Native labels on Cocoa paint solid backgrounds even when their composites inherit the watermark. */
+	private static void installControlBackgrounds(final Control control, final Composite surface) {
+		final Image[] background = new Image[1];
+		final Listener update = event -> {
+			if (control.isDisposed() || surface.isDisposed()) return;
+			final Image source = surface.getBackgroundImage();
+			final var size = control.getSize();
+			if (source == null || size.x <= 0 || size.y <= 0) return;
+			final var origin = surface.toControl(control.toDisplay(0, 0));
+			final Image next = new Image(control.getDisplay(), size.x, size.y);
+			final GC gc = new GC(next);
+			try {
+				gc.setBackground(surface.getBackground());
+				gc.fillRectangle(next.getBounds());
+				gc.drawImage(source, -origin.x, -origin.y);
+			} finally {
+				gc.dispose();
+			}
+			control.setBackgroundImage(next);
+			if (background[0] != null) background[0].dispose();
+			background[0] = next;
+			control.redraw();
+		};
+		control.addListener(SWT.Move, update);
+		control.addListener(SWT.Resize, update);
+		for (Composite ancestor = control.getParent(); ancestor != surface; ancestor = ancestor.getParent()) {
+			ancestor.addListener(SWT.Move, update);
+		}
+		surface.addListener(SWT.Resize, update);
+		control.addDisposeListener(event -> {
+			if (!surface.isDisposed()) surface.removeListener(SWT.Resize, update);
+			for (Composite ancestor = control.getParent(); ancestor != surface; ancestor = ancestor.getParent()) {
+				if (!ancestor.isDisposed()) ancestor.removeListener(SWT.Move, update);
+			}
+			if (background[0] != null) background[0].dispose();
+		});
+		update.handleEvent(null);
+		if (control instanceof Composite composite) {
+			for (final Control child : composite.getChildren()) {
+				installControlBackgrounds(child, surface);
 			}
 		}
 	}

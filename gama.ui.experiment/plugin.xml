@@ -469,18 +469,6 @@
                   </and>
                </visibleWhen>
             </command>
-            <command
-                  commandId="gama.ui.resetPerspective"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.reset.svg"
-                  label="Reset Perspective (restart required)..."
-                  style="push">
-               <visibleWhen
-                     checkEnabled="false">
-                  <reference
-                        definitionId="isInModelingPerspective">
-                  </reference>
-               </visibleWhen>
-            </command>
             <separator
                   name="gama.application.separator4"
                   visible="true">
@@ -522,6 +510,22 @@
                               <systemTest property="exported_runner" value="true"/>
                         </not>
                </visibleWhen>                  
+            </command>
+            <separator
+                  name="gama.application.window.reset"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="gama.ui.resetPerspective"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.reset.svg"
+                  label="Reset Perspective (restart required)..."
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="isInModelingPerspective">
+                  </reference>
+               </visibleWhen>
             </command>
          </menu>
       </menuContribution>
