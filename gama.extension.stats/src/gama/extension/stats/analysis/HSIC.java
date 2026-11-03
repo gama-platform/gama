@@ -350,6 +350,10 @@ public class HSIC {
 
 	/**
 	 * Finds the median among strictly positive distances for zero-inflated / tied samples.
+	 * When identical observations or ties dominate the sample (such as discrete or duplicate values),
+	 * the global median of pairwise distances can be zero. Since a zero bandwidth would cause a 0/0 division
+	 * in the RBF kernel, this fallback computes the median strictly over positive distances to define a
+	 * meaningful scale of variation between distinct points.
 	 */
 	private static double findFirstPositiveMedian(final double[] sortedDists) {
 		for (int k = 0; k < sortedDists.length; k++) {
@@ -360,12 +364,14 @@ public class HSIC {
 
 	/**
 	 * Computes the exact median of the sorted slice {@code sorted[lo..hi)}.
+	 * Uses {@code sorted[mid - 1] + 0.5 * (sorted[mid] - sorted[mid - 1])} for even lengths to avoid
+	 * underflow to zero when averaging identical subnormal numbers (down to {@link Double#MIN_VALUE}).
 	 */
 	private static double medianSlice(final double[] sorted, final int lo, final int hi) {
 		final int len = hi - lo;
 		final int mid = lo + (len >>> 1);
 		if ((len & 1) == 1) return sorted[mid];
-		return 0.5 * sorted[mid - 1] + 0.5 * sorted[mid];
+		return sorted[mid - 1] + 0.5 * (sorted[mid] - sorted[mid - 1]);
 	}
 
 	/**

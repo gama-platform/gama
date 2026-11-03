@@ -93,6 +93,12 @@ experiment HSICRobustnessTest type: test autorun: true {
 		// Subnormal numbers near minimum non-zero double
 		list<float> subnormals <- [#min_float, 2.0 * #min_float, 3.0 * #min_float];
 		assert hsic(subnormals, subnormals) = 1.0;
+
+		// Four observations with ties and subnormal values (exercises even-length medianSlice without underflow)
+		list<float> subnormal_even <- [0.0, #min_float, 0.0, #min_float];
+		assert hsic(subnormal_even, subnormal_even) = 1.0;
+		float p_even <- hsic_p_value(subnormal_even, subnormal_even, 10);
+		assert p_even >= 0.0 and p_even <= 1.0;
 	}
 
 	test "Repeated simulations calibrate Type I error rate under independence" {
