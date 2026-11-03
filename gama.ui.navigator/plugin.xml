@@ -18,7 +18,7 @@
             categoryId="gama.category"
             defaultHandler="gama.ui.navigator.commands.InstallHandler"
             id="gama.ui.install"
-            name="Install other extensions...">
+            name="Install third-party extensions...">
       </command>
       <command
             categoryId="gama.category"
@@ -52,7 +52,7 @@
          <command
                commandId="gama.ui.install"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.install.svg"
-               label="Install other extensions..."
+               label="Install third-party extensions..."
                style="push">
             <visibleWhen checkEnabled="false">
                <not>
