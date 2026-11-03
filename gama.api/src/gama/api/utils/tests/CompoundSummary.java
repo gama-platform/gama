@@ -38,15 +38,12 @@ import one.util.streamex.StreamEx;
 public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSummary<?>> extends AbstractSummary<S> {
 
 	/** The summaries. */
-	public final Map<String, T> summaries = new LinkedHashMap<>();
+	public final Map<String, T> summaries = Collections.synchronizedMap(new LinkedHashMap<>());
 
 	/** The aborted. */
-	public boolean aborted;
+	public volatile boolean aborted;
 
-	private TestState terminationState;
-
-	/** The string summary. */
-	public String stringSummary;
+	private volatile TestState terminationState;
 
 	/**
 	 * Instantiates a new compound summary.
@@ -97,7 +94,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 
 	@Override
 	public long getTimeStamp() {
-		return StreamEx.ofValues(summaries).mapToLong(AbstractSummary::getTimeStamp).max().orElse(0);
+		return StreamEx.ofValues(getSummaries()).mapToLong(AbstractSummary::getTimeStamp).max().orElse(0);
 	}
 
 	@Override
@@ -109,11 +106,15 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 	public void setState(final TestState s) {
 		aborted = s == TestState.ABORTED;
 		terminationState = s == TestState.INTERRUPTED || s == TestState.TIMED_OUT ? s : null;
-		stringSummary = null;
 	}
 
+	/** Returns an insertion-ordered snapshot so readers do not hold the map lock while traversing children. */
 	@Override
-	public Map<String, ? extends AbstractSummary<?>> getSummaries() { return summaries; }
+	public Map<String, T> getSummaries() {
+		synchronized (summaries) {
+			return new LinkedHashMap<>(summaries);
+		}
+	}
 
 	/**
 	 * Adds the summary.
@@ -122,11 +123,13 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 	 *            the summary
 	 */
 	public void addSummary(final T summary) {
-		final String originalKey = summary.getTitle();
-		String key = originalKey;
-		int i = 2;
-		while (summaries.containsKey(key)) { key = originalKey + "[" + i++ + "]"; }
-		summaries.put(key, summary);
+		synchronized (summaries) {
+			final String originalKey = summary.getTitle();
+			String key = originalKey;
+			int i = 2;
+			while (summaries.containsKey(key)) { key = originalKey + "[" + i++ + "]"; }
+			summaries.put(key, summary);
+		}
 	}
 
 	/**
@@ -142,10 +145,9 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 	@Override
 	public void reset() {
 		super.reset();
-		summaries.values().forEach(AbstractSummary::reset);
+		getSummaries().values().forEach(AbstractSummary::reset);
 		aborted = false;
 		terminationState = null;
-		stringSummary = null;
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -165,7 +167,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 		if (terminationState != null) return terminationState;
 		if (aborted) return TestState.ABORTED;
 		TestState state = TestState.NOT_RUN;
-		for (final AbstractSummary<?> a : summaries.values()) {
+		for (final AbstractSummary<?> a : getSummaries().values()) {
 			final TestState s = a.getState();
 			switch (s) {
 				case NOT_RUN:
@@ -193,7 +195,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 
 	@Override
 	public int countTestsWith(final TestState state) {
-		return StreamEx.ofValues(summaries).mapToInt(s -> s.countTestsWith(state)).sum();
+		return StreamEx.ofValues(getSummaries()).mapToInt(s -> s.countTestsWith(state)).sum();
 	}
 
 	/**
@@ -238,8 +240,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 	 * @return the string summary
 	 */
 	public String getStringSummary() {
-		if (stringSummary == null) { stringSummary = createTestsSummary(); }
-		return stringSummary;
+		return createTestsSummary();
 	}
 
 	/**
@@ -257,7 +258,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 		map.put(TestState.INTERRUPTED, 0);
 		map.put(TestState.TIMED_OUT, 0);
 		final int[] size = { 0 };
-		summaries.values().forEach(t -> {
+		getSummaries().values().forEach(t -> {
 			map.keySet().forEach(state -> map.put(state, map.get(state) + t.countTestsWith(state)));
 			size[0] += t.size();
 		});

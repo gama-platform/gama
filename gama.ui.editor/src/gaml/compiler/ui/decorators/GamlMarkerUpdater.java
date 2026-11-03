@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.decorators;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -62,6 +66,16 @@ import gaml.compiler.validation.GamlAutoValidation;
  * @see IMarkerContributor
  */
 public class GamlMarkerUpdater extends MarkerUpdaterImpl {
+
+	private static final List<Consumer<String>> COMPILATION_LISTENERS = new CopyOnWriteArrayList<>();
+
+	public static void addCompilationListener(final Consumer<String> listener) {
+		COMPILATION_LISTENERS.add(listener);
+	}
+
+	public static void removeCompilationListener(final Consumer<String> listener) {
+		COMPILATION_LISTENERS.remove(listener);
+	}
 
 	/** 
 	 * Maps storage objects (like IFile) to their corresponding EMF URIs.
@@ -144,7 +158,9 @@ public class GamlMarkerUpdater extends MarkerUpdaterImpl {
 			final IResourceUIValidatorExtension validatorExtension, final IMarkerContributor markerContributor,
 			final IProgressMonitor monitor) {
 		if (resourceSet == null || !GamlAutoValidation.isEnabled(file)) return;
-		
+
+		monitor.subTask("Compiling " + file.getFullPath().toString());
+		COMPILATION_LISTENERS.forEach(listener -> listener.accept(file.getFullPath().toString()));
 		final Resource resource = resourceSet.getResource(uri, true);
 		if (resource == null) return;
 

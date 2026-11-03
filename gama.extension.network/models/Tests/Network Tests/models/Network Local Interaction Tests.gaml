@@ -17,7 +17,7 @@ species Person skills:[network]
 }
 
 
-experiment "Tests for gam.extension.network" type: test {
+experiment "Tests for gama.extension.network" type: test {
 	
 	init {
 		gama.pref_test_timeout <- 120;

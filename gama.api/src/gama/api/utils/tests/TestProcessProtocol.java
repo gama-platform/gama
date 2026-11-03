@@ -52,8 +52,9 @@ public final class TestProcessProtocol {
 		writeString(out, summary.getState().name());
 		writeString(out, summary.getError() == null ? "" : summary.getError());
 		writeString(out, summary.getErrorDetails() == null ? "" : summary.getErrorDetails());
-		out.writeInt(summary.getSummaries().size());
-		for (final var entry : summary.getSummaries().entrySet()) {
+		final var children = summary.getSummaries();
+		out.writeInt(children.size());
+		for (final var entry : children.entrySet()) {
 			writeString(out, entry.getKey());
 			writeSummary(out, entry.getValue());
 		}
