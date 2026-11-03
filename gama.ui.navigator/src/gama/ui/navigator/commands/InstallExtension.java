@@ -11,6 +11,7 @@
 package gama.ui.navigator.commands;
 
 import java.net.URI;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,7 +26,11 @@ import org.eclipse.equinox.p2.core.ProvisionException;
 import org.eclipse.equinox.p2.engine.IProfile;
 import org.eclipse.equinox.p2.engine.IProfileRegistry;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
+import org.eclipse.equinox.p2.metadata.Version;
 import org.eclipse.equinox.p2.operations.InstallOperation;
+import org.eclipse.equinox.p2.operations.ProfileChangeOperation;
+import org.eclipse.equinox.p2.operations.Update;
+import org.eclipse.equinox.p2.operations.UpdateOperation;
 import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.ui.ProvisioningUI;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -44,9 +49,15 @@ final class InstallExtension {
 			URI.create("https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
 	private static final AtomicBoolean INSTALLING = new AtomicBoolean();
 
-	record Extension(URI repository, String featureId, String label) {}
+	record Extension(URI repository, String featureId, String label, Version version) {}
 
 	private InstallExtension() {}
+
+	static IProfile installationProfile(final ProvisioningUI ui) {
+		if (ui == null || ui.getProfileId() == null) return null;
+		final IProfileRegistry registry = ui.getSession().getProvisioningAgent().getService(IProfileRegistry.class);
+		return registry == null ? null : registry.getProfile(ui.getProfileId());
+	}
 
 	static void install(final Shell shell, final Extension extension) {
 		final String label = extension.label();
@@ -68,9 +79,7 @@ final class InstallExtension {
 		final Job job = Job.create("Preparing installation: " + label, monitor -> {
 			try {
 				final SubMonitor progress = SubMonitor.convert(monitor, 100);
-				final IProfileRegistry registry =
-						ui.getSession().getProvisioningAgent().getService(IProfileRegistry.class);
-				final IProfile profile = registry == null ? null : registry.getProfile(ui.getProfileId());
+				final IProfile profile = installationProfile(ui);
 				if (profile == null) return error("The GAMA installation profile is unavailable.");
 				final URI source = extension.repository();
 				final URI[] repositories = source.equals(COPILOT_REPOSITORY)
@@ -79,12 +88,22 @@ final class InstallExtension {
 				for (final URI repository : repositories) {
 					ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
 				}
-				if (!profile.query(QueryUtil.createIUQuery(featureId), progress.split(5)).isEmpty()) {
+				final IInstallableUnit installed = profile.query(QueryUtil.createIUQuery(featureId), progress.split(5))
+						.toSet().stream().max(Comparator.comparing(IInstallableUnit::getVersion)).orElse(null);
+
+				final var repository = ui.loadMetadataRepository(source, false, progress.split(40));
+				final var matches = repository.query(
+						QueryUtil.createLatestQuery(QueryUtil.createIUQuery(featureId)), progress.split(5));
+				if (matches.isEmpty()) return error("The update site " + source + " does not yet publish " + label
+						+ " (" + featureId + "). Please contact the GAMA maintainers.");
+				final List<IInstallableUnit> units = List.copyOf(matches.toSet());
+				final IInstallableUnit available = units.getFirst();
+				if (installed != null && installed.getVersion().compareTo(available.getVersion()) >= 0) {
 					display.asyncExec(() -> {
 						try {
 							if (!shell.isDisposed()) {
 								MessageDialog.openInformation(shell, label + " is installed",
-										label + " is already installed. Use Support > Check for Updates to update it.");
+										label + " is already installed at the latest available version or newer.");
 							}
 						} finally {
 							INSTALLING.set(false);
@@ -93,13 +112,14 @@ final class InstallExtension {
 					return Status.OK_STATUS;
 				}
 
-				final var repository = ui.loadMetadataRepository(source, false, progress.split(40));
-				final var matches = repository.query(
-						QueryUtil.createLatestQuery(QueryUtil.createIUQuery(featureId)), progress.split(5));
-				if (matches.isEmpty()) return error("The update site " + source + " does not yet publish " + label
-						+ " (" + featureId + "). Please contact the GAMA maintainers.");
-				final List<IInstallableUnit> units = List.copyOf(matches.toSet());
-				final InstallOperation operation = ui.getInstallOperation(units, repositories);
+				final ProfileChangeOperation operation;
+				if (installed == null) {
+					operation = ui.getInstallOperation(units, repositories);
+				} else {
+					final UpdateOperation update = ui.getUpdateOperation(List.of(installed), repositories);
+					update.setSelectedUpdates(new Update[] { new Update(installed, available) });
+					operation = update;
+				}
 				final IStatus resolution = operation.resolveModal(progress.split(50));
 				if (resolution.matches(IStatus.ERROR | IStatus.CANCEL)) return resolution;
 				if (monitor.isCanceled()) return Status.CANCEL_STATUS;
@@ -111,7 +131,11 @@ final class InstallExtension {
 										"Another software operation has started. Please finish it and try again.");
 							} else {
 								// p2 retains license acceptance, signature verification and restart handling.
-								ui.openInstallWizard(units, operation, null);
+								if (operation instanceof UpdateOperation update) {
+									ui.openUpdateWizard(false, update, null);
+								} else if (operation instanceof InstallOperation install) {
+									ui.openInstallWizard(units, install, null);
+								}
 							}
 						}
 					} finally {

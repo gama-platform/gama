@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.equinox.p2.core.ProvisionException;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
+import org.eclipse.equinox.p2.metadata.Version;
 import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.repository.ICompositeRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
@@ -42,45 +43,68 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IStartup;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import gama.ui.navigator.commands.InstallExtension.Extension;
+import gama.ui.shared.resources.GamaIcon;
 
 /**
  * Discovers installable features from the GAMA and Copilot p2 repositories without blocking menu opening.
  */
-public class InstallExtensionsContribution extends CompoundContributionItem {
+public class InstallExtensionsContribution extends CompoundContributionItem implements IStartup {
 
 	private static final URI GAMA_REPOSITORY = URI.create("https://updates.gama-platform.org/plugin/2026-06/");
 	private static final List<URI> REPOSITORIES = List.of(GAMA_REPOSITORY, InstallExtension.COPILOT_REPOSITORY);
 	private static final long REFRESH_INTERVAL = TimeUnit.HOURS.toNanos(1);
 
-	private final Map<URI, List<Extension>> catalogue = new LinkedHashMap<>();
-	private long lastRefresh;
-	private int pending;
-	private boolean failed;
-	private MenuManager activeMenu;
-	private final List<Job> jobs = new ArrayList<>();
+	private static final Map<URI, List<Extension>> catalogue = new LinkedHashMap<>();
+	private static long lastRefresh;
+	private static int pending;
+	private static boolean failed;
+	private static MenuManager activeMenu;
+	private static final List<Job> jobs = new ArrayList<>();
+
+	@Override
+	public void earlyStartup() {
+		if (Boolean.getBoolean("exported_runner")) return;
+		final Display display = PlatformUI.getWorkbench().getDisplay();
+		if (display.isDisposed()) return;
+		display.asyncExec(() -> {
+			if (lastRefresh == 0) refresh(display);
+		});
+	}
 
 	@Override
 	protected IContributionItem[] getContributionItems() {
 		final MenuManager menu = new MenuManager("Install GAMA extensions...", "gama.ui.install.extensions");
+		menu.setImageDescriptor(GamaIcon.named("generic/menu.install.gama").descriptor());
 		menu.setRemoveAllWhenShown(true);
 		menu.addMenuListener(_ -> {
 			activeMenu = menu;
 			if (pending == 0 && (lastRefresh == 0 || System.nanoTime() - lastRefresh >= REFRESH_INTERVAL)) {
-				refresh(menu);
+				refresh(menu.getMenu().getDisplay());
 			}
 			populate(menu);
 		});
 		return new IContributionItem[] { menu };
 	}
 
-	private void populate(final MenuManager menu) {
+	private static void populate(final MenuManager menu) {
 		menu.removeAll();
+		final Map<String, Version> installed = new LinkedHashMap<>();
+		final var profile = InstallExtension.installationProfile(ProvisioningUI.getDefaultUI());
+		if (profile != null) {
+			for (final IInstallableUnit unit : profile.query(QueryUtil.createIUGroupQuery(), null)) {
+				installed.merge(unit.getId(), unit.getVersion(), (first, second) ->
+						first.compareTo(second) >= 0 ? first : second);
+			}
+		}
 		final var entries = new LinkedHashMap<String, Extension>();
-		catalogue.values().forEach(list -> list.forEach(extension -> entries.putIfAbsent(extension.featureId(), extension)));
+		catalogue.values().forEach(list -> list.forEach(extension -> entries.merge(extension.featureId(), extension,
+				(first, second) -> first.version().compareTo(second.version()) >= 0 ? first : second)));
 		final Map<URI, List<Extension>> groups = new TreeMap<>(
 				Comparator.comparing(InstallExtensionsContribution::repositoryClassifier, String.CASE_INSENSITIVE_ORDER)
 						.thenComparing(URI::toString));
@@ -90,12 +114,19 @@ public class InstallExtensionsContribution extends CompoundContributionItem {
 			if (!menu.isEmpty()) menu.add(new Separator());
 			addMessage(menu, repositoryClassifier(repository));
 			extensions.stream().sorted(Comparator.comparing(Extension::label, String.CASE_INSENSITIVE_ORDER))
-					.forEach(extension -> menu.add(new Action("Install " + extension.label() + " extension") {
-					@Override
-					public void run() {
-						InstallExtension.install(menu.getMenu().getShell(), extension);
-					}
-				}));
+					.forEach(extension -> {
+						final Version version = installed.get(extension.featureId());
+						final boolean current = version != null && version.compareTo(extension.version()) >= 0;
+						final String prefix = version == null ? "Install " : current ? "(Installed) " : "Update ";
+						final Action action = new Action(prefix + extension.label() + " extension...") {
+							@Override
+							public void run() {
+								InstallExtension.install(menu.getMenu().getShell(), extension);
+							}
+						};
+						action.setEnabled(!current);
+						menu.add(action);
+					});
 		});
 		if (pending > 0) {
 			addMessage(menu, "Loading extensions (" + pending + " update site(s) remaining)...");
@@ -117,7 +148,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem {
 		final Action refresh = new Action("Refresh extension list") {
 			@Override
 			public void run() {
-				refresh(menu);
+				refresh(menu.getMenu().getDisplay());
 				populate(menu);
 				menu.update(true);
 			}
@@ -142,18 +173,17 @@ public class InstallExtensionsContribution extends CompoundContributionItem {
 				: Character.toUpperCase(word.charAt(0)) + word.substring(1);
 	}
 
-	private void refresh(final MenuManager menu) {
+	private static void refresh(final Display display) {
 		if (pending > 0) return;
 		pending = REPOSITORIES.size();
 		failed = false;
-		final Display display = menu.getMenu().getDisplay();
 		jobs.clear();
 		for (final URI source : REPOSITORIES) {
 			refreshSite(source, display);
 		}
 	}
 
-	private void refreshSite(final URI source, final Display display) {
+	private static void refreshSite(final URI source, final Display display) {
 		final List<Extension> extensions = new ArrayList<>();
 		final Job job = Job.create("Discovering GAMA extensions: " + source.getHost() + source.getPath(), monitor -> {
 			final ProvisioningUI ui = ProvisioningUI.getDefaultUI();
@@ -231,7 +261,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem {
 			final String name = units.size() == 1
 					? repositoryName(nameSource == null ? location : nameSource)
 					: unit.getId();
-			extensions.add(new Extension(source, unit.getId(), extensionLabel(name)));
+			extensions.add(new Extension(source, unit.getId(), extensionLabel(name), unit.getVersion()));
 		}
 	}
 

@@ -5,7 +5,10 @@
 Use **Support > Install GAMA extensions...** in a packaged GAMA installation,
 then choose the extension to install. The submenu discovers installable features
 from <https://updates.gama-platform.org/plugin/2026-06/> and
-<https://gama-platform.org/gama.copilot/> in the background when first opened.
+<https://gama-platform.org/gama.copilot/> in background jobs started during
+workbench startup, without waiting for the menu to be opened or blocking startup.
+The startup discovery and menu share the same in-memory list and running jobs.
+Discovery is disabled in exported-player mode.
 It keeps the list in memory and refreshes it on opening after an hour; use
 **Refresh extension list** to check immediately. The two sites load independently,
 and entries appear as each site finishes. Refresh jobs are visible in Eclipse's
@@ -13,7 +16,7 @@ Progress view; **Cancel refresh** requests cancellation of outstanding reads.
 Entries are grouped by their source repository, with its last word capitalized
 (for example, `Inrae` or `Copilot`) shown as a disabled gray heading.
 Groups and their entries are sorted alphabetically. Entries are temporarily named
-**Install &lt;Name&gt; extension**, using the last one or two
+**Install &lt;Name&gt; extension...**, using the last one or two
 words of the repository name after `plugin`, `extension` or `gama`. Repositories
 publishing multiple features use feature identifiers to distinguish their entries.
 Only features advertised in p2 metadata are listed: a directory on the web server
@@ -37,12 +40,23 @@ named Eclipse 2026-03 repository for required platform dependencies, not a movin
 latest-Eclipse channel. Copilot is resolved to the newest version satisfying the
 wrapper's compatibility range and the installed platform's dependencies; a newer
 upstream release requiring newer Eclipse does not authorize upgrading that baseline.
-Already-installed features are reported rather than reinstalled; use
-**Support > Check for Updates** to update them.
+On each menu opening, feature versions in the installation profile are compared
+with the discovered repository versions. Features already installed at the same
+or a newer version are disabled and labeled **(Installed) &lt;Name&gt; extension...**.
+An older installed version is labeled **Update &lt;Name&gt; extension...** and opens
+the p2 update review for that feature, using the same dependency repositories.
+Installation and update preparation recheck the profile and repository before
+opening their review wizard. **Support > Check for updates...** remains available
+to check all installed software.
 For Copilot, the installed check uses the GAMA wrapper feature: having only the
 upstream extension installed does not prevent adding the GAMA integration.
 
-These entries cover installation only. GitHub sign-in, Copilot entitlement,
+**Support > Install other extensions...**, directly below the GAMA extensions
+submenu, opens the general p2 installer for other update sites. Below the separator,
+**Check for updates...** checks installed software and **Manage extensions...**
+opens installation details.
+
+These entries cover installation and updates only. GitHub sign-in, Copilot entitlement,
 and graphical/Copilot integration with GAML are separate from installation.
 Before opening the workbench, the optional integration seeds Copilot's configuration preferences to
 skip Quick Start and disable automatic What's New pages. Existing settings are

@@ -3,25 +3,28 @@
 <plugin>
    <extension point="gama.standard.distribution">
    </extension>
+   <extension point="org.eclipse.ui.startup">
+      <startup class="gama.ui.navigator.commands.InstallExtensionsContribution"/>
+   </extension>
 
    <extension point="org.eclipse.ui.commands">
       <command
             categoryId="gama.category"
             defaultHandler="gama.ui.navigator.commands.DetailsHandler"
             id="gama.ui.details"
-            name="Installation details">
+            name="Manage extensions...">
       </command>
       <command
             categoryId="gama.category"
             defaultHandler="gama.ui.navigator.commands.InstallHandler"
             id="gama.ui.install"
-            name="Install new plugins...">
+            name="Install other extensions...">
       </command>
       <command
             categoryId="gama.category"
             defaultHandler="gama.ui.navigator.commands.UpdateHandler"
             id="gama.ui.update"
-            name="Check for updates">
+            name="Check for updates...">
       </command>
       <command
             categoryId="gama.category"
@@ -46,14 +49,10 @@
                </not>
             </visibleWhen>
          </dynamic>
-         <separator
-               name="gama.ui.shared.separator4"
-               visible="true">
-         </separator>
          <command
-               commandId="gama.ui.update"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
-               label="Check for Updates"
+               commandId="gama.ui.install"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.install.svg"
+               label="Install other extensions..."
                style="push">
             <visibleWhen checkEnabled="false">
                <not>
@@ -61,10 +60,14 @@
                </not>
             </visibleWhen>
          </command>
+         <separator
+               name="gama.ui.shared.separator4"
+               visible="true">
+         </separator>
          <command
-               commandId="gama.ui.install"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.install.svg"
-               label="Install new Plugins..."
+               commandId="gama.ui.update"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
+               label="Check for updates..."
                style="push">
             <visibleWhen checkEnabled="false">
                <not>
@@ -75,7 +78,7 @@
          <command
                commandId="gama.ui.details"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.details.svg"
-               label="Installation Details"
+               label="Manage extensions..."
                style="push">
             <visibleWhen checkEnabled="false">
                <not>

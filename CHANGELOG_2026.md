@@ -51,7 +51,7 @@ dependencies from the fixed Eclipse 2026-03 repository, without mirroring them
 or moving GAMA to a newer Eclipse release.
 
 **Support > Install GAMA extensions... > Install Copilot extension** now uses that site rather than the running GAMA
-release's update repository; subsequent updates use **Support > Check for Updates**.
+release's update repository; subsequent updates use **Support > Check for updates...**.
 License acceptance, trust checks, GitHub sign-in and entitlement requirements remain.
 The installer checks for the GAMA wrapper feature, so an upstream-only Copilot
 installation can also acquire the GAMA integration.
