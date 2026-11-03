@@ -12,8 +12,11 @@ package gama.core.topology;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.Ordering;
 
@@ -209,7 +212,9 @@ public class GamaQuadTree implements ISpatialIndex {
 
 	@Override
 	public void dispose() {
-		root.dispose();
+		final Set<IIntersectable> removed = Collections.newSetFromMap(new IdentityHashMap<>());
+		root.dispose(removed);
+		removed.forEach(IIntersectable::dispose);
 	}
 
 	private boolean isCovered(final IEnvelope env) {
@@ -345,12 +350,15 @@ public class GamaQuadTree implements ISpatialIndex {
 	public void remove(final IEnvelope previous, final IAgent agent) {
 		final IEnvelope current = previous == null ? agent.getEnvelope() : previous;
 		if (current == null) return;
+		final Set<IIntersectable> removed = Collections.newSetFromMap(new IdentityHashMap<>());
 		if (current.getArea() == 0.0) {
-			root.remove(current.center(), agent);
+			root.remove(current.center(), agent, removed);
 		} else {
-			root.remove(current, agent);
+			root.remove(current, agent, removed);
 		}
-		current.dispose();
+		// Leaves can share a key: release it only after every reference has been removed.
+		removed.add(current);
+		removed.forEach(IIntersectable::dispose);
 	}
 
 	// -------------------------------------------------------------------------
@@ -551,14 +559,14 @@ public class GamaQuadTree implements ISpatialIndex {
 		// ------------------------------------------------------------------
 
 		/**
-		 * Recursively disposes this node and all children.
+		 * Recursively clears this node and its children, collecting shared spatial keys for disposal after traversal.
 		 */
-		public void dispose() {
-			objects.forEach((a, e) -> { if (e != null) { e.dispose(); } });
+		public void dispose(final Set<IIntersectable> removed) {
+			objects.forEach((a, e) -> { if (e != null) { removed.add(e); } });
 			objects.clear();
 			final QuadNode[] ch = children;
 			if (ch != null) {
-				for (QuadNode c : ch) { if (c != null) { c.dispose(); } }
+				for (QuadNode c : ch) { if (c != null) { c.dispose(removed); } }
 				children = null;
 			}
 		}
@@ -616,26 +624,26 @@ public class GamaQuadTree implements ISpatialIndex {
 		// Removal
 		// ------------------------------------------------------------------
 
-		private void remove(final IPoint p, final IShape a) {
+		private void remove(final IPoint p, final IShape a, final Set<IIntersectable> removed) {
 			final QuadNode[] ch = children;
 			if (ch == null) {
 				final IIntersectable env = objects.remove(a);
-				if (env != null) { env.dispose(); }
+				if (env != null) { removed.add(env); }
 			} else {
-				ch[quadrant(p)].remove(p, a);
+				ch[quadrant(p)].remove(p, a, removed);
 			}
 		}
 
-		private void remove(final IEnvelope e, final IShape a) {
+		private void remove(final IEnvelope e, final IShape a, final Set<IIntersectable> removed) {
 			final QuadNode[] ch = children;
 			if (ch == null) {
 				final IIntersectable env = objects.remove(a);
-				if (env != null) { env.dispose(); }
+				if (env != null) { removed.add(env); }
 			} else {
-				if (ch[NW].bounds.intersects2D(e)) { ch[NW].remove(e, a); }
-				if (ch[NE].bounds.intersects2D(e)) { ch[NE].remove(e, a); }
-				if (ch[SW].bounds.intersects2D(e)) { ch[SW].remove(e, a); }
-				if (ch[SE].bounds.intersects2D(e)) { ch[SE].remove(e, a); }
+				if (ch[NW].bounds.intersects2D(e)) { ch[NW].remove(e, a, removed); }
+				if (ch[NE].bounds.intersects2D(e)) { ch[NE].remove(e, a, removed); }
+				if (ch[SW].bounds.intersects2D(e)) { ch[SW].remove(e, a, removed); }
+				if (ch[SE].bounds.intersects2D(e)) { ch[SE].remove(e, a, removed); }
 			}
 		}
 
