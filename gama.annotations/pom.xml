@@ -23,6 +23,7 @@
 	</distributionManagement>
 
 	<properties>
+		<gama.category>gama.category.core</gama.category>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<tycho.version>5.0.2</tycho.version>
 		<jdk.version>21</jdk.version>

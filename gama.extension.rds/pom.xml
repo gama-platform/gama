@@ -8,6 +8,9 @@
   </parent>
   <artifactId>gama.extension.rds</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <gama.category>gama.category.io</gama.category>
+  </properties>
   <build>
     <plugins>
       <plugin>

@@ -10,6 +10,9 @@
   </parent>
   <artifactId>gaml.compiler</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <gama.category>gama.category.core</gama.category>
+  </properties>
   <build>
     <plugins>
       <plugin>

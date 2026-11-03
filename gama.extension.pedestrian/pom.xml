@@ -8,6 +8,9 @@
   </parent>
   <artifactId>gama.extension.pedestrian</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <gama.category>gama.category.domain</gama.category>
+  </properties>
   <build>
     <plugins>
       <plugin>

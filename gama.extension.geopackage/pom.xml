@@ -10,4 +10,7 @@
 	</parent>
 	<artifactId>gama.extension.geopackage</artifactId>
 	<packaging>eclipse-plugin</packaging>
+	<properties>
+		<gama.category>gama.category.io</gama.category>
+	</properties>
 </project>

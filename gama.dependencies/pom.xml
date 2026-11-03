@@ -15,6 +15,9 @@
   </parent>
   <artifactId>gama.dependencies</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <gama.category>gama.category.dependencies</gama.category>
+  </properties>
 
   <!-- <packaging>jar</packaging> -->
   

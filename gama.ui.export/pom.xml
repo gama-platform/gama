@@ -10,4 +10,7 @@
   </parent>
   <artifactId>gama.ui.export</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <gama.category>gama.category.interface</gama.category>
+  </properties>
 </project>
