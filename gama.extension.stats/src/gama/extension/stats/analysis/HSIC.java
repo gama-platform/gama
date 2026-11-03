@@ -29,6 +29,58 @@ public class HSIC {
 	private static final double OVERFLOW_SAFE_BOUND = Double.MAX_VALUE / 2.0;
 
 	/**
+	 * Encapsulates a one-dimensional sample observation vector with precomputed scale and bandwidth.
+	 *
+	 * @param values
+	 *            the observations
+	 * @param scale
+	 *            overflow/underflow scale factor (0.5 for extreme values, 1.0 otherwise)
+	 * @param bandwidth
+	 *            RBF kernel bandwidth parameter
+	 */
+	private record Sample(double[] values, double scale, double bandwidth) {
+
+		static Sample of(final double[] data) {
+			final double scale = computeScale(data);
+			final double sigma = estimateBandwidth(data, scale);
+			return new Sample(data, scale, sigma);
+		}
+
+		int size() { return values.length; }
+
+		double[][] gramMatrix() {
+			return computeGramMatrix(values, bandwidth, scale);
+		}
+
+		CenteredKernel toCenteredKernel() {
+			final double[][] centered = centerMatrix(gramMatrix());
+			double normSq = 0.0;
+			for (final double[] row : centered) {
+				for (final double val : row) { normSq += val * val; }
+			}
+			return new CenteredKernel(centered, Math.sqrt(normSq));
+		}
+	}
+
+	/**
+	 * Encapsulates a pair of equal-length samples for independence analysis.
+	 *
+	 * @param x
+	 *            sample observations for the first variable
+	 * @param y
+	 *            sample observations for the second variable
+	 */
+	private record SamplePair(Sample x, Sample y) {
+
+		static SamplePair of(final double[] xData, final double[] yData) {
+			validateFiniteInputs(xData, yData);
+			return new SamplePair(Sample.of(xData), Sample.of(yData));
+		}
+
+		int size() { return x.size(); }
+	}
+
+	/**
 	 * Encapsulates a double-centered Gram kernel matrix along with its Frobenius norm.
 	 *
 	 * @param matrix
@@ -118,14 +170,12 @@ public class HSIC {
 	 * @return the HSIC value
 	 */
 	public static double computeHSIC(final double[] x, final double[] y, final boolean unbiased) {
-		validateFiniteInputs(x, y);
-		final int n = x.length;
+		final int n = x == null ? 0 : x.length;
 		if (n < (unbiased ? 4 : 2)) return 0.0;
 
-		final double scaleX = computeScale(x);
-		final double scaleY = computeScale(y);
-		final double[][] K = computeGramMatrix(x, estimateBandwidth(x, scaleX), scaleX);
-		final double[][] L = computeGramMatrix(y, estimateBandwidth(y, scaleY), scaleY);
+		final SamplePair pair = SamplePair.of(x, y);
+		final double[][] K = pair.x().gramMatrix();
+		final double[][] L = pair.y().gramMatrix();
 
 		return unbiased ? computeUnbiased(K, L) : computeBiased(K, L);
 	}
@@ -192,23 +242,10 @@ public class HSIC {
 	 */
 	public static double computePValue(final IScope scope, final double[] x, final double[] y, final int permutations) {
 		validatePValuePreconditions(scope, x, y, permutations);
-		final PermutationTest test = new PermutationTest(scope, buildCenteredKernel(x), buildCenteredKernel(y), permutations);
+		final SamplePair pair = SamplePair.of(x, y);
+		final PermutationTest test = new PermutationTest(scope, pair.x().toCenteredKernel(), pair.y().toCenteredKernel(), permutations);
 		final int count = test.countExceeding(resolveRandom(scope));
 		return (count + 1.0) / (permutations + 1.0);
-	}
-
-	/**
-	 * Constructs the centered Gram kernel matrix and calculates its Frobenius norm.
-	 */
-	private static CenteredKernel buildCenteredKernel(final double[] data) {
-		final double scale = computeScale(data);
-		final double sigma = estimateBandwidth(data, scale);
-		final double[][] centered = centerMatrix(computeGramMatrix(data, sigma, scale));
-		double normSq = 0.0;
-		for (final double[] row : centered) {
-			for (final double val : row) { normSq += val * val; }
-		}
-		return new CenteredKernel(centered, Math.sqrt(normSq));
 	}
 
 	/**

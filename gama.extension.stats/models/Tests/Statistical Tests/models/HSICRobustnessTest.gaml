@@ -94,4 +94,54 @@ experiment HSICRobustnessTest type: test autorun: true {
 		list<float> subnormals <- [#min_float, 2.0 * #min_float, 3.0 * #min_float];
 		assert hsic(subnormals, subnormals) = 1.0;
 	}
+
+	test "Repeated simulations calibrate Type I error rate under independence" {
+		int num_trials <- 50;
+		int rejections <- 0;
+		float sum_p <- 0.0;
+		ask simulation {
+			seed <- 12345.0;
+			loop i from: 1 to: num_trials {
+				list<float> x_indep <- [];
+				list<float> y_indep <- [];
+				loop times: 10 {
+					x_indep <- x_indep + rnd(100.0);
+					y_indep <- y_indep + rnd(100.0);
+				}
+				float p <- hsic_p_value(x_indep, y_indep, 100);
+				sum_p <- sum_p + p;
+				if (p < 0.05) {
+					rejections <- rejections + 1;
+				}
+			}
+		}
+		// Under H0, Type I error rate at alpha = 0.05 is controlled (<= 6 rejections out of 50)
+		assert rejections <= 6;
+		// Mean p-value under the null should be approximately 0.5 (uniformly distributed on [0, 1])
+		float mean_p <- sum_p / num_trials;
+		assert mean_p >= 0.35 and mean_p <= 0.65;
+	}
+
+	test "Repeated simulations calibrate statistical power under dependence" {
+		int num_trials <- 20;
+		int rejections <- 0;
+		ask simulation {
+			seed <- 54321.0;
+			loop i from: 1 to: num_trials {
+				list<float> x_dep <- [];
+				list<float> y_dep <- [];
+				loop j from: 1 to: 12 {
+					float xj <- float(j);
+					x_dep <- x_dep + xj;
+					y_dep <- y_dep + (2.0 * xj + rnd(-0.5, 0.5));
+				}
+				float p <- hsic_p_value(x_dep, y_dep, 100);
+				if (p < 0.05) {
+					rejections <- rejections + 1;
+				}
+			}
+		}
+		// Statistical power: under clear linear dependence with noise, power should be >= 95%
+		assert rejections >= 19;
+	}
 }
