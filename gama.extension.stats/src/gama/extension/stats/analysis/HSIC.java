@@ -29,14 +29,58 @@ public class HSIC {
 	private static final double OVERFLOW_SAFE_BOUND = Double.MAX_VALUE / 2.0;
 
 	/**
-	 * Encapsulates a double-centered Gram kernel matrix along with its squared Frobenius norm.
+	 * Encapsulates a double-centered Gram kernel matrix along with its Frobenius norm.
 	 *
 	 * @param matrix
 	 *            the centered Gram matrix
-	 * @param frobeniusNormSq
-	 *            the sum of squared elements (Frobenius norm squared)
+	 * @param frobeniusNorm
+	 *            the Frobenius norm (square root of sum of squared elements)
 	 */
-	private record CenteredKernel(double[][] matrix, double frobeniusNormSq) {}
+	private record CenteredKernel(double[][] matrix, double frobeniusNorm) {
+		int size() { return matrix.length; }
+	}
+
+	/**
+	 * Encapsulates the execution state of an HSIC permutation test.
+	 *
+	 * @param scope
+	 *            the execution scope for cancellation checks
+	 * @param kx
+	 *            centered kernel of the first variable
+	 * @param ky
+	 *            centered kernel of the second variable
+	 * @param permutations
+	 *            number of permutation replications
+	 */
+	private record PermutationTest(IScope scope, CenteredKernel kx, CenteredKernel ky, int permutations) {
+
+		int countExceeding(final IRandom rnd) {
+			final int n = kx.size();
+			final int[] perm = initialPermutation(n);
+			final double observedTrace = computeTrace(perm);
+			final double threshold = observedTrace - TIE_TOLERANCE * kx.frobeniusNorm() * ky.frobeniusNorm();
+			int count = 0;
+			for (int p = 0; p < permutations; p++) {
+				checkInterrupted(scope);
+				rnd.shuffleInPlace(perm);
+				if (computeTrace(perm) >= threshold) { count++; }
+			}
+			return count;
+		}
+
+		private double computeTrace(final int[] perm) {
+			final double[][] kc = kx.matrix();
+			final double[][] lc = ky.matrix();
+			final int n = kc.length;
+			double trace = 0.0;
+			for (int i = 0; i < n; i++) {
+				final double[] kcRow = kc[i];
+				final double[] lcRow = lc[perm[i]];
+				for (int j = 0; j < n; j++) { trace += kcRow[j] * lcRow[perm[j]]; }
+			}
+			return trace;
+		}
+	}
 
 	/**
 	 * Computes the normalized HSIC value (R2-HSIC) for two sets of observations. This value is bounded between 0 and 1,
@@ -83,15 +127,16 @@ public class HSIC {
 		final double[][] K = computeGramMatrix(x, estimateBandwidth(x, scaleX), scaleX);
 		final double[][] L = computeGramMatrix(y, estimateBandwidth(y, scaleY), scaleY);
 
-		return unbiased ? computeUnbiased(K, L, n) : computeBiased(K, L, n);
+		return unbiased ? computeUnbiased(K, L) : computeBiased(K, L);
 	}
 
 	/**
 	 * Computes the unbiased HSIC estimator according to Song et al. (2007).
 	 */
-	private static double computeUnbiased(final double[][] K, final double[][] L, final int n) {
-		zeroDiagonal(K, n);
-		zeroDiagonal(L, n);
+	private static double computeUnbiased(final double[][] K, final double[][] L) {
+		final int n = K.length;
+		zeroDiagonal(K);
+		zeroDiagonal(L);
 
 		double traceKL = 0.0;
 		double sumK = 0.0;
@@ -120,9 +165,10 @@ public class HSIC {
 	/**
 	 * Computes the empirical (biased) HSIC estimator.
 	 */
-	private static double computeBiased(final double[][] K, final double[][] L, final int n) {
+	private static double computeBiased(final double[][] K, final double[][] L) {
 		final double[][] Kc = centerMatrix(K);
 		final double[][] Lc = centerMatrix(L);
+		final int n = Kc.length;
 		double trace = 0.0;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) { trace += Kc[i][j] * Lc[j][i]; }
@@ -146,22 +192,13 @@ public class HSIC {
 	 */
 	public static double computePValue(final IScope scope, final double[] x, final double[] y, final int permutations) {
 		validatePValuePreconditions(scope, x, y, permutations);
-
-		final int n = x.length;
-		final CenteredKernel kx = buildCenteredKernel(x);
-		final CenteredKernel ky = buildCenteredKernel(y);
-
-		final int[] perm = initialPermutation(n);
-		final double observedTrace = computeTrace(kx.matrix(), ky.matrix(), perm, n);
-		final double threshold = observedTrace - TIE_TOLERANCE * Math.sqrt(kx.frobeniusNormSq() * ky.frobeniusNormSq());
-
-		final IRandom rnd = resolveRandom(scope);
-		final int count = countExceedingPermutations(scope, kx.matrix(), ky.matrix(), perm, threshold, permutations, rnd, n);
+		final PermutationTest test = new PermutationTest(scope, buildCenteredKernel(x), buildCenteredKernel(y), permutations);
+		final int count = test.countExceeding(resolveRandom(scope));
 		return (count + 1.0) / (permutations + 1.0);
 	}
 
 	/**
-	 * Constructs the centered Gram kernel matrix and calculates its squared Frobenius norm.
+	 * Constructs the centered Gram kernel matrix and calculates its Frobenius norm.
 	 */
 	private static CenteredKernel buildCenteredKernel(final double[] data) {
 		final double scale = computeScale(data);
@@ -171,7 +208,7 @@ public class HSIC {
 		for (final double[] row : centered) {
 			for (final double val : row) { normSq += val * val; }
 		}
-		return new CenteredKernel(centered, normSq);
+		return new CenteredKernel(centered, Math.sqrt(normSq));
 	}
 
 	/**
@@ -181,33 +218,6 @@ public class HSIC {
 		final int[] perm = new int[n];
 		for (int i = 0; i < n; i++) { perm[i] = i; }
 		return perm;
-	}
-
-	/**
-	 * Computes the trace of the product of two centered Gram matrices given a permutation of the second matrix.
-	 */
-	private static double computeTrace(final double[][] Kc, final double[][] Lc, final int[] perm, final int n) {
-		double trace = 0.0;
-		for (int i = 0; i < n; i++) {
-			final double[] kcRow = Kc[i];
-			final double[] lcRow = Lc[perm[i]];
-			for (int j = 0; j < n; j++) { trace += kcRow[j] * lcRow[perm[j]]; }
-		}
-		return trace;
-	}
-
-	/**
-	 * Executes the permutation Monte Carlo loop and counts the number of permutations where HSIC exceeds the threshold.
-	 */
-	private static int countExceedingPermutations(final IScope scope, final double[][] Kc, final double[][] Lc,
-			final int[] perm, final double threshold, final int permutations, final IRandom rnd, final int n) {
-		int count = 0;
-		for (int p = 0; p < permutations; p++) {
-			checkInterrupted(scope);
-			rnd.shuffleInPlace(perm);
-			if (computeTrace(Kc, Lc, perm, n) >= threshold) { count++; }
-		}
-		return count;
 	}
 
 	/**
@@ -273,9 +283,8 @@ public class HSIC {
 	 * when all values are identical.
 	 */
 	private static double estimateBandwidth(final double[] data, final double scale) {
-		final int n = data.length;
-		if (n < 2) return 1.0;
-		final double[] dists = computePairwiseDistances(data, scale, n);
+		if (data.length < 2) return 1.0;
+		final double[] dists = computePairwiseDistances(data, scale);
 		Arrays.sort(dists);
 		final double median = medianSlice(dists, 0, dists.length);
 		if (median > 0.0) return median;
@@ -285,7 +294,8 @@ public class HSIC {
 	/**
 	 * Computes pairwise distances in the chosen scale.
 	 */
-	private static double[] computePairwiseDistances(final double[] data, final double scale, final int n) {
+	private static double[] computePairwiseDistances(final double[] data, final double scale) {
+		final int n = data.length;
 		final long pairCount = (long) n * (n - 1) / 2;
 		if (pairCount > Integer.MAX_VALUE - 8)
 			throw new IllegalArgumentException("Sample size exceeds maximum supported capacity");
@@ -324,8 +334,8 @@ public class HSIC {
 	/**
 	 * Sets diagonal elements of a square matrix to 0.
 	 */
-	private static void zeroDiagonal(final double[][] matrix, final int n) {
-		for (int i = 0; i < n; i++) { matrix[i][i] = 0.0; }
+	private static void zeroDiagonal(final double[][] matrix) {
+		for (int i = 0; i < matrix.length; i++) { matrix[i][i] = 0.0; }
 	}
 
 	/**
