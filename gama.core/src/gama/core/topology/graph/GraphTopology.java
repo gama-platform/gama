@@ -82,34 +82,37 @@ public class GraphTopology extends AbstractTopology {
 	@Override
 	public boolean isContinuous() { return false; }
 
-	/**
-	 * Optimized closest to.
-	 *
-	 * @param source
-	 *            the source
-	 * @param candidates
-	 *            the candidates
-	 * @return the i shape
-	 */
-	private IShape optimizedClosestTo(final IShape source, final List<IShape> candidates) {
-		IShape result = null;
-		final IPoint loc = source.getLocation();
+	private List<IShape> closestPathEdges(final IShape endpoint, final boolean optimized) {
+		final List<IShape> result = new ArrayList<>();
 		double distMin = Double.MAX_VALUE;
-		for (final IShape c : candidates) {
-			final double dist = loc.euclidianDistanceTo(c.getLocation());
+		// The spatial index returns a single winner; overlapping edges can belong to different components.
+		for (final IShape edge : getPlaces().edgeSet()) {
+			final double dist = optimized ? endpoint.getLocation().euclidianDistanceTo(edge.getLocation())
+					: endpoint.euclidianDistanceTo(edge);
 			if (dist < distMin) {
 				distMin = dist;
-				result = c;
+				result.clear();
+			}
+			if (dist == distMin) { result.add(edge); }
+		}
+		return result;
+	}
+
+	private List<IShape> currentPathEdges(final IShape source, final IShape currentEdge) {
+		final List<IShape> result = new ArrayList<>();
+		result.add(currentEdge);
+		if (getPlaces().isDirected()) {
+			final double distance = source.euclidianDistanceTo(currentEdge);
+			for (final IShape reverse : getPlaces().getAllEdges(getPlaces().getEdgeTarget(currentEdge),
+					getPlaces().getEdgeSource(currentEdge))) {
+				if (reverse != currentEdge && source.euclidianDistanceTo(reverse) <= distance) { result.add(reverse); }
 			}
 		}
 		return result;
 	}
 
 	/**
-	 * TODO : doc
-	 *
-	 * @throws GamaRuntimeException
-	 * @throws GamaRuntimeException
+	 * Finds a spatial path using equally nearest endpoint edges, retaining a moving agent's source attachment.
 	 */
 	@Override
 	public IPath pathBetween(final IScope scope, final IShape source, final IShape target) {
@@ -157,127 +160,20 @@ public class GraphTopology extends AbstractTopology {
 		if (sourceNode && targetNode)
 			return graph.getPathComputer().computeShortestPathBetween(scope, sourceN, targetN);
 
-		IShape edgeS = null, edgeT = null;
-		final boolean optimization = graph.edgeSet().size() > 1000;
-
-		final double dist =
-				optimization ? Math.sqrt(scope.getSimulation().getArea()) / graph.edgeSet().size() * 100 : -1;
-
-		if (graph.isAgentEdge()) {
-			final IAgentFilter filter = In.edgesOf(getPlaces());
-
-			if (!sourceNode) {
-				edgeS = getPathEdge(scope, source);
-				if (edgeS == null) {
-					if (optimizedClosestTo) {
-						edgeS = optimizedClosestTo(source, getPlaces().getEdges());
-					} else if (optimization) {
-						final Collection<IAgent> ags = scope.getSimulation().getAgent().getTopology()
-								.getNeighborsOf(scope, source, dist, filter);
-						if (!ags.isEmpty()) {
-							double distMin = Double.MAX_VALUE;
-							for (final IAgent e : ags) {
-								final double d = source.euclidianDistanceTo(e);
-								if (d < distMin) {
-									edgeS = e;
-									distMin = d;
-								}
-							}
-						}
-					}
-					if (edgeS == null) {
-						edgeS = scope.getSimulation().getAgent().getTopology().getAgentClosestTo(scope, source, filter);
-					}
-				}
-				// We avoid computing the target if we cannot find any source.
-				if (edgeS == null) return null;
-			}
-			if (!targetNode) {
-				// edgeT = getPathEdge(scope, target);
-
-				if (optimizedClosestTo) {
-					edgeT = optimizedClosestTo(target, getPlaces().getEdges());
-				} else if (optimization) {
-					final Collection<IAgent> ags =
-							scope.getSimulation().getAgent().getTopology().getNeighborsOf(scope, target, dist, filter);
-					if (!ags.isEmpty()) {
-						double distMin = Double.MAX_VALUE;
-						for (final IAgent e : ags) {
-							final double d = target.euclidianDistanceTo(e);
-							if (d < distMin) {
-								edgeT = e;
-								distMin = d;
-							}
-						}
-					}
-				}
-				if (edgeT == null) {
-					ITopology t = scope.getSimulation().getAgent().getTopology();
-					if (t == null) { t = scope.getTopology(); }
-					if (t != null) { edgeT = t.getAgentClosestTo(scope, target, filter); }
-				}
-
-				if (edgeT == null) return null;
-			}
+		final List<IShape> startingEdges;
+		if (sourceNode) {
+			startingEdges = Collections.singletonList(null);
 		} else {
-			double distSMin = Double.MAX_VALUE;
-			double distTMin = Double.MAX_VALUE;
-			edgeS = getPathEdge(scope, source);
-			if (edgeS != null) { distSMin = 0; }
-			/*
-			 * edgeT = getPathEdge(scope, target); if (edgeT != null) distTMin = 0;
-			 */
-			if (distSMin > 0 && !sourceNode || distTMin > 0 && !targetNode) {
-
-				for (final Object e : graph.getEdges()) {
-					final IShape edge = (IShape) e;
-					if (!sourceNode && distSMin > 0) {
-						final double distS =
-								optimizedClosestTo ? edge.getLocation().euclidianDistanceTo(source.getLocation())
-										: edge.euclidianDistanceTo(source);
-						if (distS < distSMin) {
-							distSMin = distS;
-							edgeS = edge;
-						}
-					}
-					if (!targetNode && distTMin > 0) {
-						final double distT =
-								optimizedClosestTo ? edge.getLocation().euclidianDistanceTo(target.getLocation())
-										: edge.euclidianDistanceTo(target);
-						if (distT < distTMin) {
-							distTMin = distT;
-							edgeT = edge;
-						}
-					}
-				}
-			}
-			if (!sourceNode && edgeS == null || !targetNode && edgeT == null) return null;
+			final IShape currentEdge = getPathEdge(scope, source);
+			startingEdges = currentEdge == null ? closestPathEdges(source, optimizedClosestTo)
+					: currentPathEdges(source, currentEdge);
 		}
-
-		if (getPlaces().isDirected()) {
-			final List<IShape> startingEdgesList = new ArrayList<>();
-			final List<IShape> targetEdgesList = new ArrayList<>();
-			startingEdgesList.add(edgeS);
-			if (!sourceNode) {
-				final IShape edgeRev = (IShape) graph.getEdge(graph.getEdgeTarget(edgeS), graph.getEdgeSource(edgeS));
-				if (edgeRev != null && edgeS != null
-						&& edgeRev.euclidianDistanceTo(source) <= edgeS.euclidianDistanceTo(source)) {
-					startingEdgesList.add(edgeRev);
-				}
-			}
-			targetEdgesList.add(edgeT);
-			if (!targetNode) {
-				final IShape edgeRev = (IShape) graph.getEdge(graph.getEdgeTarget(edgeT), graph.getEdgeSource(edgeT));
-				if (edgeRev != null && target != null && edgeS != null
-						&& edgeRev.euclidianDistanceTo(target) <= edgeS.euclidianDistanceTo(target)) {
-					targetEdgesList.add(edgeRev);
-				}
-			}
-			return pathBetweenCommonDirected(scope, startingEdgesList, targetEdgesList, sourceN, targetN, sourceNode,
-					targetNode);
-		}
-
-		return pathBetweenCommon(scope, graph, edgeS, edgeT, sourceN, targetN, sourceNode, targetNode);
+		if (startingEdges.isEmpty()) return null;
+		final List<IShape> targetEdges =
+				targetNode ? Collections.singletonList(null) : closestPathEdges(target, optimizedClosestTo);
+		if (targetEdges.isEmpty()) return null;
+		return pathBetweenCandidates(scope, startingEdges, targetEdges, sourceN, targetN, sourceNode, targetNode,
+				graph.isDirected());
 	}
 
 	/**
@@ -674,13 +570,25 @@ public class GraphTopology extends AbstractTopology {
 	 */
 	public IPath pathBetweenCommonDirected(final IScope scope, final List<IShape> edgeS, final List<IShape> edgeT,
 			final IShape source, final IShape target, final boolean sourceNode, final boolean targetNode) {
+		return pathBetweenCandidates(scope, edgeS, edgeT, source, target, sourceNode, targetNode, true);
+	}
+
+	private IPath pathBetweenCandidates(final IScope scope, final List<IShape> edgeS, final List<IShape> edgeT,
+			final IShape source, final IShape target, final boolean sourceNode, final boolean targetNode,
+			final boolean directed) {
 		if (edgeS.size() == 1 && edgeT.size() == 1)
-			return pathBetweenCommonDirected(scope, edgeS.get(0), edgeT.get(0), source, target, sourceNode, targetNode);
+			return directed
+					? pathBetweenCommonDirected(scope, edgeS.get(0), edgeT.get(0), source, target, sourceNode, targetNode)
+					: pathBetweenCommon(scope, (GamaSpatialGraph) getPlaces(), edgeS.get(0), edgeT.get(0), source, target,
+							sourceNode, targetNode);
 		double wMin = Double.MAX_VALUE;
 		IPath shortestPath = null;
 		for (final IShape eS : edgeS) {
 			for (final IShape eT : edgeT) {
-				final IPath path = pathBetweenCommonDirected(scope, eS, eT, source, target, sourceNode, targetNode);
+				final IPath path = directed
+						? pathBetweenCommonDirected(scope, eS, eT, source, target, sourceNode, targetNode)
+						: pathBetweenCommon(scope, (GamaSpatialGraph) getPlaces(), eS, eT, source, target, sourceNode,
+								targetNode);
 				if (path == null) { continue; }
 				final double weight = path.getWeight();
 				if (weight < wMin) {
