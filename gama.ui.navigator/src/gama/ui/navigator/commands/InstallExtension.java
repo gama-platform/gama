@@ -49,7 +49,7 @@ final class InstallExtension {
 			URI.create("https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
 	private static final AtomicBoolean INSTALLING = new AtomicBoolean();
 
-	record Extension(URI repository, String featureId, String label, Version version) {}
+	record Extension(URI repository, String featureId, String label, Version version, List<String> categories) {}
 
 	private InstallExtension() {}
 

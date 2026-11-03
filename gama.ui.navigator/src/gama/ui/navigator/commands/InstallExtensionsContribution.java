@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -56,8 +55,10 @@ import gama.ui.shared.resources.GamaIcon;
  */
 public class InstallExtensionsContribution extends CompoundContributionItem implements IStartup {
 
-	private static final URI GAMA_REPOSITORY = URI.create("https://updates.gama-platform.org/plugin/2026-06/");
-	private static final List<URI> REPOSITORIES = List.of(GAMA_REPOSITORY, InstallExtension.COPILOT_REPOSITORY);
+	private static final URI GAMA_REPOSITORY = URI.create("https://updates.gama-platform.org/2026-06/");
+	private static final URI PLUGINS_REPOSITORY = URI.create("https://updates.gama-platform.org/plugin/2026-06/");
+	private static final List<URI> REPOSITORIES =
+			List.of(GAMA_REPOSITORY, PLUGINS_REPOSITORY, InstallExtension.COPILOT_REPOSITORY);
 	private static final long REFRESH_INTERVAL = TimeUnit.HOURS.toNanos(1);
 
 	private static final Map<URI, List<Extension>> catalogue = new LinkedHashMap<>();
@@ -104,15 +105,13 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 		}
 		final var entries = new LinkedHashMap<String, Extension>();
 		catalogue.values().forEach(list -> list.forEach(extension -> entries.merge(extension.featureId(), extension,
-				(first, second) -> first.version().compareTo(second.version()) >= 0 ? first : second)));
-		final Map<URI, List<Extension>> groups = new TreeMap<>(
-				Comparator.comparing(InstallExtensionsContribution::repositoryClassifier, String.CASE_INSENSITIVE_ORDER)
-						.thenComparing(URI::toString));
-		entries.values().forEach(extension ->
-				groups.computeIfAbsent(extension.repository(), _ -> new ArrayList<>()).add(extension));
-		groups.forEach((repository, extensions) -> {
+				InstallExtensionsContribution::mergeExtensions)));
+		final Map<String, List<Extension>> groups = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		entries.values().forEach(extension -> extension.categories().forEach(category ->
+				groups.computeIfAbsent(category, _ -> new ArrayList<>()).add(extension)));
+		groups.forEach((category, extensions) -> {
 			if (!menu.isEmpty()) menu.add(new Separator());
-			addMessage(menu, repositoryClassifier(repository));
+			addMessage(menu, category);
 			extensions.stream().sorted(Comparator.comparing(Extension::label, String.CASE_INSENSITIVE_ORDER))
 					.forEach(extension -> {
 						final Version version = installed.get(extension.featureId());
@@ -163,14 +162,16 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 		menu.add(new ActionContributionItem(action));
 	}
 
-	private static String repositoryName(final URI repository) {
-		return repository.getPath().replaceAll("/+$", "").replaceAll(".*/", "");
-	}
-
-	private static String repositoryClassifier(final URI repository) {
-		final String word = repositoryName(repository).replaceAll(".*[._-]", "").toLowerCase(Locale.ROOT);
-		return word.isEmpty() ? repositoryName(repository)
-				: Character.toUpperCase(word.charAt(0)) + word.substring(1);
+	private static Extension mergeExtensions(final Extension first, final Extension second) {
+		final int comparison = first.version().compareTo(second.version());
+		if (comparison != 0) return comparison > 0 ? first : second;
+		final List<String> categories = new ArrayList<>(first.categories());
+		second.categories().forEach(category -> {
+			if (!categories.contains(category)) categories.add(category);
+		});
+		if (categories.size() > 1) categories.remove("Uncategorized");
+		return new Extension(first.repository(), first.featureId(), first.label(), first.version(),
+				List.copyOf(categories));
 	}
 
 	private static void refresh(final Display display) {
@@ -195,9 +196,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 			}
 			final SubMonitor progress = SubMonitor.convert(monitor, "Reading " + source, 100);
 			try {
-				// Copilot's release directories are versions, not extension names.
-				discover(manager, source, source.equals(GAMA_REPOSITORY) ? null : source,
-						source, extensions, new HashSet<>(), progress, true);
+				discover(manager, source, source, extensions, new HashSet<>(), progress, true);
 				return Status.OK_STATUS;
 			} catch (final OperationCanceledException e) {
 				return Status.CANCEL_STATUS;
@@ -234,7 +233,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 		job.schedule();
 	}
 
-	private static void discover(final IMetadataRepositoryManager manager, final URI location, final URI nameSource,
+	private static void discover(final IMetadataRepositoryManager manager, final URI location,
 			final URI source, final List<Extension> extensions, final Set<URI> visited, final SubMonitor progress,
 			final boolean refresh)
 			throws ProvisionException {
@@ -250,34 +249,24 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 			progress.setWorkRemaining(children.size());
 			for (final URI child : children) {
 				final URI resolved = location.resolve(child);
-				discover(manager, resolved, nameSource == null ? resolved : nameSource,
-						source.equals(GAMA_REPOSITORY) ? resolved : source, extensions, visited, progress.split(1), false);
+				discover(manager, resolved, source, extensions, visited, progress.split(1), false);
 			}
 			return;
 		}
-		final var units = repository.query(QueryUtil.createLatestQuery(QueryUtil.createIUGroupQuery()), progress.split(50))
+		final var categories = repository.query(QueryUtil.createIUCategoryQuery(), progress.split(20)).toSet();
+		final var units = repository.query(QueryUtil.createLatestQuery(QueryUtil.createIUGroupQuery()), progress.split(30))
 				.toSet();
 		for (final IInstallableUnit unit : units) {
-			final String name = units.size() == 1
-					? repositoryName(nameSource == null ? location : nameSource)
-					: unit.getId();
-			extensions.add(new Extension(source, unit.getId(), extensionLabel(name), unit.getVersion()));
+			final List<String> labels = categories.stream()
+					.filter(category -> category.getRequirements().stream().anyMatch(requirement -> requirement.isMatch(unit)))
+					.map(InstallExtensionsContribution::unitLabel).distinct().toList();
+			extensions.add(new Extension(source, unit.getId(), unitLabel(unit), unit.getVersion(),
+					labels.isEmpty() ? List.of("Uncategorized") : labels));
 		}
 	}
 
-	private static String extensionLabel(final String name) {
-		final String[] words = name.toLowerCase(Locale.ROOT).replaceFirst("\\.feature\\.group$", "")
-				.split("[._\\-\\s]+");
-		int start = 0;
-		for (int i = 0; i < words.length; i++) {
-			if ("gama".equals(words[i]) || "plugin".equals(words[i]) || "extension".equals(words[i])) start = i + 1;
-		}
-		final StringBuilder label = new StringBuilder();
-		for (int i = Math.max(start, words.length - 2); i < words.length; i++) {
-			if (words[i].isEmpty() || "feature".equals(words[i])) continue;
-			if (!label.isEmpty()) label.append(' ');
-			label.append(Character.toUpperCase(words[i].charAt(0))).append(words[i].substring(1));
-		}
-		return label.isEmpty() ? name : label.toString();
+	private static String unitLabel(final IInstallableUnit unit) {
+		final String name = unit.getProperty(IInstallableUnit.PROP_NAME, null);
+		return name == null || name.isBlank() ? unit.getId() : name;
 	}
 }

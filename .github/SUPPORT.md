@@ -4,21 +4,25 @@
 
 Use **Support > Install GAMA extensions...** in a packaged GAMA installation,
 then choose the extension to install. The submenu discovers installable features
-from <https://updates.gama-platform.org/plugin/2026-06/> and
+from the main GAMA repository, <https://updates.gama-platform.org/2026-06/>,
+the optional plugin repository, <https://updates.gama-platform.org/plugin/2026-06/>, and
 <https://gama-platform.org/gama.copilot/> in background jobs started during
 workbench startup, without waiting for the menu to be opened or blocking startup.
 The startup discovery and menu share the same in-memory list and running jobs.
 Discovery is disabled in exported-player mode.
 It keeps the list in memory and refreshes it on opening after an hour; use
-**Refresh extension list** to check immediately. The two sites load independently,
+**Refresh extension list** to check immediately. The three sites load independently,
 and entries appear as each site finishes. Refresh jobs are visible in Eclipse's
 Progress view; **Cancel refresh** requests cancellation of outstanding reads.
-Entries are grouped by their source repository, with its last word capitalized
-(for example, `Inrae` or `Copilot`) shown as a disabled gray heading.
-Groups and their entries are sorted alphabetically. Entries are temporarily named
-**Install &lt;Name&gt; extension...**, using the last one or two
-words of the repository name after `plugin`, `extension` or `gama`. Repositories
-publishing multiple features use feature identifiers to distinguish their entries.
+Entries are grouped by the category labels published in the update sites' p2
+metadata, shown as disabled gray headings. Categories with the same label across
+sites share a group; features in multiple categories appear in each group.
+Features without a category appear under **Uncategorized**.
+Groups and their entries are sorted alphabetically. Entries are named
+**Install &lt;Name&gt; extension...**, using the published feature name (or its
+identifier when no name is published). All installable features from the main
+GAMA repository are included, not just optional plugins. When a feature is
+published more than once, the newest version is offered.
 Only features advertised in p2 metadata are listed: a directory on the web server
 that is not included in the composite repository does not appear.
 Unavailable sites are reported, and any previously discovered entries for those
