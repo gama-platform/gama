@@ -10,29 +10,37 @@
  ********************************************************************************************************/
 package org.eclipse.ui.internal.views.markers;
 
-import static gama.ui.shared.resources.IGamaIcons.BUILD_ALL;
-import static gama.ui.shared.resources.IGamaIcons.TEST_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_INFOS;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_WARNINGS;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.ProgressMonitorWrapper;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.dialogs.ProgressIndicator;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.eclipse.ui.views.markers.MarkerSupportView;
@@ -42,7 +50,6 @@ import gama.api.compilation.validation.IValidationContext;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
-import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -53,6 +60,7 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gaml.compiler.indexer.GamlResourceIndexer;
 import gaml.compiler.resource.GamlResourceServices;
+import gaml.compiler.ui.decorators.GamlMarkerUpdater;
 import gaml.compiler.validation.GamlResourceValidator;
 
 /**
@@ -73,6 +81,78 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 	/** The listener. */
 	final BuildPreferenceChangeListener listener;
 
+	private ProgressIndicator progress;
+	private ToolItem validationAction;
+	private String description = "";
+	private String displayedTask;
+	private boolean displayingBuild, animated;
+	private int displayedWork;
+	private volatile String buildTask = "";
+	private volatile int totalWork;
+	private volatile double completedWork;
+	private volatile boolean building, workspaceBuilding;
+	private final Consumer<String> compilationListener = name -> buildTask = "Compiling " + name;
+	private final IResourceChangeListener workspaceBuildListener = event -> {
+		if (event.getType() == IResourceChangeEvent.PRE_BUILD) {
+			buildTask = "Validating projects...";
+			workspaceBuilding = true;
+		} else {
+			workspaceBuilding = false;
+		}
+	};
+
+	private final WorkspaceJob buildJob = new WorkspaceJob("Validate all projects") {
+		@Override
+		public IStatus runInWorkspace(final IProgressMonitor monitor) {
+			totalWork = 0;
+			completedWork = 0;
+			buildTask = "Validating all projects...";
+			building = true;
+			try {
+				doBuild(new ProgressMonitorWrapper(monitor) {
+					@Override
+					public void beginTask(final String name, final int total) {
+						totalWork = total;
+						completedWork = 0;
+						setTaskName(name);
+						super.beginTask(name, total);
+					}
+
+					@Override
+					public void setTaskName(final String name) {
+						if (name != null && !name.isBlank()) { buildTask = name; }
+						super.setTaskName(name);
+					}
+
+					@Override
+					public void subTask(final String name) {
+						if (name != null && !name.isBlank()) { buildTask = name; }
+						super.subTask(name);
+					}
+
+					@Override
+					public void internalWorked(final double work) {
+						completedWork += work;
+						super.internalWorked(work);
+					}
+
+					@Override
+					public void worked(final int work) {
+						completedWork += work;
+						super.worked(work);
+					}
+				});
+				return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+			} catch (final OperationCanceledException e) {
+				return Status.CANCEL_STATUS;
+			} catch (final CoreException e) {
+				return e.getStatus();
+			} finally {
+				building = false;
+			}
+		}
+	};
+
 	/**
 	 * Instantiates a new syntax errors view.
 	 */
@@ -81,6 +161,8 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		listener = new BuildPreferenceChangeListener();
 		GamaPreferences.Modeling.WARNINGS_ENABLED.addChangeListener(listener);
 		GamaPreferences.Modeling.INFO_ENABLED.addChangeListener(listener);
+		buildJob.setRule(GAMA.getWorkspaceManager().getWorkspace().getRuleFactory().buildRule());
+		buildJob.setUser(true);
 	}
 
 	@Override
@@ -107,13 +189,19 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 				return true;
 			}
 		});
+		GamlMarkerUpdater.addCompilationListener(compilationListener);
+		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(workspaceBuildListener,
+				IResourceChangeEvent.PRE_BUILD | IResourceChangeEvent.POST_BUILD);
 	}
 
 	@Override
 	public void dispose() {
-		super.dispose();
 		GamaPreferences.Modeling.WARNINGS_ENABLED.removeChangeListener(listener);
 		GamaPreferences.Modeling.INFO_ENABLED.removeChangeListener(listener);
+		GamlMarkerUpdater.removeCompilationListener(compilationListener);
+		GAMA.getWorkspaceManager().getWorkspace().removeResourceChangeListener(workspaceBuildListener);
+		buildJob.cancel();
+		super.dispose();
 	}
 
 	/**
@@ -124,7 +212,7 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 	 *
 	 * @see BuildPreferenceChangeEvent
 	 */
-	public static class BuildPreferenceChangeListener implements IPreferenceAfterChangeListener<Boolean> {
+	public class BuildPreferenceChangeListener implements IPreferenceAfterChangeListener<Boolean> {
 
 		/**
 		 *
@@ -140,12 +228,18 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 
 	@Override
 	protected void setContentDescription(final String description) {
-		toolbar.status("navigator/status.info", description, e -> openFilterDialog(), null);
+		this.description = description == null ? "" : description;
+		if (!building && !workspaceBuilding) {
+			updateToolbarStatus(this.description, false);
+			displayedTask = this.description;
+		}
 	}
 
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
+		progress = new ProgressIndicator(toolbar.getParent());
+		progress.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
 		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
@@ -153,23 +247,80 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 
 				@Override
 				protected void fillMenu() {
-					boolean show = GamaPreferences.Modeling.WARNINGS_ENABLED.getValue();
-					GamaCommand.build(TOGGLE_WARNINGS, show ? "Hide warnings" : "Show warnings", null, e1 -> {
-						GamaPreferences.Modeling.WARNINGS_ENABLED.set(((MenuItem) e1.widget).getSelection()).save();
-					}).toCheckItem(mainMenu).setSelection(show);
-					show = GamaPreferences.Modeling.INFO_ENABLED.getValue();
-					GamaCommand.build(TOGGLE_INFOS, show ? "Hide info markers" : "Show info markers", null, e1 -> {
-						GamaPreferences.Modeling.INFO_ENABLED.set(((MenuItem) e1.widget).getSelection()).save();
-					}).toCheckItem(mainMenu).setSelection(show);
-					GamaMenu.separate(mainMenu);
-					GamaCommand.build(BUILD_ALL, "Validate all projects", null, e1 -> { build(); }).toItem(mainMenu);
-					GamaCommand.build(TEST_RUN, "Run all tests", null, e1 -> TestsRunner.start()).toItem(mainMenu);
+					final boolean warnings = GamaPreferences.Modeling.WARNINGS_ENABLED.getValue();
+					GamaCommand.build(TOGGLE_WARNINGS, warnings ? "Hide warnings" : "Show warnings", null, e1 -> {
+						GamaPreferences.Modeling.WARNINGS_ENABLED.set(!warnings).save();
+					}).toItem(mainMenu);
+					final boolean info = GamaPreferences.Modeling.INFO_ENABLED.getValue();
+					GamaCommand.build(TOGGLE_INFOS, info ? "Hide info markers" : "Show info markers", null, e1 -> {
+						GamaPreferences.Modeling.INFO_ENABLED.set(!info).save();
+					}).toItem(mainMenu);
 				}
 
 			};
 			menu.open(tbs, e, tbs.getSize().y, 0);
 		});
+		refreshProgress();
+	}
 
+	private void updateToolbarStatus(final String text, final boolean active) {
+		toolbar.status(null, text, active ? null : e -> openFilterDialog(), null);
+		validationAction = new ToolItem(toolbar.getToolbar(SWT.LEFT), SWT.PUSH, 0);
+		validationAction.addListener(SWT.Selection, e -> {
+			if (buildJob.getState() != Job.NONE) {
+				buildJob.cancel();
+			} else if (!building && !workspaceBuilding) {
+				build();
+			}
+			updateValidationAction();
+		});
+		updateValidationAction();
+		toolbar.requestLayout();
+	}
+
+	private void updateValidationAction() {
+		final boolean cancellable = buildJob.getState() != Job.NONE;
+		final boolean active = cancellable || building || workspaceBuilding;
+		final GamaIcon icon = GamaIcon.named(active ? "toolbar/server.stop" : "toolbar/validate.all");
+		validationAction.setImage(icon.image());
+		validationAction.setDisabledImage(icon.disabled());
+		validationAction.setToolTipText(active ? "Cancel validation" : "Validate all projects");
+		validationAction.setEnabled(!active || cancellable);
+	}
+
+	private void refreshProgress() {
+		if (toolbar.isDisposed() || progress.isDisposed()) return;
+		final boolean active = building || workspaceBuilding;
+		final boolean indeterminate = !building || totalWork <= 0;
+		final String text = active ? buildTask : description;
+		if (active != displayingBuild || !text.equals(displayedTask)) {
+			updateToolbarStatus(text, active);
+			displayedTask = text;
+		}
+		updateValidationAction();
+		if (active) {
+			if (!displayingBuild || animated != indeterminate) {
+				progress.done();
+				if (indeterminate) {
+					progress.beginAnimatedTask();
+				} else {
+					progress.beginTask(1000);
+				}
+				displayedWork = 0;
+				animated = indeterminate;
+			}
+			if (!indeterminate) {
+				final int work = Math.min(1000, (int) (1000 * completedWork / totalWork));
+				if (work > displayedWork) {
+					progress.worked(work - displayedWork);
+					displayedWork = work;
+				}
+			}
+		} else if (displayingBuild) {
+			progress.done();
+		}
+		displayingBuild = active;
+		toolbar.getDisplay().timerExec(100, this::refreshProgress);
 	}
 
 	/**
@@ -188,34 +339,26 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 	 * @param monitor
 	 *            the monitor
 	 */
-	static private void doBuild(final IProgressMonitor monitor) {
+	static private void doBuild(final IProgressMonitor monitor) throws CoreException {
 		GamlResourceServices.getResourceDocumenter().invalidateAll();
 		GamlResourceIndexer.eraseIndex();
 
+		GamlResourceValidator.RESET();
+		final SubMonitor progress = SubMonitor.convert(monitor, "Validating all projects", 100);
+		final var workspace = GAMA.getWorkspaceManager().getWorkspace();
 		try {
-			// DEBUG.BANNER(BANNER_CATEGORY.COMPIL, "Last compilation of all models", "in",
-			// String.valueOf(DURATION()) + "ms");
-			GamlResourceValidator.RESET();
-			GAMA.getWorkspaceManager().getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
-		} catch (CoreException e) {
-			e.printStackTrace();
+			workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, progress.split(20));
+			workspace.build(IncrementalProjectBuilder.FULL_BUILD, progress.split(80));
+		} finally {
+			progress.done();
 		}
-
 	}
 
 	/**
 	 * Builds the.
 	 */
-	static void build() {
-		final ProgressMonitorDialog dialog = new ProgressMonitorDialog(null);
-		dialog.setBlockOnOpen(false);
-		dialog.setCancelable(true);
-		dialog.setOpenOnRun(true);
-		try {
-			dialog.run(true, true, SyntaxErrorsView::doBuild);
-		} catch (InvocationTargetException | InterruptedException e1) {
-			e1.printStackTrace();
-		}
+	void build() {
+		buildJob.schedule();
 	}
 
 	/**

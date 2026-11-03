@@ -212,7 +212,7 @@ public final class TestWorkerApplication implements IApplication {
 		@Override
 		public void displayTestSummary(final IScope scope, final IndividualTestSummary summary, final boolean finished) {
 			if (!(scope.getExperiment() instanceof IExperimentAgent.Test agent)) return;
-			final String key = agent.getSummary().summaries.entrySet().stream()
+			final String key = agent.getSummary().getSummaries().entrySet().stream()
 					.filter(entry -> entry.getValue() == summary).map(java.util.Map.Entry::getKey).findFirst()
 					.orElseThrow(() -> new IllegalStateException("Test missing from experiment summary: " + summary.getTitle()));
 			send(TestProcessProtocol.TEST, out -> {

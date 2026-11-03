@@ -48,7 +48,7 @@ import gama.workspace.manager.ProjectCategory;
 public class TestsRunner {
 
 	/** The last run. */
-	public static CompoundSummary<TestExperimentSummary, ?> LAST_RUN;
+	public static volatile CompoundSummary<TestExperimentSummary, ?> LAST_RUN;
 
 	private static final AtomicBoolean RUNNING = new AtomicBoolean();
 

@@ -25,7 +25,7 @@ import gama.api.utils.StringUtils;
 public class AssertionSummary extends AbstractSummary<WithTestSummary> {
 
 	/** The state. */
-	private TestState state = TestState.NOT_RUN;
+	private volatile TestState state = TestState.NOT_RUN;
 
 	/** The time stamp. */
 	public final long timeStamp;

@@ -325,17 +325,17 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 		// Keep the filter available even when it hides every result.
 		final boolean resultsAvailable = !running && report && !experiments.isEmpty();
 		if (resultsAvailable && (filter == null || filter.isDisposed())) {
-			filter = tool(tools, SWT.CHECK, "Problems only", "toolbar/test.filter", () -> {
+			filter = tool(treeTools, SWT.CHECK, "Problems only", "toolbar/test.filter", () -> {
 				GamaPreferences.Runtime.FAILED_TESTS.set(filter.getSelection());
 				refresh();
 			});
 			filter.setSelection(problemsOnly);
-			sort = tool(tools, SWT.CHECK, "Sort by severity", "toolbar/test.sort", () -> {
+			sort = tool(treeTools, SWT.CHECK, "Sort by severity", "toolbar/test.sort", () -> {
 				GamaPreferences.Runtime.TESTS_SORTED.set(sort.getSelection());
 				refresh();
 			});
 			sort.setSelection(severity);
-			export = tool(tools, SWT.PUSH, "Export results...", "toolbar/test.save", this::export);
+			export = tool(treeTools, SWT.PUSH, "Export results...", "toolbar/test.save", this::export);
 		} else if (!resultsAvailable && filter != null && !filter.isDisposed()) {
 			filter.dispose();
 			sort.dispose();
@@ -359,18 +359,18 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 				root.layout(true, true);
 			});
 		} else if (!running && report && roots.stream().anyMatch(s -> !rows(s).isEmpty())) {
-			expand = new ToolItem(treeTools, SWT.PUSH);
+			expand = new ToolItem(treeTools, SWT.PUSH, treeTools.indexOf(export));
 			expand.setImage(GamaIcon.named(IGamaIcons.TREE_EXPAND).image());
 			expand.setToolTipText("Expand all");
 			expand.addListener(SWT.Selection, e -> expand(tree.getItems()));
-			collapse = new ToolItem(treeTools, SWT.PUSH);
+			collapse = new ToolItem(treeTools, SWT.PUSH, treeTools.indexOf(export));
 			collapse.setImage(GamaIcon.named(IGamaIcons.TREE_COLLAPSE).image());
 			collapse.setToolTipText("Collapse all");
 			collapse.addListener(SWT.Selection, e -> {
 				for (final var item : tree.getItems()) { item.setExpanded(false); }
 			});
 		}
-		treeTools.setVisible(!running && expand != null && !expand.isDisposed());
+		treeTools.setVisible(resultsAvailable);
 		((GridData) treeTools.getLayoutData()).exclude = !treeTools.getVisible();
 		progress.setVisible(running);
 		((GridData) progress.getLayoutData()).exclude = !running;
@@ -594,7 +594,7 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 	private void replaceTestResult(final TestExperimentSummary result) {
 		final var target = rerun;
 		final var selection = TestSelection.of(target.test().getURI());
-		final var matches = result.summaries.values().stream().filter(test -> selection.matches(test.getURI())).toList();
+		final var matches = result.getSummaries().values().stream().filter(test -> selection.matches(test.getURI())).toList();
 		if (matches.size() != 1) {
 			GAMA.getRegularGui().getDialogFactory().error("Unable to update the selected test: "
 					+ (result.getErrorDetails() == null ? "the rerun did not return this test" : result.getErrorDetails()));
