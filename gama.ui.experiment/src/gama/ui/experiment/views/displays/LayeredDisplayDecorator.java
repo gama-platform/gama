@@ -21,6 +21,7 @@ import static gama.ui.shared.resources.IGamaIcons.TOGGLE_OVERLAY;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.eclipse.swt.SWT;
@@ -109,6 +110,11 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	/** The interactive console visible. */
 	private volatile boolean isOverlayTemporaryVisible;
+
+	private record StateUpdate(IExperimentSpecies experiment, State state) {}
+
+	private final AtomicReference<StateUpdate> latestStateUpdate = new AtomicReference<>();
+	private final AtomicBoolean stateUpdatePending = new AtomicBoolean();
 
 	/** The perspective listener. */
 	private final IPerspectiveListener perspectiveListener = new LayeredDisplayPerspectiveListener(this);
@@ -640,25 +646,41 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	@Override
 	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
-		if (state != State.PAUSED && state != State.RUNNING) return;
+		latestStateUpdate.set(new StateUpdate(experiment, state));
+		if (!stateUpdatePending.compareAndSet(false, true)) return;
 		WorkbenchHelper.asyncRun(() -> {
-			if (view.disposed) return;
-			final var output = view.getOutput();
-			if (output == null || output.getScope() == null) return;
-			final var agent = output.getScope().getExperiment();
-			if (agent == null || agent.getSpecies() != experiment) return;
-
-			// Pausing stops regular display updates, but aspects can depend on the paused state.
-			final var surface = view.getDisplaySurface();
-			if (state == State.PAUSED && !output.isPaused() && surface != null && !surface.isDisposed()) {
-				surface.updateDisplay(true);
+			final var display = WorkbenchHelper.getDisplay();
+			if (view.disposed || display == null || display.isDisposed()) {
+				stateUpdatePending.set(false);
+				return;
 			}
-			if (!isFullScreen() || toolbar == null || toolbar.isDisposed() || !toolbar.isVisible()
-					|| runExperimentItem == null || runExperimentItem.isDisposed()) return;
-			runExperimentItem.setImage(GamaIcon.named(
-					state == State.PAUSED ? IGamaIcons.EXPERIMENT_RUN : IGamaIcons.MENU_PAUSE_ACTION).image());
-			toolbar.update();
+			// A fast simulation can send thousands of identical state notifications per second.
+			display.timerExec(34, () -> {
+				stateUpdatePending.set(false);
+				final StateUpdate update = latestStateUpdate.get();
+				applyStateUpdate(update.experiment(), update.state());
+			});
 		});
+	}
+
+	private void applyStateUpdate(final IExperimentSpecies experiment, final State state) {
+		if (state != State.PAUSED && state != State.RUNNING) return;
+		if (view.disposed) return;
+		final var output = view.getOutput();
+		if (output == null || output.getScope() == null) return;
+		final var agent = output.getScope().getExperiment();
+		if (agent == null || agent.getSpecies() != experiment) return;
+
+		// Pausing stops regular display updates, but aspects can depend on the paused state.
+		final var surface = view.getDisplaySurface();
+		if (state == State.PAUSED && !output.isPaused() && surface != null && !surface.isDisposed()) {
+			surface.updateDisplay(true);
+		}
+		if (!isFullScreen() || toolbar == null || toolbar.isDisposed() || !toolbar.isVisible()
+				|| runExperimentItem == null || runExperimentItem.isDisposed()) return;
+		runExperimentItem.setImage(GamaIcon.named(
+				state == State.PAUSED ? IGamaIcons.EXPERIMENT_RUN : IGamaIcons.MENU_PAUSE_ACTION).image());
+		toolbar.update();
 	}
 
 }

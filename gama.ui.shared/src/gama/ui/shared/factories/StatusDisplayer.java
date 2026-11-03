@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.shared.factories;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -84,7 +84,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	private class StatusRefresher extends UIJob {
 
 		/** Pending messages, including errors followed by launch/cleanup notifications. */
-		private final Queue<IStatusMessage> messages = new ConcurrentLinkedQueue<>();
+		private final Deque<IStatusMessage> messages = new ArrayDeque<>();
 
 		/**
 		 * Instantiates a new threaded updater.
@@ -107,7 +107,14 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		 */
 		public void updateWith(final IStatusMessage m) {
 			if (m != null) {
-				messages.offer(m);
+				synchronized (messages) {
+					// Superseded progress/display updates need not be painted, but retain errors and resets in order.
+					if (m.type() == StatusType.REGULAR && !messages.isEmpty()
+							&& messages.peekLast().type() == StatusType.REGULAR) {
+						messages.removeLast();
+					}
+					messages.addLast(m);
+				}
 				schedule();
 			}
 		}
@@ -115,9 +122,16 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
 			if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
-			IStatusMessage message;
-			while ((message = messages.poll()) != null) {
+			for (int i = 0; i < 32; i++) {
+				final IStatusMessage message;
+				synchronized (messages) {
+					message = messages.pollFirst();
+				}
+				if (message == null) return Status.OK_STATUS;
 				statusControl.updateWith(message.type() == StatusType.NONE ? null : message);
+			}
+			synchronized (messages) {
+				if (!messages.isEmpty()) schedule(16);
 			}
 			return Status.OK_STATUS;
 		}
