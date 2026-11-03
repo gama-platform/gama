@@ -7,6 +7,8 @@
 *   block water flow; dykes act as barriers that can be interactively destroyed by clicking on them in the
 *   3D display. The model loads real GIS data (elevation grid, building and dyke shapefiles) and visualizes
 *   the flood propagation in 3D, making it the primary GAMA reference for agent-based hydrological simulation.
+*   Dry terrain uses muted elevation colors, water darkens with depth, and dykes turn from teal to red
+*   as pressure rises. Vertical exaggeration affects only the display, not the hydrological calculations.
 * Tags: shapefile, gis, grid, 3d, gui, hydrology, flood, dyke, water_flow, elevation, pressure
 */
 
@@ -29,6 +31,16 @@ global {
    float dyke_height <- 15.0;
    //Width of the dyke
    float dyke_width <- 15.0;
+   float vertical_exaggeration <- 8.0;
+   rgb paper <- rgb(242, 245, 241);
+   rgb ink <- rgb(48, 62, 65);
+   rgb shallow_water <- rgb(113, 194, 205);
+   rgb deep_water <- rgb(25, 82, 126);
+   rgb safe_dyke <- rgb(49, 132, 122);
+   rgb warning_dyke <- rgb(224, 167, 69);
+   rgb critical_dyke <- rgb(194, 74, 61);
+   float lowest_altitude;
+   float altitude_range;
     
    //Shape of the environment using the dem file
    geometry shape <- envelope(dykes_shapefile);
@@ -64,6 +76,8 @@ global {
          altitude <- grid_value;
          neighbour_cells <- (self neighbors_at 1) ;
       }
+      lowest_altitude <- cell min_of (each.altitude);
+      altitude_range <- max(0.001, (cell max_of (each.altitude)) - lowest_altitude);
    }
    //action to initialize the water cells according to the river shape file and the drain
    action init_water() {
@@ -126,6 +140,7 @@ global {
       list<cell> cells_concerned ;
       //List of cells in the neighbourhood 
       list<cell> cells_neighbours;
+      float base_altitude;
       
       //Action to compute the water pressure
       float compute_water_pressure() {
@@ -144,6 +159,7 @@ global {
       action update_cells() {
       	//All the cells concerned by the obstacle are the ones overlapping the obstacle
          cells_concerned <- (cell overlapping self);
+         base_altitude <- empty(cells_concerned) ? 0.0 : mean(cells_concerned collect (each.altitude));
         	ask cells_concerned {
         	//Add the obstacles to the obstacles of the cell
             add myself to: obstacles;
@@ -162,9 +178,9 @@ global {
       	
       }
       aspect geometry {
-         int val <- int( 255 * water_pressure);
-         color <- rgb(val,255-val,0);
-         draw shape color: color depth: height*5 border: color;
+         draw shape color: rgb(191, 184, 169) border: rgb(137, 135, 125)
+            at: {location.x, location.y, base_altitude * vertical_exaggeration}
+            depth: height * vertical_exaggeration;
       }
    }
    //Species buildings which is derivated from obstacle
@@ -177,6 +193,14 @@ global {
    	
        int counter_wp <- 0;
        int breaking_threshold <- 24;
+       aspect geometry {
+          color <- water_pressure < 0.5
+             ? blend(warning_dyke, safe_dyke, water_pressure * 2)
+             : blend(critical_dyke, warning_dyke, (water_pressure - 0.5) * 2);
+          draw shape color: color border: ink
+             at: {location.x, location.y, base_altitude * vertical_exaggeration}
+             depth: max(0.0, height) * vertical_exaggeration;
+       }
       
       //Action to represent the break of the dyke
        action break(){
@@ -264,9 +288,10 @@ global {
       }  
       //Update the color of the cell
       action update_color() { 
-         int val_water <- 0;
-         val_water <- max([0, min([255, int(255 * (1 - (water_height / 12.0)))])]) ;  
-         color <- rgb([val_water, val_water, 255]);
+         float elevation_ratio <- (altitude - lowest_altitude) / altitude_range;
+         rgb land <- blend(rgb(204, 194, 160), rgb(143, 166, 133), elevation_ratio);
+         rgb water <- blend(deep_water, shallow_water, min(1.0, water_height / 12.0));
+         color <- blend(water, land, min(1.0, water_height / 0.5));
          grid_value <- water_height + altitude;
       }
       //action to compute the destruction of the obstacle
@@ -284,20 +309,39 @@ experiment Run type: gui {
    parameter "Shapefile for the buildings" var:buildings_shapefile category:"Obstacles";
    parameter "Height of the dykes" var:dyke_height category:"Obstacles";
    parameter "Diffusion rate" var:diffusion_rate category:"Water dynamic";
+   parameter "Vertical exaggeration (display only)" var: vertical_exaggeration min: 1.0 max: 20.0 category: "Visualization";
    output { 
-   //layout vertical([0::5000,1::5000]) tabs:false editors: false;
-      display map type: 3d {
-         grid cell triangulation: true;
-         species buildings aspect: geometry refresh: false;
+ 	   layout vertical([0::7778,1::2222]) tabs:false editors: false;
+      display map type: 3d background: paper axes: false {
+         camera 'default' location: {8352.5541,7067.0558,2635.9505} target: {5189.4135,3903.9151,0.0};
+         light #ambient intensity: 150;
+         grid cell elevation: grid_value * vertical_exaggeration triangulation: true;
+         species buildings aspect: geometry;
          species dyke aspect: geometry ;
+         overlay position: {16#px, 16#px} size: {245#px, 156#px} background: paper rounded: true {
+            draw "FLOOD DEPTH" at: {14#px, 20#px} color: ink font: font("Helvetica", 12, #bold);
+            draw square(10#px) at: {20#px, 45#px} color: shallow_water;
+            draw "Shallow" at: {36#px, 49#px} color: ink font: font("Helvetica", 12);
+            draw square(10#px) at: {130#px, 45#px} color: deep_water;
+            draw "12 m +" at: {146#px, 49#px} color: ink font: font("Helvetica", 12);
+            draw "DYKE PRESSURE" at: {14#px, 78#px} color: ink font: font("Helvetica", 12, #bold);
+            draw square(10#px) at: {20#px, 103#px} color: safe_dyke;
+            draw "Low" at: {36#px, 107#px} color: ink font: font("Helvetica", 12);
+            draw square(10#px) at: {130#px, 103#px} color: critical_dyke;
+            draw "Critical" at: {146#px, 107#px} color: ink font: font("Helvetica", 12);
+            draw "Right-click a dyke to destroy it" at: {14#px, 140#px} color: ink font: font("Helvetica", 11);
+         }
       }
-      display chart_display refresh: every(24#cycles)  type: 2d  { 
-         chart "Pressure on Dykes" type: series legend_font: font("Helvetica", 18)  label_font: font("Helvetica", 20, #bold)  title_font: font("Helvetica", 24, #bold){
+      display chart_display refresh: every(24#cycles) type: 2d background: paper {
+         chart "Dyke pressure" type: series background: paper axes: ink color: ink
+            x_label: "Time (hours)" y_label: "Pressure / fraction of dykes" y_range: {0.0, 1.0}
+            legend_font: font("Helvetica", 11) label_font: font("Helvetica", 12)
+            title_font: font("Helvetica", 16, #bold) {
          	int nbDykes <-  max(1, length(dyke));
-            data "Mean pressure on dykes " value: mean(dyke collect (each.water_pressure)) style: line color: #magenta  ;
-            data "Rate of dykes with max pressure" value: (dyke count (each.water_pressure = 1.0))/ nbDykes style: line color: #red ;
-            data "Rate of dykes with high pressure" value: (dyke count (each.water_pressure > 0.5))/ nbDykes style: line color: #orange ;
-            data "Rate of dykes with low pressure" value: (dyke count (each.water_pressure < 0.25))/ nbDykes style: line color: #green ;
+            data "Mean pressure" value: empty(dyke) ? 0.0 : mean(dyke collect (each.water_pressure)) style: line color: deep_water;
+            data "At capacity" value: (dyke count (each.water_pressure = 1.0))/ nbDykes style: line color: critical_dyke;
+            data "High (> 50%)" value: (dyke count (each.water_pressure > 0.5))/ nbDykes style: line color: warning_dyke;
+            data "Low (< 25%)" value: (dyke count (each.water_pressure < 0.25))/ nbDykes style: line color: safe_dyke;
          }
       }
    }
