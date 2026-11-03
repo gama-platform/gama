@@ -10,491 +10,716 @@
  ********************************************************************************************************/
 package gama.ui.shared.views;
 
-import static gama.api.utils.prefs.GamaPreferences.Runtime.FAILED_TESTS;
-import static gama.api.utils.prefs.GamaPreferences.Runtime.TESTS_SORTED;
-import static gama.ui.shared.resources.IGamaIcons.TEST_FILTER;
-import static gama.ui.shared.resources.IGamaIcons.TEST_SORT;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.Set;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
-
-import com.google.common.primitives.Longs;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.part.ViewPart;
 
 import gama.api.GAMA;
-import gama.api.runtime.scope.IScope;
-import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
-import gama.api.ui.IGui;
-import gama.api.ui.IItemList;
-import gama.api.ui.IStatusMessage;
-import gama.api.utils.files.FileUtils;
+import gama.api.ui.IOutput;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.tests.AbstractSummary;
 import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.IndividualTestSummary;
 import gama.api.utils.tests.TestExperimentSummary;
+import gama.api.utils.tests.TestSelection;
 import gama.api.utils.tests.TestState;
-import gama.ui.shared.controls.ParameterExpandItem;
-import gama.ui.shared.controls.StatusIconProvider;
-import gama.ui.shared.menus.GamaMenu;
-import gama.ui.shared.parameters.AssertEditor;
-import gama.ui.shared.parameters.EditorsGroup;
+import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.utils.ViewsHelper;
-import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.utils.SwtGui;
-import gama.ui.shared.views.toolbar.GamaCommand;
-import gama.ui.shared.views.toolbar.GamaToolbar2;
-import gama.ui.shared.views.toolbar.GamaToolbarSimple;
+import gama.ui.shared.utils.WorkbenchHelper;
 
-/**
- * The Class TestView.
- */
-public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements IGamaView.Test {
+/** A virtual native tree holds rows, not per-assertion editor composites. */
+public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 
-	/** The scope. */
-	IScope scope = GAMA.getRuntimeScope();
-
-	/** The Constant BY_ORDER. */
-	static final Comparator<AbstractSummary<?>> BY_ORDER = (o1, o2) -> Longs.compare(o1.getIndex(), o2.getIndex());
-
-	/** The Constant BY_SEVERITY. */
-	static final Comparator<AbstractSummary<?>> BY_SEVERITY = (o1, o2) -> {
-		final TestState s1 = o1.getState();
-		final TestState s2 = o2.getState();
-		if (s1 == s2) return BY_ORDER.compare(o1, o2);
-		return s1.compareTo(s2);
-	};
-
-	/** The experiments. */
-	public final List<AbstractSummary<?>> experiments = new ArrayList<>();
-
-	/** The running all tests. */
-	private boolean runningAllTests;
-
-	private volatile boolean sequenceRunning;
-
-	private boolean stopped;
-
-	private ToolItem stopItem;
-
-	private ToolItem expandItem, collapseItem;
-
-	private boolean summaryDisplayed;
-
-	private String currentTest = "";
-
-	private int currentModel, totalModels;
-
-	/** The icon provider. */
-	private final StatusIconProvider iconProvider = new StatusIconProvider();
-
-	/** The id. */
-	public static String ID = IGui.TEST_VIEW_ID;
-
-	@Override
-	public void init(final IViewSite site) throws PartInitException {
-		super.init(site);
-		experiments.clear();
-		super.reset();
+	private record ExperimentKey(String title, URI uri) {
+		ExperimentKey(final TestExperimentSummary summary) { this(summary.getTitle(), summary.getURI()); }
 	}
 
+	private final List<AbstractSummary<?>> experiments = new ArrayList<>();
+	private final Map<AbstractSummary<?>, List<AbstractSummary<?>>> children = new IdentityHashMap<>();
+	private final Map<AbstractSummary<?>, TreeItem> items = new IdentityHashMap<>();
+	private final Set<ExperimentKey> finalizedExperiments = new HashSet<>();
+	private final Map<TestExperimentSummary, IndividualTestSummary> pendingSummaries = new IdentityHashMap<>();
+	private List<AbstractSummary<?>> roots = List.of();
+	private final Map<TestState, Image> icons = new EnumMap<>(TestState.class);
+	private org.eclipse.swt.widgets.Display display;
+	private Composite root;
+	private Tree tree;
+	private Text details;
+	private Label counters, status;
+	private ProgressBar progress;
+	private ToolItem stop, restart, expand, collapse, filter, sort, export;
+	private ToolBar tools, treeTools;
+	private Composite toolbar;
+	private SashForm sash;
+	private boolean problemsOnly, severity, running, report;
+	private volatile String currentName = "";
+	private volatile int currentModel, totalModels;
+	private volatile int completedTests, totalTests = -1;
+	private volatile boolean progressPending;
+	private volatile long generation;
+	private record TestRerun(TestExperimentSummary experiment, IndividualTestSummary test,
+			int completed, int total) {}
+	private volatile TestRerun rerun;
+
 	@Override
-	protected boolean areItemsClosable() {
-		return false;
+	public void createPartControl(final Composite parent) {
+		root = new Composite(parent, SWT.NONE);
+		display = parent.getDisplay();
+		root.setLayout(new GridLayout(1, false));
+		toolbar = new Composite(root, SWT.NONE);
+		toolbar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		final var toolbarLayout = new GridLayout(3, false);
+		toolbarLayout.marginWidth = toolbarLayout.marginHeight = 0;
+		toolbar.setLayout(toolbarLayout);
+		tools = new ToolBar(toolbar, SWT.FLAT);
+		tools.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		final Composite summaryArea = new Composite(toolbar, SWT.NONE);
+		final var summaryData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		summaryData.widthHint = 0;
+		summaryArea.setLayoutData(summaryData);
+		final var summaryLayout = new GridLayout(1, false);
+		summaryLayout.marginWidth = summaryLayout.marginHeight = 0;
+		summaryLayout.verticalSpacing = 0;
+		summaryArea.setLayout(summaryLayout);
+		counters = new Label(summaryArea, SWT.WRAP);
+		counters.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		status = new Label(summaryArea, SWT.WRAP);
+		status.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		treeTools = new ToolBar(toolbar, SWT.FLAT);
+		treeTools.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		progress = new ProgressBar(root, SWT.SMOOTH);
+		progress.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		sash = new SashForm(root, SWT.VERTICAL);
+		sash.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		tree = new Tree(sash, SWT.VIRTUAL | SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
+		details = new Text(sash, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+		sash.setWeights(75, 25);
+		sash.setMaximizedControl(tree);
+		tree.addListener(SWT.SetData, e -> populate((TreeItem) e.item));
+		tree.addListener(SWT.Selection, e -> showDetails());
+		tree.addListener(SWT.DefaultSelection, e -> openSource());
+		final MenuManager menu = new MenuManager();
+		menu.setRemoveAllWhenShown(true);
+		menu.addMenuListener(m -> {
+			if (selected() instanceof IndividualTestSummary test && test.getURI() != null
+					&& test.getURI().hasFragment()) {
+				final var experiment = selectedExperiment();
+				if (experiment != null && experiment.getURI() != null && experiment.getExperimentName() != null) {
+					final Action rerunAction = action("Run this test only",
+							() -> TestsRunner.rerun(this, experiment, test));
+					rerunAction.setImageDescriptor(GamaIcon.named("toolbar/server.restart").descriptor());
+					rerunAction.setEnabled(!running && !TestsRunner.isRunning());
+					m.add(rerunAction);
+				}
+			}
+			m.add(action("Show in editor", this::openSource));
+			m.add(action("Copy selected summary", () -> {
+				final var summary = selected();
+				if (summary != null) {
+					final var text = new StringBuilder();
+					appendReport(text, summary, "");
+					WorkbenchHelper.copy(text.toString());
+				}
+			}));
+			m.add(action("Copy all results", () -> WorkbenchHelper.copy(textReport())));
+			m.add(action("Export results...", this::export));
+		});
+		tree.setMenu(menu.createContextMenu(tree));
+		tree.addDisposeListener(e -> menu.dispose());
+		status.setText("No test results");
+		counters.setText("0 tests");
+		updateControls();
 	}
 
-	/**
-	 * Resort tests.
-	 */
-	protected void resortTests() {
-		final Comparator<AbstractSummary<?>> comp = TESTS_SORTED.getValue() ? BY_SEVERITY : BY_ORDER;
-		experiments.sort(comp);
+	private static Action action(final String label, final Runnable runnable) {
+		return new Action(label) { @Override public void run() { runnable.run(); } };
+	}
+
+	private ToolItem tool(final ToolBar bar, final int style, final String label, final String icon,
+			final Runnable runnable) {
+		final var item = new ToolItem(bar, style);
+		item.setImage(GamaIcon.named(icon).image());
+		item.setToolTipText(label);
+		item.addListener(SWT.Selection, e -> runnable.run());
+		return item;
+	}
+
+	private List<AbstractSummary<?>> rows(final AbstractSummary<?> parent) {
+		if (parent == null) return roots;
+		return children.computeIfAbsent(parent, summary -> filtered(new ArrayList<>(summary.getSummaries().values())));
+	}
+
+	private List<AbstractSummary<?>> filtered(final List<AbstractSummary<?>> result) {
+		if (problemsOnly) { result.removeIf(s -> !hasProblem(s)); }
+		if (severity) { result.sort(Comparator.comparing(AbstractSummary::getState)); }
+		return result;
+	}
+
+	private boolean hasProblem(final AbstractSummary<?> summary) {
+		final TestState state = summary.getState();
+		if (state.isFailure()) return true;
+		return summary.getSummaries().values().stream().anyMatch(this::hasProblem);
+	}
+
+	private void populate(final TreeItem item) {
+		final TreeItem parent = item.getParentItem();
+		final var siblings = rows(parent == null ? null : (AbstractSummary<?>) parent.getData());
+		final int index = parent == null ? tree.indexOf(item) : parent.indexOf(item);
+		if (index < 0 || index >= siblings.size()) return;
+		final var summary = siblings.get(index);
+		item.setData(summary);
+		items.put(summary, item);
+		updateItem(item, summary);
+	}
+
+	private void updateItem(final TreeItem item, final AbstractSummary<?> summary) {
+		final String error = summary.getError();
+		item.setText(summary.getTitle() + "  [" + summary.getState() + "]"
+				+ (error == null || error.isBlank() ? "" : " - " + error.replace('\n', ' ').replace('\r', ' ')));
+		item.setImage(statusIcon(summary.getState()));
+		item.setItemCount(rows(summary).size());
+	}
+
+	private Image statusIcon(final TestState state) {
+		return icons.computeIfAbsent(state, s -> {
+			final var data = new ImageData(16, 16, 24, new PaletteData(0xFF0000, 0x00FF00, 0x0000FF));
+			final int pixel = data.palette.getPixel(GamaColors.get(s.getColor(GAMA.getRuntimeScope())).color().getRGB());
+			for (int y = 0; y < 16; y++) {
+				for (int x = 0; x < 16; x++) {
+					final double coverage = Math.max(0, Math.min(1, 4.5 - Math.hypot(x + 0.5 - 8, y + 0.5 - 8)));
+					data.setPixel(x, y, pixel);
+					data.setAlpha(x, y, (int) Math.round(255 * coverage));
+				}
+			}
+			return new Image(display, data);
+		});
+	}
+
+	private AbstractSummary<?> selected() {
+		return tree.getSelectionCount() == 0 ? null : (AbstractSummary<?>) tree.getSelection()[0].getData();
+	}
+
+	private TestExperimentSummary selectedExperiment() {
+		if (tree.getSelectionCount() == 0) return null;
+		TreeItem item = tree.getSelection()[0];
+		while (item.getParentItem() != null) { item = item.getParentItem(); }
+		return item.getData() instanceof TestExperimentSummary experiment ? experiment : null;
+	}
+
+	/** Called on the SWT thread before the runner opens a new test sequence. */
+	public void prepareTestRerun(final TestExperimentSummary experiment, final IndividualTestSummary test) {
+		rerun = new TestRerun(experiment, test, completedTests, totalTests);
+	}
+
+	private void showDetails() {
+		final var summary = selected();
+		if (summary == null) {
+			details.setText("");
+			sash.setMaximizedControl(tree);
+			return;
+		}
+		final var text = new StringBuilder(summary.getTitle()).append("\nStatus: ").append(summary.getState());
+		if (summary.getURI() != null) {
+			text.append("\nSource: ").append(org.eclipse.emf.common.util.URI.decode(summary.getURI().lastSegment()));
+		}
+		appendErrors(text, summary);
+		details.setText(text.toString());
+		sash.setMaximizedControl(null);
+	}
+
+	private void appendErrors(final StringBuilder text, final AbstractSummary<?> summary) {
+		if (summary.getErrorDetails() != null) {
+			text.append("\n\n").append(summary.getTitle()).append(":\n").append(summary.getErrorDetails());
+		}
+		for (final var child : summary.getSummaries().values()) { appendErrors(text, child); }
+	}
+
+	private void openSource() {
+		final var summary = selected();
+		if (summary != null && summary.getURI() != null) {
+			GAMA.getGui().getModelsManager().editModel(summary.getURI());
+		}
+	}
+
+	private void refresh() {
+		problemsOnly = GamaPreferences.Runtime.FAILED_TESTS.getValue();
+		severity = GamaPreferences.Runtime.TESTS_SORTED.getValue();
+		children.clear();
+		items.clear();
+		roots = filtered(new ArrayList<>(experiments));
+		tree.setRedraw(false);
+		try {
+			tree.removeAll();
+			tree.setItemCount(rows(null).size());
+			details.setText("");
+			sash.setMaximizedControl(tree);
+		} finally { tree.setRedraw(true); }
+		updateCounters();
+		updateControls();
+		root.layout(true, true);
+	}
+
+	private void updateCounters() {
+		final StringBuilder text = new StringBuilder();
+		int total = 0;
+		for (final TestState state : TestState.values()) {
+			int count = 0;
+			for (final var experiment : experiments) { count += experiment.countTestsWith(state); }
+			total += count;
+			if (count > 0) { text.append("   ").append(count).append(" ").append(state); }
+		}
+		counters.setText((running ? testCountsText() : totalTests >= 0
+				? completedTests + " / " + totalTests + " tests completed" : total + " tests") + text);
+	}
+
+	private void expand(final TreeItem[] items) {
+		for (final var item : items) {
+			item.getText();
+			item.setExpanded(true);
+			expand(item.getItems());
+		}
+	}
+
+	private void updateControls() {
+		if (!running && report && TestsRunner.canRestart() && (restart == null || restart.isDisposed())) {
+			restart = tool(tools, SWT.PUSH, "Run the same tests again", "toolbar/server.restart", TestsRunner::restart);
+		} else if (running && restart != null && !restart.isDisposed()) {
+			restart.dispose();
+		}
+		// Keep the filter available even when it hides every result.
+		final boolean resultsAvailable = !running && report && !experiments.isEmpty();
+		if (resultsAvailable && (filter == null || filter.isDisposed())) {
+			filter = tool(tools, SWT.CHECK, "Problems only", "toolbar/test.filter", () -> {
+				GamaPreferences.Runtime.FAILED_TESTS.set(filter.getSelection());
+				refresh();
+			});
+			filter.setSelection(problemsOnly);
+			sort = tool(tools, SWT.CHECK, "Sort by severity", "toolbar/test.sort", () -> {
+				GamaPreferences.Runtime.TESTS_SORTED.set(sort.getSelection());
+				refresh();
+			});
+			sort.setSelection(severity);
+			export = tool(tools, SWT.PUSH, "Export results...", "toolbar/test.save", this::export);
+		} else if (!resultsAvailable && filter != null && !filter.isDisposed()) {
+			filter.dispose();
+			sort.dispose();
+			export.dispose();
+		}
+		if (resultsAvailable) {
+			filter.setSelection(problemsOnly);
+			sort.setSelection(severity);
+		}
+		if (!running && stop != null && !stop.isDisposed()) { stop.dispose(); }
+		if (expand != null && !expand.isDisposed()) { expand.dispose(); }
+		if (collapse != null && !collapse.isDisposed()) { collapse.dispose(); }
+		if (running && (stop == null || stop.isDisposed())) {
+			stop = new ToolItem(tools, SWT.PUSH, 0);
+			stop.setImage(GamaIcon.named("toolbar/server.stop").image());
+			stop.setToolTipText("Stop tests");
+			stop.addListener(SWT.Selection, e -> {
+				if (GAMA.getRegularGui() instanceof SwtGui gui) { gui.stopTests(); }
+				status.setText("Stopping tests...");
+				stop.setEnabled(false);
+				root.layout(true, true);
+			});
+		} else if (!running && report && roots.stream().anyMatch(s -> !rows(s).isEmpty())) {
+			expand = new ToolItem(treeTools, SWT.PUSH);
+			expand.setImage(GamaIcon.named(IGamaIcons.TREE_EXPAND).image());
+			expand.setToolTipText("Expand all");
+			expand.addListener(SWT.Selection, e -> expand(tree.getItems()));
+			collapse = new ToolItem(treeTools, SWT.PUSH);
+			collapse.setImage(GamaIcon.named(IGamaIcons.TREE_COLLAPSE).image());
+			collapse.setToolTipText("Collapse all");
+			collapse.addListener(SWT.Selection, e -> {
+				for (final var item : tree.getItems()) { item.setExpanded(false); }
+			});
+		}
+		treeTools.setVisible(!running && expand != null && !expand.isDisposed());
+		((GridData) treeTools.getLayoutData()).exclude = !treeTools.getVisible();
+		progress.setVisible(running);
+		((GridData) progress.getLayoutData()).exclude = !running;
+		status.setVisible(running || !status.getText().isBlank());
+		((GridData) status.getLayoutData()).exclude = !status.getVisible();
+		root.layout(true, true);
+	}
+
+	private void ui(final Runnable runnable) {
+		if (display == null || display.isDisposed()) return;
+		final Runnable guarded = () -> { if (!root.isDisposed()) { runnable.run(); } };
+		if (display.getThread() == Thread.currentThread()) { guarded.run(); }
+		else { display.syncExec(guarded); }
 	}
 
 	@Override
 	public void startNewTestSequence(final boolean all) {
-		runningAllTests = all;
-		sequenceRunning = true;
-		experiments.clear();
-		WorkbenchHelper.run(() -> {
-			stopped = false;
-			summaryDisplayed = false;
-			currentTest = "";
+		ui(() -> {
+			generation++;
+			synchronized (this) { pendingSummaries.clear(); }
+			finalizedExperiments.clear();
+			running = true;
+			report = false;
+			currentName = "Preparing tests...";
 			currentModel = totalModels = 0;
-			updateSequenceToolItems();
-			if (toolbar != null) {
-				toolbar.status("Preparing tests...");
+			completedTests = 0;
+			totalTests = -1;
+			if (rerun == null) {
+				experiments.clear();
+				refresh();
+			} else {
+				updateCounters();
+				updateControls();
 			}
+			status.setText(currentName);
+			progress.setSelection(0);
 		});
-		super.reset();
-	}
-
-	@Override
-	public void finishTestSequence() {
-		sequenceRunning = false;
-		WorkbenchHelper.run(() -> {
-			summaryDisplayed = true;
-			updateSequenceToolItems();
-		});
-		super.reset();
-		updateIcon = false;
-		reset();
 	}
 
 	@Override
 	public void addTestResult(final CompoundSummary<?, ?> summary) {
-		if (summary instanceof TestExperimentSummary) {
-			if (!experiments.contains(summary)) { experiments.add(summary); }
-		} else {
-			for (final AbstractSummary<?> s : summary.getSummaries().values()) {
-				if (!experiments.contains(s)) { experiments.add(s); }
+		ui(() -> {
+			if (rerun != null) {
+				if (summary instanceof TestExperimentSummary experiment) { replaceTestResult(experiment); }
+				return;
 			}
-		}
-	}
-
-	@Override
-	public boolean addItem(final AbstractSummary<?> experiment) {
-		final boolean onlyFailed = GamaPreferences.Runtime.FAILED_TESTS.getValue();
-		ParameterExpandItem item = getViewer() == null ? null : getViewer().getItem(experiment);
-		if (item != null) { item.dispose(); }
-		if (onlyFailed) {
-			final TestState state = experiment.getState();
-			if (!state.isFailure()) return false;
-		}
-		item = createItem(getParentComposite(), experiment, !runningAllTests,
-				GamaColors.get(getItemDisplayColor(experiment)));
-		return true;
-	}
-
-	@Override
-	public void ownCreatePartControl(final Composite view) {
-
-	}
-
-	// Experimental: creates a deferred item
-	@Override
-	protected ParameterExpandItem createItem(final Composite parent, final AbstractSummary<?> data,
-			final boolean expanded, final GamaUIColor color) {
-		createViewer(parent);
-		if (getViewer() == null) return null;
-		final EditorsGroup control = createItemContentsFor(data);
-		ParameterExpandItem item;
-		if (expanded) {
-			createEditors(control, data);
-			item = createItem(parent, data, control, expanded, color);
-		} else {
-			item = createItem(parent, data, control, expanded, color);
-			item.onExpand(() -> createEditors(control, data));
-		}
-		return item;
-	}
-
-	@Override
-	protected EditorsGroup createItemContentsFor(final AbstractSummary<?> experiment) {
-		final EditorsGroup compo = new EditorsGroup(getViewer());
-		compo.setBackground(getViewer().getBackground());
-		return compo;
-	}
-
-	/**
-	 * Creates the editors.
-	 *
-	 * @param compo
-	 *            the compo
-	 * @param test
-	 *            the test
-	 */
-	public void createEditors(final EditorsGroup compo, final AbstractSummary<?> test) {
-		createErrorDetails(compo, test);
-		Map<String, ? extends AbstractSummary<?>> assertions = test.getSummaries();
-		for (final Map.Entry<String, ? extends AbstractSummary<?>> assertion : assertions.entrySet()) {
-			final AbstractSummary<?> summary = assertion.getValue();
-			final String name = assertion.getKey();
-			createEditor(compo, test, summary, name);
-			if (summary instanceof CompoundSummary) {
-				assertions = summary.getSummaries();
-				for (final Map.Entry<String, ? extends AbstractSummary<?>> aa : assertions.entrySet()) {
-					createEditor(compo, test, aa.getValue(), aa.getKey());
+			if (summary instanceof TestExperimentSummary experiment) {
+				upsertExperiment(experiment);
+			} else {
+				for (final var result : summary.getSummaries().values()) {
+					if (result instanceof TestExperimentSummary experiment) { upsertExperiment(experiment); }
+					else { experiments.add(result); }
 				}
 			}
-		}
-	}
-
-	/**
-	 * Creates the editor.
-	 *
-	 * @param compo
-	 *            the compo
-	 * @param globalTest
-	 *            the global test
-	 * @param subTest
-	 *            the sub test
-	 * @param name
-	 *            the name
-	 */
-	public void createEditor(final EditorsGroup compo, final AbstractSummary<?> globalTest,
-			final AbstractSummary<?> subTest, final String name) {
-		if (GamaPreferences.Runtime.FAILED_TESTS.getValue()) {
-			final TestState state = subTest.getState();
-			if (!state.isFailure()) return;
-		}
-		final AssertEditor ed = new AssertEditor(scope, subTest);
-		ed.createControls(compo);
-		createErrorDetails(compo, subTest);
-	}
-
-	private void createErrorDetails(final EditorsGroup compo, final AbstractSummary<?> summary) {
-		final String error = summary.getErrorDetails();
-		if (error == null || error.isBlank()) return;
-		final Text details = new Text(compo, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
-		details.setText(error);
-		details.setToolTipText("Error details for " + summary.getTitle());
-		final GridData data = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
-		data.widthHint = 0;
-		data.heightHint = details.getLineHeight() * Math.min(8, Math.max(2, details.getLineCount()));
-		details.setLayoutData(data);
-	}
-
-	@SuppressWarnings ("synthetic-access")
-	@Override
-	public void createToolItems(final GamaToolbar2 tb) {
-		super.createToolItems(tb);
-		TESTS_SORTED.removeChangeListeners();
-		FAILED_TESTS.removeChangeListeners();
-		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
-		updateSequenceToolItems();
-		tbs.button("editor/local.menu", "More...", "More options", e -> {
-
-			final GamaMenu menu = new GamaMenu() {
-
-				@Override
-				protected void fillMenu() {
-					GamaCommand.build(TEST_SORT, "Sort by severity",
-							"When checked, sort by severity, including interrupted and timed-out tests. Otherwise sort by order of execution.",
-							e -> {
-								TESTS_SORTED.set(!TESTS_SORTED.getValue());
-								TestView.this.reset();
-								reset();
-							}).toCheckItem(mainMenu).setSelection(TESTS_SORTED.getValue());
-					GamaCommand.build(TEST_FILTER, "Filter tests",
-							"When checked, show only failed, errored, interrupted and timed-out tests and assertions", e -> {
-								FAILED_TESTS.set(!FAILED_TESTS.getValue());
-								TestView.this.reset();
-								reset();
-							}).toCheckItem(mainMenu).setSelection(FAILED_TESTS.getValue());
-					GamaMenu.separate(mainMenu);
-					GamaCommand.build(IGamaIcons.SAVE_AS, "Save tests", "Save the current tests as a text file", e -> {
-						TestView.this.saveTests();
-					}).toItem(mainMenu);
-				}
-
-			};
-			menu.open(tbs, e, tbs.getSize().y, 0);
+			refresh();
 		});
-
 	}
 
-	@Override
-	public void createExpandItems(final GamaToolbar2 tb) {}
-
-	private void updateSequenceToolItems() {
-		if (toolbar == null || toolbar.isDisposed()) return;
-		if (stopItem != null && !stopItem.isDisposed()) { stopItem.dispose(); }
-		if (expandItem != null && !expandItem.isDisposed()) { expandItem.dispose(); }
-		if (collapseItem != null && !collapseItem.isDisposed()) { collapseItem.dispose(); }
-		stopItem = expandItem = collapseItem = null;
-		if (sequenceRunning) {
-			stopItem = toolbar.button(new GamaCommand(IGamaIcons.EXPERIMENT_STOP, "Stop tests",
-					"Stop the current test sequence and keep its results", e -> {
-					if (!sequenceRunning || stopped) return;
-					stopped = true;
-					stopItem.setEnabled(false);
-					if (GAMA.getRegularGui() instanceof SwtGui gui) { gui.stopTests(); }
-					toolbar.status("Stopping tests...");
-					}), SWT.RIGHT);
-			stopItem.setEnabled(!stopped);
-		} else if (summaryDisplayed) {
-			expandItem = toolbar.button(IGamaIcons.TREE_EXPAND, "Expand all items", "Expand all items",
-					e -> expandAll(), SWT.RIGHT);
-			collapseItem = toolbar.button(IGamaIcons.TREE_COLLAPSE, "Collapse all items", "Collapse all items",
-					e -> collapseAll(), SWT.RIGHT);
+	private void upsertExperiment(final TestExperimentSummary experiment) {
+		final var key = new ExperimentKey(experiment);
+		finalizedExperiments.add(key);
+		synchronized (this) {
+			pendingSummaries.keySet().removeIf(summary -> key.equals(new ExperimentKey(summary)));
 		}
-		toolbar.requestLayout();
+		final int index = experimentIndex(key);
+		if (index < 0) { experiments.add(experiment); }
+		else { experiments.set(index, experiment); }
 	}
 
-	/**
-	 * Save tests.
-	 */
-	public void saveTests() {
-		final DirectoryDialog dialog = new DirectoryDialog(WorkbenchHelper.getShell(), SWT.NULL);
-		dialog.setFilterPath(GAMA.getModel() == null ? GAMA.getWorkspaceManager().getWorkspaceLocation()
-				: GAMA.getModel().getFilePath());
-		dialog.setMessage("Choose a folder for saving the tests");
-		final String path = dialog.open();
-		if (path == null) return;
-		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		String file = path + File.separator + "tests_" + new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(timestamp)
-				+ ".txt";
-		file = FileUtils.constructAbsoluteFilePath(scope, file, false);
-		try (PrintWriter out = new PrintWriter(file)) {
-			for (AbstractSummary summary : experiments) {
-				out.println(summary.toString());
-				out.flush();
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+	private int experimentIndex(final ExperimentKey key) {
+		for (int i = 0; i < experiments.size(); i++) {
+			if (experiments.get(i) instanceof TestExperimentSummary test
+					&& key.equals(new ExperimentKey(test))) return i;
 		}
-
+		return -1;
 	}
 
-	@Override
-	public void setFocus() {}
-
-	@Override
-	public void removeItem(final AbstractSummary<?> obj) {}
-
-	@Override
-	public void pauseItem(final AbstractSummary<?> obj) {}
-
-	@Override
-	public void resumeItem(final AbstractSummary<?> obj) {}
-
-	@Override
-	public String getItemDisplayName(final AbstractSummary<?> obj, final String previousName) {
-		final StringBuilder sb = new StringBuilder(300);
-		final String name = obj.getTitle();
-		sb.append(obj.getState()).append(IItemList.SEPARATION_CODE).append(name).append(' ');
-		if (obj.getError() != null) { sb.append("[").append(obj.getError()).append("]"); }
-		return sb.toString();
-	}
-
-	@Override
-	protected boolean shouldBeClosedWhenNoExperiments() {
-		return false;
-		// return !runningAllTests;
-	}
-
-	/**
-	 * The TestView must never be auto-closed by {@code closeSimulationViews()} — its results are intentionally kept
-	 * visible until the user decides to close it manually. This matches the ErrorView behavior and prevents losing the
-	 * current unit-test results when a model experiment is launched.
-	 */
-	@Override
-	public void close(final IScope scope) {
-		// deliberate no-op — see Javadoc above
-	}
-
-	@Override
-	public IColor getItemDisplayColor(final AbstractSummary<?> t) {
-		return t.getColor(null);
-	}
-
-	@Override
-	public void focusItem(final AbstractSummary<?> data) {}
-
-	@Override
-	public List<AbstractSummary<?>> getItems() { return experiments; }
-
-	@Override
-	public void updateItemValues(final boolean synchronously, final boolean retrieveValues) {}
-
-	@Override
-	public void reset() {
-		WorkbenchHelper.run(() -> {
-			if (!getParentComposite().isDisposed()) {
-				resortTests();
-				displayItems();
-				getParentComposite().layout(true, false);
-				if (toolbar != null) {
-					toolbar.status((stopped ? "Stopped - " : "") + new CompoundSummary<>(experiments).getStringSummary());
-				}
-				ViewsHelper.bringToFront(this);
-			}
-		});
-
-	}
-
-	/**
-	 * Method handleMenu()
-	 *
-	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object)
-	 */
-	@Override
-	public Map<String, Runnable> handleMenu(final AbstractSummary<?> item, final int x, final int y) {
-		final Map<String, Runnable> result = new HashMap<>();
-		result.put("Copy summary to clipboard", () -> { WorkbenchHelper.copy(item.toString()); });
-		result.put("Show in editor", () -> GAMA.getGui().getModelsManager().editModel(item.getURI()));
-		return result;
-	}
-
-	@Override
-	protected boolean needsOutput() {
-		return false;
-	}
-
-	/** The update icon. */
-	volatile boolean updateIcon = false;
-
-	@Override
-	public void displayProgress(final int number, final int total) {
-		startProgressAnimation();
-		WorkbenchHelper.asyncRun(() -> {
-			if (!sequenceRunning || stopped || getParentComposite().isDisposed()) return;
-			currentModel = number;
-			totalModels = total;
-			showRunningTest();
-		});
-
-	}
-
-	private void startProgressAnimation() {
-		if (!updateIcon) {
-			updateIcon = true;
-			Callable<Boolean> stop = () -> !updateIcon;
-			WorkbenchHelper.asyncRun(() -> {
-				if (toolbar != null) {
-					toolbar.updateStatusImage(iconProvider.getIcon());
-					GAMA.getGui().getStatus().informStatus("Running tests", IStatusMessage.SIMULATION_ICON);
-				}
-			}, 100, stop);
-		}
+	/** Queues live summaries for a coalesced SWT-thread refresh. */
+	public void displayTestSummary(final TestExperimentSummary experiment, final IndividualTestSummary summary) {
+		if (experiment == null || summary == null) return;
+		if (rerun != null) return;
+		synchronized (this) { pendingSummaries.put(experiment, summary); }
+		queueProgress();
 	}
 
 	@Override
 	public void displayRunningTest(final String name) {
-		WorkbenchHelper.asyncRun(() -> {
-			if (!sequenceRunning || stopped || getParentComposite().isDisposed()) return;
-			startProgressAnimation();
-			currentTest = name;
-			showRunningTest();
+		currentName = name;
+		queueProgress();
+	}
+
+	@Override
+	public void displayProgress(final int number, final int total) {
+		currentModel = number;
+		totalModels = total;
+		queueProgress();
+	}
+
+	public void displayTestCounts(final int completed, final int total) {
+		completedTests = completed;
+		totalTests = total;
+		queueProgress();
+	}
+
+	private String testCountsText() {
+		return totalTests < 0 ? "Discovering tests..." : completedTests + " / " + totalTests + " tests completed";
+	}
+
+	private synchronized void queueProgress() {
+		if (progressPending || root == null || root.isDisposed()) return;
+		progressPending = true;
+		final long sequence = generation;
+		display.asyncExec(() -> {
+			if (root.isDisposed()) { progressPending = false; return; }
+			display.timerExec(100, () -> {
+				final Map<TestExperimentSummary, IndividualTestSummary> summaries;
+				synchronized (TestView.this) {
+					progressPending = false;
+					summaries = new IdentityHashMap<>(pendingSummaries);
+					pendingSummaries.clear();
+				}
+				if (root.isDisposed() || !running || sequence != generation) return;
+				refreshLiveSummaries(summaries);
+				counters.setText(testCountsText());
+				status.setText((totalModels > 0 ? "Model " + currentModel + " of " + totalModels + " - " : "")
+						+ currentName);
+				progress.setMaximum(Math.max(1, totalTests >= 0 ? totalTests : totalModels));
+				progress.setSelection(Math.max(0, totalTests >= 0 ? completedTests : currentModel - 1));
+				root.layout(true, true);
+			});
 		});
 	}
 
-	private void showRunningTest() {
-		if (toolbar != null) {
-			final String progress = totalModels > 0 ? "Model " + currentModel + " of " + totalModels + " - " : "";
-			toolbar.status(iconProvider.getIcon(), progress + currentTest, null);
+	private void refreshLiveSummaries(final Map<TestExperimentSummary, IndividualTestSummary> summaries) {
+		boolean rootsChanged = false;
+		boolean replaced = false;
+		for (final var experiment : summaries.keySet()) {
+			final var key = new ExperimentKey(experiment);
+			if (finalizedExperiments.contains(key)) continue;
+			final int index = experimentIndex(key);
+			if (index < 0) {
+				experiments.add(experiment);
+				rootsChanged = true;
+			} else if (experiments.get(index) != experiment) {
+				experiments.set(index, experiment);
+				replaced = true;
+			}
+		}
+		if (replaced) {
+			refresh();
+		} else if (rootsChanged) {
+			children.clear();
+			roots = filtered(new ArrayList<>(experiments));
+			tree.setItemCount(roots.size());
+		}
+		tree.setRedraw(false);
+		try {
+			for (final var entry : summaries.entrySet()) {
+				if (!finalizedExperiments.contains(new ExperimentKey(entry.getKey()))) {
+					refreshLiveExperiment(entry.getKey(), entry.getValue());
+				}
+			}
+		} finally {
+			tree.setRedraw(true);
+		}
+		tree.redraw();
+	}
+
+	private void refreshLiveExperiment(final TestExperimentSummary experiment, final IndividualTestSummary test) {
+		final var experimentItem = items.get(experiment);
+		if (experimentItem == null || experimentItem.isDisposed()) return;
+		children.remove(experiment);
+		updateItem(experimentItem, experiment);
+		final var summaries = new ArrayList<>(experiment.getSummaries().values());
+		for (int i = 0; i < summaries.size(); i++) {
+			if (summaries.get(i) == test && i < experimentItem.getItemCount()) {
+				final TreeItem testItem = experimentItem.getItem(i);
+				if (experimentItem.getExpanded() || testItem.getData() != null) { refreshLiveItem(testItem, test); }
+				break;
+			}
 		}
 	}
 
+	private void refreshLiveItem(final TreeItem item, final AbstractSummary<?> summary) {
+		final Object previous = item.getData();
+		if (previous instanceof AbstractSummary<?> old && old != summary) {
+			items.remove(old);
+			children.remove(old);
+		}
+		item.setData(summary);
+		items.put(summary, item);
+		children.remove(summary);
+		updateItem(item, summary);
+		final var summaries = rows(summary);
+		final TreeItem[] childItems = item.getItems();
+		for (int i = 0; i < Math.min(summaries.size(), childItems.length); i++) {
+			if (childItems[i].getData() != null) { refreshLiveItem(childItems[i], summaries.get(i)); }
+		}
+	}
+
+	@Override
+	public void finishTestSequence() {
+		ui(() -> {
+			synchronized (this) { pendingSummaries.clear(); }
+			running = false;
+			report = true;
+			final boolean stopped = GAMA.getRegularGui().isTestStopRequested();
+			status.setText(stopped ? "Stopped - partial results" : "");
+			if (rerun == null) {
+				refresh();
+			} else {
+				completedTests = rerun.completed();
+				totalTests = rerun.total();
+				rerun = null;
+				updateCounters();
+				updateControls();
+			}
+		});
+	}
+
+	private void replaceTestResult(final TestExperimentSummary result) {
+		final var target = rerun;
+		final var selection = TestSelection.of(target.test().getURI());
+		final var matches = result.summaries.values().stream().filter(test -> selection.matches(test.getURI())).toList();
+		if (matches.size() != 1) {
+			GAMA.getRegularGui().getDialogFactory().error("Unable to update the selected test: "
+					+ (result.getErrorDetails() == null ? "the rerun did not return this test" : result.getErrorDetails()));
+			return;
+		}
+		final var replacement = matches.getFirst();
+		if (target.test().getState() == TestState.NOT_RUN && replacement.getState() != TestState.NOT_RUN
+				&& target.total() >= 0) {
+			rerun = new TestRerun(target.experiment(), target.test(),
+					Math.min(target.total(), target.completed() + 1), target.total());
+		}
+		target.experiment().summaries.replaceAll((key, test) -> test == target.test() ? replacement : test);
+		target.experiment().setState(result.getState() == TestState.INTERRUPTED
+				|| result.getState() == TestState.TIMED_OUT || result.aborted ? result.getState() : TestState.NOT_RUN);
+		target.experiment().setError(result.getError());
+		target.experiment().setErrorDetails(result.getErrorDetails());
+		reconcileReport(target.test(), replacement);
+	}
+
+	private void reconcileReport(final IndividualTestSummary previous, final IndividualTestSummary replacement) {
+		final Set<AbstractSummary<?>> expanded = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+		rememberExpanded(tree.getItems(), expanded);
+		if (expanded.remove(previous)) { expanded.add(replacement); }
+		final var selection = selected();
+		final var selectedSummary = selection == previous ? replacement : selection;
+		final var top = tree.getTopItem();
+		final Object topSummary = top == null ? null : top.getData();
+		children.clear();
+		items.clear();
+		roots = filtered(new ArrayList<>(experiments));
+		tree.setRedraw(false);
+		try {
+			tree.setItemCount(roots.size());
+			for (int i = 0; i < roots.size(); i++) { reconcileItem(tree.getItem(i), roots.get(i), expanded); }
+			final var selectedItem = items.get(selectedSummary);
+			if (selectedItem == null) { tree.deselectAll(); }
+			else { tree.setSelection(selectedItem); }
+			final var topItem = items.get(topSummary == previous ? replacement : topSummary);
+			if (topItem != null) { tree.setTopItem(topItem); }
+			showDetails();
+		} finally { tree.setRedraw(true); }
+		updateCounters();
+	}
+
+	private void rememberExpanded(final TreeItem[] entries, final Set<AbstractSummary<?>> expanded) {
+		for (final var item : entries) {
+			if (item.getExpanded() && item.getData() instanceof AbstractSummary<?> summary) {
+				expanded.add(summary);
+				rememberExpanded(item.getItems(), expanded);
+			}
+		}
+	}
+
+	private void reconcileItem(final TreeItem item, final AbstractSummary<?> summary,
+			final Set<AbstractSummary<?>> expanded) {
+		item.setData(summary);
+		items.put(summary, item);
+		updateItem(item, summary);
+		final boolean open = expanded.contains(summary);
+		item.setExpanded(open);
+		if (open) {
+			final var summaries = rows(summary);
+			for (int i = 0; i < summaries.size(); i++) { reconcileItem(item.getItem(i), summaries.get(i), expanded); }
+		} else {
+			item.clearAll(true);
+		}
+	}
+
+	private String textReport() {
+		final StringBuilder text = new StringBuilder();
+		for (final var summary : experiments) { appendReport(text, summary, ""); }
+		return text.toString();
+	}
+
+	private void appendReport(final StringBuilder text, final AbstractSummary<?> summary, final String indent) {
+		text.append(indent).append(summary.getState()).append(": ").append(summary.getTitle());
+		if (summary.getErrorDetails() != null) { text.append(" [").append(summary.getErrorDetails()).append(']'); }
+		text.append('\n');
+		for (final var child : summary.getSummaries().values()) { appendReport(text, child, indent + "  "); }
+	}
+
+	private void export() {
+		final var dialog = new FileDialog(root.getShell(), SWT.SAVE);
+		dialog.setFileName("test-results.txt");
+		dialog.setOverwrite(true);
+		final String file = dialog.open();
+		if (file == null) return;
+		try {
+			Files.writeString(Path.of(file), textReport(), StandardCharsets.UTF_8);
+		} catch (final IOException e) {
+			GAMA.getRegularGui().getDialogFactory().error("Unable to export test results: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public void setFocus() { if (tree != null && !tree.isDisposed()) { tree.setFocus(); } }
+
+	@Override public void update(final IOutput output) {}
+	@Override public void addOutput(final IOutput output) {}
+	@Override public void removeOutput(final IOutput output) {}
+	@Override public IOutput getOutput() { return null; }
+	@Override public void close(final IScope scope) {}
+	@Override public void changePartNameWithSimulation(final ISimulationAgent agent) {}
+	@Override public void reset() { ui(this::refresh); }
+	@Override public void setName(final String name) { ui(() -> setPartName(name)); }
+	@Override public void updateToolbarState() {}
+	@Override public boolean isVisible() { return root != null && !root.isDisposed() && root.isVisible(); }
+	@Override public void showToolbar(final boolean show) {
+		ui(() -> {
+			toolbar.setVisible(show);
+			((GridData) toolbar.getLayoutData()).exclude = !show;
+			root.layout();
+		});
+	}
+
+	@Override
+	public void dispose() {
+		experiments.clear();
+		children.clear();
+		items.clear();
+		finalizedExperiments.clear();
+		synchronized (this) { pendingSummaries.clear(); }
+		roots = List.of();
+		icons.values().forEach(Image::dispose);
+		icons.clear();
+		super.dispose();
+	}
 }

@@ -72,12 +72,17 @@ public final class TestExperimentRunner {
 	public static TestExperimentSummary run(final IModelSpecies model, final String name, final IGui gui,
 			final TestSelection selection) {
 		if (selection != null) { selection.validate(model, name); }
-		if (GamaPreferences.Experimental.ISOLATED_TESTS.getValue())
-			return IsolatedTestRunner.run(IsolatedTestRunner.modelPath(model), name, gui, selection);
+		if (GamaPreferences.Experimental.ISOLATED_TESTS.getValue()) {
+			final var result = IsolatedTestRunner.run(IsolatedTestRunner.modelPath(model), name, gui, selection);
+			result.setExperimentName(name);
+			return result;
+		}
 		final var runner = new TestExperimentRunner(model.getExperiment(name));
 		if (!ACTIVE.compareAndSet(null, runner)) throw new IllegalStateException("A test experiment is already running");
 		try {
-			return runner.execute(model, name, gui, selection);
+			final var result = runner.execute(model, name, gui, selection);
+			result.setExperimentName(name);
+			return result;
 		} finally {
 			ACTIVE.compareAndSet(runner, null);
 		}

@@ -112,8 +112,6 @@ public class SwtGui implements IGui {
 
 	private volatile boolean testSequenceRunning;
 
-	private volatile String testViewId = TEST_VIEW_ID;
-
 	private volatile IGamaView.Test activeTestView;
 
 	private final java.util.concurrent.atomic.AtomicInteger completedTests = new java.util.concurrent.atomic.AtomicInteger();
@@ -269,14 +267,12 @@ public class SwtGui implements IGui {
 		if (!continuing) {
 			completedTests.set(0);
 			totalTests = -1;
-			testViewId = GamaPreferences.Experimental.COMPACT_TEST_VIEW.getValue()
-					? COMPACT_TEST_VIEW_ID : TEST_VIEW_ID;
 			testSequenceRunning = true;
 			ALL_TESTS_RUNNING = allTests;
 			testStopRequested = false;
 			runningTestScope = null;
 		}
-		final IGamaView.Test v = (Test) showView(scope, testViewId, null, IWorkbenchPage.VIEW_ACTIVATE);
+		final IGamaView.Test v = (Test) showView(scope, TEST_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
 		activeTestView = v;
 		if (v != null && !continuing) { v.startNewTestSequence(allTests); }
 		return v;
@@ -295,11 +291,7 @@ public class SwtGui implements IGui {
 				? test.getTitleForSummary() : "";
 		final String label = title.isBlank() || title.equals(name) ? name : title + " - " + name;
 		final var v = activeTestView;
-		if (v instanceof gama.ui.shared.views.CompactTestView) {
-			v.displayRunningTest(label);
-		} else {
-			WorkbenchHelper.asyncRun(() -> { if (v != null) { v.displayRunningTest(label); } });
-		}
+		if (v != null) { v.displayRunningTest(label); }
 	}
 
 	/**
@@ -318,7 +310,7 @@ public class SwtGui implements IGui {
 	public void displayTestCounts(final int completed, final int total) {
 		totalTests = total;
 		completedTests.set(completed);
-		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
+		if (activeTestView instanceof gama.ui.shared.views.TestView view) {
 			view.displayTestCounts(completed, total);
 		}
 	}
@@ -337,7 +329,7 @@ public class SwtGui implements IGui {
 			final gama.api.utils.tests.TestExperimentSummary experiment,
 			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
 		final int completed = finished ? completedTests.incrementAndGet() : completedTests.get();
-		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
+		if (activeTestView instanceof gama.ui.shared.views.TestView view) {
 			if (finished) { view.displayTestCounts(completed, totalTests); }
 			view.displayTestSummary(experiment, summary);
 		}

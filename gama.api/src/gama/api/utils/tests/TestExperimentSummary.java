@@ -22,6 +22,12 @@ import org.eclipse.emf.common.util.URI;
  */
 public class TestExperimentSummary extends CompoundSummary<IndividualTestSummary, IExperimentAgent.Test> {
 
+	private String experimentName;
+
+	public String getExperimentName() { return experimentName; }
+
+	public void setExperimentName(final String name) { experimentName = name; }
+
 	/**
 	 * Instantiates a new test experiment summary.
 	 *
@@ -30,6 +36,7 @@ public class TestExperimentSummary extends CompoundSummary<IndividualTestSummary
 	 */
 	public TestExperimentSummary(final IExperimentAgent.Test testAgent) {
 		super(testAgent);
+		experimentName = testAgent.getSpecies().getName();
 	}
 
 	public TestExperimentSummary(final String title, final URI uri) {

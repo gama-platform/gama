@@ -1463,12 +1463,6 @@ public class GamaPreferences {
 		/** The display name of the "Advanced" tab shown in the GAMA preferences dialog. */
 		public static final String NAME = "Advanced";
 
-		/** The Constant COMPACT_TEST_VIEW. */
-		public static final Pref<Boolean> COMPACT_TEST_VIEW = create("pref_compact_test_view",
-				"Use the compact test results view", true, IType.BOOL, false).in(NAME, Runtime.TESTS).inPlayer(false)
-						.withComment(
-						"Uses a lazy tree and a shared details pane. Applies to the next test run; the current report stays in its existing view.");
-
 		/** The Constant ISOLATED_TESTS. */
 		public static final Pref<Boolean> ISOLATED_TESTS =
 				create("pref_isolated_tests", "Run tests in a separate headless process", false, IType.BOOL, false)

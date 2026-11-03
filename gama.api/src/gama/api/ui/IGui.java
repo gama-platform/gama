@@ -156,8 +156,6 @@ public interface IGui {
 	/** The test view id. */
 	String TEST_VIEW_ID = "gama.ui.application.view.TestView";
 
-	String COMPACT_TEST_VIEW_ID = "gama.ui.application.view.CompactTestView";
-
 	/** The parameter view id. */
 	String PARAMETER_VIEW_ID = "gama.ui.application.view.ParameterView";
 

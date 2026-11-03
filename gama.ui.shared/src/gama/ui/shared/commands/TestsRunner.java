@@ -20,13 +20,17 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.gaml.GAML;
 import gama.api.runtime.scope.IScope;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.IndividualTestSummary;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.IsolatedTestRunner;
 import gama.api.utils.tests.TestExperimentRunner;
@@ -34,6 +38,8 @@ import gama.api.utils.tests.TestSelection;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
+import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.TestView;
 import gama.workspace.manager.ProjectCategory;
 
 /**
@@ -46,18 +52,57 @@ public class TestsRunner {
 
 	private static final AtomicBoolean RUNNING = new AtomicBoolean();
 
+	private static volatile Runnable lastRun;
+
+	public static boolean isRunning() { return RUNNING.get(); }
+
+	public static boolean canRestart() { return lastRun != null && !RUNNING.get(); }
+
+	/** Repeats the last selection without rediscovering a different set of model files. */
+	public static void restart() {
+		final Runnable run = lastRun;
+		if (run != null && !RUNNING.get()) { run.run(); }
+	}
+
 	public static void start(final IModelSpecies model, final String experiment) {
 		start(model, experiment, null);
 	}
 
 	/** Runs a test experiment; only the selected test is run when {@code selection} is not null. */
 	public static void start(final IModelSpecies model, final String experiment, final TestSelection selection) {
+		start(model, model.getURI(), experiment, selection);
+	}
+
+	private static void start(final IModelSpecies initialModel, final URI uri, final String experiment,
+			final TestSelection selection) {
+		start(initialModel, uri, experiment, selection, null);
+	}
+
+	/** Runs one declaration again while retaining the report and the toolbar's last full-run selection. */
+	public static void rerun(final TestView view, final TestExperimentSummary experiment,
+			final IndividualTestSummary test) {
+		final TestSelection selection = TestSelection.of(test.getURI());
+		start(null, experiment.getURI(), experiment.getExperimentName(), selection,
+				() -> view.prepareTestRerun(experiment, test));
+	}
+
+	private static void start(final IModelSpecies initialModel, final URI uri, final String experiment,
+			final TestSelection selection, final Runnable prepare) {
 		if (!RUNNING.compareAndSet(false, true)) return;
+		if (prepare == null) { lastRun = () -> start(null, uri, experiment, selection); }
+		else { prepare.run(); }
 		final IGui gui = GAMA.getRegularGui();
 		final IScope scope = GAMA.getRuntimeScope();
 		gui.openTestView(scope, false);
 		Job.createSystem("Test " + experiment, m -> {
+			IModelSpecies model = initialModel;
 			try {
+				if (model == null) {
+					final List<GamlCompilationError> errors = new ArrayList<>();
+					model = GAML.getModelBuilder().compile(uri, errors);
+					if (model == null)
+						throw new IllegalArgumentException("Cannot compile " + uri + ": " + errors);
+				}
 				gui.displayTestCounts(0, TestExperimentRunner.countTests(model, experiment, selection));
 				final var result = TestExperimentRunner.run(model, experiment, gui, selection);
 				gui.displayTestsResults(scope, result);
@@ -66,9 +111,9 @@ public class TestsRunner {
 				gui.getDialogFactory().error("Unable to start test experiment: " + e.getMessage());
 			} finally {
 				try {
-					gui.endTestDisplay();
+					if (initialModel == null && model != null) { model.dispose(); }
 				} finally {
-					RUNNING.set(false);
+					finish(gui);
 				}
 			}
 		}).schedule();
@@ -78,23 +123,22 @@ public class TestsRunner {
 	 * Start.
 	 */
 	public static void start() {
+		if (RUNNING.get()) return;
+		try {
+			start(List.copyOf(findTestModels()));
+		} catch (CoreException e) {
+			DEBUG.ERR("Unable to find test models", e);
+			GAMA.getRegularGui().getDialogFactory().error("Unable to find test models: " + e.getMessage());
+		}
+	}
+
+	private static void start(final List<IFile> testFiles) {
 		if (!RUNNING.compareAndSet(false, true)) return;
-
+		lastRun = () -> start(testFiles);
 		LAST_RUN = new CompoundSummary<>();
-
 		final IGui gui = GAMA.getRegularGui();
 		final IScope scope = GAMA.getRuntimeScope();
 		gui.openTestView(scope, true);
-		final List<IFile> testFiles;
-		try {
-			testFiles = findTestModels();
-		} catch (CoreException e) {
-			DEBUG.ERR("Unable to find test models", e);
-			SwtGui.ALL_TESTS_RUNNING = false;
-			RUNNING.set(false);
-			gui.endTestDisplay();
-			return;
-		}
 		int size = testFiles.size();
 		int[] i = { 1 };
 
@@ -122,14 +166,17 @@ public class TestsRunner {
 					gui.displayTestsResults(scope, LAST_RUN);
 				} finally {
 					SwtGui.ALL_TESTS_RUNNING = false;
-					try {
-						gui.endTestDisplay();
-					} finally {
-						RUNNING.set(false);
-					}
+					finish(gui);
 				}
 			}
 		}).schedule();
+	}
+
+	private static void finish(final IGui gui) {
+		WorkbenchHelper.run(() -> {
+			RUNNING.set(false);
+			gui.endTestDisplay();
+		});
 	}
 
 	/**
