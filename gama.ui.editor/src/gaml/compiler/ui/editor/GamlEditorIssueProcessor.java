@@ -10,6 +10,7 @@
 package gaml.compiler.ui.editor;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.source.IAnnotationModel;
@@ -26,20 +27,23 @@ final class GamlEditorIssueProcessor implements IValidationIssueProcessor {
 	private final IAnnotationModel annotationModel;
 	private final IssueResolutionProvider resolutions;
 	private final IValidationIssueProcessor markers;
+	private final BooleanSupplier publicationAllowed;
 
 	GamlEditorIssueProcessor(final IXtextDocument document, final IAnnotationModel annotationModel,
-			final IssueResolutionProvider resolutions, final IValidationIssueProcessor markers) {
+			final IssueResolutionProvider resolutions, final IValidationIssueProcessor markers,
+			final BooleanSupplier publicationAllowed) {
 		this.document = document;
 		this.annotationModel = annotationModel;
 		this.resolutions = resolutions;
 		this.markers = markers;
+		this.publicationAllowed = publicationAllowed;
 	}
 
 	@Override
 	public void processIssues(final List<Issue> issues, final IProgressMonitor monitor) {
-		if (monitor.isCanceled()) return;
+		if (monitor.isCanceled() || !publicationAllowed.getAsBoolean()) return;
 		markers.processIssues(issues, monitor);
-		if (monitor.isCanceled()) return;
+		if (monitor.isCanceled() || !publicationAllowed.getAsBoolean()) return;
 		// Marker publication removes old Xtext annotations; restore live annotations afterwards.
 		var annotations = new AnnotationIssueProcessor(document, annotationModel, resolutions);
 		try {

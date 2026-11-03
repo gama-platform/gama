@@ -19,6 +19,24 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Adjustable editor delays for large models
+
+**Preferences > Editors > Edition** now offers two settings to reduce background
+work while typing, especially useful for large models:
+
+- **Wait before rereading code and updating the model (ms)** controls how long the
+  editor waits after the last edit before updating its understanding of the code.
+- **Additional wait before checking for errors (ms)** adds a further pause before
+  checking the model and refreshing diagnostics, including syntax errors.
+
+Both settings accept **0 to 3000 ms** and default to **0** for immediate feedback.
+Each new edit restarts the wait; the two delays add up before error checking.
+For example, 500 ms followed by 1000 ms allows a 1.5-second typing pause before
+checking starts. Increasing these values can make editing large models more
+responsive and avoid displaying errors for unfinished statements, at the cost of
+later feedback. Existing diagnostics can remain visible until the next check
+finishes. **Validate now** bypasses the delays.
+
 ### Swiss-inspired simulation and editor palettes
 
 Swiss, Warm Amber and Mineral add eight-color categorical palettes alongside

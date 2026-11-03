@@ -665,6 +665,16 @@ public class GamaPreferences {
 				.create("pref_editor_mark_occurrences", "Mark occurrences of symbols", true, IType.BOOL, false)
 				.in(NAME, TEXT).inPlayer(false);
 
+		/** Delay after typing before the editor rereads the code and updates its understanding of the model. */
+		public static final Pref<Integer> EDITOR_RECOMPILE_DELAY = create("pref_editor_recompile_delay",
+				"Wait before rereading code and updating the model (ms)", 0, IType.INT, false).in(NAME, TEXT)
+						.inPlayer(false).between(0, 3000);
+
+		/** Additional delay after typing, following the model reread delay, before checking for errors. */
+		public static final Pref<Integer> EDITOR_VALIDATION_DELAY = create("pref_editor_validation_delay",
+				"Additional wait before checking for errors (ms)", 0, IType.INT, false).in(NAME, TEXT)
+						.inPlayer(false).between(0, 3000);
+
 		/**
 		 * Whether experiments defined in a GAML model should appear as a drop-down menu or as individual toolbar
 		 * buttons at the top of the editor. When {@code false} (labelled "Buttons"), individual buttons are shown; when

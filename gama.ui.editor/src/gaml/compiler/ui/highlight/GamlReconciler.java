@@ -15,7 +15,8 @@ import org.eclipse.xtext.ui.editor.reconciler.XtextReconciler;
 
 import com.google.inject.Inject;
 
-import gaml.compiler.ui.editor.GamlEditor;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 
 /**
  * The class GamlReconciler.
@@ -26,13 +27,23 @@ import gaml.compiler.ui.editor.GamlEditor;
  */
 public class GamlReconciler extends XtextReconciler {
 
+	private final IPreferenceAfterChangeListener<Integer> preferenceListener =
+			delay -> setDelay(GamaPreferences.Modeling.EDITOR_RECOMPILE_DELAY.getValue());
+
 	/**
 	 * @param strategy
 	 */
 	@Inject
 	public GamlReconciler(final XtextDocumentReconcileStrategy strategy) {
 		super(strategy);
-		setDelay(GamlEditor.SCHEDULE_DELAY);
+		GamaPreferences.Modeling.EDITOR_RECOMPILE_DELAY.addChangeListener(preferenceListener);
+		setDelay(GamaPreferences.Modeling.EDITOR_RECOMPILE_DELAY.getValue());
+	}
+
+	@Override
+	public void uninstall() {
+		GamaPreferences.Modeling.EDITOR_RECOMPILE_DELAY.removeChangeListener(preferenceListener);
+		super.uninstall();
 	}
 
 }

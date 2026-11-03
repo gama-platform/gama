@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -38,7 +39,9 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
@@ -271,6 +274,20 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Inject private GamlResourceValidator validator;
 
 	private ValidationJob validationJob;
+	private final AtomicLong validationRevision = new AtomicLong();
+
+	private final IDocumentListener validationDocumentListener = new IDocumentListener() {
+
+		@Override
+		public void documentAboutToBeChanged(final DocumentEvent event) {}
+
+		@Override
+		public void documentChanged(final DocumentEvent event) {
+			validationRevision.incrementAndGet();
+			GamlAutoValidation.invalidate(fileURI);
+			scheduleValidationAfterEdit();
+		}
+	};
 
 	GamlEditorTickUpdater validationTickUpdater;
 
@@ -387,6 +404,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	public void dispose() {
 		if (validationJob != null) { validationJob.cancel(); }
+		if (getDocument() != null) { getDocument().removeDocumentListener(validationDocumentListener); }
 		GamaPreferences.Modeling.EDITOR_DRAG_RESOURCES.removeChangeListener(dndChangedListener);
 		GamlResourceServices.removeResourceListener(this);
 		super.dispose();
@@ -540,16 +558,24 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	protected void initializeDirtyStateSupport() {
 		if (getDocument() != null) {
-			fileURI = ((XtextDocument) getDocument()).getResourceURI();
+			XtextDocument document = (XtextDocument) getDocument();
+			fileURI = document.getResourceURI();
+			// Xtext's independent FAST_ONLY job ignores GAMA's validation delay.
+			var xtextValidationJob = document.getValidationJob();
+			if (xtextValidationJob != null) {
+				xtextValidationJob.cancel();
+				document.setValidationJob(null);
+			}
 			GamlResourceServices.addResourceListener(fileURI, GamlEditor.this);
+			getDocument().addDocumentListener(validationDocumentListener);
 			super.initializeDirtyStateSupport();
 			scheduleValidationJob();
 		}
 	}
 
 	/**
-	 * Schedules a one-shot validation job when the editor is first opened. The job validates the document once so that
-	 * error markers and the toolbar state are populated before the user makes any edit.
+	 * Schedules validation after the editor opens or finishes rereading an edited model. Text edits cancel pending
+	 * validation, so the latest version is checked only after the configured pause.
 	 *
 	 * <p>
 	 * <strong>Locking note:</strong> the original implementation wrapped the entire
@@ -559,8 +585,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * {@code modify()} call — including the reconciler's own re-parse triggered by the first
 	 * keystroke — must wait, and the REQUIRED_PLUGINS pragma auto-insert (dispatched via
 	 * {@code asyncRun} from {@link #validationEnded}) can also block when it tries to apply a
-	 * {@code ReplaceEdit}. Since {@link #SCHEDULE_DELAY} is 0, both this job and the
-	 * {@link GamlReconciler} fire immediately, racing over the same {@code ValidationContext}.
+	 * {@code ReplaceEdit}. Validation and reparsing have separate configurable delays.
 	 * </p>
 	 *
 	 * <p>
@@ -570,18 +595,31 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * </p>
 	 */
 	private void scheduleValidationJob() {
-		scheduleValidationJob(false);
+		scheduleValidationJob(false, GamaPreferences.Modeling.EDITOR_VALIDATION_DELAY.getValue());
+	}
+
+	private void scheduleValidationAfterEdit() {
+		final int delay = GamaPreferences.Modeling.EDITOR_RECOMPILE_DELAY.getValue()
+				+ GamaPreferences.Modeling.EDITOR_VALIDATION_DELAY.getValue();
+		scheduleValidationJob(false, delay);
 	}
 
 	private void scheduleValidationJob(final boolean explicit) {
+		scheduleValidationJob(explicit,
+				explicit ? GamlEditor.SCHEDULE_DELAY : GamaPreferences.Modeling.EDITOR_VALIDATION_DELAY.getValue());
+	}
+
+	private void scheduleValidationJob(final boolean explicit, final long delay) {
 		if (!explicit && !isAutomaticValidationEnabled()) return;
 		if (validationJob != null) { validationJob.cancel(); }
 		final var document = getDocument();
 		final var uri = fileURI;
 		final var file = getResource();
+		final long revision = validationRevision.get();
 		final var annotationModel = getInternalSourceViewer().getAnnotationModel();
 		final IValidationIssueProcessor processor = new GamlEditorIssueProcessor(document, annotationModel, issueResolver,
-				new MarkerIssueProcessor(file, annotationModel, markerCreator, markerTypeProvider));
+				new MarkerIssueProcessor(file, annotationModel, markerCreator, markerTypeProvider),
+				() -> validationRevision.get() == revision);
 		validationJob = new ValidationJob(validator, document, processor,
 				explicit ? CheckMode.ALL : CheckMode.FAST_ONLY) {
 			@Override
@@ -601,7 +639,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				}
 			}
 		};
-		validationJob.schedule(GamlEditor.SCHEDULE_DELAY);
+		validationJob.schedule(delay);
 	}
 
 	@Override

@@ -68,6 +68,11 @@ public final class GamlAutoValidation {
 		return revisions.computeIfAbsent(key, ignored -> new AtomicLong());
 	}
 
+	/** Invalidates validation and publication work that started before the resource changed. */
+	public static void invalidate(final URI uri) {
+		if (uri != null) { revision(uri).incrementAndGet(); }
+	}
+
 	/** Capture this validation's permission for asynchronous documentation and UI publication. */
 	public static BooleanSupplier publicationGuard(final URI uri) {
 		Request request = current.get();
