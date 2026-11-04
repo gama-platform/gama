@@ -55,7 +55,7 @@ global {
 		}
 		load_level <- first_level;
 		run_id <- name + "_" + string(gama.machine_time);
-		do configure_load;
+		do configure_load();
 	}
 
 	reflex measure when: not finished {
@@ -64,10 +64,10 @@ global {
 			last_boundary_at <- gama.machine_time;
 		}
 		if stage_age > warmup_cycles {
-			float duration <- gama.machine_time - last_boundary_at;
-			elapsed_ms <- elapsed_ms + duration;
-			window_ms <- window_ms + duration;
-			max_cycle_ms <- max(max_cycle_ms, duration);
+			float dd <- gama.machine_time - last_boundary_at;
+			elapsed_ms <- elapsed_ms + dd;
+			window_ms <- window_ms + dd;
+			max_cycle_ms <- max(max_cycle_ms, dd);
 			completed_cycles <- completed_cycles + 1;
 			window_count <- window_count + 1;
 			if completed_cycles mod sample_cycles = 0 or completed_cycles = measured_cycles {
@@ -82,7 +82,7 @@ global {
 			do report(phase: "RESULT");
 			if load_level = last_level {
 				finished <- true;
-				do pause;
+				do pause();
 			} else {
 				load_level <- load_level + 1;
 				stage_started_cycle <- cycle;
@@ -91,7 +91,7 @@ global {
 				max_cycle_ms <- 0.0;
 				peak_used_mb <- 0.0;
 				checksum <- 0.0;
-				do configure_load;
+				do configure_load();
 				// With no warm-up, the next plateau starts in this same cycle.
 				if warmup_cycles = 0 {
 					last_boundary_at <- gama.machine_time;

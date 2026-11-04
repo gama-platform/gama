@@ -41,7 +41,7 @@ experiment PhysicsAdvancedTest type: test autorun: true {
 
 		assert w.friction = 0.5;
 		assert w.restitution = 0.0;
-		assert w.rotation = 0.0 :: {0, 0, 1};
+		assert w.rotation = (0.0 :: {0, 0, 1});
 		assert w.aabb != nil;
 	}
 
