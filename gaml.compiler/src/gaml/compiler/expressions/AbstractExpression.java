@@ -367,7 +367,7 @@ public abstract class AbstractExpression implements IExpression {
 	 * </p>
 	 *
 	 * <p>
-	 * <strong>Performance:</strong> Traverses expression tree once. Result could be cached if called multiple times.
+	 * <strong>Performance:</strong> Traverses the expression tree on first call and caches the result.
 	 * </p>
 	 *
 	 * @return true if any sub-expression is a PixelUnitExpression
@@ -375,9 +375,19 @@ public abstract class AbstractExpression implements IExpression {
 
 	private static final Set<String> PIXELS = Set.of("px", "pixels");
 
+	private volatile Boolean containsPixelsCache;
+	private volatile Boolean timeDependentCache;
+	private volatile boolean calendarChronoUnitComputed;
+	private java.time.temporal.ChronoUnit calendarChronoUnitCache;
+
 	@Override
 	public boolean containsPixels() {
-		return findAny(e -> PIXELS.contains(e.getName()));
+		Boolean result = containsPixelsCache;
+		if (result == null) {
+			result = findAny(e -> PIXELS.contains(e.getName()));
+			containsPixelsCache = result;
+		}
+		return result;
 	}
 
 	/**
@@ -388,30 +398,33 @@ public abstract class AbstractExpression implements IExpression {
 	 * </p>
 	 *
 	 * <p>
-	 * <strong>Performance:</strong> Traverses expression tree. Could be cached as expressions are immutable after
-	 * construction.
-	 * </p>
-	 *
-	 * <p>
-	 * <strong>Optimization Opportunity:</strong> Cache result in a boolean field set during construction via visitor
-	 * pattern.
+	 * <strong>Performance:</strong> Traverses the expression tree on first call and caches the result. Expressions are
+	 * immutable after construction.
 	 * </p>
 	 *
 	 * @return true if depends on time units (excluding constants)
 	 */
 	@Override
-	public boolean isTimeDependent() { return findAny(e -> e instanceof TimeUnitCustomExpression tu && !tu.isConst()); }
+	public boolean isTimeDependent() {
+		Boolean result = timeDependentCache;
+		if (result == null) {
+			result = findAny(e -> e instanceof TimeUnitCustomExpression tu && !tu.isConst());
+			timeDependentCache = result;
+		}
+		return result;
+	}
 
 	/**
 	 * Returns the {@link java.time.temporal.ChronoUnit} used by this expression if it contains a calendar-based time
-	 * unit (month or year). Searches the expression tree for a non-constant {@link TimeUnitCustomExpression} and
-	 * returns {@link java.time.temporal.ChronoUnit#MONTHS} or {@link java.time.temporal.ChronoUnit#YEARS} accordingly.
-	 * Returns {@code null} if no calendar-based unit is found.
+	 * unit (month or year). Searches the expression tree on the first call and caches the result, which is either
+	 * {@link java.time.temporal.ChronoUnit#MONTHS}, {@link java.time.temporal.ChronoUnit#YEARS}, or {@code null} if no
+	 * calendar-based unit is found.
 	 *
 	 * @return the calendar ChronoUnit, or {@code null} if not calendar-based
 	 */
 	@Override
 	public java.time.temporal.ChronoUnit getCalendarChronoUnit() {
+		if (calendarChronoUnitComputed) { return calendarChronoUnitCache; }
 		final java.util.concurrent.atomic.AtomicReference<java.time.temporal.ChronoUnit> found =
 				new java.util.concurrent.atomic.AtomicReference<>();
 		findAny(e -> {
@@ -421,7 +434,9 @@ public abstract class AbstractExpression implements IExpression {
 			}
 			return false;
 		});
-		return found.get();
+		calendarChronoUnitCache = found.get();
+		calendarChronoUnitComputed = true;
+		return calendarChronoUnitCache;
 	}
 
 }
