@@ -192,22 +192,35 @@ public class GamaPreferences {
 					() -> GamaColorFactory.get(128, 203, 196), () -> GamaColorFactory.get(244, 143, 177),
 					() -> GamaColorFactory.get(206, 147, 216), () -> GamaColorFactory.get(230, 238, 156) };
 
+	/** The Constant SWISS. */
 	public static final String SWISS = "Swiss";
+
+	/** The Constant WARM_AMBER. */
 	public static final String WARM_AMBER = "Warm Amber";
+
+	/** The Constant MINERAL. */
 	public static final String MINERAL = "Mineral";
 
 	/** Cream paper shared by light UI surfaces and default display/chart backgrounds. */
 	public static final Supplier<IColor> CREAM_PAPER = () -> GamaColorFactory.get(248, 246, 240);
 
 	/** Categorical vintage inks, shared by simulation identities, charts and GAML vintage_colors. */
-	public static final Map<String, List<Supplier<IColor>>> VINTAGE_PALETTES = Map.of(
-			SWISS, inks(0x28516a, 0xc75d36, 0x70805a, 0xd7ab53, 0x8c6584, 0x4f9290, 0x9a432e, 0x77756b),
-			WARM_AMBER, inks(0x426e85, 0xce784b, 0xa28432, 0x797b4c, 0x9f4f40, 0x659591, 0x996c83, 0x645951),
-			MINERAL, inks(0x456d86, 0x61948c, 0xa96b53, 0x8a789b, 0x9a8b48, 0x526955, 0xa65e73, 0x6a737b));
+	public static final Map<String, List<Supplier<IColor>>> VINTAGE_PALETTES =
+			Map.of(SWISS, inks(0x28516a, 0xc75d36, 0x70805a, 0xd7ab53, 0x8c6584, 0x4f9290, 0x9a432e, 0x77756b),
+					WARM_AMBER, inks(0x426e85, 0xce784b, 0xa28432, 0x797b4c, 0x9f4f40, 0x659591, 0x996c83, 0x645951),
+					MINERAL, inks(0x456d86, 0x61948c, 0xa96b53, 0x8a789b, 0x9a8b48, 0x526955, 0xa65e73, 0x6a737b));
 
+	/**
+	 * Inks.
+	 *
+	 * @param colors
+	 *            the colors
+	 * @return the list
+	 */
 	private static List<Supplier<IColor>> inks(final int... colors) {
-		return Arrays.stream(colors).<Supplier<IColor>>mapToObj(
-				rgb -> () -> GamaColorFactory.get(rgb >> 16, rgb >> 8 & 255, rgb & 255)).toList();
+		return Arrays.stream(colors)
+				.<Supplier<IColor>> mapToObj(rgb -> () -> GamaColorFactory.get(rgb >> 16, rgb >> 8 & 255, rgb & 255))
+				.toList();
 	}
 
 	/**
@@ -322,10 +335,10 @@ public class GamaPreferences {
 		/**
 		 * The file-system path of the model to open automatically at startup (requires {@link #CORE_STARTUP_MODEL}).
 		 */
-		public static final Pref<? extends IGamaFile> CORE_DEFAULT_MODEL =
-				create("pref_default_model", "Model to open", () -> new GenericFile("Enter path", false), IType.FILE,
-						false).in(NAME, STARTUP).inPlayer(false).restrictToWorkspace().withExtensions("gaml", "experiment")
-								.refreshes("pref_default_experiment").activates("pref_default_experiment");
+		public static final Pref<? extends IGamaFile> CORE_DEFAULT_MODEL = create("pref_default_model", "Model to open",
+				() -> new GenericFile("Enter path", false), IType.FILE, false).in(NAME, STARTUP).inPlayer(false)
+						.restrictToWorkspace().withExtensions("gaml", "experiment").refreshes("pref_default_experiment")
+						.activates("pref_default_experiment");
 
 		/**
 		 * The name of the experiment to launch automatically after opening {@link #CORE_DEFAULT_MODEL} at startup. The
@@ -333,8 +346,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<String> CORE_DEFAULT_EXPERIMENT =
 				create("pref_default_experiment", "Experiment to run", "", IType.STRING, false).in(NAME, STARTUP)
-						.inPlayer(false)
-						.among(() -> {
+						.inPlayer(false).among(() -> {
 							List<String> result = new ArrayList<>();
 							if (CORE_STARTUP_MODEL.getValue()) {
 								IGamaFile file = CORE_DEFAULT_MODEL.getValue();
@@ -448,8 +460,7 @@ public class GamaPreferences {
 		 * Switches the active simulation color scheme to the named scheme and rebuilds the {@link #SIMULATION_COLORS}
 		 * palette. Supported scheme names include {@link #VIVID}, {@link #TABLEAU}, {@link #NEON}, {@link #PASTEL},
 		 * {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, {@link #PIVOT}, and the categorical
-		 * {@link #VINTAGE_PALETTES}. Legacy names or unknown schemes
-		 * delegate to {@link #setPivot(IColor)}.
+		 * {@link #VINTAGE_PALETTES}. Legacy names or unknown schemes delegate to {@link #setPivot(IColor)}.
 		 *
 		 * @param scheme
 		 *            the name of the color scheme to activate; may be {@code null}
@@ -530,11 +541,11 @@ public class GamaPreferences {
 		/**
 		 * The default color scheme used for distinguishing simulations in the UI.
 		 */
-		public static final Pref<String> CORE_SIMULATION_COLOR =
-				create("pref_simulation_colors", "Default color scheme for simulations in UI", SWISS, IType.STRING,
-						true).among(SWISS, WARM_AMBER, MINERAL, VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE,
-								DIVERGING, BASIC, PIVOT)
-								.in(NAME, SIMULATIONS).onChange(Interface::setColorScheme);
+		public static final Pref<String> CORE_SIMULATION_COLOR = create("pref_simulation_colors",
+				"Default color scheme for simulations in UI", SWISS, IType.STRING, true)
+						.among(SWISS, WARM_AMBER, MINERAL, VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE, DIVERGING, BASIC,
+								PIVOT)
+						.in(NAME, SIMULATIONS).onChange(Interface::setColorScheme);
 
 		/**
 		 * The pivot (center) color used when the active scheme is {@link #PIVOT}. Changing this preference
@@ -584,8 +595,7 @@ public class GamaPreferences {
 		/** Whether all open GAML editors should be saved automatically when the user switches perspective. */
 		public static final Pref<Boolean> EDITOR_PERSPECTIVE_SAVE = create("pref_editor_perspective_save",
 				"Save editors when switching perspectives", true, IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS)
-						.inPlayer(false)
-						.activates("pref_editor_ask_save").withLabels("Yes", "No");
+						.inPlayer(false).activates("pref_editor_ask_save").withLabels("Yes", "No");
 
 		/** Whether all open GAML editors should be saved before an experiment is launched. */
 		public static final Pref<Boolean> EDITOR_SAVE = GamaPreferences
@@ -595,8 +605,8 @@ public class GamaPreferences {
 
 		/** Whether GAMA should prompt the user before saving each file individually. */
 		public static final Pref<Boolean> EDITOR_SAVE_ASK =
-				create("pref_editor_ask_save", "Ask before saving each file", false, IType.BOOL, false).in(NAME,
-						OPTIONS).inPlayer(false);
+				create("pref_editor_ask_save", "Ask before saving each file", false, IType.BOOL, false)
+						.in(NAME, OPTIONS).inPlayer(false);
 
 		/** Whether GAML editors should be hidden when the simulation perspective is activated. */
 		public static final Pref<Boolean> EDITOR_PERSPECTIVE_HIDE =
@@ -642,18 +652,18 @@ public class GamaPreferences {
 
 		/** Whether the GAML formatter should be applied automatically each time a file is saved. */
 		public static final Pref<Boolean> EDITOR_CLEAN_UP =
-				create("pref_editor_save_format", "Apply formatting on save", false, IType.BOOL, false).in(NAME,
-						GamaPreferences.Modeling.OPTIONS).inPlayer(false);
+				create("pref_editor_save_format", "Apply formatting on save", false, IType.BOOL, false)
+						.in(NAME, GamaPreferences.Modeling.OPTIONS).inPlayer(false);
 
 		/** Whether files and resources dragged into a GAML editor should be inserted as GAML resource references. */
-		public static final Pref<Boolean> EDITOR_DRAG_RESOURCES = create("pref_editor_drag_resources",
-				"Drag files and resources as references in GAML files", true, IType.BOOL, false).in(NAME, OPTIONS)
-						.inPlayer(false);
+		public static final Pref<Boolean> EDITOR_DRAG_RESOURCES =
+				create("pref_editor_drag_resources", "Drag files and resources as references in GAML files", true,
+						IType.BOOL, false).in(NAME, OPTIONS).inPlayer(false);
 
 		/** The font used in GAML editors. A {@code null} value means the IDE default font is used. */
-		public static final Pref<IFont> EDITOR_BASE_FONT = GamaPreferences
-				.create("pref_editor_font", "Font of editors", (IFont) null, IType.FONT, false).in(NAME, TEXT)
-				.inPlayer(false);
+		public static final Pref<IFont> EDITOR_BASE_FONT =
+				GamaPreferences.create("pref_editor_font", "Font of editors", (IFont) null, IType.FONT, false)
+						.in(NAME, TEXT).inPlayer(false);
 
 		/** Legacy editor background, migrated to the active syntax palette's per-theme background. */
 		public static final Pref<IColor> EDITOR_BACKGROUND_COLOR =
@@ -666,14 +676,14 @@ public class GamaPreferences {
 				.in(NAME, TEXT).inPlayer(false);
 
 		/** Delay after typing before the editor rereads the code and updates its understanding of the model. */
-		public static final Pref<Integer> EDITOR_RECOMPILE_DELAY = create("pref_editor_recompile_delay",
-				"Wait before rereading code and updating the model (ms)", 0, IType.INT, false).in(NAME, TEXT)
-						.inPlayer(false).between(0, 3000);
+		public static final Pref<Integer> EDITOR_RECOMPILE_DELAY =
+				create("pref_editor_recompile_delay", "Wait before rereading code and updating the model (ms)", 0,
+						IType.INT, false).in(NAME, TEXT).inPlayer(false).between(0, 3000);
 
 		/** Additional delay after typing, following the model reread delay, before checking for errors. */
-		public static final Pref<Integer> EDITOR_VALIDATION_DELAY = create("pref_editor_validation_delay",
-				"Additional wait before checking for errors (ms)", 0, IType.INT, false).in(NAME, TEXT)
-						.inPlayer(false).between(0, 3000);
+		public static final Pref<Integer> EDITOR_VALIDATION_DELAY =
+				create("pref_editor_validation_delay", "Additional wait before checking for errors (ms)", 0, IType.INT,
+						false).in(NAME, TEXT).inPlayer(false).between(0, 3000);
 
 		/**
 		 * Whether experiments defined in a GAML model should appear as a drop-down menu or as individual toolbar
@@ -682,7 +692,8 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU = GamaPreferences
 				.create("pref_editor_experiment_menu", "Display experiments as", false, IType.BOOL, false)
-				.withLabels("Menu", "Buttons").deactivates("pref_editor_collapse_buttons").in(NAME, TEXT).inPlayer(false)
+				.withLabels("Menu", "Buttons").deactivates("pref_editor_collapse_buttons").in(NAME, TEXT)
+				.inPlayer(false)
 				.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("darkgray"));
 
 		/**
@@ -697,9 +708,9 @@ public class GamaPreferences {
 		 * Whether errors, warnings, and informational messages should be displayed inline in the editor body (as inline
 		 * annotations) rather than only in the editor gutter.
 		 */
-		public static final Pref<Boolean> EDITOR_MINING = create("pref_editor_mining",
-				"Inline errors, warnings and information messages", true, IType.BOOL, false).in(NAME, TEXT)
-						.inPlayer(false);
+		public static final Pref<Boolean> EDITOR_MINING =
+				create("pref_editor_mining", "Inline errors, warnings and information messages", true, IType.BOOL,
+						false).in(NAME, TEXT).inPlayer(false);
 
 	}
 
@@ -743,7 +754,7 @@ public class GamaPreferences {
 
 		/** Whether all parameter categories in the parameters view should be automatically expanded at startup. */
 		public static final Pref<Boolean> CORE_EXPAND_PARAMS = create("pref_experiment_expand_params",
-				"Automatically expand the parameters categories", false, IType.BOOL, true).in(NAME, PARAMETERS);
+				"Automatically expand the parameters categories", true, IType.BOOL, true).in(NAME, PARAMETERS);
 
 		/**
 		 * Whether monitor outputs should be displayed in the parameters view rather than in a dedicated monitor view.
@@ -768,29 +779,30 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> TESTS_SORTED =
 				create("pref_tests_sorted", "Sorts the results of tests by severity", false, IType.BOOL, false)
-						.in(NAME, TESTS).inPlayer(false).withComment(", if true, aborted and failed tests are displayed first");
+						.in(NAME, TESTS).inPlayer(false)
+						.withComment(", if true, aborted and failed tests are displayed first");
 
 		/** Whether GAMA should automatically run all registered tests each time the platform starts. */
 		public static final Pref<Boolean> START_TESTS =
-				create("pref_start_tests", "Run tests at each start of the platform", false, IType.BOOL, false).in(NAME,
-						TESTS).inPlayer(false);
+				create("pref_start_tests", "Run tests at each start of the platform", false, IType.BOOL, false)
+						.in(NAME, TESTS).inPlayer(false);
 
 		/** Whether user-defined models with {@code test} experiments should be included in the global test suite. */
 		public static final Pref<Boolean> USER_TESTS =
 				create("pref_user_tests", "Include user-defined tests in the tests suite", false, IType.BOOL, false)
-						.in(NAME, TESTS).inPlayer(false).withComment(", if true, will run user models with 'test' experiments");
+						.in(NAME, TESTS).inPlayer(false)
+						.withComment(", if true, will run user models with 'test' experiments");
 
 		/** The Constant TEST_TIMEOUT. */
-		public static final Pref<Integer> TEST_TIMEOUT = create("pref_test_timeout",
-				"Test experiment timeout (seconds)", 10, IType.INT, true).in(NAME, TESTS).inPlayer(false).between(1, null)
-						.withComment(
-						"Includes experiment initialization and execution, but not worker startup or model compilation. Changes made in the experiment apply to the current run's total time limit. Timed-out experiments are skipped.");
+		public static final Pref<Integer> TEST_TIMEOUT =
+				create("pref_test_timeout", "Test experiment timeout (seconds)", 10, IType.INT, true).in(NAME, TESTS)
+						.inPlayer(false).between(1, null).withComment(
+								"Includes experiment initialization and execution, but not worker startup or model compilation. Changes made in the experiment apply to the current run's total time limit. Timed-out experiments are skipped.");
 
 		/** Whether only failed and aborted tests should be shown in the tests view, hiding passing tests. */
 		public static final Pref<Boolean> FAILED_TESTS =
 				create("pref_failed_tests", "Only display unsuccessful tests", false, IType.BOOL, true).in(NAME, TESTS)
-						.inPlayer(false)
-						.withComment("Includes failed, aborted, interrupted and timed-out tests.");
+						.inPlayer(false).withComment("Includes failed, aborted, interrupted and timed-out tests.");
 
 		/** The name of the "Memory" group within the Execution tab. */
 		public static final String MEMORY = "Memory";
@@ -854,8 +866,8 @@ public class GamaPreferences {
 
 		/** Whether GAML compilation warnings should be treated as hard errors. */
 		public static final Pref<Boolean> CORE_WARNINGS_AS_ERRORS =
-				create("pref_errors_warnings_errors", "Treat warnings as errors", false, IType.BOOL, true).in(NAME,
-						ERRORS).inPlayer(false);
+				create("pref_errors_warnings_errors", "Treat warnings as errors", false, IType.BOOL, true)
+						.in(NAME, ERRORS).inPlayer(false);
 
 		/** Whether runtime errors should be highlighted in the GAML editor at the offending source location. */
 		public static final Pref<Boolean> CORE_ERRORS_EDITOR_LINK =
@@ -951,9 +963,9 @@ public class GamaPreferences {
 		 * Whether chart displays should continue to refresh even while the Modeling perspective is active (i.e., not
 		 * the simulation perspective).
 		 */
-		public static final Pref<Boolean> CHART_PERSPECTIVE = create("pref_chart_continue_drawing",
-				"Continue to draw charts when in Modeling perspective", true, IType.BOOL, true).in(NAME, PRESENTATION)
-						.inPlayer(false);
+		public static final Pref<Boolean> CHART_PERSPECTIVE =
+				create("pref_chart_continue_drawing", "Continue to draw charts when in Modeling perspective", true,
+						IType.BOOL, true).in(NAME, PRESENTATION).inPlayer(false);
 
 		/**
 		 * Whether to use a faster but potentially incomplete snapshot mechanism. Fast snapshots may be incorrect if the
@@ -1020,9 +1032,8 @@ public class GamaPreferences {
 						IType.BOOL, true).in(NAME, CHARTS_GROUP).deactivates("pref_chart_background_color");
 
 		/** Custom default background color for charts (when not matching display background). */
-		public static final Pref<IColor> CHART_BACKGROUND_COLOR =
-				create("pref_chart_background_color", "Custom default chart background color",
-						CREAM_PAPER, IType.COLOR, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<IColor> CHART_BACKGROUND_COLOR = create("pref_chart_background_color",
+				"Custom default chart background color", CREAM_PAPER, IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Chart default text color. */
 		public static final Pref<IColor> CHART_TEXT_COLOR = create("pref_chart_text_color", "Default chart text color",
@@ -1074,12 +1085,12 @@ public class GamaPreferences {
 		public static final String CHART_PALETTE_RANDOM = "Random";
 
 		/** Default color palette scheme for chart series. */
-		public static final Pref<String> CHART_COLOR_PALETTE = create("pref_chart_color_palette",
-				"Default color palette for chart series", SWISS, IType.STRING, true)
+		public static final Pref<String> CHART_COLOR_PALETTE =
+				create("pref_chart_color_palette", "Default color palette for chart series", SWISS, IType.STRING, true)
 						.in(NAME, CHARTS_GROUP).among(SWISS, WARM_AMBER, MINERAL, CHART_PALETTE_VIVID,
-								CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON,
-								CHART_PALETTE_PASTEL, CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING,
-								CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
+								CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON, CHART_PALETTE_PASTEL,
+								CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING, CHART_PALETTE_BASIC,
+								CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
 
 		/** Pivot color used when the chart color scheme is 'Based on pivot color'. */
 		public static final Pref<IColor> CHART_PIVOT_COLOR =
@@ -1480,10 +1491,10 @@ public class GamaPreferences {
 								"Slower startup, but Stop and timeout can terminate unresponsive Java operators. By default tests run in this JVM using cooperative interruption.");
 
 		/** Whether tests launched in the UI should write to the standard UI console. */
-		public static final Pref<Boolean> TESTS_USE_UI_CONSOLE = create("pref_tests_use_ui_console",
-				"Show test output in the UI console", false, IType.BOOL, false).in(NAME, Runtime.TESTS).inPlayer(false)
-						.withComment(
-						"Routes test console messages to the standard GAMA console, including tests run in a separate process. Command-line runs are unchanged.");
+		public static final Pref<Boolean> TESTS_USE_UI_CONSOLE =
+				create("pref_tests_use_ui_console", "Show test output in the UI console", false, IType.BOOL, false)
+						.in(NAME, Runtime.TESTS).inPlayer(false).withComment(
+								"Routes test console messages to the standard GAMA console, including tests run in a separate process. Command-line runs are unchanged.");
 
 		/**
 		 * The label for the experimental features group, warning users that features within have not been fully tested.

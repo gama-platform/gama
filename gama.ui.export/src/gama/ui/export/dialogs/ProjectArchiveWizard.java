@@ -8,43 +8,27 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IExportWizard;
-import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
 import gama.ui.export.commands.ExportProject;
-import gama.ui.export.commands.ImportProject;
 
-/** Bridges Eclipse's generic Import/Export lists to the same simple project dialogs. */
-public class ProjectArchiveWizard extends Wizard implements IImportWizard, IExportWizard {
-
-	public static final class Import extends ProjectArchiveWizard {
-		public Import() { this(""); }
-		public Import(final String group) { super(true, group); }
-	}
+/** Bridges Eclipse's generic Export list to the project export dialog. */
+public class ProjectArchiveWizard extends Wizard implements IExportWizard {
 
 	public static final class Export extends ProjectArchiveWizard {
-		public Export() { super(false, ""); }
+		public Export() {}
 	}
 
-	private final boolean importing;
-	private final String group;
 	private IWorkbench workbench;
 	private IProject selected;
-	private Text archive;
 	private Combo projects;
 
-	protected ProjectArchiveWizard(final boolean importing, final String group) {
-		this.importing = importing;
-		this.group = group;
-		setWindowTitle(importing ? "Import GAMA project (.gamp or .zip)" : "Export GAMA project");
+	protected ProjectArchiveWizard() {
+		setWindowTitle("Export GAMA project");
 	}
 
 	@Override public void init(final IWorkbench workbench, final IStructuredSelection selection) {
@@ -56,45 +40,22 @@ public class ProjectArchiveWizard extends Wizard implements IImportWizard, IExpo
 	@Override public void addPages() {
 		addPage(new WizardPage("projectArchive") {
 			@Override public void createControl(final Composite parent) {
-				setTitle(importing ? "Import GAMA project (.gamp or .zip)" : "Export GAMA project");
-				setDescription(importing ? "Choose a .gamp or ZIP archive. Import options follow."
-						: "Choose the whole project to save. No file selection is needed.");
+				setTitle("Export GAMA project");
+				setDescription("Choose the whole project to save. No file selection is needed.");
 				final var content = new Composite(parent, SWT.NONE);
 				content.setLayout(new GridLayout(2, false));
-				if (importing) {
-					archive = new Text(content, SWT.BORDER);
-					archive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-					final var browse = new Button(content, SWT.PUSH);
-					browse.setText("Browse...");
-					browse.addListener(SWT.Selection, e -> {
-						final var dialog = new FileDialog(getShell(), SWT.OPEN);
-						dialog.setFilterExtensions(new String[] { "*.gamp;*.zip", "*.*" });
-						final String file = dialog.open();
-						if (file != null) archive.setText(file);
-					});
-					archive.addModifyListener(e -> setPageComplete(!archive.getText().isBlank()));
-					setPageComplete(false);
-				} else {
-					projects = new Combo(content, SWT.READ_ONLY);
-					for (final var project : ResourcesPlugin.getWorkspace().getRoot().getProjects())
-						if (project.isAccessible()) projects.add(project.getName());
-					if (selected != null) projects.setText(selected.getName());
-					if (projects.getSelectionIndex() < 0 && projects.getItemCount() > 0) projects.select(0);
-					setPageComplete(projects.getSelectionIndex() >= 0);
-				}
+				projects = new Combo(content, SWT.READ_ONLY);
+				for (final var project : ResourcesPlugin.getWorkspace().getRoot().getProjects())
+					if (project.isAccessible()) projects.add(project.getName());
+				if (selected != null) projects.setText(selected.getName());
+				if (projects.getSelectionIndex() < 0 && projects.getItemCount() > 0) projects.select(0);
+				setPageComplete(projects.getSelectionIndex() >= 0);
 				setControl(content);
 			}
 		});
 	}
 
 	@Override public boolean performFinish() {
-		if (importing) {
-			try { return ImportProject.open(java.nio.file.Path.of(archive.getText().trim()), group); }
-			catch (final java.nio.file.InvalidPathException e) {
-				((WizardPage) getContainer().getCurrentPage()).setErrorMessage(e.getMessage());
-				return false;
-			}
-		}
 		return ExportProject.export(workbench.getActiveWorkbenchWindow(),
 				ResourcesPlugin.getWorkspace().getRoot().getProject(projects.getText()));
 	}
