@@ -33,7 +33,7 @@ experiment "Ripples and Fish" type: gui {
 	output synchronized: true{
 		display Ripples  type: 3d camera: #from_up_front
 		{
-			species fish position: {0,0,0.05};
+			species fish coordinates: #world position: {0,0,0.05};
 			graphics world transparency: 0.4{ 
 				draw cube(100) scaled_by {1,1,0.08} texture:("../images/water2.gif") ;
 			}

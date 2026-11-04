@@ -17,9 +17,8 @@ import org.locationtech.jts.geom.Geometry;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.annotations.constants.IKeyword;
-import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
@@ -214,30 +213,7 @@ public class LayerObject {
 	 */
 	public void computeOffset(final Trace list) {
 		if (isScreenLayer()) return;
-		if (layer.getData().getCoordinates() == LayerCoordinates.WORLD) {
-			list.offset.setLocation(layer.getData().getPosition());
-			computeZ(list);
-			return;
-		}
-		final IScope scope = renderer.getSurface().getScope();
-		final IExpression expr = layer.getDefinition().getFacet(IKeyword.POSITION);
-
-		if (expr != null) {
-			final boolean containsPixels = expr.containsPixels();
-			IPoint offset = list.offset;
-			offset.setLocation(GamaPointFactory.castToPoint(scope, expr.value(scope)));
-			if (Math.abs(offset.getX()) <= 1 && !containsPixels) {
-				offset.setX(offset.getX() * renderer.getEnvWidth());
-			}
-			if (Math.abs(offset.getY()) <= 1 && !containsPixels) {
-				offset.setY(offset.getY() * renderer.getEnvHeight());
-			}
-
-			// REMOVE TO FIX #3342
-			// if (offset.x < 0) { offset.x = renderer.getEnvWidth() - offset.x; }
-			// if (offset.y < 0) { offset.y = renderer.getEnvHeight() - offset.y; }
-
-		}
+		list.offset.setLocation(layer.getData().getPosition());
 		computeZ(list);
 	}
 
@@ -270,16 +246,19 @@ public class LayerObject {
 	 *            the gl
 	 */
 	public void draw(final IOpenGL gl) {
+		final ILayer previousLayer = renderer.setRenderingLayer(layer);
 		final LayerCoordinates previous = renderer.setCoordinateSystem(
-				layer == null ? LayerCoordinates.LEGACY : layer.getData().getContentCoordinates());
+				layer == null ? LayerCoordinates.WORLD : layer.getData().getContentCoordinates());
 		try {
 			drawInCoordinates(gl);
 		} finally {
 			renderer.setCoordinateSystem(previous);
+			renderer.setRenderingLayer(previousLayer);
 		}
 	}
 
 	private void drawInCoordinates(final IOpenGL gl) {
+		final boolean depthTest = gl.getGL().glIsEnabled(GL.GL_DEPTH_TEST);
 		if (hasDepth()) {
 			gl.getGL().glEnable(GL.GL_DEPTH_TEST);
 		} else {
@@ -287,15 +266,26 @@ public class LayerObject {
 			gl.suspendZTranslation();
 			gl.getGL().glDisable(GL.GL_DEPTH_TEST);
 		}
-		gl.push(GLMatrixFunc.GL_MODELVIEW);
-		if (isScreenLayer() && !(this instanceof OverlayLayerObject)) {
+		if (isScreenLayer()) {
 			gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
 			gl.ortho(0, gl.getViewWidth(), -gl.getViewHeight(), 0, -1, 1);
+			// Keep object transforms off the projection stack and independent of the world camera.
+			gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW);
+		} else {
+			gl.push(GLMatrixFunc.GL_MODELVIEW);
 		}
 		try {
 			doDrawing(gl);
 		} finally {
-			stopDrawing(gl);
+			try {
+				stopDrawing(gl);
+			} finally {
+				if (depthTest) {
+					gl.getGL().glEnable(GL.GL_DEPTH_TEST);
+				} else {
+					gl.getGL().glDisable(GL.GL_DEPTH_TEST);
+				}
+			}
 		}
 	}
 
@@ -359,14 +349,14 @@ public class LayerObject {
 		gl.scaleBy(nonNullScale.getX(), nonNullScale.getY(), nonNullScale.getZ());
 		final AxisAngle nonNullRotation = list.getRotation();
 
-		// Rotation
-		double x = nonNullOffset.getX() + renderer.getEnvWidth() * nonNullScale.getX() / 2;
-		double y = nonNullOffset.getY() + renderer.getEnvHeight() * nonNullScale.getY() / 2;
-
-		gl.translateBy(x, -y, 0d);
-		IPoint p = nonNullRotation.getAxis();
-		gl.rotateBy(nonNullRotation.getAngle(), p.getX(), p.getY(), p.getZ());
-		gl.translateBy(-x, y, 0d);
+		if (nonNullRotation.getAngle() != 0d) {
+			final double x = nonNullOffset.getX() + renderer.getEnvWidth() * nonNullScale.getX() / 2;
+			final double y = nonNullOffset.getY() + renderer.getEnvHeight() * nonNullScale.getY() / 2;
+			gl.translateBy(x, -y, 0d);
+			final IPoint p = nonNullRotation.getAxis();
+			gl.rotateBy(nonNullRotation.getAngle(), p.getX(), p.getY(), p.getZ());
+			gl.translateBy(-x, y, 0d);
+		}
 		addFrame(gl);
 	}
 
@@ -377,58 +367,28 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void addFrame(final IOpenGL gl) {
-		if (layer == null) return;
-		ILayerData d = layer.getData();
-		if (d instanceof FramedLayerData data) {
-			if (d.getCoordinates() == LayerCoordinates.WORLD) {
-				final IScope scope = renderer.getSurface().getScope();
-				final boolean previous = gl.setObjectWireframe(false);
-				gl.pushMatrix();
-				try {
-					gl.translateBy(renderer.getEnvWidth() / 2, -renderer.getEnvHeight() / 2, 0);
-					gl.scaleBy(renderer.getEnvWidth(), renderer.getEnvHeight(), 1);
-					if (data.getBackgroundColor(scope) != null) {
-						gl.setCurrentColor(data.getBackgroundColor(scope), 1 - data.getTransparency(scope));
-						gl.drawCachedGeometry(IShape.Type.SQUARE, null);
-					}
-					if (data.getBorderColor() != null) {
-						gl.setObjectWireframe(true);
-						gl.drawCachedGeometry(IShape.Type.SQUARE, data.getBorderColor());
-					}
-				} finally {
-					gl.setObjectWireframe(previous);
-					gl.popMatrix();
-				}
-				return;
+		if (layer == null || !(layer.getData() instanceof FramedLayerData data)) return;
+		final IScope scope = renderer.getSurface().getScope();
+		final IColor background = data.getBackgroundColor(scope);
+		final IColor border = data.getBorderColor();
+		if (background == null && border == null) return;
+		final boolean previous = gl.setObjectWireframe(false);
+		gl.pushMatrix();
+		try {
+			gl.translateBy(renderer.getEnvWidth() / 2, -renderer.getEnvHeight() / 2, 0);
+			gl.scaleBy(renderer.getEnvWidth(), renderer.getEnvHeight(), 1);
+			if (background != null) {
+				gl.setCurrentColor(background, 1 - data.getTransparency(scope));
+				gl.drawCachedGeometry(IShape.Type.SQUARE, null);
 			}
-			IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
-			final IScope scope = renderer.getSurface().getScope();
-			final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
-			if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
-			double sx = size.getX();
-			double sy = size.getY();
-			if (sx <= 1) { sx *= renderer.getEnvWidth(); }
-			if (sy <= 1) { sy *= renderer.getEnvHeight(); }
-			gl.pushMatrix();
-			boolean previous = gl.setObjectWireframe(false);
-			try {
-				gl.translateBy(sx / 2, -sy / 2, 0);
-				gl.scaleBy(sx, sy, 1);
-				if (data.getBackgroundColor(scope) != null) {
-					gl.setCurrentColor(data.getBackgroundColor(scope), 1 - data.getTransparency(scope));
-					gl.drawCachedGeometry(IShape.Type.SQUARE, null);
-				}
-				if (data.getBorderColor() != null) {
-					gl.setObjectWireframe(true);
-					gl.drawCachedGeometry(IShape.Type.SQUARE, data.getBorderColor());
-				}
-
-			} finally {
-				gl.setObjectWireframe(previous);
-				gl.popMatrix();
+			if (border != null) {
+				gl.setObjectWireframe(true);
+				gl.drawCachedGeometry(IShape.Type.SQUARE, border);
 			}
+		} finally {
+			gl.setObjectWireframe(previous);
+			gl.popMatrix();
 		}
-
 	}
 
 	/**
@@ -447,11 +407,11 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void stopDrawing(final IOpenGL gl) {
-		gl.pop(GLMatrixFunc.GL_MODELVIEW);
 		if (isScreenLayer()) {
 			gl.resumeZTranslation();
 			gl.pop(GLMatrixFunc.GL_PROJECTION);
 		}
+		gl.pop(GLMatrixFunc.GL_MODELVIEW);
 	}
 
 	private boolean isScreenLayer() {

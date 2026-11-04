@@ -319,7 +319,7 @@ experiment Run type: gui {
          grid cell elevation: grid_value * vertical_exaggeration triangulation: true;
          species buildings aspect: geometry;
          species dyke aspect: geometry ;
-         overlay position: {16#px, 16#px} size: {245#px, 156#px} background: paper rounded: true {
+         overlay coordinates: #screen position: {16, 16} size: {245, 156} background: paper rounded: true {
             draw "FLOOD DEPTH" at: {14#px, 20#px} color: ink font: font("Helvetica", 12, #bold);
             draw square(10#px) at: {20#px, 45#px} color: shallow_water;
             draw "Shallow" at: {36#px, 49#px} color: ink font: font("Helvetica", 12);

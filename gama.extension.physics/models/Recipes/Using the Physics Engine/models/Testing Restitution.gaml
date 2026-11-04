@@ -167,7 +167,7 @@ experiment "Test Restitution !" type: gui {
 					draw bam at: wall_contact size: {16, 16};
 				}
 			}
-			overlay position: {5, 5} size: {250 #px, 106 #px} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
+			overlay coordinates: #screen position: {5, 5} size: {250, 106} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
 				draw "RESTITUTION TEST BENCH" at: {10 #px, 16 #px} color: rgb(112, 111, 103) font: font("SansSerif", 10, #bold);
 				draw "Engine : " + library_name + "  (step 1/" + round(1 / step) + ")" at: {10 #px, 34 #px} color: rgb(64, 104, 132);
 				draw "Restitution  walls " + wall_restitution + " / balls " + ball_restitution at: {10 #px, 50 #px} color: rgb(112, 111, 103);

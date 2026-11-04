@@ -365,10 +365,10 @@ experiment vote type: gui {
 			
 			}
 		display "Indicators"  type: 2d {
-			chart "Shannon Entropy" type: series background: #white size: {1,0.5} position: {0, 0} {
+			chart "Shannon Entropy" coordinates: #screen type: series background: #white size: {#display_width,0.5} position: {0, 0} {
 				data "entropy" value: entropy color: #blue ;
 			}
-			chart "Opinion distribution" type: series background: #white size: {1,0.5} position: {0, 0.5} {
+			chart "Opinion distribution" coordinates: #screen type: series background: #white size: {#display_width,0.5} position: {0, 0.5} {
 				data "Space area covered" value: (union(candidate collect (each.shape buffer threshold_attraction_candidates))).area / 40000 color: #blue ;
 			}
 		}

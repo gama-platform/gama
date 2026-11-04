@@ -44,7 +44,7 @@ experiment "Show heatmap" type: gui {
 		}
 		display "History heatmap with gradient" type: 3d axes: false background: #black camera: #from_up_front {
 			// The field is displayed a little bit above the other layers, with a slight 3D rendering, and a smoothness of 1 (meaning one pass of box blur is being done to "spread" the values). The colors are provided by a gradient with three stops
-			mesh history_heatmap scale: 0.01 color: gradient([#black::0, #cyan::0.5, #red::1]) transparency: 0.2 position: {0, 0, 0.001} smooth:1 ;
+			mesh history_heatmap coordinates: #world scale: 0.01 color: gradient([#black::0, #cyan::0.5, #red::1]) transparency: 0.2 position: {0, 0, 0.001} smooth:1 ;
 		 }
 		
 

@@ -572,7 +572,8 @@ experiment ABValuationDemo type: gui autorun:true{
 			event "l" {firmTypeToAdd<-'low'; firmDeleteMode<-false;}
 			event "d" {firmDeleteMode<-true;}
 			
-			overlay position: { 5, 5 } size: { 180 #px, 100 #px } background: # black transparency: 0.0 border: #black rounded: true
+			// The legend intentionally overflows its frame; all local distances are pixels.
+			overlay coordinates: #screen position: { 5, 5 } size: { 180, 100 } background: # black transparency: 0.0 border: #black rounded: true
             {   
             	float y1;
             	draw string("MULTI EMPLOYER HOUSING MARKET SIMULATION") at: { 10#px, 20#px } color: #white font: font("Helvetica", "bold" ,72); 
@@ -609,13 +610,14 @@ experiment ABValuationDemo type: gui autorun:true{
                 draw string("Commuting Cost") at: { 0#px, y + 4#px } color: #white font: font("Helvetica", 18);
 				y <- y + 25#px;
 				draw rectangle(200#px,2#px) at: { 80#px, y } color: #white;
-				draw rectangle(2#px,10#px) at: { commutingCost*150#px, y } color: #white;
+				// Geometry locations preserve absolute subpixel values without the screen at: threshold.
+				draw rectangle(2,10) at_location {commutingCost*150, y} color: #white;
 				
 				y <- y + 25#px;
 				draw string("Share of low income") at: { 0#px, y + 4#px } color: #white font: font("Helvetica", 18);
 				y <- y + 25#px;
 				draw rectangle(200#px,2#px) at: { 80#px, y } color: #white;
-				draw rectangle(2#px,10#px) at: { shareLowIncome*150#px, y } color: #white;
+				draw rectangle(2,10) at_location {shareLowIncome*150, y} color: #white;
 				
 				y <- y + 25#px;
 				float x<-0#px;

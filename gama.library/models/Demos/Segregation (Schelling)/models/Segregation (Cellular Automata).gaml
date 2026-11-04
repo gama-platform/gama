@@ -85,7 +85,7 @@ experiment schelling type: gui parent:base_exp{
 		display Segregation type: 2d background: backdrop antialias: false {
 			grid space;
 			species space aspect: happiness visible: show_unhappy;
-			overlay position: {12#px, 12#px} size: {300#px, 116#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {300, 116} background: backdrop rounded: true {
 				draw "SCHELLING / CELLULAR AUTOMATON" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Fill: group / White inset: unhappy" at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
 				draw "Black: vacant / Environment wraps at edges" at: {12#px, 72#px} color: lettering font: font("Helvetica", 11);
@@ -96,14 +96,14 @@ experiment schelling type: gui parent:base_exp{
 		}
 
 		display Charts type: 2d background: backdrop {
-			chart "Resident satisfaction" type: pie background: backdrop color: lettering
-				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {1.0,0.5} {
+			chart "Resident satisfaction" coordinates: #screen type: pie background: backdrop color: lettering
+				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {#display_width,0.5} {
 				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;
 				data "Happy" value: sum_happy_people color: happy_color;
 			}
 
-			chart "Happiness and neighborhood similarity" type: series background: backdrop color: lettering axes: lettering
-				position: {0,0.5} size: {1.0,0.5} y_range: {0,100} x_label: "Cycle" y_label: "Percent" {
+			chart "Happiness and neighborhood similarity" coordinates: #screen type: series background: backdrop color: lettering axes: lettering
+				position: {0,0.5} size: {#display_width,0.5} y_range: {0,100} x_label: "Cycle" y_label: "Percent" {
 				data "Happy (%)" color: happy_color value: 100.0 * sum_happy_people / max(1, number_of_people) style: line;
 				data "Similar neighbors (%)" color: similarity_color value: 100.0 * sum_similar_neighbours / max(1, sum_total_neighbours) style: step;
 			}

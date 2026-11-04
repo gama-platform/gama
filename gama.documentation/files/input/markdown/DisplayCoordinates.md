@@ -1,6 +1,45 @@
 # Explicit display-layer coordinates
 
+Use `coordinates: #world` for a spatial layer and `coordinates: #screen` for
+a viewport-attached panel. Use `referential:` only when a graphics or overlay
+layer's drawings need a different coordinate system from its frame. These
+are layer facets, not display facets.
+
+## Runnable examples
+
+The following models are in **Recipes / Visualization**. Start with
+`Display Coordinates.gaml`, then open the focused recipes. Except for the
+default-mode comparison, every experiment provides inherited Java2D,
+OpenGL and OpenGL4 displays using the same declarations. Give each display
+enough room (approximately 600 by 450 logical pixels) to read the panels;
+fixed-pixel panels intentionally do not shrink to fit a smaller viewport.
+For the text-parity experiment, use approximately 700 by 600 logical pixels
+to see both the screen panel and the world-space extrusion below it.
+
+| Model | Experiments and questions to explore |
+|---|---|
+| [Display Coordinates](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates.gaml) | Overview: one moving blue marker in the world and mini-map, a fixed screen HUD and a chart of the marker's world X |
+| [Display Coordinates - Placement](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Placement.gaml) | `1 - Viewport placement`: pixels, fractions and negative offsets; `2 - Defaults versus explicit modes`: default graphics, explicit world/screen, default overlays and a world-content mini-map; `3 - Full frames by default`: omitted sizes on graphics, overlay and chart |
+| [Display Coordinates - Units](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Units.gaml) | `Screen units and boundaries`: exactly 1, `1.0`, `0.5#px`, mixed rectangular sizes and intentional overflow |
+| [Display Coordinates - Referentials](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Referentials.gaml) | `1 - Placement versus referential`: pixel drawings versus stretched or uniformly fitted world drawings; `2 - A spatial overlay`: world placement follows the camera |
+| [Display Coordinates - Constants](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Constants.gaml) | `Contextual constants`: live screen/world values, stored values and independent viewports |
+| [Display Coordinates - Mouse](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Mouse.gaml) | `Mouse in three referentials`: viewport, world and panel-local coordinates, including paired callback snapshots |
+| [Display Coordinates - Text](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Text.gaml) | `Font and anchor semantics`: one shared font object, nine anchors and fractional placement; `Text rendering parity`: multiline, italic bearings, holes, borders, wireframes and extrusion |
+| [Display Coordinates - Layers](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Layers.gaml) | `1 - Spatial layers`: world/screen copies of a grid and agents; `2 - Image mesh and chart`: screen rectangles around other layer types |
+
+Resize one display without resizing the others, then zoom and pan the world.
+Screen frames must follow their own viewport, not the frontmost display;
+world drawings must continue to follow their camera. Run the simulation for
+the moving mini-map marker, input callbacks and evolving chart data.
+
 ## Compatibility and defaults
+
+Every coordinate-recipe experiment includes a **What this demonstrates**
+category in the Parameters view. It explains the purpose, interactions to try,
+expected visual results and intentional differences or limitations. These
+instructions remain available even when a display cannot render; source
+comments and on-screen captions provide additional detail rather than being
+the only explanation.
 
 `coordinates:` selects the placement and size convention of a layer:
 
@@ -17,15 +56,27 @@ Both `#screen` and `#world` are string constants. The facet must be constant.
 It is available on graphics, overlay, species, agents, grid, mesh, image/picture
 and chart layers. The declaration, not the display backend, selects its meaning.
 
-**Omitting `coordinates:` preserves the historical behavior.** It does not mean
-`#world`. Historical layer placement mixes fractions, model units and `#px`,
-and overlays have additional historical rules. Existing models are not
-automatically migrated.
+**Only `#world` and `#screen` exist. There is no legacy/hybrid mode.**
+Omitting the facet chooses a default by layer type:
 
-There is deliberately no new implicit default in this first implementation.
-For new declarations, explicitly use `#world` for spatial layers and `#screen`
-for HUDs and charts. A later change of implicit defaults requires a separate
-compatibility decision and library migration.
+| Layer | Default placement | Default contents |
+|---|---|---|
+| Graphics | `#world` | Inherits placement |
+| Overlay | `#screen` | Inherits placement |
+| Species, agents, grid, mesh, image/picture | `#world` | World data/locations |
+| Chart | `#screen` | Chart-managed data and axes |
+
+`referential:` is available on graphics and overlays and can be supplied
+without `coordinates:`. Thus `overlay referential: #world` is a screen-placed
+world-content mini-map. A graphics layer still needs `coordinates: #screen`
+before it can request screen contents.
+
+This is an intentional breaking change, not automatic interpretation of old
+models. A historical `size: {1,1}` no longer means full extent: omit `size:`
+for a full frame. Fractional spatial placements must be expressed in world
+units or explicitly select screen placement. Overlay intrinsic geometry
+sizes now mean pixels by default. See the migration section before adapting
+external models.
 
 ## Screen placement
 
@@ -70,7 +121,7 @@ to position a HUD relative to the camera.
 
 ## World placement
 
-In explicit `coordinates: #world`, every X/Y component of `position:` and
+In `coordinates: #world` (including the spatial-layer default), every X/Y component of `position:` and
 `size:` is a model-unit value. There is no fraction threshold, and a negative
 position remains a negative world displacement, not an opposite-edge offset.
 For example, `{0.5, 1}` means half a world unit and one world unit.
@@ -92,9 +143,9 @@ overlay coordinates: #screen referential: #world
 }
 ```
 
-With explicit coordinates, graphics and overlays default their contents to
-the placement mode. A screen overlay therefore defaults to screen contents;
-an explicit world overlay defaults to world contents.
+Graphics and overlays default their contents to the placement mode, whether
+that mode is written explicitly or selected by the layer-type default.
+A default overlay has screen contents; a world overlay has world contents.
 
 For screen contents, `draw ... at:` and rectangular `size:` use the layer's
 width and height as their references, with the same threshold and opposite-edge
@@ -112,11 +163,31 @@ No new clipping is introduced: drawings may intentionally overflow a frame.
 The existing limit of one overlay per display is unchanged; multiple named
 screen graphics layers can also be used for HUD drawings.
 
-`referential:` requires explicit `coordinates:`. World placement with
-screen contents is not supported in this first implementation. Neither are
+World placement with screen contents is not supported. Neither are
 nonzero rotations of screen layers; rotate individual drawings instead.
 Nested species layers inherit the host layer's context and cannot specify an
 independent placement mode.
+
+### Worked example: one world, two mini-maps
+
+The referentials recipe uses a 200-by-100-unit environment and two
+240-by-160-pixel frames:
+
+| Screen frame | Scale | World point `{100,50}` in local pixels | World `circle(20)` |
+|---|---|---|---|
+| `graphics ... referential: #world` | X: 1.2; Y: 1.6 | `{120,80}` | Ellipse, radii 24 and 32 pixels |
+| `overlay ... referential: #world` | Uniform: 1.2 | `{120,60}` | Circle, radius 24 pixels |
+
+The overlay leaves 40 pixels of unused space below its 240-by-120-pixel
+world drawing; this is not a centered fit. Its origin is the frame origin.
+Neither declaration changes the agents' locations. A moving world point
+can be drawn directly in the main view and both mini-maps.
+
+`#px` in these world-content drawings uses the content scale, not the
+camera's full-viewport scale. For a stretched frame it uses the smaller
+axis scale: `circle(6#px)` has radii 6 and 8 pixels in the graphics example,
+but 6 and 6 pixels in the uniform overlay. A scalar pixel-to-world
+conversion cannot cancel two different axis scales.
 
 ## Contextual constants
 
@@ -146,6 +217,29 @@ pixel values of magnitude at least 1 for screen `at:`, `position:` and
 rectangular `size:`. This convention does not provide subpixel absolute
 placement through those facets.
 
+### Worked example: numbers are not unit-bearing values
+
+In the units recipe, the reference panel is exactly 400 pixels wide:
+
+| Drawing expression | Local X in pixels |
+|---|---|
+| `at: {0.5, 58}` | 200 |
+| `at: {1, 100}` | 1 |
+| `at: {1.0, 142}` | 1 |
+| `at: {0.5#px, 184}` | 200 |
+
+The two pairs line up vertically. A rectangle with
+`size: {0.2,16}` is 80 by 16 pixels in that panel. By contrast,
+`circle(0.5)` has a half-pixel intrinsic radius, not a 50-percent radius.
+The separate `size: {1,1}` frame is one pixel wide and high, but its
+drawings intentionally extend outside it.
+
+The constants recipe stores `20#px` globally before drawing. That stored
+world-context number is not necessarily 20 when subsequently used as a
+screen position. Keep contextual expressions in the layer where they are
+meant to be evaluated; do not cache pixel-to-world conversions globally
+for reuse by displays with different dimensions.
+
 ## Mouse coordinates
 
 The new names make their fixed meanings explicit:
@@ -165,6 +259,15 @@ last-known mouse fallback. World mouse coordinates in 3D retain the existing
 projection convention; they do not become a picked point on arbitrary
 geometry.
 
+For the mouse recipe's overlay at `{16,16}`, a viewport pointer at
+`{116,76}` has local coordinates `{100,60}`. Panning changes the world
+coordinate beneath that pointer, not this subtraction. A click records
+both mouse aliases from the same event; all displays show the shared
+recorded values, while their live values refer to their own surfaces.
+Local coordinates may be negative outside the panel. If reused in a
+screen `at:` facet, they still pass through the usual threshold and
+opposite-edge rules; the mouse constant does not carry special units.
+
 ## Fonts and backend expectations
 
 Font sizes retain their existing nominal typographic meaning:
@@ -175,17 +278,106 @@ metrics, HiDPI and backend-specific rendering remain distinct concerns; this
 change does not introduce a new font-unit system or promise pixel-identical
 glyphs across renderers.
 
+The text recipe draws the same `font("SansSerif",16)` in world and screen
+contexts and places nine anchor labels around red reference dots. The dot
+identifies the requested `at:` position; the anchor identifies which point
+of the text box meets it. An anchor such as `#bottom_right` is not a
+layer-placement anchor and does not change the panel's position. A
+fractional `at:` can move a label when a panel resizes without changing
+the font's nominal size.
+
+Perspective text anchors use the visible
+glyph-outline bounds, including italic bearings and descenders. Leading and
+trailing whitespace do not enlarge those bounds. Text rotation in Java2D
+now uses the requested anchor position as its pivot, as in OpenGL, rather
+than the center of the text rectangle. These rules also apply when the
+coordinate mode is selected by default.
+
+Multiline text uses font line metrics for the distance between lines, not
+the number of world units in a glyph's pixel height. Empty lines consume
+one line step, and both LF and CRLF line endings are supported. Each line
+uses the requested anchor independently; this is not paragraph/block
+alignment. Rendering does not change the supplied `at:` point. A screen
+frame therefore cannot accidentally change the placement of a later draw
+which reuses the same point.
+
+### Text parity baseline
+
+The following describes implemented paths, not completed visual acceptance:
+
+| Feature | Java2D | OpenGL | OpenGL4 |
+|---|---|---|---|
+| Perspective-text anchors | Visible AWT glyph bounds | Visible AWT outline bounds | Graph glyph bounds for plain flat text; AWT bounds for decorated/extruded text |
+| Multiline spacing | Font line height in display pixels | Same nominal line height converted to model units | Shared OpenGL scene-building path |
+| Border and wireframe | Glyph outline | AWT outline | AWT outline for perspective text, instead of silently drawing a filled graph glyph |
+| Extrusion | Flat text; depth has no effect | AWT outline for caps and sides | The same AWT outline for caps and sides; GLU resolves separate letters and holes |
+| Non-perspective labels | Same 2D text path | Historical GLUT bitmap path: restricted fonts/sizes and no general anchor support | Graph-font billboard path |
+| Font fallback | AWT/system | AWT/system, except GLUT bitmaps | System/bundled graph fonts for plain flat text; AWT for outline text |
+
+Font substitution can still make plain and decorated OpenGL4 labels differ.
+OpenGL's bitmap labels, complex-script shaping, HiDPI rasterization and
+paragraph alignment are not claimed to have full parity. The second text
+experiment exposes the implemented outline and multiline changes without
+requiring renderer-specific sizes in the model.
+
 The coordinate pipeline is shared by Java2D, OpenGL and OpenGL4, including image
 rendering. Visual acceptance should compare their behavior under resizing,
 zoom, panning, HiDPI and inherited displays. Screen layer rotation remains
 unsupported as described above.
 
+In the overview recipe, the main grey world should move with the camera.
+The HUD, mini-map frame and chart must remain at their viewport positions.
+The two blue markers represent the same world location, with different
+scales. The mini-map's uniform fit can leave white space below or beside its
+square world when its frame is not square. The chart plots X in model units
+from 0 to 100, not an unbounded cycle counter.
+
+Screen rendering uses an independent orthographic projection and identity
+model-view matrix; both stacks are restored before the next layer. OpenGL
+chart textures retain the frame's aspect ratio when applying the chart-quality
+resolution setting, rather than stretching a square chart into a rectangle.
+
 ## Library and wiki migration
 
-The `Display Coordinates.gaml` recipe demonstrates explicit world graphics,
-screen contents, a world-content mini-map and a screen chart in inherited
-Java2D/OpenGL displays. `Legend - Overlay.gaml` is migrated to an explicit
-screen overlay. Other library models keep their historical declarations.
+The eight recipes above demonstrate the explicit contract. Existing models
+have also been reviewed across the main library, extension models and the
+historical `gama.library/recipes` directory. Every existing overlay now has
+an explicit placement mode. Top-level layers with a `position:` or `size:`
+facet have an explicit mode as well, except for the recipes intentionally
+demonstrating omitted facets. Unpositioned declarations use the
+world/screen defaults above; their omitted sizes fill the reference extent.
+
+The only positioned nested species declaration, `prey_in_shelter` in
+`Predators, Preys and Shelters.gaml`, intentionally inherits its host's world
+context; independent nested modes are unsupported. The placement recipe
+demonstrates that default graphics match explicit world graphics and default
+overlays match screen graphics, with no third interpretation.
+
+### Decisions for existing models
+
+| Models | Interpretation and migration |
+|---|---|
+| Circle, field of vision, Sugarscape, Schelling variants, flood, learning, multi-level demos and physics recipes | Pixel legends become `coordinates: #screen`; numeric frame distances are pixels. Existing `#px` drawing expressions remain valid because the unit is now 1. |
+| Traffic and Pollution, Clean Line Network, ABValuation, generalized Lotka-Volterra | Small or zero-size overlay frames deliberately allow text and legends to overflow. Explicit screen placement preserves that choice; there is no new clipping or automatic resizing of the frame to its contents. |
+| Evacuation Phuc Xa, Multi-simulation and physics recipes | Bare overlay positions `{5,5}` are clarified as a five-pixel HUD margin, not a five-world-unit displacement. Evacuation's map description remains a separate world drawing. |
+| Schelling charts, Vote, Soccer, integration-step comparison, chart recipes, predator-prey and road-traffic tutorials, ODE solver comparison | Split charts use screen fractions. Historical full-width `1`/`1.0` becomes `#display_width`, not one pixel. Chart data and axis coordinates are unchanged. |
+| Boids 3D Analysis | Both mini-maps use screen placement and a world referential. Their frame occupies one third of each viewport dimension; drawings use the original XY location rather than `location / 3`. Symbol size compensates for the frame scale. Mini-map symbols are flat plan-view triangles, not extruded 3D objects. |
+| Ant Foraging | The inset terrain, trails and ants remain camera-attached world layers. Historical 5-percent offsets and 90-percent sizes are expressed as fractions of `world.shape.width`/`height`; the legend alone is screen-based. |
+| Moving3D, MODAVI, graph-from-bug demos | Side-by-side views, spatial displacements and Z ordering remain world-based. The migration does not flatten them into HUDs. |
+| Tetris, Pacman, Flappy Bird | Scoreboards and text compositions remain attached to their world layouts. Fractional frame sizes are converted to world extents; Tetris's historical height of `1` is written explicitly as the full world height to preserve its old interpretation. |
+| Grid DEM, Building Heatmap, GIF File Loading | Terrain and image/agent depth ordering remain spatial. DEM frame XY sizes are world extents, while existing Z scale factors and offsets are retained. |
+| Switch And Match, Color Brewer | Images, result symbols and palette swatches form world-coordinate compositions, not viewport HUDs. The 20-percent image frames are expressed in world units. |
+| Clustering extension | The headings are centered in a full-width 50-pixel screen band, replacing the former mixture of a half-world offset, a pixel frame and world-valued text positions. |
+| Units And Constants | The HUD demonstrates viewport dimensions and `#px = 1` in screen mode; the separate mouse/camera drawing remains world-based. Its comments no longer describe screen dimensions as zoom-dependent. |
+
+Two details need particular care when adapting other models. First, moving
+the `{5,5}` HUD margin into pixels and centering the clustering headings are
+intentional clarifications of layout, not numerical equivalences to their
+old model-unit expressions. Second, ABValuation's continuously movable
+slider indicators can have an absolute X position strictly between 0 and 1.
+They use geometry `at_location` with no drawing `at:` facet, retaining
+subpixel geometry coordinates without interpreting them as fractions.
+Other drawings retain their existing unit expressions and font choices.
 
 Migrate intent, not syntax mechanically:
 
@@ -198,9 +390,134 @@ Migrate intent, not syntax mechanically:
 5. Compare inherited displays independently; do not use the frontmost display
    as the source for viewport dimensions or mouse positions.
 
+For a genuinely pixel-based historical HUD, the migration is:
+
+```gaml
+// Historical source only: there is no compatibility mode for the old interpretation.
+overlay position: {0.02,0.02} size: {0.96,100#px} {
+    draw "Status" at: {12#px,26#px};
+}
+
+// After: fractional viewport placement, pixel height and local pixel drawings.
+overlay coordinates: #screen position: {0.02,0.02} size: {0.96,100} {
+    draw "Status" at: {12,26};
+}
+```
+
+Do not make the same replacement for a mini-map drawing agent `location`
+values: select `referential: #world` instead. Review hand-written factors
+such as `location / 3` together with the new frame scale, rather than
+scaling twice. Likewise, keep a map and its hover calculations in world
+coordinates when moving only its status panel into screen coordinates.
+Intentional overflow, world-depth drawings and rounded-frame behavior
+need explicit review before migrating an existing overlay.
+
 The display-construction wiki needs coordinated updates to the layer overview,
 overlays, charts, graphical aspects, positioning/scaling, display constants,
 mouse events, text/fonts and migration examples. This document is the
 in-repository reference for that update; publishing the external wiki is a
 separate step. Future overlay controls and callback semantics are not included
 in this first coordinate-system change.
+
+| Wiki topic | Required change and example |
+|---|---|
+| Display/layer overview | Separate the viewport, the layer frame and drawing contents; start with the overview and placement recipes |
+| Position and size facets | Document layer-type defaults, the breaking removal of hybrid values, the strict screen threshold, negative origins and omitted sizes; use placement and units |
+| Overlays and graphics | Explain `referential:`, proportional fit versus per-axis scaling, overflow and the one-overlay limit; use referentials |
+| Spatial layers and charts | Keep agent locations and mesh/grid data in world coordinates while placing their frame on screen; use layers |
+| Display constants | Show evaluation-time context and stored-value pitfalls; use constants |
+| Mouse events | Document both explicit aliases, source-display lookup, callback snapshots and local subtraction; use mouse |
+| Text and graphical aspects | Keep fonts separate from coordinate units and explain drawing anchors; use text |
+| Migration guide | Publish the before/after HUD example, full-size replacement rule and mini-map precautions above |
+
+The deliberately unsupported combinations described in this reference remain
+unsupported; the recipes are not a promise of arbitrary nested coordinate
+transforms, screen-layer rotation or new interaction widgets.
+
+## Renderer limitations and reduction roadmap
+
+Compilation of a model is not evidence that its layout renders correctly.
+The following work separates renderer defects from deliberately unsupported
+coordinate combinations. Visual acceptance remains necessary on Java2D,
+OpenGL and OpenGL4; a successful Java build does not replace it.
+
+### Immediate corrections
+
+Screen layers restore the incoming OpenGL depth-test state, as well as both
+matrix stacks. In particular, a final overlay must not disable depth testing
+for the camera's rotation globe and expose all its back-facing wire lines.
+The globe is shown only during an unlocked CMD/CTRL + left-button interaction;
+mouse release, canvas exit and focus loss clear the interaction, even if a
+modifier-key release was delivered outside the display.
+
+Java2D previously ignored `size:` when drawing a geometry, including a
+geometry obtained from an SVG. A large native SVG consequently stayed large
+even when an aspect requested `{5,7}`. The geometry draw delegate now fits
+the geometry uniformly into the requested XY bounds, before rotation and
+translation, without resizing the stored source geometry. This follows the
+existing OpenGL geometry-fitting rule. It is not a change to `#px`, nor a
+reason to shrink the Ant Foraging model's requested dimensions.
+
+OpenGL4's graph-font path previously updated the general OpenGL matrix stack
+instead of the font renderer's own matrices, and calculated a font-size
+factor without applying it. Font rendering now uses its own projection,
+model-view, translation, scale and glyph-bound anchor offsets. Billboard
+labels project their position through the layer and camera before drawing
+in screen space; the internal viewport-text entry point keeps its direct
+bottom-left pixel coordinates. Extruded faces reuse the already positioned
+outer transform instead of applying location and anchor twice. Font-cache
+keys also distinguish the screen and world fallback families.
+
+The graph-font path also owns a core-profile vertex-array object. Without
+a bound VAO, text could fail with `GL_INVALID_OPERATION`. Graph text now
+uses single-pass rendering into the active scene framebuffer, relying on
+the display's existing multisampling for edge smoothing. JOGL's two-pass
+text mode composites into the context's default framebuffer, which loses
+text when a different scene target is active; restoring bindings afterward
+does not repair that misplaced draw. Surrounding rendering state is
+restored after text drawing, including on failure.
+
+The follow-up text pass now renders OpenGL4 extruded caps and sides from
+the same AWT outlines, rather than combining graph-font caps with potentially
+different AWT sides. GLU replaces the one-outer-ring tessellation, so
+disconnected glyphs, dots and holes are no longer treated as holes inside
+the largest letter. Side-normal buffers include every contour vertex,
+reset at each contour, and correctly handle negative coordinates. The
+same path also handles perspective borders, textures and wireframes.
+
+These are shared rendering fixes, not per-model compensations. Visual-bound
+anchors and Java2D outline decorations now apply to both written and default
+coordinate modes. Their visual acceptance is still pending.
+
+### Simplification after removing hybrid coordinates
+
+The shared frame resolver now has two paths only. Neither construction nor
+rendering inspects whether an expression happens to contain `#px`. Overlay
+data no longer captures a pre-evaluation pixel ratio or stores per-axis pixel
+flags. OpenGL consumes the already evaluated layer position and size instead
+of evaluating position and size expressions again while preparing a frame.
+This also prevents side-effecting or random facet expressions from producing
+a different placement during rendering.
+
+Unrotated world layers skip the two pivot translations and rotation matrix
+operation. Undecorated world frames skip matrix setup entirely; decorated
+frames evaluate background color once. Unrotated Java2D text skips transform
+copies and transformed-shape allocation. These are reductions in work and
+allocation, not a measured frame-rate claim; no timing-sensitive cache is
+introduced, so resizing, zoom and dynamic facets remain live.
+
+### Ordered follow-up work
+
+| Priority / dependency | Scope | Acceptance criterion and compatibility boundary |
+|---|---|---|
+| 1. Immediate acceptance | Check Ant Foraging in Java2D and the text, placement and referential recipes in all three backends. Include text before and after textured objects, screen HUDs with nonzero origins, world labels and extruded text. | Ant SVGs fit the requested bounds before rotation; text is visible, correctly oriented and anchored; subsequent objects render normally. Also resize, zoom and pan. Do not mark visual defects closed on compilation alone. |
+| 2. After priority 1 | Establish a renderer parity table for geometry/SVG, raster images, text and exports. Exercise rotations, anchors, `size:` and inherited non-square frames. | Document intentional differences: geometry fitting is proportional, whereas image dimensions can specify an exact rectangle. Do not silently change either contract to obtain identical pictures. Measure resulting bounds, not only expression values. Preserve source assets between repeated draws. |
+| 3. After the parity table | Align text metrics and HiDPI handling. Cover font substitution, multiline baselines, spaces, accents, nine anchors, extrusion and perspective versus billboard text. | Distinguish nominal font size, glyph bounds, logical pixels and framebuffer pixels. Keep placement stable across display scales and exports; document fallback fonts and tolerances rather than promising pixel-identical rasterization. Match extruded face and side outlines before claiming complete extrusion parity. |
+| 4. After frame parity | Consolidate forward and inverse frame transforms for drawing and mouse interaction. Cover screen/world overlays, uniform mini-map fit, per-axis spatial-layer scaling and independent displays. | A known layer-local point mapped to the display and back must round-trip within a stated numeric tolerance, including after resize, zoom and pan. Events must use the originating display, never whichever display is frontmost. Existing world-mouse aliases retain their meaning. |
+| 5. After shared inverse transforms | Evaluate screen-layer rotation, independent nested-species frames and world-placed/screen-content combinations separately. | Specify the pivot, inheritance, pixel sizing and picking semantics before enabling each combination. Retain the current validation errors until both rendering and inverse interaction agree. No broad removal of validation restrictions. |
+| 6. Independent design, implementation after frame parity | Consider opt-in frame clipping and multiple overlays. | Preserve today's intentional overflow and single-overlay models. Clipping must affect rendering and interaction consistently, including rounded frames and exports; explicit stacking must not change existing depth order. These features require separate API decisions, not a coordinate-mode workaround. |
+| 7. After priorities 1-4 | Introduce the first overlay controls and finish the display-construction wiki migration. | Buttons, sliders and switches use the same local screen coordinates, font rules and inverse mouse transform as drawings. Define callbacks and variable binding separately. Publish the reference and backend limitations together with the recipes; do not make controls depend on every optional feature in priorities 5-6. |
+
+Priorities 2-4 should reduce inconsistencies before adding new coordinate
+combinations. Priorities 5-6 are possible extensions, not commitments or
+prerequisites for a useful first set of overlay controls.

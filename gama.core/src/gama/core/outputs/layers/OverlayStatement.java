@@ -48,13 +48,36 @@ import gama.api.annotations.validator;
 @inside (
 		symbols = IKeyword.DISPLAY)
 @doc (
-		value = "With explicit `coordinates: #screen`, an overlay uses view-relative positions below 1 in magnitude and logical pixels from 1. Its contents default to screen coordinates, where #px is 1, at: and rectangular size: use the overlay as their reference, and geometric lengths are pixels. `referential: #world` fits model-unit contents proportionally into the frame, without clipping. Explicit `coordinates: #world` instead creates a camera-attached world layer whose contents default to model units. "
-				+ "When coordinates is omitted, the following historical rules are preserved: "
-				+ "`overlay` defines a rectangular layer drawn on top of the other layers of a display, at a fixed place in the view: it is not affected by the camera, the zoom or the rotation of the display, and is placed and sized identically in 2D (java2D) and 3D (opengl) displays. "
-				+ "Each coordinate of the `position` and `size` facets is interpreted independently: when expressed in pixels (using `#px`), it represents a number of pixels of the view; otherwise, a value in [0,1] (in [-1,1] for the position) represents a fraction of the view and a larger value represents model units (considering that the model occupies the entire view). Negative positions are counted from the right (resp. bottom) border of the view. "
-				+ "The statements in the block draw the contents of the overlay in a coordinate system whose origin is its upper-left corner, in which `#px` represents exactly one pixel of the view and model units are scaled as in the view, whatever the size of the overlay. It is therefore recommended to express the locations and sizes of the contents in pixels.",
+		value = "An overlay defaults to `coordinates: #screen`: view-relative positions below 1 in magnitude and logical pixels from 1. It is unaffected by camera movement. Its contents also default to screen coordinates, where #px is 1, at: and rectangular size: use the overlay as their reference, and geometric lengths are pixels. Omitted size fills the viewport; {1,1} is one pixel by one pixel. Negative positions count from the opposite edge. `referential: #world` fits model-unit contents proportionally into the frame, without clipping. `coordinates: #world` instead creates a camera-attached layer whose contents default to model units. Only #screen and #world are supported; there is no historical hybrid mode.",
 		usages = { @usage (
-				value = "For instance, a legend in the upper-left corner of the view (only one overlay can be defined per display):",
+				value = "An explicit screen HUD: fractional viewport placement, pixel height and local pixel drawings. Only one overlay can be defined per display:",
+				examples = {
+						@example (
+								value = "overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 80} background: #white {",
+								isExecutable = false),
+						@example (
+								value = "    draw \"Cycle: \" + cycle at: {12, 26} color: #black font: font(\"Helvetica\", 14);",
+								isExecutable = false),
+						@example (
+								value = "    draw circle(6) at: {12, 54} color: #red;",
+								isExecutable = false),
+						@example (
+								value = "}",
+								isExecutable = false) }),
+				@usage (
+						value = "A fixed screen mini-map containing model-unit drawings. Agent locations remain world coordinates; the overlay fits the environment uniformly into its frame:",
+						examples = {
+								@example (
+										value = "overlay coordinates: #screen referential: #world position: {-216, 16} size: {200, 150} {",
+										isExecutable = false),
+								@example (
+										value = "    draw world.shape color: #lightgray;",
+										isExecutable = false),
+								@example (
+										value = "}",
+										isExecutable = false) }),
+				@usage (
+				value = "The default screen mode also accepts #px, whose value is 1 in this context:",
 				examples = {
 							@example (
 									value = "overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white border: #black rounded: true {",
@@ -69,13 +92,13 @@ import gama.api.annotations.validator;
 									value = "}",
 									isExecutable = false) }),
 				@usage (
-						value = "Other placements: a semi-transparent box in the lower-right corner, or a band covering the bottom of the view:",
+						value = "Default screen placements: a semi-transparent box in the lower-right corner, or a band covering the bottom of the view:",
 						examples = {
 							@example (
 									value = "overlay position: {-160#px, -60#px} size: {150#px, 50#px} background: #gray transparency: 0.5 { ... } // bottom-right corner",
 									isExecutable = false),
 							@example (
-									value = "overlay position: {0, 0.9} size: {1, 0.1} { ... } // band covering the bottom 10% of the view",
+									value = "overlay position: {0, 0.9} size: {#display_width, 0.1} { ... } // band covering the bottom 10% of the view",
 									isExecutable = false) }) })
 @facets (
 		value = { @facet (
@@ -98,12 +121,12 @@ import gama.api.annotations.validator;
 						name = IKeyword.POSITION,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc (LayerData.POSITION_DOC + " Overlays without explicit coordinates use the visible view as the reference for their historical hybrid placement, with per-component #px detection and negative positions counted from the opposite edge.")),
+						doc = @doc (LayerData.POSITION_DOC)),
 				@facet (
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc (LayerData.SIZE_DOC + " Overlays without explicit coordinates retain their full-view default {1,1}, per-component #px detection and content scale independent of frame size. Explicit screen overlays default to pixel contents; world contents are fitted proportionally into the frame. No implicit clipping is applied.")),
+						doc = @doc (LayerData.SIZE_DOC + " Screen overlays default to pixel contents; world contents are fitted proportionally into the frame. No implicit clipping is applied.")),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,

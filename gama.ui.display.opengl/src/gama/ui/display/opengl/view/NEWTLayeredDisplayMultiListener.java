@@ -57,6 +57,8 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	/** The key listener for mac and linux. */
 	final Consumer<Character> keyListenerForMac;
 
+	final Runnable resetCameraInteraction;
+
 	/**
 	 * Instantiates a new NEWT layered display multi listener.
 	 *
@@ -72,6 +74,11 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 		delegate = new LayeredDisplayMultiListener(surface, deco);
 		control = window;
+		resetCameraInteraction = () -> {
+			if (surface instanceof SWTOpenGLDisplaySurface glSurface) {
+				glSurface.renderer.getCameraHelper().cancelInteraction();
+			}
+		};
 
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
@@ -284,6 +291,7 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void windowLostFocus(final WindowEvent e) {
 		if (!ok.get()) return;
+		resetCameraInteraction.run();
 		delegate.focusLost();
 
 	}

@@ -11,6 +11,7 @@
 package gama.ui.display.opengl.renderer;
 
 import java.awt.geom.Rectangle2D;
+import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
+import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
@@ -72,6 +74,26 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * The Class JOGLRenderer.
  */
 public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRenderer {
+
+	private final ThreadLocal<ILayer> renderingLayer = new ThreadLocal<>();
+
+	@Override
+	public ILayer setRenderingLayer(final ILayer layer) {
+		final ILayer previous = renderingLayer.get();
+		if (layer == null) {
+			renderingLayer.remove();
+		} else {
+			renderingLayer.set(layer);
+		}
+		return previous;
+	}
+
+	private ILayer getScreenWorldLayer() {
+		final ILayer rendered = renderingLayer.get();
+		final ILayer layer = rendered == null ? currentLayer : rendered;
+		return layer != null && layer.getData().getCoordinates() == LayerCoordinates.SCREEN
+				&& layer.getData().getContentCoordinates() == LayerCoordinates.WORLD ? layer : null;
+	}
 
 	static {
 		DEBUG.OFF();
@@ -503,17 +525,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		// Multiline: Issue #780
 		if (string.contains("\n")) {
 			int i = 0;
-			final double shift = attributes.getFont().getSize() / this.getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			for (final String s : string.split("\n")) {
-				// DEBUG.OUT("Attributes Font Size: " + attributes.font.getSize());
-				// DEBUG.OUT("Get Y Ratio: " + getyRatioBetweenPixelsAndModelUnits());
+			final double lineHeight = attributes.getFont().getAwtFont()
+					.getLineMetrics("Ag", new FontRenderContext(null, true, true)).getHeight();
+			final double shift = lineHeight / getAbsoluteRatioBetweenPixelsAndModelsUnits();
+			for (final String s : string.split("\\r?\\n", -1)) {
 				drawString(s, attributes.copyTranslatedBy(GamaPointFactory.create(0, shift * i++)));
 			}
 			return null;
 		}
-		// openGL.cacheFont(attributes.getFont());
-		attributes.getLocation().negateY();
-		scene.addString(string, attributes);
+		final IDrawingAttributes copy = attributes.copyTranslatedBy(GamaPointFactory.create());
+		copy.getLocation().negateY();
+		scene.addString(string, copy);
 		return null;
 	}
 
@@ -541,18 +563,26 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
 		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final ILayer layer = getScreenWorldLayer();
+		if (layer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
+		if (layer != null) return layer.getData().getSizeInPixels().getX() / getEnvWidth();
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getX());
 	}
 
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
 		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final ILayer layer = getScreenWorldLayer();
+		if (layer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
+		if (layer != null) return layer.getData().getSizeInPixels().getY() / getEnvHeight();
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getY());
 	}
 
 	@Override
 	public double getAbsoluteRatioBetweenPixelsAndModelsUnits() {
 		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		if (getScreenWorldLayer() != null)
+			return Math.min(getxRatioBetweenPixelsAndModelUnits(), getyRatioBetweenPixelsAndModelUnits());
 		return Math.min(getViewHeight() / data.getEnvHeight(), getViewWidth() / data.getEnvWidth());
 	}
 

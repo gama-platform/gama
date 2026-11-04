@@ -184,8 +184,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			currentRenderer.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) currentLayerAlpha));
 		}
 		pf.adapt();
-		if (layer.getData().getCoordinates() != LayerCoordinates.LEGACY
-				&& !(layer instanceof OverlayLayer overlay && overlay.isOverlay())
+		if (!(layer instanceof OverlayLayer overlay && overlay.isOverlay())
 				&& layer.getData() instanceof FramedLayerData frame) {
 			final int x = (int) getXOffsetInPixels();
 			final int y = (int) getYOffsetInPixels();
@@ -371,16 +370,23 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	@Override
 	public Rectangle2D drawString(final String string, final IDrawingAttributes attributes) {
-		// Multiline: Issue #780
-		if (string.contains("\n")) {
-			final Rectangle2D result = new Rectangle2D.Double();
-			for (final String s : string.split("\n")) {
-				final Rectangle2D r = drawString(s, attributes);
-				attributes.getLocation().setY(attributes.getLocation().getY() + r.getHeight());
+		setFont(attributes.getFont().getAwtFont());
+		final String[] lines = string.split("\\r?\\n", -1);
+		final double lineHeight = currentRenderer.getFont().getLineMetrics("Ag",
+				currentRenderer.getFontRenderContext()).getHeight();
+		Rectangle2D result = null;
+		for (int i = 0; i < lines.length; i++) {
+			final Rectangle2D r = drawTextLine(lines[i], attributes, lineHeight * i);
+			if (result == null) {
+				result = r;
+			} else {
 				result.add(r);
 			}
-			return result;
 		}
+		return result;
+	}
+
+	private Rectangle2D drawTextLine(final String string, final IDrawingAttributes attributes, final double yOffset) {
 		currentRenderer.setColor(IColor.toAWTColor(highlight ? data.getHighlightColor() : attributes.getColor()));
 		double curX, curY;
 		// final double curZ;
@@ -392,27 +398,34 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			curX = xFromModelUnitsToPixels(attributes.getLocation().getX());
 			curY = yFromModelUnitsToPixels(attributes.getLocation().getY());
 		}
-		setFont(attributes.getFont().getAwtFont());
-		final Rectangle2D r = currentRenderer.getFontMetrics().getStringBounds(string, currentRenderer);
-		final float ascent = currentRenderer.getFontMetrics().getLineMetrics(string, currentRenderer).getAscent();
-		final float descent = currentRenderer.getFontMetrics().getLineMetrics(string, currentRenderer).getDescent();
-		r.setFrame(r.getX(), r.getY(), r.getWidth(), Math.min(r.getHeight(), ascent + descent));
-
-		final double rWidth = r.getWidth();
-		final double rHeight = r.getHeight();
-		curX -= rWidth * attributes.getAnchor().getX();
-		curY += (rHeight - descent) * attributes.getAnchor().getY();
-		final AffineTransform saved = currentRenderer.getTransform();
-		if (attributes.getAngle() != null) {
-			currentRenderer.rotate(Maths.toRad * attributes.getAngle(), curX + r.getWidth() / 2,
-					curY + r.getHeight() / 2);
+		curY += yOffset;
+		final double atX = curX;
+		final double atY = curY;
+		final var glyphs = currentRenderer.getFont().createGlyphVector(currentRenderer.getFontRenderContext(), string);
+		final Rectangle2D bounds = glyphs.getVisualBounds();
+		curX -= bounds.getX() + bounds.getWidth() * attributes.getAnchor().getX();
+		curY -= bounds.getMaxY() - bounds.getHeight() * attributes.getAnchor().getY();
+		final boolean rotated = attributes.getAngle() != null && attributes.getAngle() != 0d;
+		final AffineTransform saved = rotated ? currentRenderer.getTransform() : null;
+		final Stroke stroke = currentRenderer.getStroke();
+		final AffineTransform transform = rotated
+				? AffineTransform.getRotateInstance(Maths.toRad * attributes.getAngle(), atX, atY) : null;
+		try {
+			if (rotated) { currentRenderer.transform(transform); }
+			if (!attributes.isEmpty()) { currentRenderer.drawGlyphVector(glyphs, (float) curX, (float) curY); }
+			if (attributes.isEmpty() || attributes.getBorder() != null) {
+				if (!highlight && attributes.getBorder() != null) {
+					currentRenderer.setColor(IColor.toAWTColor(attributes.getBorder()));
+				}
+				currentRenderer.setStroke(new BasicStroke(attributes.getLineWidth().floatValue()));
+				currentRenderer.draw(glyphs.getOutline((float) curX, (float) curY));
+			}
+		} finally {
+			if (rotated) { currentRenderer.setTransform(saved); }
+			currentRenderer.setStroke(stroke);
 		}
-
-		currentRenderer.drawString(string, (int) curX, (int) curY);
-		// currentRenderer.drawRect((int) curX, (int) (curY - rHeight), (int) rWidth, (int) rHeight);
-		currentRenderer.setTransform(saved);
-		r.setFrame(curX, curY, r.getWidth(), r.getHeight());
-		return r;
+		bounds.setRect(curX + bounds.getX(), curY + bounds.getY(), bounds.getWidth(), bounds.getHeight());
+		return rotated ? transform.createTransformedShape(bounds).getBounds2D() : bounds;
 	}
 
 	/**

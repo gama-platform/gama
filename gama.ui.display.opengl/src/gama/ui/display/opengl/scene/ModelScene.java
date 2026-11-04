@@ -129,16 +129,12 @@ public class ModelScene {
 			if (layer != null && layer.isVisible()) {
 				// See Issue #3857
 				if (GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) { gl.translateBy(0, 0, zIncrement); }
-				// AD added to prevent overlays to rotate
-				if (layer.isOverlay()) { gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW); }
 				try {
 					if (renderer.getPickingHelper().isPicking() && !layer.isPickable()) { continue; }
 					layer.draw(gl);
 				} catch (final RuntimeException r) {
 					DEBUG.ERR("Runtime error " + r.getMessage() + " in OpenGL loop");
 					r.printStackTrace();
-				} finally {
-					if (layer.isOverlay()) { gl.pop(GLMatrixFunc.GL_MODELVIEW); }
 				}
 			}
 		}

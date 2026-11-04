@@ -169,7 +169,7 @@ experiment "Clustering 2D" type: gui
 		display map_kmeans type:2d background:backdrop {
 			species centroids aspect: kmeans_aspect2D;
 			species datapoints aspect: kmeans_aspect2D;
-			overlay position: {16#px, 16#px} size: {340#px, 118#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {16, 16} size: {340, 118} background: backdrop rounded: true {
 				draw "K-MEANS / CLUSTERING" at: {14#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw (converged ? "Converged / paused" : (even(cycle) ? "Next: assign points to nearest center" : "Next: move centers to cluster means"))
 					at: {14#px, 49#px} color: cluster_palette[0] font: font("Helvetica", 11);
@@ -196,7 +196,7 @@ experiment "Clustering 3D" type: gui
 		{
 			species centroids aspect: kmeans_aspect3D;
 			species datapoints aspect: kmeans_aspect3D;
-			overlay position: {16#px, 16#px} size: {320#px, 90#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {16, 16} size: {320, 90} background: backdrop rounded: true {
 				draw "K-MEANS / SPATIAL CLUSTERS" at: {14#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw (converged ? "Converged / paused" : "Assign points, then recenter clusters")
 					at: {14#px, 49#px} color: cluster_palette[0] font: font("Helvetica", 11);

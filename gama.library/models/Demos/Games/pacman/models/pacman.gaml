@@ -580,7 +580,7 @@ experiment main {
 			species cell;
 			species pac aspect:default;
 			species ghost aspect:png;
-			graphics scoreboard position:{0,17} size:{17,2} background:#black border:#yellow{
+			graphics scoreboard coordinates: #world position:{0,17} size:{17,2} background:#black border:#yellow{
 				draw shape color:#black;
 				draw polyline({0,0}, {17,0}) color:#yellow;
 				

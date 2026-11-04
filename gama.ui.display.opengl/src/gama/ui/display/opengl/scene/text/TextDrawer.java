@@ -86,7 +86,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	final GLUtessellator tobj = GLU.gluNewTess();
 
 	/** The previous Y. */
-	double previousX = Double.MIN_VALUE, previousY = Double.MIN_VALUE;
+	double previousX = Double.NaN, previousY = Double.NaN;
 
 	/**
 	 * Position of the placeholder normal written for the first vertex of the current contour in sideNormalBuffer.
@@ -169,14 +169,14 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			currentIndex = -1;
 			// Reset the previous-vertex state so that the first contour of this string
 			// does not inherit stale coordinates from the previous drawn string.
-			previousX = Double.MIN_VALUE;
-			previousY = Double.MIN_VALUE;
+			previousX = Double.NaN;
+			previousY = Double.NaN;
 			contourStartX = Double.MIN_VALUE;
 			contourStartY = Double.MIN_VALUE;
 			contourStartNormalPos = -1;
 			process(shape.getPathIterator(AT, attributes.getPrecision()));
 			// process() already flips all buffers internally
-			drawText(attributes, bounds.getY());
+			drawText(attributes, bounds);
 		}
 
 	}
@@ -261,10 +261,10 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *
 	 * @param attributes
 	 *            the attributes
-	 * @param y
-	 *            the y
+	 * @param bounds
+	 *            the AWT outline bounds before the Y-axis flip
 	 */
-	void drawText(final IDrawingAttributes attributes, final double y) {
+	void drawText(final IDrawingAttributes attributes, final Rectangle2D bounds) {
 
 		final IPoint p = attributes.getLocation();
 
@@ -277,7 +277,9 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final double locY = rotated ? 0 : p.getY();
 			final double locZ = rotated ? 0 : p.getZ();
 			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			gl.translateBy(locX - width * scale * anchor.getX(), locY + y * scale * anchor.getY(),
+			final double x = -bounds.getX() - width * anchor.getX();
+			final double y = bounds.getMaxY() - height * anchor.getY();
+			gl.translateBy(locX + x * scale, locY + y * scale,
 					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 			if (!gl.isWireframe()) {
@@ -398,8 +400,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		indices[++currentIndex] = sideQuadsBuffer.position();
 		// Each new contour must not inherit the last vertex of the previous contour;
 		// reset so that addContourVertex0 knows there is no "previous" vertex yet.
-		previousX = Double.MIN_VALUE;
-		previousY = Double.MIN_VALUE;
+		previousX = Double.NaN;
+		previousY = Double.NaN;
 		contourStartX = Double.MIN_VALUE;
 		contourStartY = Double.MIN_VALUE;
 		contourStartNormalPos = -1;
@@ -413,12 +415,13 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *
 	 */
 	public void addContourVertex0(final double x, final double y) {
+		if (x == previousX && y == previousY) return;
 		sideQuadsBuffer.put(x).put(y).put(0);
 		if (depth > 0) {
 			// If depth > 0, then we will build side faces, and we need to calculate their normal.
 			// We always emit a normal entry so that sideNormalBuffer stays parallel to sideQuadsBuffer
 			// (both 2 entries per geometric point).
-			if (previousX > Double.MIN_VALUE) {
+			if (!Double.isNaN(previousX)) {
 				temp.setTo(previousX, previousY, 0, previousX, previousY, depth, x, y, 0, previousX, previousY, 0);
 				temp.getNormal(true, 1, normal);
 				// We add two normal vectors as the vertex buffer will be filled by 2 coordinates
@@ -523,7 +526,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 
 	@Override
 	public void combine(final double[] coords, final Object[] data, final float[] weight, final Object[] outData) {
-		outData[0] = data[0];
+		outData[0] = coords.clone();
 	}
 
 	/**

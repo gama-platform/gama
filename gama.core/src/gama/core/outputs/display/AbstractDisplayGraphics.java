@@ -247,7 +247,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	@Override
 	public LayerCoordinates getCoordinateSystem() {
 		final LayerCoordinates override = coordinateContext.get();
-		return override != null ? override : currentLayer == null ? LayerCoordinates.LEGACY
+		return override != null ? override : currentLayer == null ? LayerCoordinates.WORLD
 				: currentLayer.getData().getContentCoordinates();
 	}
 

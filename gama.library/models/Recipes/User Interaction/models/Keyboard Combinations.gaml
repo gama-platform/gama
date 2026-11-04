@@ -30,16 +30,16 @@ experiment Keyboard_2D type: gui {
 			graphics {
 				draw circle(3) at: cursor color: #blue;
 			}
-			// Overlay contents use view/model units, not fractions of the overlay: use pixels for text.
-			overlay position: {0.02, 0.02} size: {0.96, 220#px} background: #white border: #gray {
-				draw "Click the display to focus it" at: {12#px, 26#px} color: #black font: font("SansSerif", 14);
-				draw "A: legacy key | CTRL+A: compact constant" at: {12#px, 50#px} color: #black font: font("SansSerif", 14);
-				draw "CTRL+SHIFT+A: string | CTRL+SHIFT+B: multiple constants" at: {12#px, 74#px} color: #black font: font("SansSerif", 14);
-				draw "SHIFT+B, ALT+C, CMD/WIN+C: modifier constants" at: {12#px, 98#px} color: #black font: font("SansSerif", 14);
-				draw "ALT+UP: move | CMD/WIN+ENTER: reset" at: {12#px, 122#px} color: #black font: font("SansSerif", 14);
-				draw "SHIFT+SPACE: message" at: {12#px, 146#px} color: #black font: font("SansSerif", 14);
-				draw last_event at: {12#px, 174#px} color: #blue font: font("SansSerif", 14);
-				draw "Events received: " + event_count at: {12#px, 202#px} color: #black font: font("SansSerif", 14);
+			// Relative frame placement and pixel-valued text positions share an explicit screen context.
+			overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 220} background: #white border: #gray {
+				draw "Click the display to focus it" at: {12, 26} color: #black font: font("SansSerif", 14);
+				draw "A: legacy key | CTRL+A: compact constant" at: {12, 50} color: #black font: font("SansSerif", 14);
+				draw "CTRL+SHIFT+A: string | CTRL+SHIFT+B: multiple constants" at: {12, 74} color: #black font: font("SansSerif", 14);
+				draw "SHIFT+B, ALT+C, CMD/WIN+C: modifier constants" at: {12, 98} color: #black font: font("SansSerif", 14);
+				draw "ALT+UP: move | CMD/WIN+ENTER: reset" at: {12, 122} color: #black font: font("SansSerif", 14);
+				draw "SHIFT+SPACE: message" at: {12, 146} color: #black font: font("SansSerif", 14);
+				draw last_event at: {12, 174} color: #blue font: font("SansSerif", 14);
+				draw "Events received: " + event_count at: {12, 202} color: #black font: font("SansSerif", 14);
 			}
 
 			event "a" { ask simulation { do record("Legacy A event"); } }
@@ -87,10 +87,10 @@ experiment Keyboard_3D type: gui {
 				}
 			}
 			event #cmd + "+enter" { ask simulation { do record("Command/Windows+Enter in OpenGL"); } }
-			overlay position: {0.02, 0.02} size: {0.96, 100#px} background: #white border: #gray {
-				draw "Click to focus. CTRL+A, CTRL+SHIFT+A" at: {12#px, 26#px} color: #black font: font("SansSerif", 14);
-				draw "ALT+UP, CMD/WIN+ENTER" at: {12#px, 50#px} color: #black font: font("SansSerif", 14);
-				draw last_event at: {12#px, 78#px} color: #blue font: font("SansSerif", 14);
+			overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 100} background: #white border: #gray {
+				draw "Click to focus. CTRL+A, CTRL+SHIFT+A" at: {12, 26} color: #black font: font("SansSerif", 14);
+				draw "ALT+UP, CMD/WIN+ENTER" at: {12, 50} color: #black font: font("SansSerif", 14);
+				draw last_event at: {12, 78} color: #blue font: font("SansSerif", 14);
 			}
 		}
 	}

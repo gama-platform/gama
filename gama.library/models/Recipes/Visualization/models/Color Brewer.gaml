@@ -1,126 +1,88 @@
 /**
 * Name: Color Brewer
 * Author: Arnaud Grignard, Patrick Taillandier
-* Description: Shows how to use ColorBrewer palettes in GAMA via the 'brewer_colors' operator. ColorBrewer
-*   provides a set of carefully designed color sequences for cartographic and data visualization use, grouped
-*   into sequential, diverging, and qualitative types. One experiment displays sample swatches for selected
-*   named brewers; a second shows all brewers that have at least a user-specified number of colors in a grid
-*   layout, with each cell colored from the corresponding palette. This is the standard reference for choosing
-*   perceptually sound color scales for GAMA displays.
-* Tags: color, colorbrewer, palette, visualization, display, cartography, brewer_colors
+* Description: Catalogue of every ColorBrewer palette exposed by brewer_palettes, plus the vintage
+*   Swiss, Warm Amber and Mineral palettes. Each labelled row shows the native list of colours.
+*   A second experiment assigns a selected number of colours to grid agents.
+* Tags: color, colorbrewer, palette, visualization, display, cartography, brewer_colors, vintage_colors
 */
-
-
 model ColorBrewer
 
-
 global {
+    int nb_classes <- 6 min: 1 max: 15;
+    list<string> palettes <- brewer_palettes(nb_classes);
+    list<string> brewer_names <- brewer_palettes(1) sort_by each;
+    list<string> vintage_names <- ["Swiss", "Warm Amber", "Mineral"];
+    list<string> qualitative_names <- ["Accents", "Paired", "Set1", "Set2", "Set3", "Dark2", "Pastel1", "Pastel2"];
+    list<string> diverging_names <- ["PRGn", "PuOr", "RdGy", "Spectral", "RdYlGn", "RdBu", "RdYlBu", "PiYG", "BrBG"];
+    list<string> catalogue_names <- brewer_names + vintage_names;
+    list<string> catalogue_kinds <- (brewer_names collect (qualitative_names contains each ? "Qualitative"
+        : (diverging_names contains each ? "Diverging" : "Sequential"))) + (vintage_names collect "Vintage");
+    list<list<rgb>> catalogue_colors <- (brewer_names collect brewer_colors(each))
+        + (vintage_names collect vintage_colors(each));
 
-	//number of colors
-	int nb_classes<-14 min:1 max: 15;
-	
-	
-	//list of palettes that have at least nb_classes
-	list<string> palettes <- brewer_palettes(nb_classes);
-	
-	//the current sequential palette from the list of all available sequential Palettes
-	string sequentialPalette <- "YlOrRd" among:["YlOrRd","Grays","PuBu","BuPu","YlOrBr","Greens","BuGn","GnBu","PuRd","Purples","Blues","Oranges","OrRd","Reds","YlGn","YlGnBu"] on_change:update_colors;
-	
-	//the current diverging palette from the list of all available diverging Palettes
-	string divergingPalette <- "BrBG" among:["PRGn","PuOr","RdGy","Spectral","RdYlGn","RdBu","RdYlBu","PiYG","BrBG"] on_change:update_colors;
-	
-	//the current qualitative palette from the list of all available qualitative Palettes
-	string qualitativePalette <- "Pastel1" among:["Accents","Paired","Set3","Set2","Set1","Dark2","Pastel2","Pastel1"] on_change:update_colors;
-	
-	//build the lists of colors from the palettes
-	list<rgb> SequentialColors <- brewer_colors(sequentialPalette);
-	list<rgb> DivergingColors <- brewer_colors(divergingPalette);
-	list<rgb> QualitativeColors <- brewer_colors(qualitativePalette);
-	
-	action update_colors(){
-		SequentialColors <-  brewer_colors(sequentialPalette);
-		DivergingColors <- brewer_colors(divergingPalette);
-		QualitativeColors <- brewer_colors(qualitativePalette);
-		ask experiment{
-			do update_outputs(true);
-		}
-	}
-	
-	init {
-		//if the palettes is not empty
-		if (not empty(palettes)) {
-			//for each palette
-			loop i from: 0 to: length(palettes) - 1 {
-				//define a  list of nb_classes colors from the current palette
-				list<rgb> colors <- brewer_colors(palettes[i],nb_classes);
-				
-				//define the colors of the corresponding cells
-				ask cell where (each.grid_y = i){
-					palette <- palettes[i];
-					color <- colors[grid_x,i];	
-				}
-			}
-		}
-	}
+    init {
+        loop i from: 0 to: length(palettes) - 1 {
+            list<rgb> colors <- brewer_colors(palettes[i], nb_classes);
+            ask cell where (each.grid_y = i) {
+                palette_name <- palettes[i];
+                color <- colors[grid_x];
+            }
+        }
+    }
 }
 
-grid cell width:nb_classes height: max([1,length(palettes)]) {
-	string palette;
+grid cell width: nb_classes height: max([1, length(palettes)]) {
+    string palette_name;
 }
 
-
-//in this experiment, we do not use the cell agents, but we directlty draw the different palettes of colors
 experiment BrewerPalette type: gui {
-	
-	font base_font <- font("helvetica", 12, #bold);
-	float legend_offset <- 11.0;
-	float square_size;
-	
-	
-	
-	parameter "Sequential Palettes" var:sequentialPalette category:"Brewer";
-	parameter "Diverging Palettes" var:divergingPalette category:"Brewer";
-	parameter "Qualitatives Palettes" var:qualitativePalette category:"Brewer";
-	
-	init {
-		square_size <- (world.shape.width - legend_offset) / nb_classes;		
-	} 
-	
-	
-	output {
-		display View1 type:3d antialias:false axes:false{
-			graphics "brewer" position:{0, 20} {
-				//Sequential
-				draw "Sequential" at:{0,square_size/2} color:#black perspective:true font:base_font;
-				loop i from:0 to:length(SequentialColors)-1{
-					draw square(square_size) color:SequentialColors[i] at: {legend_offset +  square_size*(0.5 + i), square_size/2, 0};
-				}
-				//Diverging
-				draw "Diverging" at:{0,1.5*square_size} color:#black perspective:true  font:base_font;
-				loop i from:0 to:length(DivergingColors)-1{
-					draw square(square_size) color:DivergingColors[i] at: {legend_offset + square_size*(0.5 + i), 1.5*square_size, 0};
-				}
-				//Qualitative		
-				draw "Qualitative" at:{0,2.5*square_size} color:#black perspective:true  font:base_font;
-				loop i from:0 to:length(QualitativeColors)-1{
-					draw square(square_size) color:QualitativeColors[i] at: {legend_offset + square_size*(0.5 + i), 2.5*square_size, 0};
-				}
-		    }
-		}	
-	}
+    text "Purpose: browse every available ColorBrewer palette and the newer Swiss, Warm Amber and Mineral vintage inks. Each row names its palette and shows its complete native colour list; counts can differ. The catalogue is populated from brewer_palettes(1), so future ColorBrewer additions appear automatically." category: "What this demonstrates";
+    text "Sequential palettes encode ordered values; diverging palettes emphasize departures from a midpoint; qualitative palettes distinguish categories without ordering. Pastel1, the former third example row, is qualitative. Vintage inks are also categorical, not sequential data scales." category: "What this demonstrates";
+    text "Try: resize the display; no simulation steps are needed. Columns adapt to the viewport. Borders make very pale colours visible against white. The final three rows are labelled Vintage and use vintage_colors(name), not brewer_colors(name). Use the second experiment to assign colour classes to agents." category: "What this demonstrates";
+
+    output {
+        display "All palettes" type: java2D background: #white {
+            graphics "Catalogue" coordinates: #screen {
+                int columns <- min([3, max([1, int(#display_width / 360)])]);
+                int rows <- int(ceil(length(catalogue_names) / float(columns)));
+                float column_width <- (#display_width - 32) / columns;
+                float row_height <- max([12.0, min([38.0, (#display_height - 48) / rows])]);
+                draw "Available palettes: names, colour counts and native swatches"
+                    at: {16, 20} anchor: #left_center color: #black font: font("Helvetica", 14, #bold);
+                loop i from: 0 to: length(catalogue_names) - 1 {
+                    int column <- int(i / rows);
+                    int row <- i mod rows;
+                    float x <- 16 + column * column_width;
+                    float y <- 40 + row * row_height;
+                    list<rgb> colors <- catalogue_colors[i];
+                    draw (catalogue_names[i] + " (" + length(colors) + ") - " + catalogue_kinds[i])
+                        at: {x, y} anchor: #left_center color: #black
+                        font: font("Helvetica", max([8, int(row_height * 0.32)]));
+                    float swatch_width <- (column_width - 16) / length(colors);
+                    loop j from: 0 to: length(colors) - 1 {
+                        // Intrinsic geometry lengths are pixels, not fractional at:/size: components.
+                        draw rectangle(swatch_width, row_height * 0.42)
+                            at: {x + (j + 0.5) * swatch_width, y + row_height * 0.4}
+                            color: colors[j] border: #gray;
+                    }
+                }
+            }
+        }
+    }
 }
 
-//in this experiment, we display the cell agents with the  different aspects
 experiment BrewerColoredAgent type: gui {
-	parameter "Number of data classes" var:nb_classes category:"Brewer";
-	output {
-		display View1 type:3d antialias:false axes:false{
-			grid cell border: #black ;
-			graphics "Names" {
-				loop i from:0 to:length(palettes)-1 {
-					draw string(i)+":"+cell[0,i].palette at:cell[0,i].location-{9,-1,0} color:#black;
-				}
-			}
-		}	
-	}
+    parameter "Number of data classes" var: nb_classes category: "Brewer";
+    text "Purpose: assign palette colours to grid agents. Each row is a ColorBrewer palette and each column is one class.<br/>Try: choose the number of classes before initialization, then initialize; no simulation steps are needed.<br/>Expected: only palettes with at least that many native colours are included. Increasing the count can exclude qualitative palettes; it does not interpolate missing colours. Vintage inks are shown in the catalogue experiment." category: "What this demonstrates";
+    output {
+        display "Palette classes" type: java2D {
+            grid cell border: #black;
+            graphics "Names" coordinates: #world {
+                loop i from: 0 to: length(palettes) - 1 {
+                    draw palettes[i] at: cell[0, i].location color: #black anchor: #left_center;
+                }
+            }
+        }
+    }
 }

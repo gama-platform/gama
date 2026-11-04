@@ -151,7 +151,7 @@ experiment sugarscape type: gui{
 		display grille type: 2d background: backdrop {
 			grid sugar_cell;
 			species animal;
-			overlay position: {12#px, 12#px} size: {320#px, 142#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {320, 142} background: backdrop rounded: true {
 				draw "SUGARSCAPE / RESOURCES & RESERVES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal: reserve > 8 / Coral rings: reserve <= 8" at: {12#px, 47#px}
 					color: lettering font: font("Helvetica", 11);

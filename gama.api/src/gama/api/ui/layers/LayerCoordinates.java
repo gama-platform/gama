@@ -10,10 +10,15 @@
 package gama.api.ui.layers;
 
 /**
- * Explicit XY placement modes. LEGACY is internal: an omitted facet keeps its historical interpretation.
+ * XY placement modes. Overlays and charts default to SCREEN; other layers default to WORLD.
  */
 public enum LayerCoordinates {
-	LEGACY, WORLD, SCREEN;
+	WORLD, SCREEN;
+
+	/** Shared defaults for runtime layer data and compile-time validation. */
+	public static LayerCoordinates defaultFor(final String keyword) {
+		return "overlay".equals(keyword) || "chart".equals(keyword) ? SCREEN : WORLD;
+	}
 
 	/** Converts an untyped screen coordinate; exactly 1 denotes one logical pixel, not the full extent. */
 	public static double screenLength(final double value, final double extent) {

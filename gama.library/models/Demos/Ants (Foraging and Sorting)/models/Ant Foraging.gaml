@@ -197,11 +197,12 @@ experiment "With Inspector" type: gui parent:base{
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
 	output {
 		layout #split editors: false;
-		display Ants type: 3d axes:false{
-			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
-			agents "agents" transparency: 0.7 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
-			species ant position: {0.05, 0.05, 0.05} size: {0.9, 0.9} aspect: icon_svg;
-			overlay transparency: 0.3 background: rgb(99, 85, 66, 255) position: {50#px, 50#px} size: {250#px, 150#px} border: rgb(99, 85, 66, 255) rounded: true {
+		display Ants type: opengl4 axes:false{
+			// This inset belongs to the world and must keep following the 3D camera.
+			picture terrain coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} refresh: false;
+			agents "agents" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
+			species ant coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.05} size: {0.9 * world.shape.width, 0.9 * world.shape.height} aspect: icon_svg;
+			overlay coordinates: #screen transparency: 0.3 background: rgb(99, 85, 66, 255) position: {50, 50} size: {250, 150} border: rgb(99, 85, 66, 255) rounded: true {
 			draw ant_shape at: {60#px, 70#px} size: {140#px, 100#px} rotate: -60;
 				draw ('Food foraged: ' + (((food_placed = 0 ? 0 : food_gathered / food_placed) * 100) with_precision 2) + '%') at: {40#px, 70#px} font: font("Arial", 18, #bold) color:
 				#white;
@@ -245,10 +246,10 @@ experiment "3D View" type: gui parent:base{
 	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output {
-		display Ants3D type: 3d show_fps: true antialias: false{
+		display Ants3D type: opengl4 show_fps: true antialias: false{
 			grid ant_grid elevation: grid_values triangulation: true texture: terrain refresh: false;
-			agents "Trail" transparency: 0.7 position: {0.05, 0.05, 0.02} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
-			species ant position: {0.05, 0.05, 0.025} size: {0.9, 0.9} aspect: threeD;
+			agents "Trail" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.02} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
+			species ant coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.025} size: {0.9 * world.shape.width, 0.9 * world.shape.height} aspect: threeD;
 		}
 	}
 }
@@ -282,9 +283,9 @@ experiment "3 Simulations" type: gui  parent:base{
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
 		display Ants background: color type: 3d toolbar: color axes: false {
-			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
-			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
-			species ant position: {0.05, 0.05} size: {0.9, 0.9} aspect: icon;
+			picture terrain coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} refresh: false;
+			agents "agents" coordinates: #world transparency: 0.5 position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
+			species ant coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} aspect: icon;
 		}
 	}
 }

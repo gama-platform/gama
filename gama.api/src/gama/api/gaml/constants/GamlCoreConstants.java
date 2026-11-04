@@ -122,11 +122,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT, IConcept.MATH },
 			doc = @doc ("The PI constant"))
-	@tests ({
-			@test ("#pi = 3.141592653589793"),
-			@test ("#pi * #to_deg = 180.0")
-	})
-	double pi = Math.PI;
+	@tests ({ @test ("#pi = 3.141592653589793"), @test ("#pi * #to_deg = 180.0") }) double pi = Math.PI;
 
 	/** The e. */
 	@constant (
@@ -134,10 +130,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT, IConcept.MATH },
 			doc = @doc ("The e constant"))
-	@tests ({
-			@test ("#e = 2.718281828459045")
-	})
-	double e = Math.E;
+	@tests ({ @test ("#e = 2.718281828459045") }) double e = Math.E;
 
 	/** The to deg. */
 	@constant (
@@ -147,10 +140,7 @@ public interface GamlCoreConstants {
 			doc = @doc ("A constant holding the value to convert radians into degrees"))
 	@tests ({
 			// #to_deg and #to_rad are the inverse of each other
-			@test ("#to_deg = 180 / #pi"),
-			@test ("#to_deg * #to_rad = 1.0")
-	})
-	double to_deg = 180d / Math.PI;
+			@test ("#to_deg = 180 / #pi"), @test ("#to_deg * #to_rad = 1.0") }) double to_deg = 180d / Math.PI;
 
 	/** The to rad. */
 	@constant (
@@ -158,11 +148,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding the value to convert degrees into radians"))
-	@tests ({
-			@test ("#to_rad = #pi / 180"),
-			@test ("180 * #to_rad = #pi")
-	})
-	double to_rad = Math.PI / 180d;
+	@tests ({ @test ("#to_rad = #pi / 180"), @test ("180 * #to_rad = #pi") }) double to_rad = Math.PI / 180d;
 
 	/** The nan. */
 	@constant (
@@ -170,32 +156,17 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding a Not-a-Number (NaN) value of type float (Java Double.NaN)"))
-	@tests ({
-			@test ("#nan is float"),
-			@test ("not is_number(#nan)"),
+	@tests ({ @test ("#nan is float"), @test ("not is_number(#nan)"),
 			// contrary to IEEE 754, #nan is equal to itself in GAML
-			@test ("#nan = #nan"),
-			@test ("not (#nan != #nan)"),
-			@test ("#nan != 0.0"),
-			@test ("#nan != #infinity"),
+			@test ("#nan = #nan"), @test ("not (#nan != #nan)"), @test ("#nan != 0.0"), @test ("#nan != #infinity"),
 			// but it is not ordered with anything
-			@test ("not (#nan < 1.0)"),
-			@test ("not (#nan > 1.0)"),
-			@test ("not (#nan <= #nan)"),
-			@test ("not (#nan >= #nan)"),
-			@test ("not (#nan < #infinity)"),
-			@test ("not (#nan > -#infinity)"),
+			@test ("not (#nan < 1.0)"), @test ("not (#nan > 1.0)"), @test ("not (#nan <= #nan)"),
+			@test ("not (#nan >= #nan)"), @test ("not (#nan < #infinity)"), @test ("not (#nan > -#infinity)"),
 			// 'is_finite' only rules out the infinities
-			@test ("is_finite(#nan)"),
-			@test ("not is_number(#nan + 1)"),
-			@test ("not is_number(#nan - #nan)"),
-			@test ("not is_number(#nan * 0)"),
-			@test ("not is_number(#nan / 2)"),
-			@test ("not is_number(sum([1.0, #nan, 3.0]))"),
-			@test ("string(#nan) = \"NaN\""),
-			@test ("float(\"NaN\") = #nan"),
-			@test ("int(#nan) = 0"),
-			@test ("round(#nan) = 0"),
+			@test ("is_finite(#nan)"), @test ("not is_number(#nan + 1)"), @test ("not is_number(#nan - #nan)"),
+			@test ("not is_number(#nan * 0)"), @test ("not is_number(#nan / 2)"),
+			@test ("not is_number(sum([1.0, #nan, 3.0]))"), @test ("string(#nan) = \"NaN\""),
+			@test ("float(\"NaN\") = #nan"), @test ("int(#nan) = 0"), @test ("round(#nan) = 0"),
 			@test ("list<float> l <- [3.0, #nan, 1.0]; l contains #nan"),
 			@test ("list<float> l2 <- [3.0, #nan, 1.0]; l2 index_of #nan = 1"),
 			@test ("list<float> l3 <- [3.0, #nan, 1.0]; l3 count (not is_number(each)) = 1"),
@@ -203,9 +174,7 @@ public interface GamlCoreConstants {
 			@test ("list<float> sorted <- [3.0, #nan, 1.0, #infinity, -#infinity] sort_by each; sorted[1] = 1.0"),
 			@test ("list<float> sorted2 <- [3.0, #nan, 1.0, #infinity, -#infinity] sort_by each; sorted2[2] = 3.0"),
 			@test ("list<float> sorted3 <- [3.0, #nan, 1.0, #infinity, -#infinity] sort_by each; not is_number(sorted3[4])"),
-			@test ("map<string, float> m <- [\"a\"::#nan, \"b\"::#infinity]; m[\"a\"] = #nan")
-	})
-	double nan =
+			@test ("map<string, float> m <- [\"a\"::#nan, \"b\"::#infinity]; m[\"a\"] = #nan") }) double nan =
 					Double.NaN;
 
 	/** The infinity. */
@@ -214,48 +183,29 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding the positive infinity of type float (Java Double.POSITIVE_INFINITY)"))
-	@tests ({
-			@test ("#infinity is float"),
-			@test ("#infinity = #infinity"),
-			@test ("#infinity != -#infinity"),
-			@test ("#infinity != #max_float"),
-			@test ("-#infinity = -#infinity"),
+	@tests ({ @test ("#infinity is float"), @test ("#infinity = #infinity"), @test ("#infinity != -#infinity"),
+			@test ("#infinity != #max_float"), @test ("-#infinity = -#infinity"),
 			// infinity is a number, but not a finite one
-			@test ("is_number(#infinity)"),
-			@test ("is_number(-#infinity)"),
-			@test ("not is_finite(#infinity)"),
+			@test ("is_number(#infinity)"), @test ("is_number(-#infinity)"), @test ("not is_finite(#infinity)"),
 			@test ("not is_finite(-#infinity)"),
 			// it bounds every other number
-			@test ("#infinity > #max_float"),
-			@test ("#infinity > #max_int"),
-			@test ("-#infinity < -#max_float"),
-			@test ("-#infinity < #min_int"),
-			@test ("abs(-#infinity) = #infinity"),
-			@test ("float positive <- #infinity; positive + 1 = #infinity"),
-			@test ("10.0 ^ 400 = #infinity"),
-			@test ("1e308 * 10 = #infinity"),
-			@test ("float positive2 <- #infinity; -positive2 = -#infinity"),
+			@test ("#infinity > #max_float"), @test ("#infinity > #max_int"), @test ("-#infinity < -#max_float"),
+			@test ("-#infinity < #min_int"), @test ("abs(-#infinity) = #infinity"),
+			@test ("float positive <- #infinity; positive + 1 = #infinity"), @test ("10.0 ^ 400 = #infinity"),
+			@test ("1e308 * 10 = #infinity"), @test ("float positive2 <- #infinity; -positive2 = -#infinity"),
 			// infinity absorbs finite operands
-			@test ("not is_finite(#infinity + 1)"),
-			@test ("#infinity + 1 > #max_float"),
-			@test ("not is_finite(#infinity - #max_float)"),
-			@test ("not is_finite(#infinity * 2)"),
-			@test ("#infinity * -1 < -#max_float"),
-			@test ("sum([1.0, #infinity]) > #max_float"),
+			@test ("not is_finite(#infinity + 1)"), @test ("#infinity + 1 > #max_float"),
+			@test ("not is_finite(#infinity - #max_float)"), @test ("not is_finite(#infinity * 2)"),
+			@test ("#infinity * -1 < -#max_float"), @test ("sum([1.0, #infinity]) > #max_float"),
 			@test ("1 / #infinity = 0.0"),
 			// undetermined forms are not numbers
-			@test ("not is_number(#infinity - #infinity)"),
-			@test ("not is_number(#infinity * 0)"),
-			@test ("not is_number(#infinity / #infinity)"),
-			@test ("string(#infinity) = \"Infinity\""),
-			@test ("string(-#infinity) = \"-Infinity\""),
-			@test ("float(\"Infinity\") = #infinity"),
+			@test ("not is_number(#infinity - #infinity)"), @test ("not is_number(#infinity * 0)"),
+			@test ("not is_number(#infinity / #infinity)"), @test ("string(#infinity) = \"Infinity\""),
+			@test ("string(-#infinity) = \"-Infinity\""), @test ("float(\"Infinity\") = #infinity"),
 			@test ("float(\"-Infinity\") = -#infinity"),
 			// casting to int saturates
-			@test ("int(#infinity) = #max_int"),
-			@test ("int(-#infinity) = #min_int"),
-			@test ("round(#infinity) = #max_int"),
-			@test ("floor(#infinity) = #max_int"),
+			@test ("int(#infinity) = #max_int"), @test ("int(-#infinity) = #min_int"),
+			@test ("round(#infinity) = #max_int"), @test ("floor(#infinity) = #max_int"),
 			@test ("ceil(-#infinity) = #min_int"),
 			// a result that is not a number can be compared to #nan
 			@test ("#infinity - #infinity = #nan"),
@@ -263,9 +213,7 @@ public interface GamlCoreConstants {
 			@test ("list<float> sorted2 <- [3.0, #nan, 1.0, #infinity, -#infinity] sort_by each; sorted2[3] = #infinity"),
 			@test ("map<string, float> m <- [\"a\"::#nan, \"b\"::#infinity]; m[\"b\"] = #infinity"),
 			@test ("rgb boosted <- #red * #infinity; boosted.red = 255"),
-			@test ("rgb boosted2 <- #red * #infinity; boosted2.green = 0")
-	})
-	double infinity =
+			@test ("rgb boosted2 <- #red * #infinity; boosted2.green = 0") }) double infinity =
 					Double.POSITIVE_INFINITY;
 
 	/** The min float. */
@@ -274,19 +222,13 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding the smallest positive nonzero value of type float (Java Double.MIN_VALUE)"))
-	@tests ({
-			@test ("#min_float = 4.9E-324"),
-			@test ("#min_float is float"),
+	@tests ({ @test ("#min_float = 4.9E-324"), @test ("#min_float is float"),
 			// #min_float is the smallest positive float, not the most negative one
-			@test ("#min_float > 0.0"),
-			@test ("#min_float < 1.0"),
+			@test ("#min_float > 0.0"), @test ("#min_float < 1.0"),
 			// nothing smaller can be represented
 			@test ("#min_float / 2 = 0.0"),
 			// ... which also means the smallest float is 'equal' to zero while being greater than it
-			@test ("#min_float = 0.0")
-	})
-	double min_float =
-					Double.MIN_VALUE;
+			@test ("#min_float = 0.0") }) double min_float = Double.MIN_VALUE;
 
 	/** The max float. */
 	@constant (
@@ -294,27 +236,15 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding the largest positive finite value of type float (Java Double.MAX_VALUE)"))
-	@tests ({
-			@test ("#max_float = 1.7976931348623157E308"),
-			@test ("#max_float is float"),
-			@test ("is_number(#max_float)"),
-			@test ("is_finite(#max_float)"),
-			@test ("is_finite(-#max_float)"),
-			@test ("#max_float > #max_int"),
-			@test ("-#max_float < #min_int"),
+	@tests ({ @test ("#max_float = 1.7976931348623157E308"), @test ("#max_float is float"),
+			@test ("is_number(#max_float)"), @test ("is_finite(#max_float)"), @test ("is_finite(-#max_float)"),
+			@test ("#max_float > #max_int"), @test ("-#max_float < #min_int"),
 			// and that adding 1 to the biggest float goes unnoticed
-			@test ("#max_float + 1 = #max_float"),
-			@test ("not is_finite(#max_float * 2)"),
-			@test ("#max_float * 2 > #max_float"),
-			@test ("not is_finite(-#max_float * 2)"),
-			@test ("-#max_float * 2 < -#max_float"),
-			@test ("#max_float * 2 = #infinity"),
-			@test ("-#max_float * 2 = -#infinity"),
-			@test ("int(#max_float) = #max_int"),
-			@test ("int(-#max_float) = #min_int")
-	})
-	double max_float =
-					Double.MAX_VALUE;
+			@test ("#max_float + 1 = #max_float"), @test ("not is_finite(#max_float * 2)"),
+			@test ("#max_float * 2 > #max_float"), @test ("not is_finite(-#max_float * 2)"),
+			@test ("-#max_float * 2 < -#max_float"), @test ("#max_float * 2 = #infinity"),
+			@test ("-#max_float * 2 = -#infinity"), @test ("int(#max_float) = #max_int"),
+			@test ("int(-#max_float) = #min_int") }) double max_float = Double.MAX_VALUE;
 
 	/** The min int. */
 	@constant (
@@ -322,18 +252,10 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding the minimum value an int can have (Java Integer.MIN_VALUE)"))
-	@tests ({
-			@test ("#min_int = -2147483647 - 1"),
-			@test ("#min_int is int"),
-			@test ("#min_int < 0"),
-			@test ("is_number(#min_int)"),
-			@test ("#min_int - 1 = #max_int"),
+	@tests ({ @test ("#min_int = -2147483647 - 1"), @test ("#min_int is int"), @test ("#min_int < 0"),
+			@test ("is_number(#min_int)"), @test ("#min_int - 1 = #max_int"),
 			// the opposite of #min_int does not fit in an int
-			@test ("-#min_int = #min_int"),
-			@test ("abs(#min_int) = #min_int")
-	})
-	int min_int =
-					Integer.MIN_VALUE;
+			@test ("-#min_int = #min_int"), @test ("abs(#min_int) = #min_int") }) int min_int = Integer.MIN_VALUE;
 
 	/** The max int. */
 	@constant (
@@ -341,22 +263,13 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
 			doc = @doc ("A constant holding the maximum value an int can have (Java Integer.MAX_VALUE)"))
-	@tests ({
-			@test ("#max_int = 2147483647"),
-			@test ("#max_int is int"),
-			@test ("#max_int > 0"),
-			@test ("is_number(#max_int)"),
-			@test ("is_finite(#max_int)"),
-			@test ("#max_int + 1 = #min_int"),
+	@tests ({ @test ("#max_int = 2147483647"), @test ("#max_int is int"), @test ("#max_int > 0"),
+			@test ("is_number(#max_int)"), @test ("is_finite(#max_int)"), @test ("#max_int + 1 = #min_int"),
 			@test ("#max_int * 2 = -2"),
 			// moving to floats avoids the overflow
-			@test ("float(#max_int) + 1 = 2147483648.0"),
-			@test ("float(#max_int) + 1 > #max_int"),
+			@test ("float(#max_int) + 1 = 2147483648.0"), @test ("float(#max_int) + 1 > #max_int"),
 			// too big for an int: saturated
-			@test ("int(\"9999999999999\") = #max_int")
-	})
-	int max_int =
-					Integer.MAX_VALUE;
+			@test ("int(\"9999999999999\") = #max_int") }) int max_int = Integer.MAX_VALUE;
 
 	/**
 	 * Shortest Path algorithm constants
@@ -439,10 +352,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.GRAPH, IConcept.CONSTANT },
 			doc = @doc ("Yen K shortest paths computation algorithm"))
-	@tests ({
-			@test ("#Yen = \"Yen\"")
-	})
-	String Yen = "Yen";
+	@tests ({ @test ("#Yen = \"Yen\"") }) String Yen = "Yen";
 
 	/** The Bhandari. */
 	@constant (
@@ -450,10 +360,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.GRAPH, IConcept.CONSTANT },
 			doc = @doc ("Bhandari K shortest paths computation algorithm"))
-	@tests ({
-			@test ("#Bhandari = \"Bhandari\"")
-	})
-	String Bhandari = "Bhandari";
+	@tests ({ @test ("#Bhandari = \"Bhandari\"") }) String Bhandari = "Bhandari";
 
 	/** The Eppstein. */
 	@constant (
@@ -461,10 +368,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.GRAPH, IConcept.CONSTANT },
 			doc = @doc ("Eppstein K shortest paths computation algorithm"))
-	@tests ({
-			@test ("#Eppstein = \"Eppstein\"")
-	})
-	String Eppstein = "Eppstein";
+	@tests ({ @test ("#Eppstein = \"Eppstein\"") }) String Eppstein = "Eppstein";
 
 	/** The Suurballe. */
 	@constant (
@@ -472,10 +376,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.GRAPH, IConcept.CONSTANT },
 			doc = @doc ("Suurballe K shortest paths computation algorithm"))
-	@tests ({
-			@test ("#Suurballe = \"Suurballe\"")
-	})
-	String Suurballe = "Suurballe";
+	@tests ({ @test ("#Suurballe = \"Suurballe\"") }) String Suurballe = "Suurballe";
 
 	/**
 	 * Buffer constants
@@ -487,9 +388,7 @@ public interface GamlCoreConstants {
 			doc = @doc ("This constant represents a round line buffer end cap style"))
 	@tests ({
 			// buffer end cap styles
-			@test ("#round = 1")
-	})
-	int round = 1;
+			@test ("#round = 1") }) int round = 1;
 
 	/** The flat. */
 	@constant (
@@ -497,10 +396,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GEOMETRY, IConcept.CONSTANT },
 			doc = @doc ("This constant represents a flat line buffer end cap style"))
-	@tests ({
-			@test ("#flat = 2")
-	})
-	int flat = 2;
+	@tests ({ @test ("#flat = 2") }) int flat = 2;
 
 	/** The square. */
 	@constant (
@@ -508,10 +404,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GEOMETRY, IConcept.CONSTANT },
 			doc = @doc ("This constant represents a square line buffer end cap style"))
-	@tests ({
-			@test ("#square = 3")
-	})
-	int square = 3;
+	@tests ({ @test ("#square = 3") }) int square = 3;
 
 	/**
 	 * Layout constants
@@ -522,10 +415,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("This constant represents the absence of a predefined layout"))
-	@tests ({
-			@test ("#none = 0")
-	})
-	int none = 0;
+	@tests ({ @test ("#none = 0") }) int none = 0;
 
 	/** The stack. */
 	@constant (
@@ -533,10 +423,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("This constant represents a layout where all display views are stacked"))
-	@tests ({
-			@test ("#stack = 1")
-	})
-	int stack = 1;
+	@tests ({ @test ("#stack = 1") }) int stack = 1;
 
 	/** The split. */
 	@constant (
@@ -544,11 +431,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("This constant represents a layout where all display views are split in a grid-like structure"))
-	@tests ({
-			@test ("#split = 2")
-	})
-	int split =
-					2;
+	@tests ({ @test ("#split = 2") }) int split = 2;
 
 	/** The horizontal. */
 	@constant (
@@ -556,11 +439,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("This constant represents a layout where all display views are aligned horizontally"))
-	@tests ({
-			@test ("#horizontal = 3")
-	})
-	int horizontal =
-					3;
+	@tests ({ @test ("#horizontal = 3") }) int horizontal = 3;
 
 	/** The vertical. */
 	@constant (
@@ -568,11 +447,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("This constant represents a layout where all display views are aligned vertically"))
-	@tests ({
-			@test ("#vertical = 4")
-	})
-	int vertical =
-					4;
+	@tests ({ @test ("#vertical = 4") }) int vertical = 4;
 
 	/**
 	 * Font style constants
@@ -583,17 +458,13 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.TEXT },
 			doc = @doc ("This constant allows to build a font with a bold face. Can be combined with #italic"))
-	@tests ({
-			@test ("font f1 <- font(\"Arial\", 14, #bold); f1.name = \"Arial\""),
+	@tests ({ @test ("font f1 <- font(\"Arial\", 14, #bold); f1.name = \"Arial\""),
 			@test ("font f12 <- font(\"Arial\", 14, #bold); f12.size = 14.0"),
 			@test ("font f13 <- font(\"Arial\", 14, #bold); f13.style = #bold"),
 			@test ("font f14 <- font(\"Arial\", 14, #bold); font f3 <- font(\"Arial\", 14, #bold); f14 = f3"),
 			@test ("#bold = 1"),
 			// styles are combined by adding them
-			@test ("#bold + #italic = 3"),
-			@test ("font(\"Arial\", 12, #bold + #italic).style = 3")
-	})
-	int bold =
+			@test ("#bold + #italic = 3"), @test ("font(\"Arial\", 12, #bold + #italic).style = 3") }) int bold =
 					Font.BOLD; /* 1 */
 
 	/** The italic. */
@@ -602,14 +473,10 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.TEXT },
 			doc = @doc ("This constant allows to build a font with an italic face. Can be combined with #bold"))
-	@tests ({
-			@test ("font f2 <- font(\"Helvetica\", 12.0, #italic); f2.size = 12.0"),
+	@tests ({ @test ("font f2 <- font(\"Helvetica\", 12.0, #italic); f2.size = 12.0"),
 			@test ("font f22 <- font(\"Helvetica\", 12.0, #italic); f22.style = #italic"),
 			@test ("font f1 <- font(\"Arial\", 14, #bold); font f23 <- font(\"Helvetica\", 12.0, #italic); f1 != f23"),
-			@test ("#italic = 2")
-	})
-	int italic =
-					Font.ITALIC; /* 2 */
+			@test ("#italic = 2") }) int italic = Font.ITALIC; /* 2 */
 
 	/** The plain. */
 	@constant (
@@ -617,11 +484,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.TEXT },
 			doc = @doc ("This constant allows to build a font with a plain face"))
-	@tests ({
-			@test ("#plain = 0"),
-			@test ("font(\"Arial\", 12, #plain).style = #plain")
-	})
-	int plain = Font.PLAIN;
+	@tests ({ @test ("#plain = 0"), @test ("font(\"Arial\", 12, #plain).style = #plain") }) int plain = Font.PLAIN;
 	/**
 	 * Special units
 	 */
@@ -630,48 +493,49 @@ public interface GamlCoreConstants {
 			value = "key_pressed",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("Inside an event #key_listener block or its called actions, the key of the current press as a string. Printable keys contain the produced character (including case and a literal space). Named keys include arrow_up, enter, escape, shift, ctrl, alt, cmd, backspace, delete, home, end and f1 through f24 when supported. If a modifier prevents a printable character, the unmodified key is used. Unrecognized keys are reported as key_<native code>, which is platform-dependent. Outside a key listener the value is the empty string."))
-	String key_pressed = "";
+			doc = @doc ("Inside an event #key_listener block or its called actions, the key of the current press as a string. Printable keys contain the produced character (including case and a literal space). Named keys include arrow_up, enter, escape, shift, ctrl, alt, cmd, backspace, delete, home, end and f1 through f24 when supported. If a modifier prevents a printable character, the unmodified key is used. Unrecognized keys are reported as key_<native code>, which is platform-dependent. Outside a key listener the value is the empty string.")) String key_pressed =
+					"";
 
+	/** The mouse action. */
 	@constant (
 			value = "mouse_action",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("Inside an event #mouse_listener block or its called actions, the current action as a string: mouse_down, mouse_up, mouse_click, mouse_move, mouse_drag, mouse_enter, mouse_exit or mouse_menu. Outside a mouse listener the value is the empty string."))
-	String mouse_action = "";
+			doc = @doc ("Inside an event #mouse_listener block or its called actions, the current action as a string: mouse_down, mouse_up, mouse_click, mouse_move, mouse_drag, mouse_enter, mouse_exit or mouse_menu. Outside a mouse listener the value is the empty string.")) String mouse_action =
+					"";
 
+	/** The mouse button. */
 	@constant (
 			value = "mouse_button",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("Inside an event #mouse_listener block or its called actions, the button associated with the current event: left, middle, right, button_N for other buttons, or none when no button is associated. For a drag, it is the first reported pressed button. A menu event can have no identifiable button. Outside a mouse listener the value is the empty string."))
-	String mouse_button = "";
+			doc = @doc ("Inside an event #mouse_listener block or its called actions, the button associated with the current event: left, middle, right, button_N for other buttons, or none when no button is associated. For a drag, it is the first reported pressed button. A menu event can have no identifiable button. Outside a mouse listener the value is the empty string.")) String mouse_button =
+					"";
 
+	/** The screen. */
 	@constant (
 			value = "screen",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("An explicit screen coordinate system, independent of the camera and zoom. Positions and rectangular extents below 1 in magnitude are relative; values from 1 are logical pixels."))
-	String screen = "screen";
+			doc = @doc ("An explicit screen coordinate system, independent of the camera and zoom. Positions and rectangular extents below 1 in magnitude are relative; values from 1 are logical pixels.")) String screen =
+					"screen";
 
+	/** The world. */
 	@constant (
 			value = "world",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("An explicit world coordinate system. Unqualified XY coordinates are model units, including values between 0 and 1."))
-	String world = "world";
+			doc = @doc ("An explicit world coordinate system. Unqualified XY coordinates are model units, including values between 0 and 1.")) String world =
+					"world";
 
+	/** The user location. */
 	@constant (
 			value = "user_location",
 			altNames = { "user_location_in_world", "mouse_world_location" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
 			doc = @doc ("The mouse location in world coordinates, independently of the layer coordinate mode. Input callback snapshots take precedence; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position."))
-	@tests ({
-			@test ("#user_location is point")
-	})
-	IPoint user_location =
-					GamaPointFactory.create();
+	@tests ({ @test ("#user_location is point") }) IPoint user_location = GamaPointFactory.create();
 
 	/** The user location in display. */
 	@constant (
@@ -722,7 +586,6 @@ public interface GamlCoreConstants {
 			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current right axis of the camera as a point")) IPoint camera_right =
 					GamaPointFactory.create();
 
-	
 	/**
 	 * Anchor constants
 	 */
@@ -731,12 +594,8 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the center of the text to draw"))
-	@tests ({
-			@test ("#center = {0.5, 0.5}"),
-			@test ("#center is point")
-	})
-	IPoint center =
-					GamaPointFactory.create(0.5, 0.5);
+	@tests ({ @test ("#center = {0.5, 0.5}"), @test ("#center is point") }) IPoint center =
+			GamaPointFactory.create(0.5, 0.5);
 
 	/** The top left. */
 	@constant (
@@ -744,11 +603,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the top left corner of the text to draw"))
-	@tests ({
-			@test ("#top_left = {0.0, 1.0}")
-	})
-	IPoint top_left =
-					GamaPointFactory.create(0, 1);
+	@tests ({ @test ("#top_left = {0.0, 1.0}") }) IPoint top_left = GamaPointFactory.create(0, 1);
 
 	/** The left center. */
 	@constant (
@@ -757,10 +612,7 @@ public interface GamlCoreConstants {
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the center of the left side of the text to draw"))
 
-	@tests ({
-			@test ("#left_center = {0.0, 0.5}")
-	})
-	IPoint left_center = GamaPointFactory.create(0, 0.5);
+	@tests ({ @test ("#left_center = {0.0, 0.5}") }) IPoint left_center = GamaPointFactory.create(0, 0.5);
 
 	/** The bottom left. */
 	@constant (
@@ -768,11 +620,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the bottom left corner of the text to draw"))
-	@tests ({
-			@test ("#bottom_left = {0.0, 0.0}")
-	})
-	IPoint bottom_left =
-					GamaPointFactory.create(0, 0);
+	@tests ({ @test ("#bottom_left = {0.0, 0.0}") }) IPoint bottom_left = GamaPointFactory.create(0, 0);
 
 	/** The bottom center. */
 	@constant (
@@ -780,11 +628,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the center of the bottom side of the text to draw"))
-	@tests ({
-			@test ("#bottom_center = {0.5, 0.0}")
-	})
-	IPoint bottom_center =
-					GamaPointFactory.create(0.5, 0);
+	@tests ({ @test ("#bottom_center = {0.5, 0.0}") }) IPoint bottom_center = GamaPointFactory.create(0.5, 0);
 
 	/** The bottom right. */
 	@constant (
@@ -792,11 +636,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the bottom right corner of the text to draw"))
-	@tests ({
-			@test ("#bottom_right = {1.0, 0.0}")
-	})
-	IPoint bottom_right =
-					GamaPointFactory.create(1, 0);
+	@tests ({ @test ("#bottom_right = {1.0, 0.0}") }) IPoint bottom_right = GamaPointFactory.create(1, 0);
 
 	/** The right center. */
 	@constant (
@@ -804,11 +644,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the center of the right side of the text to draw"))
-	@tests ({
-			@test ("#right_center = {1.0, 0.5}")
-	})
-	IPoint right_center =
-					GamaPointFactory.create(1, 0.5);
+	@tests ({ @test ("#right_center = {1.0, 0.5}") }) IPoint right_center = GamaPointFactory.create(1, 0.5);
 
 	/** The top right. */
 	@constant (
@@ -816,11 +652,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the top right corner of the text to draw"))
-	@tests ({
-			@test ("#top_right = {1.0, 1.0}")
-	})
-	IPoint top_right =
-					GamaPointFactory.create(1, 1);
+	@tests ({ @test ("#top_right = {1.0, 1.0}") }) IPoint top_right = GamaPointFactory.create(1, 1);
 
 	/** The top center. */
 	@constant (
@@ -828,11 +660,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
 			doc = @doc ("Represents an anchor situated at the center of the top side of the text to draw"))
-	@tests ({
-			@test ("#top_center = {0.5, 1.0}")
-	})
-	IPoint top_center =
-					GamaPointFactory.create(0.5, 1);
+	@tests ({ @test ("#top_center = {0.5, 1.0}") }) IPoint top_center = GamaPointFactory.create(0.5, 1);
 
 	/** The zoom. */
 	@constant (
@@ -842,10 +670,7 @@ public interface GamlCoreConstants {
 			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current zoom level of the display as a positive float, where 1.0 represent the neutral zoom (100%)"))
 	@tests ({
 			// without a display, the display-related constants keep their neutral values
-			@test ("#zoom = 1.0")
-	})
-	double zoom =
-					1;
+			@test ("#zoom = 1.0") }) double zoom = 1;
 
 	/** The fullscreen. */
 	@constant (
@@ -853,11 +678,7 @@ public interface GamlCoreConstants {
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.GRAPHIC, IConcept.DISPLAY },
 			doc = @doc ("This unit, only available when running aspects or declaring displays, returns whether the display is currently fullscreen or not"))
-	@tests ({
-			@test ("#fullscreen = false")
-	})
-	boolean fullscreen =
-					false;
+	@tests ({ @test ("#fullscreen = false") }) boolean fullscreen = false;
 
 	/** The hidpi. */
 	@constant (
@@ -865,11 +686,7 @@ public interface GamlCoreConstants {
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.GRAPHIC, IConcept.DISPLAY },
 			doc = @doc ("This unit, only available when running aspects or declaring displays, returns whether the display is currently in HiDPI mode or not"))
-	@tests ({
-			@test ("#hidpi = false")
-	})
-	boolean hidpi =
-					false;
+	@tests ({ @test ("#hidpi = false") }) boolean hidpi = false;
 
 	/** The px. */
 	@constant (
@@ -878,11 +695,7 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT },
 			doc = @doc ("The contextual value of one pixel: 1 in an explicit screen coordinate context, otherwise the historical conversion from pixels to model units. Evaluating and storing this number does not preserve unit metadata."))
-	@tests ({
-			@test ("#pixels = 1.0")
-	})
-	double pixels =
-					1d, px = pixels;
+	@tests ({ @test ("#pixels = 1.0") }) double pixels = 1d, px = pixels;
 
 	/** The display width. */
 	@constant (
@@ -906,10 +719,6 @@ public interface GamlCoreConstants {
 			category = { IConstantCategory.TIME },
 			concept = { IConcept.DATE, IConcept.TIME },
 			doc = @doc ("This value represents the current date"))
-	@tests ({
-			@test ("#now is date"),
-			@test ("#now > #epoch")
-	})
-	double now = 1;
+	@tests ({ @test ("#now is date"), @test ("#now > #epoch") }) double now = 1;
 
 }

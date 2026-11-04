@@ -136,22 +136,22 @@ experiment "Meshes" type: gui parent:base{
 		layout #split toolbars: false;
 		display "Large file, rectangles, wireframe and scaled" type: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
-			mesh europe wireframe: true border: #green refresh: false size: {1, 1, 0.2};
+			mesh europe coordinates: #world wireframe: true border: #green refresh: false size: {world.shape.width, world.shape.height, 0.2};
 		}
 
 		display "Large file, triangles, wireframe and scaled" type: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
-			mesh europe grayscale: true triangulation: true smooth: true refresh: false size: {1, 1, 0.2};
+			mesh europe coordinates: #world grayscale: true triangulation: true smooth: true refresh: false size: {world.shape.width, world.shape.height, 0.2};
 		}
 
 		display "Large file, triangles, smooth, wireframe and scaled" type: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
-			mesh europe wireframe: true triangulation: true border: #green refresh: false size: {1, 1, 0.2} smooth: true;
+			mesh europe coordinates: #world wireframe: true triangulation: true border: #green refresh: false size: {world.shape.width, world.shape.height, 0.2} smooth: true;
 		}
 
 		display "Triangles, grayscale, lines, colored and scaled" type: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
-			mesh grid_data size: {1, 1, 0.75} triangulation: true border: #yellow color: #violet;
+			mesh grid_data coordinates: #world size: {world.shape.width, world.shape.height, 0.75} triangulation: true border: #yellow color: #violet;
 		}
 
 		display "Triangles, textured, no scale" type: 3d axes: false {
@@ -166,12 +166,12 @@ experiment "Meshes" type: gui parent:base{
 
 		display "Triangles, textured, smooth and scaled" type: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
-			mesh grid_data texture: texture smooth: true triangulation: true size: {1, 1, 0.75};
+			mesh grid_data coordinates: #world texture: texture smooth: true triangulation: true size: {world.shape.width, world.shape.height, 0.75};
 		}
 
 		display "Triangles, textured, scaled, with labels" type: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
-			mesh grid_data texture: texture triangulation: true size: {1, 1, 0.5} text: true;
+			mesh grid_data coordinates: #world texture: texture triangulation: true size: {world.shape.width, world.shape.height, 0.5} text: true;
 		}
 
 		display "Large file, trianges, grayscale, scaled" type: 3d axes: false {

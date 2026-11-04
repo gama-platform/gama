@@ -227,13 +227,13 @@ experiment main {
 					
 				}
 			}
-			graphics "Start" position:{0,0} size:{0.15, 0.6}{
+			graphics "Start" coordinates: #world position:{0,0} size:{0.15 * world.shape.width, 0.6 * world.shape.height}{
 				if not has_started{
 				draw "Press space to play" font:font("FlappyBirdy", 70) color:#white;
 				
 				}
 			}
-			graphics "Game Over" position:{0,0} size:{0.25, 0.7}{
+			graphics "Game Over" coordinates: #world position:{0,0} size:{0.25 * world.shape.width, 0.7 * world.shape.height}{
 				if game_over{
 					draw "Game Over" font:font("FlappyBirdy",120, #bold  ) color:#white;
 					draw " Press R to reload" font:font("FlappyBirdy",70, #bold  ) color:#white at: {0.9, 1.4};

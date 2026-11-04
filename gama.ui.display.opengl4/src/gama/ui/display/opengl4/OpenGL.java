@@ -1844,12 +1844,19 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (isPicking) { renderer.getPickingHelper().tryPick(object.getAttributes()); }
 	}
 
+	private int diagnosticFrames;
+
 	/**
 	 * Begin scene.
 	 *
 	 * @return the pass
 	 */
 	public Pass beginScene() {
+		if (diagnosticFrames++ < 3) {
+			DEBUG.ERR("[GL4-TEXT] frame=" + diagnosticFrames + " driver=" + gl.glGetString(GL.GL_VERSION)
+					+ " renderer=" + gl.glGetString(GL.GL_RENDERER));
+			TextDrawer.traceState(gl, "scene entry");
+		}
 		previousDisplayWireframe = setDisplayWireframe(getData().isWireframe());
 		previousDisplayLighting = setDisplayLighting(getData().isLightOn());
 		processUnloadedCacheObjects();
@@ -1885,6 +1892,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		setDisplayLighting(previousDisplayLighting);
 		setDisplayWireframe(previousDisplayWireframe);
 		gl.glFinish();
+		if (diagnosticFrames <= 3) { TextDrawer.traceState(gl, "scene end"); }
 	}
 
 	/**

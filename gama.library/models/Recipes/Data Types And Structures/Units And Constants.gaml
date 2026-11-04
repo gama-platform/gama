@@ -197,9 +197,9 @@ experiment exp {
 		}
 
 		display "Strings 3D" type: 3d {
-			// #pixels (or #px) corresponds to the value of one pixel, depending on the display, zoom...
-			// So pixel is used to define the dimension of an overlay in order to keep it size constant.
-            overlay position: { 0, 0 } size: { 300 #pixels, 200 #px } background: #grey transparency: 0.2 border: #black rounded: true {
+			// In #screen, #pixels (or #px) equals 1; numeric dimensions already denote pixels from 1.
+			// In #world drawings below, #px instead converts a display pixel into model units.
+            overlay coordinates: #screen position: {0, 0} size: {300, 200} background: #grey transparency: 0.2 border: #black rounded: true {
             	// Constant contain useful information about the way of vizualising the simulation with: the camera location (#camera_location), 
             	// orientation (#camera_orientation), target (#camera_target), up axis (#camera_up) and right axis (#camera_right). 
                 draw "Camera location:  " + string(#camera_location with_precision 3) at:{10#px,20#px,0#px} color: #black font: my_font_plain;
@@ -207,14 +207,14 @@ experiment exp {
 				draw "Camera up axis:  " + string(#camera_up with_precision 3) at:{10#px,60#px,0} color: #black font: my_font_plain;
 				draw "Camera right axis:  " + string(#camera_right with_precision 3) at:{10#px,80#px,0} color: #black font: my_font_plain;
 				draw "Zoom level:  " + string(#zoom) at:{10#px,60#px,0} color: #black font: my_font_plain;	
-				// #display_height and #display_width contain the size in pixel of the simulation environment.
-				// It obviously depends on the zoom level.		
-				draw "Display height:  " + string(#display_height) at:{10#px,100#px,0} color: #black font: my_font_plain;				  		
-				draw "Display width:  " + string(#display_width) at:{10#px,120#px,0} color: #black font: my_font_plain;				  		  
+				// Screen-context dimensions describe the viewport and do not change with world zoom.
+				draw "Viewport height:  " + string(#display_height) at:{10,100} color: #black font: my_font_plain;
+				draw "Viewport width:  " + string(#display_width) at:{10,120} color: #black font: my_font_plain;
+				draw "Screen pixel unit:  " + string(#px) at:{10,140} color: #black font: my_font_plain;
 			}
 					
-			// We can access location of the mouse in the display using #mouse_location.
-			graphics circle_mouse {	
+			// #mouse_world_location (also #user_location) keeps world meaning in every referential.
+			graphics circle_mouse coordinates: #world {
 				// We can also access the #zoom level: we can thus display a visual element depending on the zoom level, to keep visible some 
 				// elements even when we zoom out.
 				// We display a sphere at the location of the mouse (with a size depending on the zoom).

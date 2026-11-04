@@ -12,6 +12,7 @@ package gama.gaml.statements.draw;
 import java.awt.geom.Rectangle2D;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import gama.api.additions.delegates.IDrawDelegate;
@@ -80,15 +81,32 @@ public class ShapeDrawer implements IDrawDelegate {
 		final ICoordinates ic = GamaCoordinateSequenceFactory.pointsOf(gg);
 		ic.ensureClockwiseness();
 
-		// If the graphics is 2D, we pre-translate and pre-rotate the geometry
+		// Java2D consumes transformed geometry; OpenGL applies these transforms during scene playback.
 		if (scope.getGraphics().is2D()) {
 			final IPoint center = ic.getCenter();
+			final Scaling3D size = attributes.getSize();
+			boolean copied = false;
+			if (size != null && !shape.isPoint()) {
+				final var envelope = gg.getEnvelopeInternal();
+				final double xScale = envelope.getWidth() == 0 ? Double.POSITIVE_INFINITY
+						: size.getX() / envelope.getWidth();
+				final double yScale = envelope.getHeight() == 0 ? Double.POSITIVE_INFINITY
+						: size.getY() / envelope.getHeight();
+				final double scale = Math.min(xScale, yScale);
+				if (Double.isFinite(scale)) {
+					gg = AffineTransformation.scaleInstance(scale, scale, center.getX(), center.getY()).transform(gg);
+					copied = true;
+				}
+			}
 			final AxisAngle rot = attributes.getRotation();
 			final IPoint location = attributes.getLocation();
 			if (rot != null) {
 				// Do this instead of copy() or clone() to avoid the exception quoted in #3602
 				// Seems to work...
-				gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+				if (!copied) {
+					gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+				}
+				copied = true;
 				// Negate the angle to match the OpenGL renderer behavior, which also negates it (see ObjectDrawer#applyRotation)
 				GeometryUtils.rotate(gg, center, new AxisAngle(rot.getAxis(), -rot.getAngle()));
 			}
@@ -96,8 +114,8 @@ public class ShapeDrawer implements IDrawDelegate {
 				if (gg.getNumPoints() == 1) {
 					gg = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 				} else {
-					// Copy only if not already copied by the rotation branch above
-					if (rot == null) {
+					// Copy only if scaling or rotation has not already copied the geometry.
+					if (!copied) {
 						gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
 					}
 					GeometryUtils.translate(gg, center, location);

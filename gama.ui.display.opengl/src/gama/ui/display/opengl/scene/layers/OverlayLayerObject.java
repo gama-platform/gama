@@ -11,7 +11,6 @@
 package gama.ui.display.opengl.scene.layers;
 
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
@@ -255,14 +254,11 @@ public class OverlayLayerObject extends LayerObject {
 	protected void computeZ(final Trace list) {}
 
 	/**
-	 * Sets up a projection where one unit is one (logical) pixel of the view, with the origin at the top-left corner,
-	 * translates to the position of the overlay, draws its frame and finally scales the contents using the ratio
-	 * computed by {@link OverlayLayerData}, so that `#px` inside the overlay represents exactly one pixel.
+	 * Within the shared screen projection, translates to the overlay origin, draws its pixel frame and scales world
+	 * contents uniformly using the ratio computed by {@link OverlayLayerData}.
 	 */
 	@Override
 	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
-		gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
-		gl.ortho(0, gl.getViewWidth(), -gl.getViewHeight(), 0, -1, 1);
 		final OverlayLayerData data = layer != null && layer.getData() instanceof OverlayLayerData d ? d : null;
 		if (data != null) {
 			final java.awt.Point position = data.getPositionInPixels();
@@ -287,15 +283,5 @@ public class OverlayLayerObject extends LayerObject {
 
 	@Override
 	public boolean isPickable() { return false; }
-
-	@Override
-	protected void stopDrawing(final IOpenGL gl) {
-		// super.stopDrawing(gl);
-		// Addition to fix #2228 and #2222
-		gl.resumeZTranslation();
-		// gl.getGL().glEnable(GL.GL_DEPTH_TEST);
-		gl.pop(GLMatrixFunc.GL_MODELVIEW);
-		gl.pop(GLMatrixFunc.GL_PROJECTION);
-	}
 
 }

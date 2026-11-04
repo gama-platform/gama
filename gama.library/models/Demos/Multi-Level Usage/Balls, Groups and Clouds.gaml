@@ -483,7 +483,7 @@ experiment group_experiment type: gui {
 				species ball_in_group;
 			}
 			species ball;
-			overlay position: {12#px, 12#px} size: {270#px, 92#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {270, 92} background: backdrop rounded: true {
 				draw "BALLS / GROUPS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal: free / Coral: released" at: {12#px, 47#px} color: ball_color font: font("Helvetica", 11);
 				draw "Free: " + length(ball) + "   Groups: " + length(group)
@@ -493,7 +493,7 @@ experiment group_experiment type: gui {
  
 		display 'Ball display' type: 2d background: backdrop {
 			species ball;
-			overlay position: {12#px, 12#px} size: {220#px, 64#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {220, 64} background: backdrop rounded: true {
 				draw "FREE BALLS" at: {12#px, 22#px} color: ball_color font: font("Helvetica", 12, #bold);
 				draw "Uncaptured: " + length(ball) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
 			}
@@ -501,7 +501,7 @@ experiment group_experiment type: gui {
 
 		display 'Group display' type: 2d background: backdrop {
 			species group;
-			overlay position: {12#px, 12#px} size: {250#px, 64#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {250, 64} background: backdrop rounded: true {
 				draw "GROUP ENVELOPES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Active groups: " + length(group) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
 			}
@@ -527,7 +527,7 @@ experiment cloud_experiment type: gui {
 				species ball_in_group;
 			}
 			species ball;
-			overlay position: {12#px, 12#px} size: {280#px, 92#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {280, 92} background: backdrop rounded: true {
 				draw "BALLS / GROUPS / CLOUDS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal: free / Coral: released / Violet: cloud" at: {12#px, 47#px} color: lettering font: font("Helvetica", 10);
 				draw "Free: " + length(ball) + "   Groups: " + length(group) + "   Clouds: " + length(cloud)
@@ -537,7 +537,7 @@ experiment cloud_experiment type: gui {
 
 		display 'Ball display' type: 2d background: backdrop {
 			species ball;
-			overlay position: {12#px, 12#px} size: {220#px, 64#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {220, 64} background: backdrop rounded: true {
 				draw "FREE BALLS" at: {12#px, 22#px} color: ball_color font: font("Helvetica", 12, #bold);
 				draw "Uncaptured: " + length(ball) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
 			}
@@ -545,7 +545,7 @@ experiment cloud_experiment type: gui {
 
 		display 'Group display' type: 2d background: backdrop {
 			species group;
-			overlay position: {12#px, 12#px} size: {250#px, 64#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {250, 64} background: backdrop rounded: true {
 				draw "GROUP ENVELOPES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Uncaptured groups: " + length(group) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
 			}
@@ -553,7 +553,7 @@ experiment cloud_experiment type: gui {
 
 		display 'Cloud display' type: 2d background: backdrop {
 			species cloud;
-			overlay position: {12#px, 12#px} size: {250#px, 64#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {250, 64} background: backdrop rounded: true {
 				draw "CLOUD ENVELOPES" at: {12#px, 22#px} color: cloud_accent font: font("Helvetica", 12, #bold);
 				draw "Active clouds: " + length(cloud) at: {12#px, 47#px} color: lettering font: font("Helvetica", 11);
 			}

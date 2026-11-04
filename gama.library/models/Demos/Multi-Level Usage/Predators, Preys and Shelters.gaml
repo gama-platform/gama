@@ -186,12 +186,13 @@ experiment default_experiment type: gui {
 	parameter "Show prey perception" var: show_perception category: "Appearance";
 	output {
 		display default_display background: backdrop type: 3d axes: false camera: #from_above {
-			species shelter aspect: default {
+			species shelter coordinates: #world aspect: default {
+				// Nested species inherit the host's world context; only the historical Z offset is set here.
 				species prey_in_shelter aspect: default position: {0, 0, 0.1};
 			}
-			species prey aspect: default position: {0, 0, 0.2};
-			species predator aspect: default position: {0, 0, 0.3};
-			overlay position: {14#px, 14#px} size: {300#px, 170#px} background: backdrop rounded: true {
+			species prey coordinates: #world aspect: default position: {0, 0, 0.2};
+			species predator coordinates: #world aspect: default position: {0, 0, 0.3};
+			overlay coordinates: #screen position: {14, 14} size: {300, 170} background: backdrop rounded: true {
 				draw "PREDATORS / PREY / SHELTERS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal discs: wandering / Amber: fleeing" at: {12#px, 48#px}
 					color: prey_color font: font("Helvetica", 11);
