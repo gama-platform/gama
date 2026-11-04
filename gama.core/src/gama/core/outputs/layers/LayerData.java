@@ -47,9 +47,9 @@ import gama.api.utils.geometry.IEnvelope;
 public class LayerData extends AttributeHolder implements ILayerData {
 
 	public static final String COORDINATES = "coordinates";
-	public static final String CONTENT_COORDINATES = "content_coordinates";
+	public static final String REFERENTIAL = "referential";
 	public static final String COORDINATES_DOC = "Explicit XY placement convention: #world uses model units without a threshold at 1; #screen uses fractions for magnitudes below 1 and logical pixels from 1, independently per component. Negative screen positions are measured from the opposite edge. Omit the facet to preserve historical behavior. World Z rules are unchanged; screen frames have no world-depth placement. An omitted size fills the reference extent.";
-	public static final String CONTENT_COORDINATES_DOC = "The coordinate system of draw contents, independently of layer placement. In #screen, at: and rectangular size: use fractions below 1 and logical pixels from 1; geometric lengths are pixels. In #world, contents use model units. Explicit graphics and overlays inherit coordinates. This facet requires explicit coordinates; screen contents require screen placement.";
+	public static final String REFERENTIAL_DOC = "The coordinate system of draw contents, independently of layer placement. In #screen, at: and rectangular size: use fractions below 1 and logical pixels from 1; geometric lengths are pixels. In #world, contents use model units. Explicit graphics and overlays inherit coordinates. This facet requires explicit coordinates; screen contents require screen placement.";
 	public static final String POSITION_DOC = "Position of the upper-left corner of the layer. With coordinates: #world, XY values are model units. With coordinates: #screen, magnitudes strictly below 1 are viewport fractions and values from 1 are logical pixels; negative values count from the opposite edge. Without coordinates:, the historical hybrid convention is retained: magnitudes up to and including 1 are relative, larger values are model units, and #px performs its historical conversion. World-layer Z behavior is unchanged; screen frames have no world-depth placement.";
 	public static final String SIZE_DOC = "Extent of the layer from its origin. With coordinates: #world, XY values are model units. With coordinates: #screen, magnitudes strictly below 1 are viewport fractions and values from 1 are logical pixels: {1,1} is one pixel by one pixel. In either explicit mode, omitting size fills the reference extent. Without coordinates:, the historical hybrid convention is retained: magnitudes up to and including 1 are relative, larger values are model units, and #px performs its historical conversion. The Z component retains the existing scaling convention.";
 
@@ -133,11 +133,11 @@ public class LayerData extends AttributeHolder implements ILayerData {
 		super(def);
 		coordinates = readCoordinates(def, COORDINATES, LayerCoordinates.LEGACY);
 		final boolean graphic = def instanceof GraphicLayerStatement;
-		contentCoordinates = readCoordinates(def, CONTENT_COORDINATES,
+		contentCoordinates = readCoordinates(def, REFERENTIAL,
 				coordinates == LayerCoordinates.LEGACY ? LayerCoordinates.LEGACY
 						: graphic ? coordinates : LayerCoordinates.WORLD);
-		if (def.getFacet(CONTENT_COORDINATES) != null && coordinates == LayerCoordinates.LEGACY) {
-			throw GamaRuntimeException.error("content_coordinates requires explicit coordinates", null);
+		if (def.getFacet(REFERENTIAL) != null && coordinates == LayerCoordinates.LEGACY) {
+			throw GamaRuntimeException.error("referential requires explicit coordinates", null);
 		}
 		if (contentCoordinates == LayerCoordinates.SCREEN && coordinates == LayerCoordinates.WORLD) {
 			throw GamaRuntimeException.error("Screen contents require coordinates: #screen", null);

@@ -46,8 +46,8 @@ import gama.gaml.statements.AspectStatement;
 				name = LayerData.COORDINATES, type = IType.STRING,
 				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
 				@facet (
-						name = LayerData.CONTENT_COORDINATES, type = IType.STRING,
-						optional = true, doc = @doc (LayerData.CONTENT_COORDINATES_DOC)),
+						name = LayerData.REFERENTIAL, type = IType.STRING,
+						optional = true, doc = @doc (LayerData.REFERENTIAL_DOC)),
 				@facet (
 				name = IKeyword.POSITION,
 				type = IType.POINT,

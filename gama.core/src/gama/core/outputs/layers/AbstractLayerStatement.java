@@ -50,7 +50,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 	}
 
 	protected static void validateCoordinates(final IStatementDescription description) {
-		for (final String facet : new String[] { LayerData.COORDINATES, LayerData.CONTENT_COORDINATES }) {
+		for (final String facet : new String[] { LayerData.COORDINATES, LayerData.REFERENTIAL }) {
 			final IExpression expression = description.getFacetExpr(facet);
 			if (expression != null && !expression.isConst()) {
 				description.error(facet + " must be a constant #screen or #world", IGamlIssue.WRONG_TYPE, facet);
@@ -60,10 +60,10 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 			}
 		}
 		final IExpression coordinates = description.getFacetExpr(LayerData.COORDINATES);
-		final IExpression content = description.getFacetExpr(LayerData.CONTENT_COORDINATES);
+		final IExpression content = description.getFacetExpr(LayerData.REFERENTIAL);
 		if (content != null && coordinates == null) {
-			description.error("content_coordinates requires explicit coordinates", IGamlIssue.CONFLICTING_FACETS,
-					LayerData.CONTENT_COORDINATES);
+			description.error("referential requires explicit coordinates", IGamlIssue.CONFLICTING_FACETS,
+					LayerData.REFERENTIAL);
 		}
 		if (coordinates == null || !coordinates.isConst()) return;
 		if (IKeyword.SPECIES_LAYER.equals(description.getEnclosingDescription().getKeyword())) {
@@ -73,7 +73,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 		if ("world".equals(coordinates.getConstValue()) && content != null && content.isConst()
 				&& "screen".equals(content.getConstValue())) {
 			description.error("Screen contents require coordinates: #screen", IGamlIssue.CONFLICTING_FACETS,
-					LayerData.CONTENT_COORDINATES);
+					LayerData.REFERENTIAL);
 		}
 		final IExpression rotation = description.getFacetExpr(IKeyword.ROTATE);
 		if ("screen".equals(coordinates.getConstValue()) && rotation != null && rotation.isConst()

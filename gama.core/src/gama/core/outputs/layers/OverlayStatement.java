@@ -48,7 +48,7 @@ import gama.api.annotations.validator;
 @inside (
 		symbols = IKeyword.DISPLAY)
 @doc (
-		value = "With explicit `coordinates: #screen`, an overlay uses view-relative positions below 1 in magnitude and logical pixels from 1. Its contents default to screen coordinates, where #px is 1, at: and rectangular size: use the overlay as their reference, and geometric lengths are pixels. `content_coordinates: #world` fits model-unit contents proportionally into the frame, without clipping. Explicit `coordinates: #world` instead creates a camera-attached world layer whose contents default to model units. "
+		value = "With explicit `coordinates: #screen`, an overlay uses view-relative positions below 1 in magnitude and logical pixels from 1. Its contents default to screen coordinates, where #px is 1, at: and rectangular size: use the overlay as their reference, and geometric lengths are pixels. `referential: #world` fits model-unit contents proportionally into the frame, without clipping. Explicit `coordinates: #world` instead creates a camera-attached world layer whose contents default to model units. "
 				+ "When coordinates is omitted, the following historical rules are preserved: "
 				+ "`overlay` defines a rectangular layer drawn on top of the other layers of a display, at a fixed place in the view: it is not affected by the camera, the zoom or the rotation of the display, and is placed and sized identically in 2D (java2D) and 3D (opengl) displays. "
 				+ "Each coordinate of the `position` and `size` facets is interpreted independently: when expressed in pixels (using `#px`), it represents a number of pixels of the view; otherwise, a value in [0,1] (in [-1,1] for the position) represents a fraction of the view and a larger value represents model units (considering that the model occupies the entire view). Negative positions are counted from the right (resp. bottom) border of the view. "
@@ -82,8 +82,8 @@ import gama.api.annotations.validator;
 				name = LayerData.COORDINATES, type = IType.STRING,
 				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
 				@facet (
-						name = LayerData.CONTENT_COORDINATES, type = IType.STRING,
-						optional = true, doc = @doc (LayerData.CONTENT_COORDINATES_DOC)),
+						name = LayerData.REFERENTIAL, type = IType.STRING,
+						optional = true, doc = @doc (LayerData.REFERENTIAL_DOC)),
 				@facet (
 				name = IKeyword.ROUNDED,
 				type = IType.BOOL,

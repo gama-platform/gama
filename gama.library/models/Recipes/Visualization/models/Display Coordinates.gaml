@@ -25,7 +25,7 @@ experiment "Display Coordinates" type: gui {
                 draw ("Mouse (pixels): " + #mouse_screen_location)
                     at: {12, 78} anchor: #left_center color: #black;
             }
-            overlay coordinates: #screen content_coordinates: #world
+            overlay coordinates: #screen referential: #world
                 position: {0.74, 16} size: {0.24, 0.24} background: #white border: #gray {
                 draw square(100) at: {50, 50} color: #lightgray border: #gray;
                 draw circle(10) at: {50, 50} color: #blue;

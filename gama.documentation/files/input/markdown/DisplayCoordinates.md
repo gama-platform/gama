@@ -83,10 +83,10 @@ unlike a traditional overlay, it follows the world camera.
 ## Placement versus contents
 
 `coordinates:` describes the layer rectangle. For `graphics` and `overlay`,
-`content_coordinates:` can independently select the interpretation of drawings:
+`referential:` can independently select the interpretation of drawings:
 
 ```gaml
-overlay coordinates: #screen content_coordinates: #world
+overlay coordinates: #screen referential: #world
     position: {0.72, 16} size: {0.25, 0.25} {
     draw circle(10) at: {50, 50};
 }
@@ -112,7 +112,7 @@ No new clipping is introduced: drawings may intentionally overflow a frame.
 The existing limit of one overlay per display is unchanged; multiple named
 screen graphics layers can also be used for HUD drawings.
 
-`content_coordinates:` requires explicit `coordinates:`. World placement with
+`referential:` requires explicit `coordinates:`. World placement with
 screen contents is not supported in this first implementation. Neither are
 nonzero rotations of screen layers; rotate individual drawings instead.
 Nested species layers inherit the host layer's context and cannot specify an
