@@ -19,6 +19,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.LayerCoordinates;
 
 /**
  * Data of an overlay layer. This class is the single place where the screen geometry of an overlay is computed, so
@@ -108,6 +109,13 @@ public class OverlayLayerData extends FramedLayerData {
 
 	@Override
 	public void computePixelsDimensions(final IGraphics g) {
+		if (getCoordinates() != LayerCoordinates.LEGACY) {
+			computeExplicitDimensions(g);
+			contentRatio = getContentCoordinates() == LayerCoordinates.SCREEN ? 1d
+					: validRatio(Math.min(getSizeInPixels().getX() / g.getEnvWidth(),
+							getSizeInPixels().getY() / g.getEnvHeight()));
+			return;
+		}
 		final double viewWidth = g.getViewWidth();
 		final double viewHeight = g.getViewHeight();
 		if (viewWidth <= 0 || viewHeight <= 0) return;

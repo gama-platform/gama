@@ -61,10 +61,12 @@ import gama.api.types.matrix.IField;
 import gama.api.ui.displays.IAsset;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
+import gama.core.outputs.layers.FramedLayerData;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
 import gama.gaml.operators.Maths;
@@ -177,7 +179,40 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	@Override
 	public void beginDrawingLayer(final ILayer layer) {
 		super.beginDrawingLayer(layer);
+		if (layer.getData().getCoordinates() == LayerCoordinates.SCREEN) {
+			currentRenderer = overlayRenderer;
+			currentRenderer.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) currentLayerAlpha));
+		}
 		pf.adapt();
+		if (layer.getData().getCoordinates() != LayerCoordinates.LEGACY
+				&& !(layer instanceof OverlayLayer overlay && overlay.isOverlay())
+				&& layer.getData() instanceof FramedLayerData frame) {
+			final int x = (int) getXOffsetInPixels();
+			final int y = (int) getYOffsetInPixels();
+			final int w = getLayerWidth();
+			final int h = getLayerHeight();
+			final IColor background = frame.getBackgroundColor(getSurface().getScope());
+			if (background != null) {
+				final var composite = currentRenderer.getComposite();
+				try {
+					currentRenderer.setComposite(AlphaComposite.SrcOver);
+					currentRenderer.setColor(IColor.toAWTColor(background));
+					currentRenderer.fillRect(x, y, w, h);
+				} finally {
+					currentRenderer.setComposite(composite);
+				}
+			}
+			if (frame.getBorderColor() != null) {
+				currentRenderer.setColor(IColor.toAWTColor(frame.getBorderColor()));
+				currentRenderer.drawRect(x, y, w, h);
+			}
+		}
+	}
+
+	@Override
+	public void endDrawingLayer(final ILayer layer) {
+		super.endDrawingLayer(layer);
+		currentRenderer = normalRenderer;
 	}
 
 	@Override

@@ -19,6 +19,7 @@ import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.LayerCoordinates;
 
 /**
  * Class OverlayLayer.
@@ -40,7 +41,9 @@ public class OverlayLayer extends GraphicLayer {
 	}
 
 	@Override
-	public boolean isOverlay() { return true; }
+	public boolean isOverlay() {
+		return getData().getCoordinates() != LayerCoordinates.WORLD;
+	}
 
 	@Override
 	protected OverlayLayerData createData() {
@@ -60,10 +63,17 @@ public class OverlayLayer extends GraphicLayer {
 
 	@Override
 	protected void privateDraw(final IGraphicsScope scope, final IGraphics g) throws GamaRuntimeException {
+		if (!isOverlay()) {
+			super.privateDraw(scope, g);
+			return;
+		}
 		g.beginOverlay(this);
-		final IAgent agent = scope.getAgent();
-		scope.execute(((OverlayStatement) definition).getAspect(), agent, null);
-		g.endOverlay();
+		try {
+			final IAgent agent = scope.getAgent();
+			scope.execute(((OverlayStatement) definition).getAspect(), agent, null);
+		} finally {
+			g.endOverlay();
+		}
 	}
 
 	@Override

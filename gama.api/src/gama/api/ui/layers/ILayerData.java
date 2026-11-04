@@ -26,6 +26,12 @@ import gama.api.utils.geometry.IEnvelope;
  */
 public interface ILayerData {
 
+	/** The placement convention; omitted facets retain the historical behavior. */
+	default LayerCoordinates getCoordinates() { return LayerCoordinates.LEGACY; }
+
+	/** The convention used to evaluate and draw the contents, independently of their containing layer. */
+	default LayerCoordinates getContentCoordinates() { return LayerCoordinates.LEGACY; }
+
 	/**
 	 * Compute.
 	 *

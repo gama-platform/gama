@@ -648,11 +648,25 @@ public interface GamlCoreConstants {
 	String mouse_button = "";
 
 	@constant (
-			value = "user_location",
-			altNames = { "user_location_in_world" },
+			value = "screen",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit holds the mouse's location in the world's coordinates. During a #mouse_listener callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used."))
+			doc = @doc ("An explicit screen coordinate system, independent of the camera and zoom. Positions and rectangular extents below 1 in magnitude are relative; values from 1 are logical pixels."))
+	String screen = "screen";
+
+	@constant (
+			value = "world",
+			category = IConstantCategory.GRAPHIC,
+			concept = { IConcept.DISPLAY },
+			doc = @doc ("An explicit world coordinate system. Unqualified XY coordinates are model units, including values between 0 and 1."))
+	String world = "world";
+
+	@constant (
+			value = "user_location",
+			altNames = { "user_location_in_world", "mouse_world_location" },
+			category = IConstantCategory.GRAPHIC,
+			concept = { IConcept.DISPLAY },
+			doc = @doc ("The mouse location in world coordinates, independently of the layer coordinate mode. Input callback snapshots take precedence; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position."))
 	@tests ({
 			@test ("#user_location is point")
 	})
@@ -662,9 +676,10 @@ public interface GamlCoreConstants {
 	/** The user location in display. */
 	@constant (
 			value = "user_location_in_display",
+			altNames = { "mouse_screen_location" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit holds the mouse's location in the display's coordinates. During a #mouse_listener callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used.")) IPoint user_location_in_display =
+			doc = @doc ("The mouse location in viewport pixels, not overlay-local coordinates, independently of the layer coordinate mode. Input callback snapshots take precedence; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position.")) IPoint user_location_in_display =
 					GamaPointFactory.create();
 
 	/** The camera location. */
@@ -862,7 +877,7 @@ public interface GamlCoreConstants {
 			altNames = { "px" },
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT },
-			doc = @doc ("This unit, only available when running aspects or declaring displays,  returns a dynamic value instead of a fixed one. px (or pixels), returns the value of one pixel on the current view in terms of model units."))
+			doc = @doc ("The contextual value of one pixel: 1 in an explicit screen coordinate context, otherwise the historical conversion from pixels to model units. Evaluating and storing this number does not preserve unit metadata."))
 	@tests ({
 			@test ("#pixels = 1.0")
 	})
@@ -874,7 +889,7 @@ public interface GamlCoreConstants {
 			value = "display_width",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT },
-			doc = @doc ("This constant is only accessible in a graphical context: display, graphics...")) double display_width =
+			doc = @doc ("In an explicit screen context, the visible display width in logical pixels, independent of zoom. Otherwise the historical width of the displayed world in pixels. It never denotes the current overlay width.")) double display_width =
 					1;
 
 	/** The display height. */
@@ -882,7 +897,7 @@ public interface GamlCoreConstants {
 			value = "display_height",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT },
-			doc = @doc ("This constant is only accessible in a graphical context: display, graphics...")) double display_height =
+			doc = @doc ("In an explicit screen context, the visible display height in logical pixels, independent of zoom. Otherwise the historical height of the displayed world in pixels. It never denotes the current overlay height.")) double display_height =
 					1;
 
 	/** The now. */

@@ -138,7 +138,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	IDrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
 		Double depth = data.depth.get();
 		if (depth == null) { depth = shape.getDepth(); }
-		return new ShapeDrawingAttributes(Scaling3D.of(data.size.get()), depth, data.rotation.get(), data.getLocation(),
+		return new ShapeDrawingAttributes(Scaling3D.of(data.getSize()), depth, data.rotation.get(), data.getLocation(),
 				data.empty.get(), data.color.get(), /* data.getColors(), */
 				data.border.get(), data.texture.get(), /* data.material.get(), */ scope.getAgent(),
 				shape.getGeometricalType(), data.lineWidth.get(), data.lighting.get());

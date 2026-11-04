@@ -34,6 +34,7 @@ import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.AttributeHolder;
 import gama.api.utils.geometry.IEnvelope;
 
@@ -44,6 +45,35 @@ import gama.api.utils.geometry.IEnvelope;
  *
  */
 public class LayerData extends AttributeHolder implements ILayerData {
+
+	public static final String COORDINATES = "coordinates";
+	public static final String CONTENT_COORDINATES = "content_coordinates";
+	public static final String COORDINATES_DOC = "Explicit XY placement convention: #world uses model units without a threshold at 1; #screen uses fractions for magnitudes below 1 and logical pixels from 1, independently per component. Negative screen positions are measured from the opposite edge. Omit the facet to preserve historical behavior. World Z rules are unchanged; screen frames have no world-depth placement. An omitted size fills the reference extent.";
+	public static final String CONTENT_COORDINATES_DOC = "The coordinate system of draw contents, independently of layer placement. In #screen, at: and rectangular size: use fractions below 1 and logical pixels from 1; geometric lengths are pixels. In #world, contents use model units. Explicit graphics and overlays inherit coordinates. This facet requires explicit coordinates; screen contents require screen placement.";
+	public static final String POSITION_DOC = "Position of the upper-left corner of the layer. With coordinates: #world, XY values are model units. With coordinates: #screen, magnitudes strictly below 1 are viewport fractions and values from 1 are logical pixels; negative values count from the opposite edge. Without coordinates:, the historical hybrid convention is retained: magnitudes up to and including 1 are relative, larger values are model units, and #px performs its historical conversion. World-layer Z behavior is unchanged; screen frames have no world-depth placement.";
+	public static final String SIZE_DOC = "Extent of the layer from its origin. With coordinates: #world, XY values are model units. With coordinates: #screen, magnitudes strictly below 1 are viewport fractions and values from 1 are logical pixels: {1,1} is one pixel by one pixel. In either explicit mode, omitting size fills the reference extent. Without coordinates:, the historical hybrid convention is retained: magnitudes up to and including 1 are relative, larger values are model units, and #px performs its historical conversion. The Z component retains the existing scaling convention.";
+
+	private final LayerCoordinates coordinates;
+	private final LayerCoordinates contentCoordinates;
+	private boolean defaultSize;
+
+	private static LayerCoordinates readCoordinates(final ILayerStatement def, final String facet,
+			final LayerCoordinates fallback) {
+		final IExpression expression = def.getFacet(facet);
+		if (expression == null) return fallback;
+		if (!expression.isConst()) throw GamaRuntimeException.error(facet + " must be a constant #screen or #world", null);
+		return switch (String.valueOf(expression.getConstValue())) {
+			case "screen" -> LayerCoordinates.SCREEN;
+			case "world" -> LayerCoordinates.WORLD;
+			default -> throw GamaRuntimeException.error(facet + " must be #screen or #world", null);
+		};
+	}
+
+	@Override
+	public LayerCoordinates getCoordinates() { return coordinates; }
+
+	@Override
+	public LayerCoordinates getContentCoordinates() { return contentCoordinates; }
 
 	static {
 		// DEBUG.OFF();
@@ -101,7 +131,19 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	 */
 	public LayerData(final ILayerStatement def) throws GamaRuntimeException {
 		super(def);
+		coordinates = readCoordinates(def, COORDINATES, LayerCoordinates.LEGACY);
+		final boolean graphic = def instanceof GraphicLayerStatement;
+		contentCoordinates = readCoordinates(def, CONTENT_COORDINATES,
+				coordinates == LayerCoordinates.LEGACY ? LayerCoordinates.LEGACY
+						: graphic ? coordinates : LayerCoordinates.WORLD);
+		if (def.getFacet(CONTENT_COORDINATES) != null && coordinates == LayerCoordinates.LEGACY) {
+			throw GamaRuntimeException.error("content_coordinates requires explicit coordinates", null);
+		}
+		if (contentCoordinates == LayerCoordinates.SCREEN && coordinates == LayerCoordinates.WORLD) {
+			throw GamaRuntimeException.error("Screen contents require coordinates: #screen", null);
+		}
 		final IExpression sizeExp = def.getFacet(SIZE);
+		defaultSize = sizeExp == null || def instanceof MeshLayerStatement && sizeExp.getGamlType().isNumber();
 		sizeIsInPixels = sizeExp != null && sizeExp.containsPixels();
 		size = create(SIZE, sizeExp, POINT, GamaPointFactory.create(1, 1, 1));
 		final IExpression posExp = def.getFacet(POSITION);
@@ -122,8 +164,16 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	@Override
 	public boolean compute(final IScope scope, final IGraphics g) throws GamaRuntimeException {
 		boolean v = isVisible();
-		this.refresh(scope);
-		computePixelsDimensions(g);
+		final LayerCoordinates previous = g.setCoordinateSystem(coordinates);
+		try {
+			this.refresh(scope);
+			if (coordinates == LayerCoordinates.SCREEN && getRotation() != 0d) {
+				throw GamaRuntimeException.error("Rotating screen layers is not supported; rotate individual drawings instead", scope);
+			}
+			computePixelsDimensions(g);
+		} finally {
+			g.setCoordinateSystem(previous);
+		}
 		return scope.getClock().getCycle() > 0 && isVisible() != v;
 	}
 
@@ -140,6 +190,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 
 	@Override
 	public void setSize(final double width, final double height, final double depth) {
+		defaultSize = false;
 		size = create(SIZE, GamaPointFactory.create(width, height, depth));
 		sizeIsInPixels = false;
 	}
@@ -215,6 +266,10 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	 */
 	@Override
 	public void computePixelsDimensions(final IGraphics g) {
+		if (coordinates != LayerCoordinates.LEGACY) {
+			computeExplicitDimensions(g);
+			return;
+		}
 		// Voir comment conserver cette information
 		final int pixelWidth = g.getDisplayWidth();
 		final int pixelHeight = g.getDisplayHeight();
@@ -265,6 +320,34 @@ public class LayerData extends AttributeHolder implements ILayerData {
 
 		getSizeInPixels().setLocation(absolute_width, absolute_height);
 		getPositionInPixels().setLocation(absolute_x, absolute_y);
+	}
+
+	/** Resolves the rectangle once for all renderers; world placement never treats small values as fractions. */
+	protected void computeExplicitDimensions(final IGraphics g) {
+		final IPoint p = getPosition();
+		final IPoint s = getSize();
+		final double width = g.getViewWidth();
+		final double height = g.getViewHeight();
+		double x, y, w, h;
+		if (coordinates == LayerCoordinates.SCREEN) {
+			x = LayerCoordinates.screenPosition(p.getX(), width);
+			y = LayerCoordinates.screenPosition(p.getY(), height);
+			w = defaultSize ? width : LayerCoordinates.screenLength(s.getX(), width);
+			h = defaultSize ? height : LayerCoordinates.screenLength(s.getY(), height);
+		} else {
+			final double xr = g.getDisplayWidth() / g.getEnvWidth();
+			final double yr = g.getDisplayHeight() / g.getEnvHeight();
+			x = p.getX() * xr;
+			y = p.getY() * yr;
+			w = defaultSize ? g.getDisplayWidth() : s.getX() * xr;
+			h = defaultSize ? g.getDisplayHeight() : s.getY() * yr;
+		}
+		if (!Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(w) || !Double.isFinite(h)
+				|| w < 0 || h < 0) {
+			throw GamaRuntimeException.error("Layer position and size must be finite, and size must be non-negative", null);
+		}
+		getPositionInPixels().setLocation(x, y);
+		getSizeInPixels().setLocation(w, h);
 	}
 
 	@Override

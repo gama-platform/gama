@@ -58,6 +58,7 @@ import gama.api.ui.IGamaView;
 import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.ui.layers.UserInputEvent;
 import gama.dev.DEBUG;
 import gaml.compiler.descriptions.ConstantExpressionDescription;
@@ -367,7 +368,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				// Pixel unit for display coordinates
 				return new CustomExpression<>(unit, Types.FLOAT, 1d, doc, sc -> {
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 1d : 1d / g.getAbsoluteRatioBetweenPixelsAndModelsUnits();
+					return g == null || g.getCoordinateSystem() == LayerCoordinates.SCREEN ? 1d
+							: 1d / g.getAbsoluteRatioBetweenPixelsAndModelsUnits();
 				});
 			case "display_width":
 				// Width of the current display
@@ -378,7 +380,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 0d : (double) g.getDisplayWidth();
+					return g == null ? 0d : (double) (g.getCoordinateSystem() == LayerCoordinates.SCREEN
+							? g.getViewWidth() : g.getDisplayWidth());
 				});
 			case "display_height":
 				// Height of the current display
@@ -389,7 +392,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 0d : (double) g.getDisplayHeight();
+					return g == null ? 0d : (double) (g.getCoordinateSystem() == LayerCoordinates.SCREEN
+							? g.getViewHeight() : g.getDisplayHeight());
 				});
 			case "now":
 				// Current simulation time
@@ -466,20 +470,26 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				return new CustomExpression<>(unit, Types.STRING, "", doc, UserInputEvent::mouseButton);
 			case "user_location":
 			case "user_location_in_world":
+			case "mouse_world_location":
 				// Mouse cursor location in world coordinates
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null) return GamaPointFactory.create();
 					final UserInputEvent event = UserInputEvent.current(sc);
-					return event != null && event.modelLocation() != null ? event.modelLocation().copy(sc)
-							: sc.getGui().getMouseLocationInModel();
+					if (event != null && event.modelLocation() != null) return event.modelLocation().copy(sc);
+					final IGraphics graphics = sc.getGraphics();
+					return graphics != null && graphics.getSurface() != null
+							? graphics.getSurface().getModelCoordinates() : sc.getGui().getMouseLocationInModel();
 				});
 			case "user_location_in_display":
+			case "mouse_screen_location":
 				// Mouse cursor location in display coordinates
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null) return GamaPointFactory.create();
 					final UserInputEvent event = UserInputEvent.current(sc);
-					return event != null && event.displayLocation() != null ? event.displayLocation().copy(sc)
-							: sc.getGui().getMouseLocationInDisplay();
+					if (event != null && event.displayLocation() != null) return event.displayLocation().copy(sc);
+					final IGraphics graphics = sc.getGraphics();
+					return graphics != null && graphics.getSurface() != null
+							? graphics.getSurface().getWindowCoordinates() : sc.getGui().getMouseLocationInDisplay();
 				});
 			case "current_error":
 				// Current error message if any

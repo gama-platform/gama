@@ -34,6 +34,7 @@ import gama.api.types.color.IColor;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.ui.IOutput;
+import gama.api.annotations.validator;
 
 /**
  * The Class OverlayStatement.
@@ -47,7 +48,9 @@ import gama.api.ui.IOutput;
 @inside (
 		symbols = IKeyword.DISPLAY)
 @doc (
-		value = "`overlay` defines a rectangular layer drawn on top of the other layers of a display, at a fixed place in the view: it is not affected by the camera, the zoom or the rotation of the display, and is placed and sized identically in 2D (java2D) and 3D (opengl) displays. "
+		value = "With explicit `coordinates: #screen`, an overlay uses view-relative positions below 1 in magnitude and logical pixels from 1. Its contents default to screen coordinates, where #px is 1, at: and rectangular size: use the overlay as their reference, and geometric lengths are pixels. `content_coordinates: #world` fits model-unit contents proportionally into the frame, without clipping. Explicit `coordinates: #world` instead creates a camera-attached world layer whose contents default to model units. "
+				+ "When coordinates is omitted, the following historical rules are preserved: "
+				+ "`overlay` defines a rectangular layer drawn on top of the other layers of a display, at a fixed place in the view: it is not affected by the camera, the zoom or the rotation of the display, and is placed and sized identically in 2D (java2D) and 3D (opengl) displays. "
 				+ "Each coordinate of the `position` and `size` facets is interpreted independently: when expressed in pixels (using `#px`), it represents a number of pixels of the view; otherwise, a value in [0,1] (in [-1,1] for the position) represents a fraction of the view and a larger value represents model units (considering that the model occupies the entire view). Negative positions are counted from the right (resp. bottom) border of the view. "
 				+ "The statements in the block draw the contents of the overlay in a coordinate system whose origin is its upper-left corner, in which `#px` represents exactly one pixel of the view and model units are scaled as in the view, whatever the size of the overlay. It is therefore recommended to express the locations and sizes of the contents in pixels.",
 		usages = { @usage (
@@ -76,6 +79,12 @@ import gama.api.ui.IOutput;
 									isExecutable = false) }) })
 @facets (
 		value = { @facet (
+				name = LayerData.COORDINATES, type = IType.STRING,
+				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
+				@facet (
+						name = LayerData.CONTENT_COORDINATES, type = IType.STRING,
+						optional = true, doc = @doc (LayerData.CONTENT_COORDINATES_DOC)),
+				@facet (
 				name = IKeyword.ROUNDED,
 				type = IType.BOOL,
 				optional = true,
@@ -89,12 +98,12 @@ import gama.api.ui.IOutput;
 						name = IKeyword.POSITION,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("position of the upper-left corner of the overlay in the view (whatever the display type, 2D or 3D). Each coordinate is interpreted independently: if expressed in pixels (e.g. {10#px, 20#px}), it is a number of pixels of the view; otherwise, a value in [-1,1] is a fraction of the view (e.g. {0.5,0.5} refers to the middle of the view) and a value outside this range is in model units (considering that the model occupies the entire view). Negative coordinates are counted from the right (resp. bottom) border of the view (e.g. {-110#px, 10#px} places the overlay 110 pixels from the right border). The position is {0,0} by default.")),
+						doc = @doc (LayerData.POSITION_DOC + " Overlays without explicit coordinates use the visible view as the reference for their historical hybrid placement, with per-component #px detection and negative positions counted from the opposite edge.")),
 				@facet (
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("extent of the overlay in the view from its position (whatever the display type, 2D or 3D). Each coordinate is interpreted independently: if expressed in pixels (e.g. {200#px, 5#px}), it is a number of pixels of the view; otherwise, a value in [0,1] is a fraction of the view and a value greater than 1 is in model units (considering that the model occupies the entire view). A size of 0 draws no frame. Inside the overlay, the contents are drawn in a coordinate system that does not depend on this size: the origin is the upper-left corner of the overlay, #px represents one pixel of the view and model units are scaled as in the view. The size is {1,1} (the whole view) by default.")),
+						doc = @doc (LayerData.SIZE_DOC + " Overlays without explicit coordinates retain their full-view default {1,1}, per-component #px detection and content scale independent of frame size. Explicit screen overlays default to pixel contents; world contents are fitted proportionally into the frame. No implicit clipping is applied.")),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,
@@ -116,6 +125,7 @@ import gama.api.ui.IOutput;
 						of = IType.COLOR,
 						optional = true,
 						doc = @doc ("the color(s) used to display the expressions given in the 'left', 'center' and 'right' facets")) })
+@validator (AbstractLayerStatement.CoordinatesValidator.class)
 public class OverlayStatement extends GraphicLayerStatement {
 
 	/** The color. */

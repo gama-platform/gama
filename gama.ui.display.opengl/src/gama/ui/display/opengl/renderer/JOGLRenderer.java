@@ -34,6 +34,7 @@ import gama.api.ui.displays.IAsset;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
@@ -539,16 +540,19 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getX());
 	}
 
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getY());
 	}
 
 	@Override
 	public double getAbsoluteRatioBetweenPixelsAndModelsUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
 		return Math.min(getViewHeight() / data.getEnvHeight(), getViewWidth() / data.getEnvWidth());
 	}
 

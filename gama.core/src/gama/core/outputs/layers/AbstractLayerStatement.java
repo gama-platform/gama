@@ -42,6 +42,47 @@ import one.util.streamex.StreamEx;
 		symbols = IKeyword.DISPLAY)
 public abstract class AbstractLayerStatement extends Symbol implements ILayerStatement {
 
+	public static class CoordinatesValidator implements IDescriptionValidator<IStatementDescription> {
+		@Override
+		public void validate(final IStatementDescription description) {
+			validateCoordinates(description);
+		}
+	}
+
+	protected static void validateCoordinates(final IStatementDescription description) {
+		for (final String facet : new String[] { LayerData.COORDINATES, LayerData.CONTENT_COORDINATES }) {
+			final IExpression expression = description.getFacetExpr(facet);
+			if (expression != null && !expression.isConst()) {
+				description.error(facet + " must be a constant #screen or #world", IGamlIssue.WRONG_TYPE, facet);
+			} else if (expression != null && !"screen".equals(expression.getConstValue())
+					&& !"world".equals(expression.getConstValue())) {
+				description.error(facet + " must be #screen or #world", IGamlIssue.WRONG_VALUE, facet);
+			}
+		}
+		final IExpression coordinates = description.getFacetExpr(LayerData.COORDINATES);
+		final IExpression content = description.getFacetExpr(LayerData.CONTENT_COORDINATES);
+		if (content != null && coordinates == null) {
+			description.error("content_coordinates requires explicit coordinates", IGamlIssue.CONFLICTING_FACETS,
+					LayerData.CONTENT_COORDINATES);
+		}
+		if (coordinates == null || !coordinates.isConst()) return;
+		if (IKeyword.SPECIES_LAYER.equals(description.getEnclosingDescription().getKeyword())) {
+			description.error("Nested species layers inherit their host's coordinates; place them in a separate layer to override them",
+					IGamlIssue.WRONG_CONTEXT, LayerData.COORDINATES);
+		}
+		if ("world".equals(coordinates.getConstValue()) && content != null && content.isConst()
+				&& "screen".equals(content.getConstValue())) {
+			description.error("Screen contents require coordinates: #screen", IGamlIssue.CONFLICTING_FACETS,
+					LayerData.CONTENT_COORDINATES);
+		}
+		final IExpression rotation = description.getFacetExpr(IKeyword.ROTATE);
+		if ("screen".equals(coordinates.getConstValue()) && rotation != null && rotation.isConst()
+				&& rotation.getConstValue() instanceof Number value && value.doubleValue() != 0d) {
+			description.error("Rotating screen layers is not supported; rotate individual drawings instead",
+					IGamlIssue.CONFLICTING_FACETS, IKeyword.ROTATE);
+		}
+	}
+
 	/**
 	 * The Class SpeciesLayerValidator.
 	 */

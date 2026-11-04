@@ -59,7 +59,7 @@ public class TextDrawer implements IDrawDelegate {
 	 * @return the text drawing attributes
 	 */
 	TextDrawingAttributes computeAttributes(final IScope scope, final DrawingData data) {
-		final TextDrawingAttributes attributes = new TextDrawingAttributes(Scaling3D.of(data.size.get()),
+		final TextDrawingAttributes attributes = new TextDrawingAttributes(Scaling3D.of(data.getSize()),
 				data.rotation.get(), data.getLocation(), data.color.get());
 		// We push the location of the agent if none has been provided
 		if (attributes.getLocation() == null) { attributes.setLocation(scope.getAgent().getLocation().clone()); }
