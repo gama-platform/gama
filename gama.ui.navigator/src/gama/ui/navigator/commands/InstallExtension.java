@@ -11,34 +11,36 @@
 package gama.ui.navigator.commands;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.equinox.p2.core.ProvisionException;
 import org.eclipse.equinox.p2.engine.IProfile;
 import org.eclipse.equinox.p2.engine.IProfileRegistry;
+import org.eclipse.equinox.p2.engine.IProvisioningPlan;
+import org.eclipse.equinox.p2.engine.PhaseSetFactory;
+import org.eclipse.equinox.p2.engine.ProvisioningContext;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.Version;
 import org.eclipse.equinox.p2.operations.InstallOperation;
-import org.eclipse.equinox.p2.operations.ProfileChangeOperation;
-import org.eclipse.equinox.p2.operations.Update;
-import org.eclipse.equinox.p2.operations.UpdateOperation;
+import org.eclipse.equinox.p2.operations.ProfileModificationJob;
+import org.eclipse.equinox.p2.operations.ProvisioningJob;
+import org.eclipse.equinox.p2.query.IQueryable;
 import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.equinox.p2.ui.ProvisioningUI;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 /**
- * Resolves an optional feature before opening p2's preselected installation wizard.
+ * Resolves a batch of features and schedules it through p2's normal progress and restart handling.
  */
 final class InstallExtension {
 
@@ -60,111 +62,155 @@ final class InstallExtension {
 	}
 
 	static void install(final Shell shell, final Extension extension) {
-		final String label = extension.label();
-		final String featureId = extension.featureId();
-		final var display = shell.getDisplay();
-		final ProvisioningUI ui = ProvisioningUI.getDefaultUI();
-		if (ui == null || ui.getProfileId() == null) {
-			StatusManager.getManager().handle(
-					error("Extensions can only be installed in a provisioned GAMA installation."),
-					StatusManager.LOG | StatusManager.SHOW);
-			return;
-		}
-		if (ui.hasScheduledOperations() || !INSTALLING.compareAndSet(false, true)) {
-			MessageDialog.openInformation(shell, "Installation in progress",
-					"Please finish the current software installation or update before installing another feature.");
-			return;
-		}
-
-		final Job job = Job.create("Preparing installation: " + label, monitor -> {
-			try {
-				final SubMonitor progress = SubMonitor.convert(monitor, 100);
-				final IProfile profile = installationProfile(ui);
-				if (profile == null) return error("The GAMA installation profile is unavailable.");
-				final URI source = extension.repository();
-				final URI[] repositories = source.equals(COPILOT_REPOSITORY)
-						? new URI[] { source, COPILOT_UPSTREAM_REPOSITORY, ECLIPSE_REPOSITORY }
-						: new URI[] { source, ECLIPSE_REPOSITORY };
-				for (final URI repository : repositories) {
-					ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
-				}
-				final IInstallableUnit installed = profile.query(QueryUtil.createIUQuery(featureId), progress.split(5))
-						.toSet().stream().max(Comparator.comparing(IInstallableUnit::getVersion)).orElse(null);
-
-				final var repository = ui.loadMetadataRepository(source, false, progress.split(40));
-				final var matches = repository.query(
-						QueryUtil.createLatestQuery(QueryUtil.createIUQuery(featureId)), progress.split(5));
-				if (matches.isEmpty()) return error("The update site " + source + " does not yet publish " + label
-						+ " (" + featureId + "). Please contact the GAMA maintainers.");
-				final List<IInstallableUnit> units = List.copyOf(matches.toSet());
-				final IInstallableUnit available = units.getFirst();
-				if (installed != null && installed.getVersion().compareTo(available.getVersion()) >= 0) {
-					display.asyncExec(() -> {
-						try {
-							if (!shell.isDisposed()) {
-								MessageDialog.openInformation(shell, label + " is installed",
-										label + " is already installed at the latest available version or newer.");
-							}
-						} finally {
-							INSTALLING.set(false);
-						}
-					});
-					return Status.OK_STATUS;
-				}
-
-				final ProfileChangeOperation operation;
-				if (installed == null) {
-					operation = ui.getInstallOperation(units, repositories);
-				} else {
-					final UpdateOperation update = ui.getUpdateOperation(List.of(installed), repositories);
-					update.setSelectedUpdates(new Update[] { new Update(installed, available) });
-					operation = update;
-				}
-				final IStatus resolution = operation.resolveModal(progress.split(50));
-				if (resolution.matches(IStatus.ERROR | IStatus.CANCEL)) return resolution;
-				if (monitor.isCanceled()) return Status.CANCEL_STATUS;
-				display.asyncExec(() -> {
-					try {
-						if (!shell.isDisposed()) {
-							if (ui.hasScheduledOperations()) {
-								MessageDialog.openInformation(shell, "Installation in progress",
-										"Another software operation has started. Please finish it and try again.");
-							} else {
-								// p2 retains license acceptance, signature verification and restart handling.
-								if (operation instanceof UpdateOperation update) {
-									ui.openUpdateWizard(false, update, null);
-								} else if (operation instanceof InstallOperation install) {
-									ui.openInstallWizard(units, install, null);
-								}
-							}
-						}
-					} finally {
-						INSTALLING.set(false);
-					}
-				});
-				return Status.OK_STATUS;
-			} catch (final OperationCanceledException e) {
-				return Status.CANCEL_STATUS;
-			} catch (final ProvisionException e) {
-				return new Status(IStatus.ERROR, PLUGIN_ID, "Unable to prepare " + label
-						+ ". Check your network connection and the update sites.", e);
-			}
-		});
-		job.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(final IJobChangeEvent change) {
-				if (change.getResult().isOK()) return;
-				INSTALLING.set(false);
-				if (!change.getResult().matches(IStatus.CANCEL)) {
-					StatusManager.getManager().handle(change.getResult(), StatusManager.LOG | StatusManager.SHOW);
-				}
-			}
-		});
-		job.setUser(true);
-		job.schedule();
+		final WizardDialog dialog = new WizardDialog(shell, new InstallExtensionsWizard(extension));
+		dialog.setPageSize(720, 480);
+		dialog.open();
 	}
 
-	private static IStatus error(final String message) {
-		return new Status(IStatus.ERROR, PLUGIN_ID, message);
+	static InstallOperation resolve(final List<Extension> extensions, final IProgressMonitor monitor)
+			throws ProvisionException {
+		final ProvisioningUI ui = provisioningUI();
+		if (ui.hasScheduledOperations() || !INSTALLING.compareAndSet(false, true)) {
+			throw failure("Please finish the current software installation or update before installing plugins.");
+		}
+		try {
+			final SubMonitor progress = SubMonitor.convert(monitor, "Preparing plugin installation", 100);
+			final SubMonitor loading = progress.split(40).setWorkRemaining(extensions.size());
+			final IProfile profile = installationProfile(ui);
+			if (profile == null) throw failure("The GAMA installation profile is unavailable.");
+			final var repositories = new LinkedHashSet<URI>();
+			final List<IInstallableUnit> units = new ArrayList<>();
+			for (final Extension extension : extensions) {
+				loading.checkCanceled();
+				final var repository = ui.loadMetadataRepository(extension.repository(), false, loading.split(1));
+				final IInstallableUnit available = repository
+						.query(QueryUtil.createIUQuery(extension.featureId(), extension.version()), null)
+						.toSet().stream().findFirst().orElse(null);
+				if (available == null) throw failure("The update site no longer publishes " + extension.label()
+						+ " " + extension.version() + ". Refresh the plugin list and try again.");
+				final IInstallableUnit installed = profile
+						.query(QueryUtil.createIUQuery(extension.featureId()), null).toSet().stream()
+						.max(Comparator.comparing(IInstallableUnit::getVersion)).orElse(null);
+				if (installed != null && installed.getVersion().compareTo(available.getVersion()) >= 0) continue;
+				units.add(available);
+				repositories.add(extension.repository());
+				if (extension.repository().equals(COPILOT_REPOSITORY)) repositories.add(COPILOT_UPSTREAM_REPOSITORY);
+			}
+			if (units.isEmpty()) throw failure("The selected plugins are already installed. Refresh the list.");
+			for (final URI repository : repositories) {
+				ui.getRepositoryTracker().addRepository(repository, null, ui.getSession());
+			}
+			// InstallOperation also replaces older installed versions, allowing mixed installs and updates.
+			InstallOperation operation = installOperation(ui, profile, units, repositories);
+			IStatus status = operation.resolveModal(progress.split(30));
+			if (status.matches(IStatus.ERROR)) {
+				progress.checkCanceled();
+				repositories.add(ECLIPSE_REPOSITORY);
+				ui.getRepositoryTracker().addRepository(ECLIPSE_REPOSITORY, null, ui.getSession());
+				operation = installOperation(ui, profile, units, repositories);
+				status = operation.resolveModal(progress.split(30));
+			}
+			progress.checkCanceled();
+			if (status.matches(IStatus.ERROR | IStatus.CANCEL)) {
+				throw new ProvisionException(new Status(status.getSeverity(), PLUGIN_ID,
+						operation.getResolutionDetails(), status.getException()));
+			}
+			if (operation.getProvisioningPlan() == null || operation.getProvisioningPlan().isEmpty()) {
+				throw failure("No plugin changes could be prepared. Refresh the list and try again.");
+			}
+			for (final IInstallableUnit removal : operation.getProvisioningPlan().getRemovals()
+					.query(QueryUtil.ALL_UNITS, null)) {
+				if (isExecutionEnvironment(removal)) {
+					throw failure("These plugins require changing GAMA's Java execution environment. "
+							+ "Install a compatible plugin version instead.");
+				}
+			}
+			return operation;
+		} finally {
+			INSTALLING.set(false);
+		}
+	}
+
+	private static InstallOperation installOperation(final ProvisioningUI ui, final IProfile profile,
+			final List<IInstallableUnit> units, final LinkedHashSet<URI> repositories) {
+		final URI[] locations = repositories.toArray(URI[]::new);
+		final InstallOperation operation = ui.getInstallOperation(units, locations);
+		operation.setProfileId(profile.getProfileId());
+		final ProvisioningContext context = new ProvisioningContext(ui.getSession().getProvisioningAgent()) {
+			@Override
+			public String getProperty(final String key) {
+				// InstallOperation's retry must not silently widen the explicitly selected update sites.
+				return FOLLOW_REPOSITORY_REFERENCES.equals(key) ? Boolean.FALSE.toString() : super.getProperty(key);
+			}
+
+			@Override
+			public IQueryable<IInstallableUnit> getMetadata(final IProgressMonitor monitor) {
+				final var metadata = super.getMetadata(monitor);
+				// Repository-generated EE units describe build targets, not the Java running GAMA.
+				return (query, progress) -> query.perform(metadata.query(QueryUtil.ALL_UNITS, progress).stream()
+						.filter(unit -> !isExecutionEnvironment(unit)).iterator());
+			}
+		};
+		context.setMetadataRepositories(locations);
+		context.setArtifactRepositories(locations);
+		operation.setProvisioningContext(context);
+		return operation;
+	}
+
+	private static boolean isExecutionEnvironment(final IInstallableUnit unit) {
+		return unit.getProvidedCapabilities().stream().anyMatch(capability -> "osgi.ee".equals(capability.getNamespace()));
+	}
+
+	static void schedule(final InstallOperation operation, final boolean trustAll) throws ProvisionException {
+		final ProvisioningUI ui = provisioningUI();
+		if (ui.hasScheduledOperations() || !INSTALLING.compareAndSet(false, true)) {
+			throw failure("Another software operation has started. Please finish it and try again.");
+		}
+		try {
+			final IProfile profile = installationProfile(ui);
+			final IProvisioningPlan plan = operation.getProvisioningPlan();
+			if (profile == null || plan == null || !profile.getProfileId().equals(plan.getProfile().getProfileId())
+					|| profile.getTimestamp() != plan.getProfile().getTimestamp()) {
+				throw failure("The installation has changed. Go back and prepare your selection again.");
+			}
+			final ProvisioningJob job = operation.getProvisioningJob(null);
+			if (!(job instanceof ProfileModificationJob modification)) {
+				throw failure("The plugin installation job could not be created. Go back and try again.");
+			}
+			acceptLicenses(ui, plan);
+			if (trustAll) {
+				// Skip publisher/unsigned-code prompts only for this job; never change global trust settings.
+				modification.setPhaseSet(PhaseSetFactory
+						.createDefaultPhaseSetExcluding(new String[] { PhaseSetFactory.PHASE_CHECK_TRUST }));
+			}
+			modification.setRestartPolicy(ProvisioningJob.RESTART_ONLY);
+			modification.setUser(true);
+			ui.schedule(modification, StatusManager.LOG | StatusManager.SHOW);
+		} finally {
+			INSTALLING.set(false);
+		}
+	}
+
+	private static void acceptLicenses(final ProvisioningUI ui, final IProvisioningPlan plan) throws ProvisionException {
+		final var manager = ui.getLicenseManager();
+		if (manager == null) throw failure("The p2 license acceptance service is unavailable.");
+		for (final IInstallableUnit unit : plan.getAdditions().query(QueryUtil.ALL_UNITS, null)) {
+			for (final var license : unit.getLicenses(null)) {
+				if (!manager.accept(license)) throw failure("Unable to accept the license for " + unit.getId() + ".");
+			}
+		}
+		if (plan.getInstallerPlan() != null) acceptLicenses(ui, plan.getInstallerPlan());
+	}
+
+	private static ProvisioningUI provisioningUI() throws ProvisionException {
+		final ProvisioningUI ui = ProvisioningUI.getDefaultUI();
+		if (ui == null || ui.getProfileId() == null) {
+			throw failure("Plugins can only be installed in a provisioned GAMA installation.");
+		}
+		return ui;
+	}
+
+	private static ProvisionException failure(final String message) {
+		return new ProvisionException(new Status(IStatus.ERROR, PLUGIN_ID, message));
 	}
 }
