@@ -80,7 +80,7 @@ experiment ReproducibilityTest type: test autorun: true {
 		create walker number: 10 returns: second_agents;
 		list<point> second_locations <- second_agents collect each.location;
 		assert first_locations = second_locations;
-		ask first_agents + second_agents { do die; }
+		ask first_agents + second_agents { do die(); }
 	}
 
 	test "The draws are not altered by an unrelated computation" {
