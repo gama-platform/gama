@@ -477,6 +477,12 @@ text when a different scene target is active; restoring bindings afterward
 does not repair that misplaced draw. Surrounding rendering state is
 restored after text drawing, including on failure.
 
+The OpenGL bundle exports `com.jogamp.math.geom` so that OpenGL4 can access
+the glyph bounds (`AABBox`) under OSGi. A missing export aborts scene
+rendering at the first text object even though standalone classpath probes
+can load the same class. Bounded text diagnostics can be enabled with the
+VM argument `-Dgama.opengl4.debug.text=true`; they are disabled by default.
+
 The follow-up text pass now renders OpenGL4 extruded caps and sides from
 the same AWT outlines, rather than combining graph-font caps with potentially
 different AWT sides. GLU replaces the one-outer-ring tessellation, so

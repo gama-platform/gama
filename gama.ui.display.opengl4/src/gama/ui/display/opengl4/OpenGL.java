@@ -1852,7 +1852,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @return the pass
 	 */
 	public Pass beginScene() {
-		if (diagnosticFrames++ < 3) {
+		if (TextDrawer.DIAGNOSTICS && diagnosticFrames++ < 3) {
 			DEBUG.ERR("[GL4-TEXT] frame=" + diagnosticFrames + " driver=" + gl.glGetString(GL.GL_VERSION)
 					+ " renderer=" + gl.glGetString(GL.GL_RENDERER));
 			TextDrawer.traceState(gl, "scene entry");
@@ -1892,7 +1892,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		setDisplayLighting(previousDisplayLighting);
 		setDisplayWireframe(previousDisplayWireframe);
 		gl.glFinish();
-		if (diagnosticFrames <= 3) { TextDrawer.traceState(gl, "scene end"); }
+		if (TextDrawer.DIAGNOSTICS && diagnosticFrames <= 3) { TextDrawer.traceState(gl, "scene end"); }
 	}
 
 	/**

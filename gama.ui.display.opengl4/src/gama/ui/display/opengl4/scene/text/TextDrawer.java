@@ -106,6 +106,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 */
 	private RegionRenderer regionRenderer;
 
+	public static final boolean DIAGNOSTICS = Boolean.getBoolean("gama.opengl4.debug.text");
+
 	private int diagnosticDraws;
 
 	public static void traceState(final GL4 gl4, final String stage) {
@@ -622,7 +624,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	@Override
 	protected void _draw(final StringObject s) {
 		final IDrawingAttributes attributes = s.getAttributes();
-		if (diagnosticDraws < 12) {
+		if (DIAGNOSTICS && diagnosticDraws < 12) {
 			DEBUG.ERR("[GL4-TEXT] dispatch perspective=" + attributes.isPerspective() + " depth="
 					+ attributes.getDepth() + " empty=" + attributes.isEmpty() + " border=" + attributes.getBorder()
 					+ " textured=" + gl.isTextured());
@@ -631,7 +633,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			drawWithGraphLibrary(s.getObject(), attributes, true);
 		} else if (attributes.getDepth() > 0 || attributes.isEmpty() || attributes.getBorder() != null
 				|| gl.isTextured()) {
-			final boolean diagnose = diagnosticDraws++ < 12;
+			final boolean diagnose = DIAGNOSTICS && diagnosticDraws++ < 12;
 			if (diagnose) { traceState(gl.getGL(), "before outline"); }
 			try {
 				drawOutline(s.getObject(), attributes);
@@ -691,7 +693,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		try {
 			drawGraphText(text, attributes, overlay, viewportPosition);
 		} catch (final RuntimeException | LinkageError e) {
-			if (diagnosticDraws <= 12) { DEBUG.ERR("[GL4-TEXT] text preparation/draw failed", e); }
+			if (DIAGNOSTICS && diagnosticDraws <= 12) { DEBUG.ERR("[GL4-TEXT] text preparation/draw failed", e); }
 			throw e;
 		}
 	}
@@ -699,7 +701,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	private void drawGraphText(final String text, final IDrawingAttributes attributes, final boolean overlay,
 			final boolean viewportPosition) {
 		final com.jogamp.opengl.GL4 gl4 = gl.getGL();
-		final boolean diagnose = diagnosticDraws++ < 12;
+		final boolean diagnose = DIAGNOSTICS && diagnosticDraws++ < 12;
 		if (diagnose) {
 			traceState(gl4, "graph entry");
 			DEBUG.ERR("[GL4-TEXT] textLength=" + text.length() + " billboard=" + overlay
