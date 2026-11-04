@@ -358,6 +358,12 @@ public interface IGamaIcons {
 	/** The new folder. */
 	String NEW_FOLDER = "navigator/new.folder2";
 
+	/** The blue new folder. */
+	String NEW_FOLDER_BLUE = "navigator/new.folder.blue";
+
+	/** The new file. */
+	String NEW_FILE = "navigator/new.file";
+
 	/** The new model. */
 	String NEW_MODEL = "navigator/new.model2";
 

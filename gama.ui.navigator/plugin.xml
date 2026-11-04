@@ -723,6 +723,26 @@
             name="Test experiment file"
             project="false">
       </wizard>
+      <wizard
+            category="gama.ui.wizards.GAMA"
+            class="org.eclipse.ui.wizards.newresource.BasicNewFileResourceWizard"
+            hasPages="true"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.file.svg"
+            id="gama.ui.wizards.newFileWizard"
+            name="File"
+            project="false">
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+      <wizard
+            category="gama.ui.wizards.GAMA"
+            class="org.eclipse.ui.wizards.newresource.BasicNewFolderResourceWizard"
+            hasPages="true"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.folder.blue.svg"
+            id="gama.ui.wizards.newFolderWizard"
+            name="Folder"
+            project="false">
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.services">
