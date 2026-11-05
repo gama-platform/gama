@@ -25,6 +25,7 @@ import gaml.compiler.descriptions.PrimitiveDescription;
 import gaml.compiler.descriptions.StatementDescription;
 import gaml.compiler.descriptions.StatementRemoteWithChildrenDescription;
 import gaml.compiler.descriptions.StatementWithChildrenDescription;
+import gaml.compiler.descriptions.UiControlDescription;
 
 /**
  * Written by drogoul Modified on 8 févr. 2010
@@ -73,6 +74,9 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 	public IStatementDescription buildDescription(final String keyword, final Facets facets, final EObject element,
 			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol artefact) {
 		if (artefact.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
+		if ("ui_button".equals(keyword) || "ui_switch".equals(keyword) || "ui_slider".equals(keyword)) {
+			return new UiControlDescription(keyword, enclosing, children, element, facets);
+		}
 		if (IKeyword.ACTION.equals(keyword))
 			return new ActionDescription(keyword, enclosing, children, element, facets);
 		if (IKeyword.DO.equals(keyword) || IKeyword.INVOKE.equals(keyword) || IKeyword._DOT.equals(keyword))

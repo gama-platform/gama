@@ -103,6 +103,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	protected boolean ctrlPressed = false;
 
 	private boolean mouseLeftPressed;
+	private volatile boolean controlGesture;
 
 	/** The shift pressed. */
 	protected boolean shiftPressed = false;
@@ -444,6 +445,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseMoved(final com.jogamp.newt.event.MouseEvent e) {
+		if (controlGesture) return;
 		invokeOnGLThread(drawable -> {
 			internalMouseMove(e.getX(), e.getY(), e.getButton(), e.getButton() > 0, isControlDown(e), e.isShiftDown());
 			return false;
@@ -580,6 +582,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseClicked(final com.jogamp.newt.event.MouseEvent e) {
+		if (renderer.getSurface().isOverDisplayControl(e.getX(), e.getY())) return;
 		if (e.getClickCount() == 2) {
 			if (keystoneMode) {
 				final int x = e.getX();
@@ -597,6 +600,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mousePressed(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getButton() == 1 && renderer.getSurface().isOverDisplayControl(e.getX(), e.getY())) {
+			controlGesture = true;
+			return;
+		}
 		// DEBUG.OUT("Mouse pressed from NEWT");
 		invokeOnGLThread(drawable -> {
 			final int x = e.getX();
@@ -689,6 +696,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseReleased(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getButton() == 1 && controlGesture) {
+			controlGesture = false;
+			return;
+		}
 		invokeOnGLThread(drawable -> {
 			setCtrlPressed(isControlDown(e));
 			setShiftPressed(e.isShiftDown());
@@ -715,6 +726,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	}
 
 	public void cancelInteraction() {
+		controlGesture = false;
 		invokeOnGLThread(drawable -> {
 			resetInteraction();
 			return true;

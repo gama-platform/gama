@@ -71,6 +71,7 @@ import gaml.compiler.EGaml;
 import gaml.compiler.descriptions.DoDescription;
 import gaml.compiler.descriptions.ModelDescription;
 import gaml.compiler.descriptions.PlatformSpeciesDescription;
+import gaml.compiler.descriptions.UiControlDescription;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
@@ -1348,6 +1349,9 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		IActionDescription ad = td.getAction(s);
 		if (ad == null) {
 			boolean isExp = td instanceof IExperimentDescription;
+			if (isExp && context.getContext() instanceof UiControlDescription) {
+				ad = context.getContext().getModelDescription().getAction(s);
+			}
 			if (!isExp) {
 				IDescription host = td.getEnclosingDescription();
 				if (host != null) { ad = host.getAction(s); }

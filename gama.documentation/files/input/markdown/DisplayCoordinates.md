@@ -252,6 +252,95 @@ axis scale: `circle(6#px)` has radii 6 and 8 pixels in the graphics example,
 but 6 and 6 pixels in the uniform overlay. A scalar pixel-to-world
 conversion cannot cancel two different axis scales.
 
+## Overlay UI controls (initial pointer implementation)
+
+`ui_button`, `ui_switch` and `ui_slider` can be declared directly inside an
+overlay with screen placement and screen contents. They are drawn using the
+same graphics pipeline as the overlay, in Java2D, OpenGL and OpenGL4.
+See the `Display UI Controls.gaml` recipe.
+
+```gaml
+overlay position: {16, 16} size: {240, 160} {
+    ui_button "Reset" at: {12, 12} action: reset_controls;
+    ui_switch "Running" var: running at: {12, 52};
+    ui_slider "Speed" value: speed min: 0.0 max: 100.0 step: 1.0
+        at: {12, 92} size: {216, 40} {
+        speed <- ui_value;
+    }
+}
+```
+
+`var:` binds a persistent writable boolean (switch or toggle button) or numeric variable (slider),
+not a temporary drawing variable.
+The binding is assigned before an optional handler runs. `value:` instead
+reads an expression and requires a change handler; no assignment is automatic.
+These facets are mutually exclusive. A momentary button needs `action:` or a final block;
+switches, toggle buttons and sliders accept `on_change:` or a final block, not both.
+Handler facets accept an argument-free action or an inline block.
+Inline handlers execute in the experiment context, like `event` blocks.
+Named actions execute on their declaring model's simulation or experiment.
+The typed local `ui_value` (`bool` for switches and toggle buttons, `float` for sliders) is available
+in a value control's inline handler or final block. It is not declared in the
+model, a separately declared named action or the enclosing overlay.
+
+`at:` and `size:` use the overlay's screen dimensions: magnitudes below 1
+are fractions, otherwise logical pixels. Negative positions count from the
+opposite edge. The default size is `{160,28}` and the default anchor is
+`#top_left`; `anchor:` follows drawing anchors (Y = 1 means top).
+All controls accept these appearance and interaction facets:
+
+| Facet | Meaning | Default |
+|---|---|---|
+| `background:` | Background colour; `nil` means transparent | White |
+| `color:` | Text colour, independent of the border and images | Black; gray when inactive |
+| `border:` | Border colour; `nil` means no border | `nil` |
+| `active:` | Accepts pointer interaction; `false` leaves the control visible | `true` |
+| `font:` | Label font | Helvetica, 14 |
+
+An explicit `color:` remains unchanged when inactive. `active:` replaces the
+initial implementation's `enabled:` facet.
+
+Buttons are momentary by default. `toggle: true` makes a button remain checked
+until its next activation, using a boolean binding instead of hidden widget state:
+
+```gaml
+ui_button "Running" toggle: true var: running border: #gray
+    background: #white color: #black active: true;
+ui_button "Running" toggle: true value: running on_change: {
+    running <- ui_value;
+};
+```
+
+`toggle:` must be constant. Toggle buttons use `on_change:`, not `action:`,
+and update their binding on release inside the button, before invoking the handler.
+Without an image, an inset outline indicates the pressed or checked state.
+
+Buttons accept `image:`, `image_pressed:`, `image_hover:` and, when `toggle: true`,
+`image_checked:`. Each accepts an image provider, an image file or a path,
+or `nil` to omit that image. Images stretch to the control bounds, above the
+background and below the border and label; `color:` does not tint them.
+While active, a supplied pressed image has priority over hover, then checked,
+then the default image. An omitted checked image falls back to `image_pressed:`,
+then `image:`. Inactive buttons use only their checked/default appearance.
+The label remains optional, so image-only buttons are possible.
+
+Slider limits default to 0 and 100. An omitted step is continuous for float
+bindings and 1 for integer bindings; an explicit step must be positive.
+Integer bindings also require integer bounds and steps. Steps are measured from
+the minimum, with the maximum also reachable.
+
+This first implementation uses left-pointer press/release. Buttons activate
+on release inside their bounds; switches and toggle buttons toggle on release inside; sliders
+preview while dragging and commit on release, including outside their bounds.
+Leaving the display or losing focus cancels capture without committing.
+Changing a captured control's bounds, range, value or active state also cancels
+the pending change.
+Control drags do not pan the display or move the camera. Generic input
+listeners still observe the original input stream. No callback runs while
+the control is being drawn. Keyboard focus, keyboard activation and
+accessibility support are not yet implemented; this is not a replacement for
+native accessible application controls.
+
 ## Contextual constants
 
 In a screen evaluation context:
