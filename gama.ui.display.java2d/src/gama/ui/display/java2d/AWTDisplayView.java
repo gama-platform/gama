@@ -14,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import gama.api.runtime.SystemInfo;
+import gama.api.ui.IStatusDisplayer;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.display.java2d.swing.SwingControl;
@@ -28,6 +29,13 @@ public class AWTDisplayView extends LayeredDisplayView {
 
 	static {
 		DEBUG.OFF();
+		// Clicks inside embedded AWT frames are not seen by SWT filters: dismiss the experiment popup here (see #1296)
+		java.awt.Toolkit.getDefaultToolkit().addAWTEventListener(e -> {
+			if (e.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED) {
+				final IStatusDisplayer status = WorkbenchHelper.getService(IStatusDisplayer.class);
+				if (status != null) { status.hideStatusPopups(); }
+			}
+		}, java.awt.AWTEvent.MOUSE_EVENT_MASK);
 	}
 
 	// static IPartListener MyPartListener = new IPartListener() {

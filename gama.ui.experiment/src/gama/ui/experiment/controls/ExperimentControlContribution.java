@@ -107,11 +107,11 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 
 				if (popup.isVisible()) {
 					popup.hide();
-				} else {
+				} else if (!popup.wasJustHidden()) {
 					final ITopLevelAgent agent = GAMA.getCurrentTopLevelAgent();
 					if (agent != null && !agent.dead() && !agent.getScope().isClosed() && agent.getExperiment() != null
 							&& !(agent instanceof PlatformAgent)) {
-						WorkbenchHelper.asyncRun(popup::display);
+						popup.display();
 					}
 				}
 			}
@@ -166,6 +166,13 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 * @date 26 août 2023
 	 */
 	public Shell getControllingShell() { return label.getShell(); }
+
+	boolean isStatusControl(final Control control) { return label == control; }
+
+	@Override
+	public void hidePopup() {
+		if (popup != null && popup.isVisible()) { popup.hide(); }
+	}
 
 	/**
 	 * Gets the absolute origin.
@@ -223,7 +230,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 			// GamaIcon.named(m.icon()).image());
 			label.setColor(get(agent.getColor()));
 			label.setTextWithoutRecomputingSize(getClockMessage(agent));
-			if (popup.isVisible()) { popup.display(); }
+			if (popup.isVisible()) { popup.refresh(); }
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
