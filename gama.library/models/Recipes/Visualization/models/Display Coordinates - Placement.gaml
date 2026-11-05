@@ -38,7 +38,6 @@ experiment "1 - Viewport placement" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }
 
@@ -99,7 +98,6 @@ experiment "3 - Full frames by default" type: gui {
             }
         }
         display "OpenGL full frames" parent: "Full world and screen frames" type: opengl {}
-        display "OpenGL4 full frames" parent: "Full world and screen frames" type: opengl4 {}
         display "Full chart frame" type: java2D {
             // Charts also default to screen placement and a full viewport-sized frame.
             chart "Cycle" type: series {

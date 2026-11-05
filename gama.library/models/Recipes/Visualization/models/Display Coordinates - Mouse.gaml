@@ -1,6 +1,6 @@
 /**
 * Name: Display Coordinates - Mouse
-* Description: Compare live viewport, world and overlay-local pointer values in three independent displays.
+* Description: Compare live viewport, world and overlay-local pointer values in two independent displays.
 *   Run, then move or click inside any display. A left press records both coordinates from the same event
 *   and leaves a world marker. Zoom or pan to separate the world location from the screen location.
 *   The live overlay-local value subtracts the fixed {16,16} overlay origin; it is not a new mouse unit.
@@ -47,6 +47,5 @@ experiment "Mouse in three referentials" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }

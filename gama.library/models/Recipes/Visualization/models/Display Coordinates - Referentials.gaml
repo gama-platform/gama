@@ -59,7 +59,6 @@ experiment "1 - Placement versus referential" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }
 
@@ -84,6 +83,5 @@ experiment "2 - A spatial overlay" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }

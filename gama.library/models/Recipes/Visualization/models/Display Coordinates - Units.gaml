@@ -41,6 +41,5 @@ experiment "Screen units and boundaries" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }

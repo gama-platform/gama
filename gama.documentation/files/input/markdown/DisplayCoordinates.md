@@ -5,16 +5,75 @@ a viewport-attached panel. Use `referential:` only when a graphics or overlay
 layer's drawings need a different coordinate system from its frame. These
 are layer facets, not display facets.
 
+## Graphics: the world's aspect or a screen information layer
+
+**A `graphics` layer is not inherently an overlay.** It is a free drawing
+layer, conceptually the **aspect of the world**: it lets the model draw
+geometry, images and text without introducing a species just for their
+appearance. Its normal role is spatial: backgrounds, world boundaries,
+routes, annotations and other drawings that belong to the simulation.
+For that role, use `coordinates: #world`, which is also the default.
+Drawings use model units and follow the world camera when it pans, zooms
+or rotates.
+
+The same layer is also useful for information that belongs to the **display
+rather than the world**: a title, legend, status panel or other HUD.
+For that role, explicitly use `coordinates: #screen`. The frame stays
+attached to the viewport and its drawings use screen coordinates by default,
+just like a screen overlay. Choosing `graphics` does not force information
+into world coordinates, and choosing `#screen` does not make the information
+part of the simulated world.
+
+| What the drawings represent | Recommended graphics placement | Camera behavior |
+|---|---|---|
+| The world's appearance, spatial annotations or model geometry | `coordinates: #world` (default) | Follows the world camera |
+| Information for the viewer, independent of world position | `coordinates: #screen` | Stays attached to the viewport |
+
+Both roles can coexist in one display:
+
+```gaml
+display "World and information" {
+    // The world's aspect: positions and lengths are model units.
+    graphics "World appearance" coordinates: #world {
+        draw world.shape color: #lightgray border: #gray;
+        draw circle(5) at: {50, 50} color: #blue;
+    }
+    // Viewer information: this panel stays fixed while the world moves.
+    graphics "Status" coordinates: #screen position: {16, 16} size: {280, 72}
+        background: #white border: #gray {
+        draw "Simulation status" at: {12, 26} color: #black;
+        draw ("Cycle: " + cycle) at: {12, 54} color: #blue;
+    }
+}
+```
+
+Decide from the **meaning of the drawing**, not whether it contains text:
+a label marking a world location belongs in world graphics, whereas a
+numerical status readout belongs in screen graphics or a screen overlay.
+Do not compensate for camera movement using hand-written `#px` conversions
+when the intended role is a fixed screen information layer.
+
+`graphics coordinates: #screen` and `overlay` therefore overlap in their
+information-display role, but are not interchangeable in every respect.
+Graphics defaults to world placement; overlay defaults to screen placement.
+Multiple named graphics layers can organize separate information panels,
+whereas a display supports one overlay. When either has screen placement
+and `referential: #world`, graphics fits world contents using independent
+X/Y scales, while overlay uses a uniform fit. These distinctions concern
+layer behavior, not a rule that only overlays may draw screen information.
+See **Placement versus contents** for that less common mixed case.
+
 ## Runnable examples
 
 The following models are in **Recipes / Visualization**. Start with
 `Display Coordinates.gaml`, then open the focused recipes. Except for the
-default-mode comparison, every experiment provides inherited Java2D,
-OpenGL and OpenGL4 displays using the same declarations. Give each display
+default-mode comparison, the experiments provide inherited Java2D and
+OpenGL displays using the same declarations. OpenGL4 comparisons are grouped
+in the dedicated `OpenGL Comparison - ...` models listed below. Give each display
 enough room (approximately 600 by 450 logical pixels) to read the panels;
 fixed-pixel panels intentionally do not shrink to fit a smaller viewport.
-For the text-parity experiment, use approximately 700 by 600 logical pixels
-to see both the screen panel and the world-space extrusion below it.
+The rendering comparison separates its fixed text panel from world-space
+extrusion so that the panel does not hide the objects being inspected.
 
 | Model | Experiments and questions to explore |
 |---|---|
@@ -24,7 +83,7 @@ to see both the screen panel and the world-space extrusion below it.
 | [Display Coordinates - Referentials](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Referentials.gaml) | `1 - Placement versus referential`: pixel drawings versus stretched or uniformly fitted world drawings; `2 - A spatial overlay`: world placement follows the camera |
 | [Display Coordinates - Constants](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Constants.gaml) | `Contextual constants`: live screen/world values, stored values and independent viewports |
 | [Display Coordinates - Mouse](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Mouse.gaml) | `Mouse in three referentials`: viewport, world and panel-local coordinates, including paired callback snapshots |
-| [Display Coordinates - Text](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Text.gaml) | `Font and anchor semantics`: one shared font object, nine anchors and fractional placement; `Text rendering parity`: multiline, italic bearings, holes, borders, wireframes and extrusion |
+| [Display Coordinates - Text](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Text.gaml) | `Font and anchor semantics`: one shared font object, nine anchors and fractional placement. Multiline and outline comparisons are in `OpenGL Comparison - Rendering.gaml` |
 | [Display Coordinates - Layers](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates%20-%20Layers.gaml) | `1 - Spatial layers`: world/screen copies of a grid and agents; `2 - Image mesh and chart`: screen rectangles around other layer types |
 
 Resize one display without resizing the others, then zoom and pan the world.
@@ -316,8 +375,8 @@ The following describes implemented paths, not completed visual acceptance:
 
 Font substitution can still make plain and decorated OpenGL4 labels differ.
 OpenGL's bitmap labels, complex-script shaping, HiDPI rasterization and
-paragraph alignment are not claimed to have full parity. The second text
-experiment exposes the implemented outline and multiline changes without
+paragraph alignment are not claimed to have full parity. The text experiment in
+`OpenGL Comparison - Rendering.gaml` exposes the outline and multiline changes without
 requiring renderer-specific sizes in the model.
 
 The coordinate pipeline is shared by Java2D, OpenGL and OpenGL4, including image
@@ -346,6 +405,31 @@ an explicit placement mode. Top-level layers with a `position:` or `size:`
 facet have an explicit mode as well, except for the recipes intentionally
 demonstrating omitted facets. Unpositioned declarations use the
 world/screen defaults above; their omitted sizes fill the reference extent.
+
+### Dedicated OpenGL/OpenGL4 comparisons
+
+The `Display Coordinates*.gaml` tutorials compare Java2D with OpenGL. OpenGL4
+comparisons are grouped separately in `Recipes/Visualization/models`:
+
+| Model | Experiments |
+|---|---|
+| `OpenGL Comparison - Coordinates.gaml` | World/HUD/mini-map/chart overview; pixels, fractions and world-content fitting; threshold and contextual constants; grid/species/agents screen frames; image/mesh/chart frames; nine text anchors and pointer events; world overlay and omitted frame sizes; full-viewport chart |
+| `OpenGL Comparison - Rendering.gaml` | Multiline text and italic bearings; holes, concave polygons, depth and transparency; lighting and textures; the wide-grid regression and moving agents; elevated mesh and image orientation; fixed/relative chart raster quality; separate world extrusion and billboard labels |
+| `OpenGL Comparison - Ants.gaml` | Imported Ant Foraging classic, SVG/HUD and textured-terrain/3D-ant experiments, each with an OpenGL4 sibling |
+
+Each comparison experiment launches only an OpenGL/OpenGL4 pair. The OpenGL4
+display inherits the OpenGL scene instead of duplicating its layers or data.
+The ant comparison imports the existing demo rather than copying its behavior
+or assets; the original demo uses OpenGL. The standalone Grid Rendering recipe
+remains an OpenGL regression example; its paired counterpart is in the rendering
+comparison model.
+
+Experiment-panel text explains the purpose, actions to try, expected results,
+minimum viewport size for fixed panels, and known renderer differences.
+Use equally sized viewports and matching camera angles before judging parity.
+These are shared-simulation visual comparisons, not performance benchmarks.
+They do not promise identical font substitution, transparency ordering or
+photometric shading, and do not replace visual acceptance.
 
 The only positioned nested species declaration, `prey_in_shelter` in
 `Predators, Preys and Shelters.gaml`, intentionally inherits its host's world
@@ -423,7 +507,7 @@ in this first coordinate-system change.
 |---|---|
 | Display/layer overview | Separate the viewport, the layer frame and drawing contents; start with the overview and placement recipes |
 | Position and size facets | Document layer-type defaults, the breaking removal of hybrid values, the strict screen threshold, negative origins and omitted sizes; use placement and units |
-| Overlays and graphics | Explain `referential:`, proportional fit versus per-axis scaling, overflow and the one-overlay limit; use referentials |
+| Overlays and graphics | Present graphics as the world's aspect by default and a screen information layer when requested; explain `referential:`, proportional fit versus per-axis scaling, overflow and the one-overlay limit; use the world/status example above and referentials |
 | Spatial layers and charts | Keep agent locations and mesh/grid data in world coordinates while placing their frame on screen; use layers |
 | Display constants | Show evaluation-time context and stored-value pitfalls; use constants |
 | Mouse events | Document both explicit aliases, source-display lookup, callback snapshots and local subtraction; use mouse |

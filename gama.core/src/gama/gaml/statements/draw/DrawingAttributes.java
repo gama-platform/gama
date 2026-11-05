@@ -72,6 +72,8 @@ public class DrawingAttributes implements IDrawingAttributes {
 	/** The textures. */
 	protected List<?> textures;
 
+	private boolean smoothTexture;
+
 	/** The material. */
 	// GamaMaterial material;
 
@@ -205,6 +207,12 @@ public class DrawingAttributes implements IDrawingAttributes {
 			setTextures(Collections.singletonList(o));
 		}
 	}
+
+	@Override
+	public void setSmoothTexture(final boolean smooth) { smoothTexture = smooth; }
+
+	@Override
+	public boolean isSmoothTexture() { return smoothTexture; }
 
 	/**
 	 * Mark selected.

@@ -2,7 +2,7 @@
 * Name: Display Coordinates
 * Description: The same moving blue marker is drawn in a 100-by-100 world and a fixed screen mini-map.
 *   The upper-left HUD reports viewport dimensions and mouse pixels; the lower-left chart plots the marker's world X.
-*   Resize the three displays, then zoom and pan: only the main world moves, not the HUD, mini-map or chart frames.
+*   Resize both displays, then zoom and pan: only the main world moves, not the HUD, mini-map or chart frames.
 *   Mini-map contents use world units and a uniform fit. Its unused white space is intentional, not clipping.
 *   Open the companion "Display Coordinates - ..." models for focused, annotated comparisons.
 * Tags: visualization, display, overlay, coordinates
@@ -16,7 +16,7 @@ global {
 
 experiment "Display Coordinates" type: gui {
     text "Purpose: compare a camera-attached world with fixed screen-space information. The blue marker represents the same world location in the main view and the mini-map; the chart plots its X coordinate." category: "What this demonstrates";
-    text "Try: run the simulation, resize each display, then zoom and pan independently.<br/>Expected: the main grey world follows the camera. The HUD, mini-map frame and chart stay fixed in the viewport. The mini-map preserves proportions, so unused white space is normal. Compare Java2D, OpenGL and OpenGL4." category: "What this demonstrates";
+    text "Try: run the simulation, resize each display, then zoom and pan independently.<br/>Expected: the main grey world follows the camera. The HUD, mini-map frame and chart stay fixed in the viewport. The mini-map preserves proportions, so unused white space is normal. Compare Java2D and OpenGL. For OpenGL4, open OpenGL Comparison - Coordinates." category: "What this demonstrates";
     output {
         display "Java2D" type: java2D {
             graphics "World" coordinates: #world {
@@ -50,6 +50,5 @@ experiment "Display Coordinates" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }

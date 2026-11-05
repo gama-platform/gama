@@ -460,7 +460,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public Rectangle2D drawChart(final BufferedImage chart) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
-		scene.addImage(chart, new AssetDrawingAttributes(null, true));
+		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(null, true);
+		attributes.setSmoothTexture(true);
+		scene.addImage(chart, attributes);
 		return rect;
 	}
 

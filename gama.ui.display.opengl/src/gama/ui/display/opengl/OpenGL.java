@@ -254,6 +254,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The last anti-aliasing setting for optimization. */
 	private boolean lastAntiAliasSetting = false;
 
+	private boolean currentTextureSmooth;
+
 	/** The gl drawer. */
 	private final ICoordinates.IndexedVisitor glDrawer = this::drawVertex;
 
@@ -1165,7 +1167,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 */
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-		boolean isAntiAlias = getData().isAntialias();
+		final boolean isAntiAlias = getData().isAntialias() || currentTextureSmooth;
 		if (texture == lastBoundTexture && isAntiAlias == lastAntiAliasSetting) return;
 
 		lastBoundTexture = texture;
@@ -1545,6 +1547,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		// DEBUG.OUT("Object " + object + " begin and is " + (object.getAttributes().isEmpty() ? "empty" : "filled"));
 		IDrawingAttributes att = object.getAttributes();
+		currentTextureSmooth = att.isSmoothTexture();
 		if (isPicking) { registerForSelection(att.getIndex()); }
 		boolean empty = att.isEmpty();
 		previousObjectWireframe = setObjectWireframe(empty);

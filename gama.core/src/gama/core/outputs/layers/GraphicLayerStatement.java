@@ -106,7 +106,7 @@ import gama.gaml.statements.AspectStatement;
 						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, usefull in case of agents that do not move)")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "`graphics` allows the modeler to freely draw shapes/geometries/texts without having to define a species. It works exactly like a species [Aspect161 aspect]: the draw statement can be used in the same way.",
+		value = "`graphics` is a free drawing layer, conceptually the aspect of the world: it draws geometry, images and text without requiring a species. Like a species [Aspect161 aspect], it contains draw statements. Its default coordinates: #world is appropriate for the world's appearance and spatial annotations: positions and lengths use model units and drawings follow the camera. For viewer information such as a title, legend or status panel, explicitly use coordinates: #screen: the layer stays attached to the viewport and its contents use screen coordinates by default, like an overlay. A graphics layer is not inherently an overlay; choose its coordinate mode according to whether the drawings belong to the world or the display. Several named screen graphics layers can organize separate information panels. The optional referential: facet selects the drawing contents independently of the layer frame.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (

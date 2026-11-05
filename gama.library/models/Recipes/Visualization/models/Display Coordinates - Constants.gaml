@@ -13,7 +13,7 @@ global {
 }
 
 experiment "Contextual constants" type: gui {
-    text "Purpose: show that #px and display dimensions depend on the context in which an expression is evaluated.<br/>Try: zoom the world and resize the three displays independently.<br/>Expected: screen #px stays 1 and screen dimensions match each viewport; world readings use the world-to-pixel conversion. The red circle keeps its pixel radius." category: "What this demonstrates";
+    text "Purpose: show that #px and display dimensions depend on the context in which an expression is evaluated.<br/>Try: zoom the world and resize both displays independently.<br/>Expected: screen #px stays 1 and screen dimensions match each viewport; world readings use the world-to-pixel conversion. The red circle keeps its pixel radius." category: "What this demonstrates";
     text "The displayed global 20#px value was evaluated before drawing. It is an ordinary stored number: moving it into a screen overlay does not reevaluate its original expression or preserve unit metadata." category: "What this demonstrates";
     output {
         display "Java2D" type: java2D {
@@ -42,6 +42,5 @@ experiment "Contextual constants" type: gui {
             }
         }
         display "OpenGL" parent: "Java2D" type: opengl {}
-        display "OpenGL4" parent: "Java2D" type: opengl4 {}
     }
 }
