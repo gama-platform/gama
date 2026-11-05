@@ -125,6 +125,15 @@ public interface ISpatialIndex {
 	default void remove(final IEnvelope previous, final IAgent agent) {}
 
 	/**
+	 * Updates an indexed agent after movement or a geometry change. Implementations may retain its existing entry
+	 * when it stays in the same spatial partition.
+	 */
+	default void update(final IEnvelope previous, final IAgent agent) {
+		if (previous != null && !previous.isNull()) { remove(previous, agent); }
+		insert(agent);
+	}
+
+	/**
 	 * Finds the first (closest) agent within a specified distance.
 	 * 
 	 * <p>Returns the single agent that is closest to the source shape and within the
@@ -144,6 +153,19 @@ public interface ISpatialIndex {
 	 * @return the closest agent within the distance, or null if none found
 	 */
 	default IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
+		return null;
+	}
+
+	/**
+	 * Finds the nearest agent using increasing search radii. Indexes with a direct nearest-neighbour traversal can
+	 * search once up to the last radius instead.
+	 */
+	default IAgent firstAtDistance(final IScope scope, final IShape source, final double[] distances,
+			final IAgentFilter f) {
+		for (final double distance : distances) {
+			final IAgent result = firstAtDistance(scope, source, distance, f);
+			if (result != null) return result;
+		}
 		return null;
 	}
 

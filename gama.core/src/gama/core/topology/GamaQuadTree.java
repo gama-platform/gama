@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import com.google.common.collect.Ordering;
@@ -35,7 +36,6 @@ import gama.api.utils.geometry.IIntersectable;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Maths;
 
 /**
  * A QuadTree allows to quickly find an object on a two-dimensional space.
@@ -59,9 +59,8 @@ import gama.gaml.operators.Maths;
  *       {@code (py >= halfy ? 2 : 0) | (px >= halfx ? 1 : 0)}.  This cuts the per-node memory footprint
  *       (four separate reference fields → one reference field + one array) and keeps the four pointers
  *       contiguous in the heap, improving spatial locality for the CPU cache.</li>
- *   <li>The distance post-filter in {@link #allAtDistance} and related methods inlines the 2D Euclidean
- *       distance computation directly (skipping interface dispatch and Z-coordinate arithmetic) when the
- *       source shape is a point.</li>
+ *   <li>Nearest-neighbour searches visit the closest partitions first and prune partitions that cannot contain
+ *       a closer result. Exact shape distances, including point Z coordinates, are preserved.</li>
  * </ul>
  *
  * @author Werner Randelshofer, adapted by Alexis Drogoul for GAMA
@@ -104,24 +103,14 @@ public class GamaQuadTree implements ISpatialIndex {
 		return qt;
 	}
 
-	/**
-	 * Computes an inline 2D Euclidean distance between two points.
-	 * Avoids interface dispatch and Z-arithmetic present in the general
-	 * {@code IShape.euclidianDistanceTo} path, which is important in the
-	 * tight distance-filter loops of {@link #allAtDistance} and friends.
-	 *
-	 * @param sx source X
-	 * @param sy source Y
-	 * @param tx target X
-	 * @param ty target Y
-	 * @return the 2D Euclidean distance
-	 */
-	private static double dist2D(final double sx, final double sy, final double tx, final double ty) {
-		final double dx = sx - tx, dy = sy - ty;
-		return Math.sqrt(dx * dx + dy * dy);
-	}
-
 	private record DistanceCandidate(IAgent agent, double distance) {}
+
+	private record NodeCandidate(QuadNode node, double distance) implements Comparable<NodeCandidate> {
+		@Override
+		public int compareTo(final NodeCandidate other) {
+			return Double.compare(distance, other.distance);
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// QuadTreeSynchronizer
@@ -156,9 +145,20 @@ public class GamaQuadTree implements ISpatialIndex {
 		}
 
 		@Override
+		public synchronized void update(final IEnvelope previous, final IAgent agent) {
+			quadtree.update(previous, agent);
+		}
+
+		@Override
 		public synchronized IAgent firstAtDistance(final IScope scope, final IShape source, final double dist,
 				final IAgentFilter f) {
 			return quadtree.firstAtDistance(scope, source, dist, f);
+		}
+
+		@Override
+		public synchronized IAgent firstAtDistance(final IScope scope, final IShape source, final double[] distances,
+				final IAgentFilter f) {
+			return quadtree.firstAtDistance(scope, source, distances, f);
 		}
 
 		@Override
@@ -344,12 +344,22 @@ public class GamaQuadTree implements ISpatialIndex {
 	public void insert(final IAgent agent) {
 		if (agent == null) return;
 		final IEnvelope env = agent.getEnvelope();
-		ensureBoundsCover(env);
+		if (!isCovered(env)) { ensureBoundsCover(env); }
 		if (agent.isPoint()) {
 			root.add(agent.getLocation(), agent);
 		} else {
 			root.add(env, agent);
 		}
+	}
+
+	@Override
+	public void update(final IEnvelope previous, final IAgent agent) {
+		if (previous != null && !previous.isNull() && previous.getWidth() == 0 && previous.getHeight() == 0
+				&& agent.isPoint() && root.updatePoint(previous, agent.getLocation(), agent)) {
+			previous.dispose();
+			return;
+		}
+		ISpatialIndex.super.update(previous, agent);
 	}
 
 	@Override
@@ -407,18 +417,19 @@ public class GamaQuadTree implements ISpatialIndex {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Builds a 2D search envelope centred on {@code source} and expanded by {@code dist * √2}, using
+	 * Builds a 2D search envelope centred on {@code source} and expanded by {@code dist}, using
 	 * a direct 4-arg factory call when the source is a point to avoid a pool round-trip and a Z copy.
 	 */
 	private IEnvelope buildSearchEnvelope(final IShape source, final double dist) {
-		final double exp = dist * Maths.SQRT2;
 		if (source.isPoint()) {
 			final IPoint loc = source.getLocation();
 			final double x = loc.getX(), y = loc.getY();
-			return GamaEnvelopeFactory.of(x - exp, x + exp, y - exp, y + exp);
+			return GamaEnvelopeFactory.of(Math.nextDown(x - dist), Math.nextUp(x + dist),
+					Math.nextDown(y - dist), Math.nextUp(y + dist));
 		}
-		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
-		env.expandBy(exp);
+		final IEnvelope env = source.getEnvelope();
+		env.init(Math.nextDown(env.getMinX() - dist), Math.nextUp(env.getMaxX() + dist),
+				Math.nextDown(env.getMinY() - dist), Math.nextUp(env.getMaxY() + dist));
 		return env;
 	}
 
@@ -429,13 +440,6 @@ public class GamaQuadTree implements ISpatialIndex {
 		try {
 			final Collection<IAgent> result = findIntersects(scope, source, env, f);
 			if (result.isEmpty()) return GamaListFactory.create();
-			// 2D inline distance filter: avoids IShape dispatch + Z arithmetic for point sources
-			/*if (source.isPoint()) {
-				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
-				result.removeIf(each -> dist2D(sx, sy, each.getLocation().getX(), each.getLocation().getY()) > dist);
-			} else {
-				result.removeIf(each -> source.euclidianDistanceTo(each) > dist);
-			}*/
 			result.removeIf(each -> source.euclidianDistanceTo(each) > dist);
 			return result;
 		} finally {
@@ -452,13 +456,6 @@ public class GamaQuadTree implements ISpatialIndex {
 			in_square.removeAll(alreadyChosen);
 			if (in_square.isEmpty()) return GamaListFactory.create();
 			if (in_square.size() <= number) return in_square;
-			// Ordering by 2D distance for point sources
-			/*if (source.isPoint()) {
-				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
-				final Ordering<IShape> ord = Ordering.natural()
-						.onResultOf(a -> dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY()));
-				return ord.leastOf(in_square, number);
-			}*/
 			final Ordering<IShape> ordering =
 					Ordering.natural().onResultOf(input -> source.euclidianDistanceTo(input));
 			if (number <= 0) return ordering.leastOf(in_square, number);
@@ -478,21 +475,60 @@ public class GamaQuadTree implements ISpatialIndex {
 
 	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
-		final IEnvelope env = buildSearchEnvelope(source, dist);
+		if (!(dist > 0)) return null;
+		final IEnvelope env = source.getEnvelope();
 		try {
-			final Collection<IAgent> in_square = findIntersects(scope, source, env, f);
-			if (in_square.isEmpty()) return null;
-			double min_distance = dist;
-			IAgent min_agent = null;
-			//[PT] fixes issue #1117 by removing the "optimization" for points that computes the distance from the centroid of 'a'
-			for (final IAgent a : in_square) {
-				final double dd = a.euclidianDistanceTo(source);
-				if (dd < min_distance) { min_distance = dd; min_agent = a; }
+			final PriorityQueue<NodeCandidate> pending = new PriorityQueue<>();
+			final Set<IAgent> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+			final List<IAgent> nearest = new ArrayList<>();
+			final List<IAgent> candidates = new ArrayList<>();
+			final QuadNode start = root;
+			pending.add(new NodeCandidate(start, distanceToBounds(env, start.bounds)));
+			double best = dist;
+			while (!pending.isEmpty()) {
+				final NodeCandidate next = pending.poll();
+				if (next.distance() > best) break;
+				final QuadNode[] children = next.node().children;
+				if (children != null) {
+					for (final QuadNode child : children) {
+						final double distance = distanceToBounds(env, child.bounds);
+						if (distance <= best) { pending.add(new NodeCandidate(child, distance)); }
+					}
+					continue;
+				}
+				candidates.clear();
+				next.node().objects.forEach((agent, key) -> {
+					if (key != null && visited.add(agent)) { candidates.add(agent); }
+				});
+				if (f != null) { f.filter(scope, source, candidates); }
+				for (final IAgent agent : candidates) {
+					final double distance = agent.euclidianDistanceTo(source);
+					if (distance < best) {
+						best = distance;
+						nearest.clear();
+					}
+					if (distance == best && distance < dist) { nearest.add(agent); }
+				}
 			}
-			return min_agent;
+			if (nearest.isEmpty()) return null;
+			return nearest.get(nearest.size() == 1 ? 0 : scope.getRandom().between(0, nearest.size() - 1));
 		} finally {
 			env.dispose();
 		}
+	}
+
+	@Override
+	public IAgent firstAtDistance(final IScope scope, final IShape source, final double[] distances,
+			final IAgentFilter f) {
+		return distances.length == 0 ? null : firstAtDistance(scope, source, distances[distances.length - 1], f);
+	}
+
+	private static double distanceToBounds(final IEnvelope source, final IEnvelope bounds) {
+		final double dx = Math.max(0,
+				Math.max(bounds.getMinX() - source.getMaxX(), source.getMinX() - bounds.getMaxX()));
+		final double dy = Math.max(0,
+				Math.max(bounds.getMinY() - source.getMaxY(), source.getMinY() - bounds.getMaxY()));
+		return Math.nextDown(Math.hypot(dx, dy));
 	}
 
 	@Override
@@ -648,6 +684,21 @@ public class GamaQuadTree implements ISpatialIndex {
 			return ch == null ? objects.remove(a) : ch[quadrant(p)].remove(p, a);
 		}
 
+		private boolean updatePoint(final IEnvelope previous, final IPoint point, final IAgent agent) {
+			final QuadNode[] ch = children;
+			if (ch != null) {
+				final int oldQuadrant = (previous.getMinY() >= halfy ? 2 : 0)
+						| (previous.getMinX() >= halfx ? 1 : 0);
+				return oldQuadrant == quadrant(point) && ch[oldQuadrant].updatePoint(previous, point, agent);
+			}
+			if (!point.intersects2D(bounds)) return false;
+			final IIntersectable old = objects.get(agent);
+			if (!(old instanceof IPoint)) return false;
+			objects.put(agent, point);
+			if (old != point && old != previous) { old.dispose(); }
+			return true;
+		}
+
 		private void remove(final IEnvelope e, final IShape a, final Set<IIntersectable> removed) {
 			final QuadNode[] ch = children;
 			if (ch == null) {
@@ -682,12 +733,9 @@ public class GamaQuadTree implements ISpatialIndex {
 				// Calling ch[i].add() directly bypasses trySplit() on this node entirely.
 				objects.forEach((a, e) -> {
 					if (a != null && !a.dead()) {
-						final IShape g = a.getGeometry();
-						if (g.isPoint()) {
-							final IPoint p = g.getLocation();
+						if (e instanceof IPoint p) {
 							ch[quadrant(p)].add(p, a);
-						} else {
-							final IEnvelope ge = g.getEnvelope();
+						} else if (e instanceof IEnvelope ge) {
 							if (ch[NW].bounds.intersects2D(ge)) { ch[NW].add(ge, a); }
 							if (ch[NE].bounds.intersects2D(ge)) { ch[NE].add(ge, a); }
 							if (ch[SW].bounds.intersects2D(ge)) { ch[SW].add(ge, a); }

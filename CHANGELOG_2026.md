@@ -30,6 +30,26 @@ Routing candidate queries do not consume simulation random numbers.
 Point-agent movement no longer allocates a temporary identity set for each spatial-index removal. Non-point
 removal retains deferred, identity-deduplicated disposal of shared spatial keys.
 
+### Quadtree query and update speed
+
+Single-nearest queries now visit the closest quadtree partitions first, skipping partitions that cannot improve the
+result instead of repeatedly scanning expanding search areas. Equal-distance candidates remain randomly selected;
+the number and order of random draws change, so seeded runs can differ from earlier versions. Searches across
+populations compare each population's nearest candidate.
+
+Distance queries use tighter search envelopes. Leaf splits reuse stored spatial keys rather than rebuilding
+agent envelopes, ordinary insertions avoid the bounds-expansion lock, and point agents staying in the same leaf
+update their existing entry without removal and reinsertion. Boundary crossings and geometry changes retain
+the general update path. Exact shape distances, including point elevations, are preserved.
+
+### Octree query and update speed
+
+The octree now applies the same optimizations in all three dimensions: direct single-nearest traversal,
+tighter search boxes, same-leaf point updates, reuse of stored keys during splits, and a bounds-expansion
+lock only when needed. Its distance rules remain unchanged: exact 3D distances between points and 3D
+bounding-box approximations for other shapes. Equal-distance neighbours remain randomly selected, but
+the number and order of random draws change, so seeded runs can differ from earlier versions.
+
 ### Adjustable editor delays for large models
 
 **Preferences > Editors > Edition** now offers two settings to reduce background

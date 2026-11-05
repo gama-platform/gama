@@ -275,16 +275,7 @@ public abstract class AbstractTopology implements ITopology {
 	 */
 	@Override
 	public void updateAgent(final IEnvelope previous, final IAgent agent) {
-		// if (GamaPreferences.External.QUADTREE_OPTIMIZATION.getValue()) {
-		// if (speciesInserted.contains(agent.getSpecies())) { updateAgentBase(previous, agent); }
-		// } else {
-		// updateAgentBase(previous, agent);
-		// }
-		// }
-		//
-		// public void updateAgentBase(final GamaEnvelope previous, final IAgent agent) {
-		if (previous != null && !previous.isNull()) { getSpatialIndex().remove(previous, agent); }
-		getSpatialIndex().insert(agent);
+		getSpatialIndex().update(previous, agent);
 	}
 
 	@Override

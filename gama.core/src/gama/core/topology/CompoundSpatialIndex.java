@@ -96,17 +96,25 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	}
 
 	@Override
+	public void update(final IEnvelope previous, final IAgent agent) {
+		if (disposed || agent == null) return;
+		final ISpatialIndex index = spatialIndexes.get(agent.getSpecies());
+		if (index == null) {
+			insert(agent);
+		} else {
+			index.update(previous, agent);
+		}
+	}
+
+	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
 		if (disposed) return null;
 		Iterable<ISpatialIndex> indices = add(scope, f);
 		try (final Collector.AsList<IAgent> shapes = Collector.getList()) {
-			for (final double step : steps) {
-				for (final ISpatialIndex si : indices) {
-					if (si == null) { continue; }
-					final IAgent first = si.firstAtDistance(scope, source, step, f);
-					if (first != null) { shapes.add(first); }
-				}
-				if (!shapes.isEmpty()) { break; }
+			for (final ISpatialIndex si : indices) {
+				if (si == null) { continue; }
+				final IAgent first = si.firstAtDistance(scope, source, steps, f);
+				if (first != null) { shapes.add(first); }
 			}
 			int size = shapes.items().size();
 			if (size == 0) return null;

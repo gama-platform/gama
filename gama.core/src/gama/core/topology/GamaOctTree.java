@@ -11,10 +11,13 @@
 
 package gama.core.topology;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import com.google.common.collect.Ordering;
@@ -34,7 +37,6 @@ import gama.api.utils.geometry.IIntersectable;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Maths;
 
 /**
  * An OctTree allows to quickly find an object on a three-dimensional space.
@@ -94,9 +96,8 @@ import gama.gaml.operators.Maths;
  *       geometry distance algorithm (e.g. GJK or JTS 3D extensions) would be required.</li>
  * </ul>
  * <p>
- * Because the envelope distance is a lower bound, no valid neighbour is ever incorrectly excluded: agents
- * at the boundary of the search radius may be over-counted (false positives from the candidate set), but they
- * are then removed by the post-filtering step in each query method.
+ * For non-point shapes, queries use this approximation throughout: bounding boxes may count as neighbours
+ * even when the actual geometries are farther apart.
  * </p>
  *
  * @author Alexis Drogoul, adapted from GamaQuadTree for 3D worlds
@@ -138,6 +139,13 @@ public class GamaOctTree implements ISpatialIndex {
 	 */
 	final boolean parallel;
 
+	private record NodeCandidate(OctNode node, double distance) implements Comparable<NodeCandidate> {
+		@Override
+		public int compareTo(final NodeCandidate other) {
+			return Double.compare(distance, other.distance);
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// 3D distance helper
 	// -------------------------------------------------------------------------
@@ -171,11 +179,10 @@ public class GamaOctTree implements ISpatialIndex {
 	 * <ul>
 	 *   <li>The approximation can return 0 even when the shapes do not actually touch (e.g. two L-shaped
 	 *       polygons whose bounding boxes overlap but whose boundaries do not).</li>
-	 *   <li>Agents at the outer edge of a search radius may be included as false positives in the candidate
-	 *       set.  They are subsequently removed by the exact distance check in the callers
-	 *       ({@link #allAtDistance}, {@link #firstAtDistance}).</li>
-	 *   <li>No valid neighbour is ever <em>excluded</em> (no false negatives), so query correctness is
-	 *       preserved; only efficiency is slightly reduced compared to a full 3D geometry distance.</li>
+	 *   <li>Queries use this approximation for final selection too, so shapes whose boxes are close enough
+	 *       may be returned even when their actual geometries are farther apart.</li>
+	 *   <li>A radius query does not exclude shapes within the true geometry distance, but nearest-neighbour
+	 *       rankings may differ from those obtained using a full 3D geometry distance.</li>
 	 * </ul>
 	 * <p>
 	 * A more accurate implementation would require a full 3D geometry distance algorithm (e.g. the GJK
@@ -199,13 +206,24 @@ public class GamaOctTree implements ISpatialIndex {
 			// Coordinate.distance3D() which computes sqrt(dx²+dy²+dz²) in all three dimensions.
 			return source.getLocation().euclidianDistanceTo(target.getLocation());
 		}
-		// Approximation for non-point geometries: 3D bounding-box (envelope) distance.
-		// This is a lower bound: envelope distance ≤ true geometry distance.
-		// See method Javadoc for full discussion of the approximation.
 		final IEnvelope se = source.getEnvelope();
+		try {
+			return distance3D(source, target, se);
+		} finally {
+			if (se != null) { se.dispose(); }
+		}
+	}
+
+	private static double distance3D(final IShape source, final IShape target, final IEnvelope sourceEnvelope) {
+		if (source.isPoint() && target.isPoint()) {
+			return source.getLocation().euclidianDistanceTo(target.getLocation());
+		}
 		final IEnvelope te = target.getEnvelope();
-		if (se == null || te == null) return Double.MAX_VALUE;
-		return se.distance(te);
+		try {
+			return sourceEnvelope == null || te == null ? Double.MAX_VALUE : sourceEnvelope.distance(te);
+		} finally {
+			if (te != null && te != sourceEnvelope) { te.dispose(); }
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -285,6 +303,17 @@ public class GamaOctTree implements ISpatialIndex {
 		@Override
 		public synchronized void remove(final IEnvelope previous, final IAgent agent) {
 			octree.remove(previous, agent);
+		}
+
+		@Override
+		public synchronized void update(final IEnvelope previous, final IAgent agent) {
+			octree.update(previous, agent);
+		}
+
+		@Override
+		public synchronized IAgent firstAtDistance(final IScope scope, final IShape source, final double[] distances,
+				final IAgentFilter f) {
+			return octree.firstAtDistance(scope, source, distances, f);
 		}
 
 		/**
@@ -575,12 +604,23 @@ public class GamaOctTree implements ISpatialIndex {
 	public void insert(final IAgent agent) {
 		if (agent == null) return;
 		final IEnvelope env = agent.getEnvelope();
-		ensureBoundsCover(env);
+		if (!isCovered(env)) { ensureBoundsCover(env); }
 		if (agent.isPoint()) {
 			root.add(agent.getLocation(), agent);
 		} else {
 			root.add(env, agent);
 		}
+	}
+
+	@Override
+	public void update(final IEnvelope previous, final IAgent agent) {
+		if (previous != null && !previous.isNull() && previous.getWidth() == 0 && previous.getHeight() == 0
+				&& previous.getDepth() == 0 && agent.isPoint()
+				&& root.updatePoint(previous, agent.getLocation(), agent)) {
+			previous.dispose();
+			return;
+		}
+		ISpatialIndex.super.update(previous, agent);
 	}
 
 	/**
@@ -657,11 +697,25 @@ public class GamaOctTree implements ISpatialIndex {
 	// ISpatialIndex queries
 	// -------------------------------------------------------------------------
 
+	private IEnvelope buildSearchEnvelope(final IShape source, final double dist) {
+		if (source.isPoint()) {
+			final IPoint point = source.getLocation();
+			return GamaEnvelopeFactory.of(Math.nextDown(point.getX() - dist), Math.nextUp(point.getX() + dist),
+					Math.nextDown(point.getY() - dist), Math.nextUp(point.getY() + dist),
+					Math.nextDown(point.getZ() - dist), Math.nextUp(point.getZ() + dist));
+		}
+		final IEnvelope env = source.getEnvelope();
+		env.init(Math.nextDown(env.getMinX() - dist), Math.nextUp(env.getMaxX() + dist),
+				Math.nextDown(env.getMinY() - dist), Math.nextUp(env.getMaxY() + dist),
+				Math.nextDown(env.getMinZ() - dist), Math.nextUp(env.getMaxZ() + dist));
+		return env;
+	}
+
 	/**
 	 * Returns all agents within 3D Euclidean distance {@code dist} from the source shape.
 	 *
 	 * <p>
-	 * The search envelope is expanded by {@code dist × √2} in all three dimensions before querying the
+	 * The search envelope is expanded by {@code dist} in all three dimensions before querying the
 	 * tree. The candidate set is then post-filtered using {@link #distance3D(IShape, IShape)}:
 	 * </p>
 	 * <ul>
@@ -683,9 +737,7 @@ public class GamaOctTree implements ISpatialIndex {
 	@Override
 	public Collection<IAgent> allAtDistance(final IScope scope, final IShape source, final double dist,
 			final IAgentFilter f) {
-		final double exp = dist * Maths.SQRT2;
-		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
-		env.expandBy(exp);
+		final IEnvelope env = buildSearchEnvelope(source, dist);
 		try {
 			final Collection<IAgent> result = findIntersects(scope, source, env, f);
 			if (result.isEmpty()) return GamaListFactory.create();
@@ -701,7 +753,7 @@ public class GamaOctTree implements ISpatialIndex {
 	 * excluding any agent already present in {@code alreadyChosen}.
 	 *
 	 * <p>
-	 * The search envelope is expanded by {@code dist × √2} in all three dimensions. If the candidate set
+	 * The search envelope is expanded by {@code dist} in all three dimensions. If the candidate set
 	 * has more than {@code number} elements, the {@code number} closest (by {@link #distance3D 3D distance})
 	 * are kept. For point agents the distance is exact; for complex geometries a bounding-box lower bound
 	 * is used (see {@link #distance3D} for the full discussion).
@@ -724,9 +776,7 @@ public class GamaOctTree implements ISpatialIndex {
 	@Override
 	public Collection<IAgent> firstAtDistance(final IScope scope, final IShape source, final double dist,
 			final IAgentFilter f, final int number, final Collection<IAgent> alreadyChosen) {
-		final double exp = dist * Maths.SQRT2;
-		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
-		env.expandBy(exp);
+		final IEnvelope env = buildSearchEnvelope(source, dist);
 		try {
 			final Collection<IAgent> in_cube = findIntersects(scope, source, env, f);
 			in_cube.removeAll(alreadyChosen);
@@ -743,9 +793,9 @@ public class GamaOctTree implements ISpatialIndex {
 	 * Returns the single agent closest to the source shape within the given distance.
 	 *
 	 * <p>
-	 * The search envelope is expanded by {@code dist × √2} in all three dimensions. Among all candidates,
-	 * the one with the smallest {@link #distance3D 3D distance} to {@code source} (strictly less than
-	 * {@code dist}) is returned. Returns {@code null} when no such agent exists.
+	 * Visits the closest boxes first and skips boxes that cannot improve the best result. The smallest
+	 * {@link #distance3D 3D distance} must be strictly less than {@code dist}; equal-distance ties are
+	 * selected randomly. Returns {@code null} when no such agent exists.
 	 * </p>
 	 * <p>
 	 * Distance is exact for point agents and approximate (bounding-box lower bound) for complex geometries;
@@ -764,24 +814,61 @@ public class GamaOctTree implements ISpatialIndex {
 	 */
 	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
-		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
-		env.expandBy(dist * Maths.SQRT2);
+		if (!(dist > 0)) return null;
+		final IEnvelope env = source.getEnvelope();
 		try {
-			final Collection<IAgent> in_cube = findIntersects(scope, source, env, f);
-			if (in_cube.isEmpty()) return null;
-			double min_distance = dist;
-			IAgent min_agent = null;
-			for (final IAgent a : in_cube) {
-				final double dd = distance3D(source, a);
-				if (dd < min_distance) {
-					min_distance = dd;
-					min_agent = a;
+			final PriorityQueue<NodeCandidate> pending = new PriorityQueue<>();
+			final Set<IAgent> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+			final List<IAgent> nearest = new ArrayList<>();
+			final List<IAgent> candidates = new ArrayList<>();
+			enqueue(pending, env, root, dist);
+			double best = dist;
+			while (!pending.isEmpty()) {
+				final NodeCandidate next = pending.poll();
+				if (next.distance() > best) break;
+				final OctNode node = next.node();
+				if (node.nwf != null) {
+					enqueue(pending, env, node.nwf, best);
+					enqueue(pending, env, node.nef, best);
+					enqueue(pending, env, node.swf, best);
+					enqueue(pending, env, node.sef, best);
+					enqueue(pending, env, node.nwb, best);
+					enqueue(pending, env, node.neb, best);
+					enqueue(pending, env, node.swb, best);
+					enqueue(pending, env, node.seb, best);
+					continue;
+				}
+				candidates.clear();
+				node.objects.forEach((agent, key) -> {
+					if (key != null && visited.add(agent)) { candidates.add(agent); }
+				});
+				if (f != null) { f.filter(scope, source, candidates); }
+				for (final IAgent agent : candidates) {
+					final double distance = distance3D(source, agent, env);
+					if (distance < best) {
+						best = distance;
+						nearest.clear();
+					}
+					if (distance == best && distance < dist) { nearest.add(agent); }
 				}
 			}
-			return min_agent;
+			if (nearest.isEmpty()) return null;
+			return nearest.get(nearest.size() == 1 ? 0 : scope.getRandom().between(0, nearest.size() - 1));
 		} finally {
 			env.dispose();
 		}
+	}
+
+	@Override
+	public IAgent firstAtDistance(final IScope scope, final IShape source, final double[] distances,
+			final IAgentFilter f) {
+		return distances.length == 0 ? null : firstAtDistance(scope, source, distances[distances.length - 1], f);
+	}
+
+	private static void enqueue(final PriorityQueue<NodeCandidate> pending, final IEnvelope source,
+			final OctNode node, final double best) {
+		final double distance = Math.nextDown(source.distance(node.bounds));
+		if (distance <= best) { pending.add(new NodeCandidate(node, distance)); }
 	}
 
 	/**
@@ -1045,6 +1132,19 @@ public class GamaOctTree implements ISpatialIndex {
 			return nwf == null ? objects.remove(a) : getNode(p).remove(p, a);
 		}
 
+		private boolean updatePoint(final IEnvelope previous, final IPoint point, final IAgent agent) {
+			if (nwf != null) {
+				final OctNode oldNode = getNode(previous.getMinX(), previous.getMinY(), previous.getMinZ());
+				return oldNode == getNode(point) && oldNode.updatePoint(previous, point, agent);
+			}
+			if (!bounds.covers(point)) return false;
+			final IIntersectable old = objects.get(agent);
+			if (!(old instanceof IPoint)) return false;
+			objects.put(agent, point);
+			if (old != point && old != previous) { old.dispose(); }
+			return true;
+		}
+
 		/**
 		 * Removes a non-point agent from this node (or its descendants).
 		 *
@@ -1091,9 +1191,10 @@ public class GamaOctTree implements ISpatialIndex {
 		 * @return the child node whose bounding box contains {@code p}
 		 */
 		private OctNode getNode(final IPoint p) {
-			final double px = p.getX();
-			final double py = p.getY();
-			final double pz = p.getZ();
+			return getNode(p.getX(), p.getY(), p.getZ());
+		}
+
+		private OctNode getNode(final double px, final double py, final double pz) {
 			final boolean north = py >= bounds.getMinY() && py < halfy;
 			final boolean west  = px >= bounds.getMinX() && px < halfx;
 			final boolean front = pz >= bounds.getMinZ() && pz < halfz;
@@ -1141,11 +1242,10 @@ public class GamaOctTree implements ISpatialIndex {
 
 				objects.forEach((a, e) -> {
 					if (a != null && !a.dead()) {
-						final IShape g = a.getGeometry();
-						if (g.isPoint()) {
-							add(g.getLocation(), a);
-						} else {
-							add(g.getEnvelope(), a);
+						if (e instanceof IPoint point) {
+							getNode(point).add(point, a);
+						} else if (e instanceof IEnvelope envelope) {
+							add(envelope, a);
 						}
 					}
 				});
