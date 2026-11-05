@@ -22,11 +22,13 @@ global {
         + (vintage_names collect vintage_colors(each));
 
     init {
-        loop i from: 0 to: length(palettes) - 1 {
-            list<rgb> colors <- brewer_colors(palettes[i], nb_classes);
-            ask cell where (each.grid_y = i) {
-                palette_name <- palettes[i];
-                color <- colors[grid_x];
+        if not empty(palettes) {
+            loop i from: 0 to: length(palettes) - 1 {
+                list<rgb> colors <- brewer_colors(palettes[i], nb_classes);
+                ask cell where (each.grid_y = i) {
+                    palette_name <- palettes[i];
+                    color <- colors[grid_x];
+                }
             }
         }
     }
