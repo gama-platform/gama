@@ -58,6 +58,7 @@ import gama.api.ui.layers.KeyCombination;
 import gama.api.ui.layers.UserInputEvent;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
@@ -658,16 +659,33 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	private IPoint getModelCoordinatesAt(final int x, final int y) {
-		final Point origin = getOrigin();
-		final int xc = x - origin.x;
-		final int yc = y - origin.y;
-		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
+		final List<ILayer> layers = getLayersIntersectingAt(x, y);
 		for (final ILayer layer : layers) {
-			if (layer.isProvidingWorldCoordinates()) return layer.getModelCoordinatesFrom(xc, yc, this);
+			if (layer.isProvidingWorldCoordinates()) {
+				final Point coordinates = getLayerCoordinates(layer, x, y);
+				return layer.getModelCoordinatesFrom(coordinates.x, coordinates.y, this);
+			}
 		}
 		// See Issue #2783: we dont return null but 0,0.
 		// return null;
 		return GamaPointFactory.create();
+	}
+
+	private List<ILayer> getLayersIntersectingAt(final int x, final int y) {
+		final Point origin = getOrigin();
+		final List<ILayer> layers = new ArrayList<>();
+		for (final ILayer layer : layerManager.getItems()) {
+			final int xc = layer.getData().getCoordinates() == LayerCoordinates.SCREEN ? x : x - origin.x;
+			final int yc = layer.getData().getCoordinates() == LayerCoordinates.SCREEN ? y : y - origin.y;
+			if (layer.containsScreenPoint(xc, yc)) { layers.add(layer); }
+		}
+		return layers;
+	}
+
+	private Point getLayerCoordinates(final ILayer layer, final int x, final int y) {
+		if (layer.getData().getCoordinates() == LayerCoordinates.SCREEN) return new Point(x, y);
+		final Point origin = getOrigin();
+		return new Point(x - origin.x, y - origin.y);
 	}
 
 	@Override
@@ -678,15 +696,13 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void getModelCoordinatesInfo(final StringBuilder sb) {
-		final Point origin = getOrigin();
 		final Point mouse = getMousePosition();
 		if (mouse == null) return;
-		final int xc = mouse.x - origin.x;
-		final int yc = mouse.y - origin.y;
-		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
+		final List<ILayer> layers = getLayersIntersectingAt(mouse.x, mouse.y);
 		for (final ILayer layer : layers) {
 			if (layer.isProvidingCoordinates()) {
-				layer.getModelCoordinatesInfo(xc, yc, this, sb);
+				final Point coordinates = getLayerCoordinates(layer, mouse.x, mouse.y);
+				layer.getModelCoordinatesInfo(coordinates.x, coordinates.y, this, sb);
 				return;
 			}
 		}
@@ -915,23 +931,21 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final int mousex = getMousePosition().x;
 		final int mousey = getMousePosition().y;
 		final Point origin = getOrigin();
-		final int xc = mousex - origin.x;
-		final int yc = mousey - origin.y;
-		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
+		final List<ILayer> layers = getLayersIntersectingAt(mousex, mousey);
 		if (layers.isEmpty()) return;
 		// Modified for Issue #3404 -- now calls the menu asynchronously
-		EventQueue.invokeLater(() -> menuManager.buildMenu(mousex, mousey, xc, yc, layers));
+		EventQueue.invokeLater(() -> menuManager.buildMenu(mousex, mousey, mousex, mousey, mousex - origin.x,
+				mousey - origin.y, layers));
 
 	}
 
 	@Override
 	public Collection<IAgent> selectAgent(final int x, final int y) {
-		final int xc = x - getOriginX();
-		final int yc = y - getOriginY();
 		final List<IAgent> result = new ArrayList<>();
-		final List<ILayer> layers = getManager().getLayersIntersecting(xc, yc);
+		final List<ILayer> layers = getLayersIntersectingAt(x, y);
 		for (final ILayer layer : layers) {
-			final Set<IAgent> agents = layer.collectAgentsAt(xc, yc, this);
+			final Point coordinates = getLayerCoordinates(layer, x, y);
+			final Set<IAgent> agents = layer.collectAgentsAt(coordinates.x, coordinates.y, this);
 			if (!agents.isEmpty()) { result.addAll(agents); }
 		}
 		return result;
