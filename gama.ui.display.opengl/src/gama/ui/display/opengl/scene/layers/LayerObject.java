@@ -268,7 +268,12 @@ public class LayerObject {
 		}
 		if (isScreenLayer()) {
 			gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
+			if (renderer.getPickingHelper().isBeginningPicking()) {
+				renderer.getPickingHelper().applyPickTransform();
+			}
 			gl.ortho(0, gl.getViewWidth(), -gl.getViewHeight(), 0, -1, 1);
+			// Flatten clip-space depth, not object transforms: elevation must not clip screen contents.
+			gl.scaleBy(1, 1, 0);
 			// Keep object transforms off the projection stack and independent of the world camera.
 			gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW);
 		} else {
@@ -367,25 +372,42 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void addFrame(final IOpenGL gl) {
+		addFrame(gl, renderer.getEnvWidth(), renderer.getEnvHeight());
+	}
+
+	private void addFrame(final IOpenGL gl, final double width, final double height) {
 		if (layer == null || !(layer.getData() instanceof FramedLayerData data)) return;
 		final IScope scope = renderer.getSurface().getScope();
 		final IColor background = data.getBackgroundColor(scope);
 		final IColor border = data.getBorderColor();
 		if (background == null && border == null) return;
 		final boolean previous = gl.setObjectWireframe(false);
+		final double previousAlpha = gl.getCurrentObjectAlpha();
 		gl.pushMatrix();
 		try {
-			gl.translateBy(renderer.getEnvWidth() / 2, -renderer.getEnvHeight() / 2, 0);
-			gl.scaleBy(renderer.getEnvWidth(), renderer.getEnvHeight(), 1);
+			gl.translateBy(width / 2, -height / 2, 0);
+			gl.scaleBy(width, height, 1);
 			if (background != null) {
-				gl.setCurrentColor(background, 1 - data.getTransparency(scope));
+				// FramedLayerData has already applied the layer's transparency to this colour.
+				gl.setCurrentObjectAlpha(1);
+				gl.setCurrentColor(background, 1);
 				gl.drawCachedGeometry(IShape.Type.SQUARE, null);
 			}
+			gl.setCurrentObjectAlpha(previousAlpha);
 			if (border != null) {
 				gl.setObjectWireframe(true);
-				gl.drawCachedGeometry(IShape.Type.SQUARE, border);
+				gl.setCurrentColor(border);
+				// Cached border drawing multiplies the current colour alpha again.
+				gl.beginDrawing(GL.GL_LINE_LOOP);
+				gl.outputNormal(0, 0, 1);
+				gl.outputVertex(-0.5, -0.5, 0);
+				gl.outputVertex(0.5, -0.5, 0);
+				gl.outputVertex(0.5, 0.5, 0);
+				gl.outputVertex(-0.5, 0.5, 0);
+				gl.endDrawing();
 			}
 		} finally {
+			gl.setCurrentObjectAlpha(previousAlpha);
 			gl.setObjectWireframe(previous);
 			gl.popMatrix();
 		}
@@ -419,27 +441,8 @@ public class LayerObject {
 	}
 
 	private void addScreenFrame(final IOpenGL gl) {
-		if (!(layer.getData() instanceof FramedLayerData data)) return;
-		final IScope scope = renderer.getSurface().getScope();
-		final double w = data.getSizeInPixels().getX();
-		final double h = data.getSizeInPixels().getY();
-		final boolean previous = gl.setObjectWireframe(false);
-		gl.pushMatrix();
-		try {
-			gl.translateBy(w / 2, -h / 2, 0);
-			gl.scaleBy(w, h, 1);
-			if (data.getBackgroundColor(scope) != null) {
-				gl.setCurrentColor(data.getBackgroundColor(scope), 1 - data.getTransparency(scope));
-				gl.drawCachedGeometry(IShape.Type.SQUARE, null);
-			}
-			if (data.getBorderColor() != null) {
-				gl.setObjectWireframe(true);
-				gl.drawCachedGeometry(IShape.Type.SQUARE, data.getBorderColor());
-			}
-		} finally {
-			gl.setObjectWireframe(previous);
-			gl.popMatrix();
-		}
+		final ILayerData data = layer.getData();
+		addFrame(gl, data.getSizeInPixels().getX(), data.getSizeInPixels().getY());
 	}
 
 	/**
@@ -467,8 +470,8 @@ public class LayerObject {
 	 *            the picking
 	 */
 	protected final void drawObjects(final IOpenGL gl, final Trace list, final double alpha, final boolean picking) {
-		prepareDrawing(gl, list);
 		gl.setCurrentObjectAlpha(alpha);
+		prepareDrawing(gl, list);
 		for (final AbstractObject object : list.asArray()) { gl.getDrawerFor(object).draw(object, picking); }
 	}
 

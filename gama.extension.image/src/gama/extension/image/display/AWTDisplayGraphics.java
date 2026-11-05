@@ -36,6 +36,7 @@ import java.awt.Image;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -172,7 +173,9 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	@Override
 	public boolean beginDrawingLayers() {
-		currentRenderer.setRenderingHints(data.isAntialias() ? QUALITY_RENDERING : SPEED_RENDERING);
+		final var hints = data.isAntialias() ? QUALITY_RENDERING : SPEED_RENDERING;
+		normalRenderer.setRenderingHints(hints);
+		if (overlayRenderer != null) { overlayRenderer.setRenderingHints(hints); }
 		return true;
 	}
 
@@ -399,10 +402,12 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			curY = yFromModelUnitsToPixels(attributes.getLocation().getY());
 		}
 		curY += yOffset;
+		if (string.isEmpty()) return new Rectangle2D.Double(curX, curY, 0, 0);
 		final double atX = curX;
 		final double atY = curY;
-		final var glyphs = currentRenderer.getFont().createGlyphVector(currentRenderer.getFontRenderContext(), string);
-		final Rectangle2D bounds = glyphs.getVisualBounds();
+		final TextLayout layout =
+				new TextLayout(string, currentRenderer.getFont(), currentRenderer.getFontRenderContext());
+		final Rectangle2D bounds = layout.getBounds();
 		curX -= bounds.getX() + bounds.getWidth() * attributes.getAnchor().getX();
 		curY -= bounds.getMaxY() - bounds.getHeight() * attributes.getAnchor().getY();
 		final boolean rotated = attributes.getAngle() != null && attributes.getAngle() != 0d;
@@ -412,13 +417,13 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 				? AffineTransform.getRotateInstance(Maths.toRad * attributes.getAngle(), atX, atY) : null;
 		try {
 			if (rotated) { currentRenderer.transform(transform); }
-			if (!attributes.isEmpty()) { currentRenderer.drawGlyphVector(glyphs, (float) curX, (float) curY); }
+			if (!attributes.isEmpty()) { layout.draw(currentRenderer, (float) curX, (float) curY); }
 			if (attributes.isEmpty() || attributes.getBorder() != null) {
 				if (!highlight && attributes.getBorder() != null) {
 					currentRenderer.setColor(IColor.toAWTColor(attributes.getBorder()));
 				}
 				currentRenderer.setStroke(new BasicStroke(attributes.getLineWidth().floatValue()));
-				currentRenderer.draw(glyphs.getOutline((float) curX, (float) curY));
+				currentRenderer.draw(layout.getOutline(AffineTransform.getTranslateInstance(curX, curY)));
 			}
 		} finally {
 			if (rotated) { currentRenderer.setTransform(saved); }
@@ -574,15 +579,24 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	public void beginOverlay(final ILayer layer) {
 		if (layer instanceof OverlayLayer overlay) {
 			currentRenderer = overlayRenderer;
-			currentRenderer.setColor(IColor.toAWTColor(overlay.getData().getBackgroundColor(getSurface().getScope())));
 			final int x = (int) getXOffsetInPixels();
 			final int y = (int) getYOffsetInPixels();
 			final int w = getLayerWidth();
 			final int h = getLayerHeight();
-			if (overlay.getData().isRounded()) {
-				currentRenderer.fillRoundRect(x, y, w, h, 10, 10);
-			} else {
-				currentRenderer.fillRect(x, y, w, h);
+			final IColor background = overlay.getData().getBackgroundColor(getSurface().getScope());
+			if (background != null) {
+				final var composite = currentRenderer.getComposite();
+				try {
+					currentRenderer.setComposite(AlphaComposite.SrcOver);
+					currentRenderer.setColor(IColor.toAWTColor(background));
+					if (overlay.getData().isRounded()) {
+						currentRenderer.fillRoundRect(x, y, w, h, 10, 10);
+					} else {
+						currentRenderer.fillRect(x, y, w, h);
+					}
+				} finally {
+					currentRenderer.setComposite(composite);
+				}
 			}
 			if (overlay.getData().getBorderColor() != null) {
 				currentRenderer.setColor(IColor.toAWTColor(overlay.getData().getBorderColor()));

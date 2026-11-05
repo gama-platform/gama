@@ -114,6 +114,8 @@ public interface IOpenGL {
 
 	void outputVertex(double x, double y, double z);
 
+	void outputNormal(double x, double y, double z);
+
 	void endDrawing();
 
 	void setCurrentColor(IColor color);
@@ -123,6 +125,8 @@ public interface IOpenGL {
 	void setCurrentColor(double red, double green, double blue, double alpha);
 
 	void setCurrentObjectAlpha(double alpha);
+
+	double getCurrentObjectAlpha();
 
 	boolean isTextured();
 

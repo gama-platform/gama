@@ -35,6 +35,8 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 	/** The select buffer. */
 	protected final IntBuffer selectBuffer = Buffers.newDirectIntBuffer(1024);
 
+	private final double[] pickTransform = new double[16];
+
 	/**
 	 * Instantiates a new picking helper.
 	 *
@@ -189,6 +191,7 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 			 */
 			glu.gluPickMatrix(camera.getMousePosition().getX(), viewport[3] - camera.getMousePosition().getY(), 4, 4,
 					viewport, 0);
+			gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, pickTransform, 0);
 		} catch (Throwable e) {
 			DEBUG.ERR("in beginPicking", e);
 		} finally {
@@ -196,6 +199,11 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 			openGL.updatePerspective();
 			openGL.matrixMode(GLMatrixFunc.GL_MODELVIEW);
 		}
+	}
+
+	@Override
+	public void applyPickTransform() {
+		getGL().glMultMatrixd(pickTransform, 0);
 	}
 
 	/**

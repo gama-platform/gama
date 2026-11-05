@@ -177,6 +177,10 @@ follows its existing refresh policy.
 The position's Z component is not an extra screen-depth coordinate. Screen
 layers are composited using display-layer ordering. Do not use world Z values
 to position a HUD relative to the camera.
+In OpenGL, only the final projected depth of screen contents is flattened.
+Agent elevation, mesh heights and extrusion therefore do not cause near/far
+clipping. Object-level 3D transforms are still applied before projection;
+this does not introduce depth sorting within a screen layer.
 
 ## World placement
 
@@ -533,6 +537,19 @@ for the camera's rotation globe and expose all its back-facing wire lines.
 The globe is shown only during an unlocked CMD/CTRL + left-button interaction;
 mouse release, canvas exit and focus loss clear the interaction, even if a
 modifier-key release was delivered outside the display.
+
+Legacy OpenGL screen-layer picking retains the cursor's selection volume
+when replacing the world projection. OpenGL4 screen layers keep their normal
+screen projection for colour-buffer picking at the cursor. Screen projection
+flattens final depth without flattening the objects' transforms, so elevated
+agents and extruded drawings are not cut off at Z = -1 or Z = 1.
+
+Frame backgrounds already include layer transparency; the renderers apply
+it once, independently of the preceding layer's opacity. Contents retain
+their own colour alpha and layer opacity. Java2D applies the same rendering
+hints to the world and screen renderers, including image interpolation.
+Its text path uses layout-aware shaping and bidirectional ordering while
+retaining visual-bound anchors, rotations, empty multiline rows and outlines.
 
 Java2D previously ignored `size:` when drawing a geometry, including a
 geometry obtained from an SVG. A large native SVG consequently stayed large

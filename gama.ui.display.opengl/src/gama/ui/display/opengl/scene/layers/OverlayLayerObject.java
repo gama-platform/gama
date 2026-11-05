@@ -76,10 +76,12 @@ public class OverlayLayerObject extends LayerObject {
 		final IScope scope = renderer.getSurface().getScope();
 		final double radius = d.isRounded() ? CORNER_RADIUS : 0;
 		final boolean previous = gl.setObjectWireframe(false);
+		final double previousAlpha = gl.getCurrentObjectAlpha();
 		try {
+			gl.setCurrentObjectAlpha(1);
 			final IColor background = d.getBackgroundColor(scope);
 			if (background != null) {
-				gl.setCurrentColor(background, 1 - d.getTransparency(scope));
+				gl.setCurrentColor(background, 1);
 				drawRoundedRectangle(gl, 0, -h, w, h, radius, CORNER_SEGMENTS);
 			}
 			final IColor border = d.getBorderColor();
@@ -88,6 +90,7 @@ public class OverlayLayerObject extends LayerObject {
 				drawRoundedOutline(gl, 0, -h, w, h, radius, CORNER_SEGMENTS);
 			}
 		} finally {
+			gl.setCurrentObjectAlpha(previousAlpha);
 			gl.setObjectWireframe(previous);
 		}
 	}
