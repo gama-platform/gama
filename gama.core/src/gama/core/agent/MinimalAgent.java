@@ -741,6 +741,14 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 		return att;
 	}
 
+	@Override
+	public Object getAttribute(final String key, final Object defaultValue) {
+		if (getClass() != MinimalAgent.class && getClass() != GamlAgent.class)
+			return IAgent.super.getAttribute(key, defaultValue);
+		final IMap<String, Object> att = getAttributes(false);
+		return att == null ? defaultValue : att.getOrDefault(key, defaultValue);
+	}
+
 	/**
 	 * Compare to.
 	 *

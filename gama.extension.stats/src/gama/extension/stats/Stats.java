@@ -1818,6 +1818,58 @@ public class Stats {
 		}
 	}
 
+	@operator (
+			value = "max",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the greater of two integers without constructing a temporary list. Equal values retain the first operand.",
+			examples = { @example (value = "max(3, 5)", equals = "5") },
+			see = { "min" })
+	public static Integer opMax(final Integer a, final Integer b) {
+		return b > a ? b : a;
+	}
+
+	@operator (
+			value = "max",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the greater of an integer and a float as a float, without constructing a temporary list. A NaN second operand is ignored.",
+			examples = { @example (value = "max(3, 5.5)", equals = "5.5") },
+			see = { "min" })
+	public static Double opMax(final Integer a, final Double b) {
+		return b > a ? b : a.doubleValue();
+	}
+
+	@operator (
+			value = "max",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the greater of two floats without constructing a temporary list. Equal values, including signed zeros, retain the first operand. A NaN first operand is retained; a NaN second operand is ignored.",
+			examples = { @example (value = "max(3.5, 5.5)", equals = "5.5") },
+			see = { "min" })
+	public static Double opMax(final Double a, final Double b) {
+		return b > a ? b : a;
+	}
+
+	@operator (
+			value = "max",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the greater of a float and an integer as a float, without constructing a temporary list. Equal values retain the first operand, including its zero sign. A NaN first operand is retained.",
+			examples = { @example (value = "max(3.5, 5)", equals = "5.0") },
+			see = { "min" })
+	public static Double opMax(final Double a, final Integer b) {
+		return b > a ? b.doubleValue() : a;
+	}
+
 	/**
 	 * Max.
 	 *
@@ -1994,6 +2046,58 @@ public class Stats {
 				return Cast.asFloat(scope, n);
 
 		}
+	}
+
+	@operator (
+			value = "min",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the smaller of two integers without constructing a temporary list. Equal values retain the first operand.",
+			examples = { @example (value = "min(3, 5)", equals = "3") },
+			see = { "max" })
+	public static Integer opMin(final Integer a, final Integer b) {
+		return b < a ? b : a;
+	}
+
+	@operator (
+			value = "min",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the smaller of an integer and a float as a float, without constructing a temporary list. A NaN second operand is ignored.",
+			examples = { @example (value = "min(3, 5.5)", equals = "3.0") },
+			see = { "max" })
+	public static Double opMin(final Integer a, final Double b) {
+		return b < a ? b : a.doubleValue();
+	}
+
+	@operator (
+			value = "min",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the smaller of two floats without constructing a temporary list. Equal values, including signed zeros, retain the first operand. A NaN first operand is retained; a NaN second operand is ignored.",
+			examples = { @example (value = "min(3.5, 5.5)", equals = "3.5") },
+			see = { "max" })
+	public static Double opMin(final Double a, final Double b) {
+		return b < a ? b : a;
+	}
+
+	@operator (
+			value = "min",
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the smaller of a float and an integer as a float, without constructing a temporary list. Equal values retain the first operand, including its zero sign. A NaN first operand is retained.",
+			examples = { @example (value = "min(3.5, 5)", equals = "3.5") },
+			see = { "max" })
+	public static Double opMin(final Double a, final Integer b) {
+		return b < a ? b.doubleValue() : a;
 	}
 
 	/**

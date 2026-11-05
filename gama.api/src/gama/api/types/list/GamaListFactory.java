@@ -600,6 +600,15 @@ public class GamaListFactory {
 	}
 
 	/**
+	 * Creates a fresh list using an already resolved list type, without reconstructing its type metadata.
+	 */
+	public static <T> IList<T> createWithType(final IType<?> listType, final int capacity) {
+		if (!(listType instanceof IContainerType<?> container) || container.id() != IType.LIST)
+			throw new IllegalArgumentException("Expected a list type: " + listType);
+		return new GamaList<>(container, capacity);
+	}
+
+	/**
 	 * Creates an empty list with a specific type.
 	 *
 	 * @param <T>

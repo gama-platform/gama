@@ -14,6 +14,7 @@ import java.util.Set;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.interfaces.IDisposable;
 
 /**
@@ -66,6 +67,15 @@ import gama.api.utils.interfaces.IDisposable;
  * @see IType
  */
 public interface ITypesManager extends IDisposable {
+
+	/**
+	 * Returns a shared container type for these exact type instances, owned by this manager.
+	 * Implementations without a cache retain the existing allocation behavior.
+	 */
+	default ParametricType getParametricType(final IContainerType<IContainer<?, ?>> container,
+			final IType<?> keyType, final IType<?> contentType) {
+		return new ParametricType(this, container, keyType, contentType);
+	}
 
 	// ==================== Type Registration and Aliasing ====================
 

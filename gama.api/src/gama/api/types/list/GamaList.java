@@ -144,8 +144,12 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 	 *            the content type
 	 */
 	protected GamaList(final int capacity, final IType contentType) {
+		this(Types.LIST.of(contentType), capacity);
+	}
+
+	protected GamaList(final IContainerType<?> listType, final int capacity) {
 		super(capacity);
-		this.type = Types.LIST.of(contentType);
+		this.type = listType;
 	}
 
 	@Override

@@ -630,6 +630,15 @@ public class Types {
 		return BUILT_IN_TYPES;
 	}
 
+	/** Fixed-arity variant for container type creation, avoiding a manager array on every lookup. */
+	public static ITypesManager findMoreSpecificTypesManagerAmong(final ITypesManager first,
+			final ITypesManager second, final ITypesManager third, final ITypesManager fourth) {
+		if (first != BUILT_IN_TYPES) return first;
+		if (second != BUILT_IN_TYPES) return second;
+		if (third != BUILT_IN_TYPES) return third;
+		return fourth;
+	}
+
 	/**
 	 * Find types manager.
 	 *

@@ -19,6 +19,34 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Passive populations and agent access
+
+Standard populations with the default reflex architecture skip automatic scheduling when they have no reflexes,
+variable updates, overridden step or micro-species. Initialization, explicit actions and explicit agent steps remain
+unchanged. Custom agents, architectures and populations, mirror species and explicit scheduling/frequency/parallel facets
+retain their normal scheduling path.
+
+Stored attributes on standard agents are read with one lookup; missing attributes still use their initialization fallback,
+while explicitly stored nil values remain nil. Standard population updates reuse their resolved variable declarations,
+preserving coercion, bounds and change notifications. Execution scopes reuse their most recent immutable agent
+frame for an identical object/outer-context pair, without recycling mutable execution contexts, allocating caches
+in short-lived scope copies or sharing mutable cache state between scope copies.
+
+### Shared container type descriptions
+
+Repeated construction of the same container type reuses its type description and type expression through a
+thread-safe, bounded cache owned by the relevant type manager. Cache keys use exact type identities, keeping
+model-specific types distinct; disposing a manager clears its entries. Compiled list expressions pass their
+existing list type directly to each fresh list, avoiding redundant metadata construction and lookup.
+Container contents remain independent.
+
+### Two-argument numeric minimum and maximum
+
+`min(a, b)` and `max(a, b)` compare numeric operands directly instead of constructing a temporary list.
+All four int/float combinations are supported: two ints return an int, and mixed or float operands return a float.
+The existing ordered-comparison behavior for NaN and signed zeros is preserved. Container operands and calls
+with more than two arguments retain their existing behavior.
+
 ### Independent series-chart rendering
 
 Series, XY and scatter charts capture independent rendering snapshots under the live-data lock, then paint without

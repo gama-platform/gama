@@ -47,6 +47,14 @@ public interface IAttributed {
 	}
 
 	/**
+	 * Returns the attribute, including an explicitly stored null, or the default only when it is absent.
+	 * The default implementation preserves custom presence and access methods.
+	 */
+	default Object getAttribute(final String key, final Object defaultValue) {
+		return hasAttribute(key) ? getAttribute(key) : defaultValue;
+	}
+
+	/**
 	 * Allows to set the value stored at key "key". A new entry is created when "key" is not already present, otherwise
 	 * the previous occurrence is replaced.
 	 *
