@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.ChartRenderingInfo;
@@ -64,6 +65,10 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 	/** The lock. */
 	protected final Object lock = new Object();
+
+	private final Object renderLock = new Object();
+	private final AtomicLong chartRevision = new AtomicLong();
+	private long renderedRevision = -1;
 
 	/** The Constant defaultmarkers. */
 	public static final Shape[] defaultmarkers =
@@ -153,26 +158,57 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 	@Override
 	public BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias) {
-		if (chart == null) return null;
-		adjustImage(sizeX, sizeY, antiAlias);
-
-		final Graphics2D g2D = backImage.createGraphics();
-		try {
-			if (antiAlias) {
-				g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-				g2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-				g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-			}
+		synchronized (renderLock) {
+			final JFreeChart renderingChart;
+			final long revision;
 			synchronized (lock) {
-				chart.draw(g2D, area, null);
+				if (chart == null) return null;
+				revision = chartRevision.get();
+				if (supportsRenderingSnapshot() && frontImage != null && renderedRevision == revision
+						&& (int) area.getWidth() == sizeX && (int) area.getHeight() == sizeY
+						&& oldAntiAlias == antiAlias) return frontImage;
+				renderingChart = supportsRenderingSnapshot() ? createRenderingSnapshot() : chart;
+				renderedRevision = -1;
+				if (renderingChart == chart) { adjustImage(sizeX, sizeY, antiAlias, renderingChart); }
 			}
-		} catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e) {
-			// Ignore transient render errors during dataset updates
-		} finally {
-			g2D.dispose();
+			if (renderingChart != chart) { adjustImage(sizeX, sizeY, antiAlias, renderingChart); }
+
+			final Graphics2D g2D = backImage.createGraphics();
+			try {
+				if (antiAlias) {
+					g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+					g2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+					g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+				}
+				if (renderingChart == chart) {
+					synchronized (lock) {
+						renderingChart.draw(g2D, area, null);
+					}
+				} else {
+					renderingChart.draw(g2D, area, null);
+					final BufferedImage previous = frontImage;
+					frontImage = backImage;
+					backImage = previous;
+					renderedRevision = revision;
+				}
+			} catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e) {
+				if (renderingChart != chart) throw e;
+				// Legacy charts can still encounter transient dataset updates during rendering.
+			} finally {
+				g2D.dispose();
+			}
+			return frontImage;
 		}
-		return frontImage;
+	}
+
+	protected boolean supportsRenderingSnapshot() { return false; }
+
+	/**
+	 * Called with the live-data lock held. The returned chart must not read mutable live state while drawing.
+	 */
+	protected JFreeChart createRenderingSnapshot() {
+		throw new UnsupportedOperationException("Rendering snapshots are not supported by this chart");
 	}
 
 	@Override
@@ -196,11 +232,12 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	 * @param antiAlias
 	 *            the anti alias
 	 */
-	private void adjustImage(final int sizeX, final int sizeY, final boolean antiAlias) {
-		if (antiAlias != oldAntiAlias) {
+	private void adjustImage(final int sizeX, final int sizeY, final boolean antiAlias,
+			final JFreeChart renderingChart) {
+		if (antiAlias != oldAntiAlias || renderingChart != chart) {
 			oldAntiAlias = antiAlias;
-			chart.setAntiAlias(antiAlias);
-			chart.setTextAntiAlias(antiAlias);
+			renderingChart.setAntiAlias(antiAlias);
+			renderingChart.setTextAntiAlias(antiAlias);
 		}
 		if ((int) area.getWidth() != sizeX || (int) area.getHeight() != sizeY) {
 			area.setRect(0, 0, sizeX, sizeY);
@@ -310,6 +347,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 		initRenderer(scope);
 		chart.addProgressListener(this);
+		chart.addChangeListener(event -> chartRevision.incrementAndGet());
 		chart.setBorderVisible(false);
 		chart.getPlot().setOutlineVisible(false);
 
@@ -564,13 +602,17 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 	@Override
 	public void dispose(final IScope scope) {
-		if (frontImage != null) { frontImage.flush(); }
-		if (backImage != null) { backImage.flush(); }
-		backImage = null;
-		frontImage = null;
-		clearDataSet(scope);
-		jfreedataset.clear();
-		chart = null;
+		synchronized (renderLock) {
+			synchronized (lock) {
+				if (frontImage != null) { frontImage.flush(); }
+				if (backImage != null) { backImage.flush(); }
+				backImage = null;
+				frontImage = null;
+				clearDataSet(scope);
+				jfreedataset.clear();
+				chart = null;
+			}
+		}
 	}
 
 }

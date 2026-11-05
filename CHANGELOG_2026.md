@@ -19,6 +19,14 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Independent series-chart rendering
+
+Series, XY and scatter charts capture independent rendering snapshots under the live-data lock, then paint without
+holding that lock. Snapshots include interval datasets, axes, renderers, marker sizes, category labels and legends.
+Unchanged charts reuse their last completed image; data, style, image-size and antialiasing changes trigger a redraw.
+Every chart update and recorded/exported value is retained, and synchronized display acknowledgments are unchanged.
+Other chart types retain their existing live-data rendering lock.
+
 ### Fixed-argument operator invocation
 
 Generated unary and binary operator helpers accept operands directly instead of allocating an argument array on each
