@@ -50,6 +50,39 @@ lock only when needed. Its distance rules remain unchanged: exact 3D distances b
 bounding-box approximations for other shapes. Equal-distance neighbours remain randomly selected, but
 the number and order of random draws change, so seeded runs can differ from earlier versions.
 
+### Movement along paths and graphs
+
+Graph movement now uses lazily indexed edges instead of walking the graph's edge set for each edge lookup or
+intersection crossing. The index follows the existing edge order and is rebuilt after edges are added or removed,
+not when weights change. Both 2D and 3D moving skills reuse the final edge directly.
+
+Path following reuses the destination projection while checking for changes to the target or the final road's
+coordinates. Movement reads line coordinates directly, traverses reversed roads without reversing arrays, computes
+only the final heading, and avoids repeated road-length evaluations and temporary initialization lists on the hot
+path. Dynamic weights, intersection choices and optional returned travel paths retain their existing behavior.
+
+### Routing cache and weight-update speed
+
+Applying a map or list of graph weights now skips unchanged values and invalidates routing data once per batch,
+instead of once per edge. Reapplying identical weights preserves cached routes. Actual changes also reset
+precomputed routing algorithms, including Floyd-Warshall; list weights follow the existing edge iteration order
+without repeated indexed lookups into the edge set.
+
+Reading a graph's vertex set no longer clears its routing cache. The set remains live, and removing vertices through
+it also removes their incident edges and invalidates routing data. Adding vertices or edges invalidates cached
+routing data at the mutation rather than relying on a later read.
+
+Cached routes and their intermediate-to-destination suffixes share one private route snapshot, replacing repeated
+suffix copying with linear-time cache construction. Returned routes remain independently mutable; modifying an
+exposed cached suffix copies only that suffix and cannot alter the others.
+
+### Endpoint route candidate construction
+
+When several equally nearest edges can attach a source or destination to a network, routing now compares their
+edge lists before constructing spatial paths. Only the winning candidate gets its oriented and trimmed path
+geometries. Candidate weights, iteration-order tie breaking, and directed/undirected route selection remain
+unchanged; single-candidate queries keep their existing construction path.
+
 ### Adjustable editor delays for large models
 
 **Preferences > Editors > Edition** now offers two settings to reduce background

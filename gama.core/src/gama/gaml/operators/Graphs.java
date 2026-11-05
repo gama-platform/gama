@@ -2147,7 +2147,7 @@ public class Graphs {
 			value = "returns the graph (left-hand operand) with weight given in the map (right-hand operand).",
 			masterDoc = true,
 			returns = "The same graph, with its vertex and edge types unchanged.",
-			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. It also re-initializes the path finder",
+			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. Routing caches are invalidated when weights change.",
 			usages = @usage (
 					value = "if the left-hand operand is a map, the map should contains pairs such as: vertex/edge::double",
 					examples = @example (
@@ -2156,8 +2156,10 @@ public class Graphs {
 	@no_test
 	public static IGraph withWeights(final IScope scope, final IGraph graph, final IMap weights) {
 		graph.setWeights(weights);
-		graph.getPathComputer().incVersion();
-		if (graph instanceof GamaSpatialGraph gsg) { gsg.getPathComputer().reInitPathFinder(); }
+		if (!(graph instanceof GamaGraph)) {
+			graph.getPathComputer().incVersion();
+			graph.getPathComputer().reInitPathFinder();
+		}
 		return graph;
 	}
 
@@ -2184,15 +2186,20 @@ public class Graphs {
 					+ "Note that the ordering of edges may change overtime, which can create some problems..."))
 	@no_test
 	public static IGraph withWeights(final IScope scope, final IGraph graph, final IList weights) {
+		if (graph instanceof GamaGraph gamaGraph) {
+			gamaGraph.setEdgeWeights(scope, weights);
+			return graph;
+		}
 		// Simply a list of double... and, by default, for edges.However, the
 		// ordering of edges may
 		// change overtime, which can create a problem somewhere...
 		final IList edges = graph.getEdges();
 		final int n = edges.size();
 		if (n != weights.size()) return graph;
-		for (int i = 0; i < n; i++) { graph.setEdgeWeight(edges.get(i), Cast.asFloat(scope, weights.get(i))); }
+		int i = 0;
+		for (final Object edge : edges) { graph.setEdgeWeight(edge, Cast.asFloat(scope, weights.get(i++))); }
 		graph.getPathComputer().incVersion();
-		if (graph instanceof GamaSpatialGraph gsg) { gsg.getPathComputer().reInitPathFinder(); }
+		graph.getPathComputer().reInitPathFinder();
 		return graph;
 	}
 

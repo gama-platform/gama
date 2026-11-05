@@ -128,7 +128,7 @@ species base_vehicle skills: [driving] {
 		if (current_road != nil) {
 			point pos <- compute_position();
 				
-			draw rectangle(vehicle_length, lane_width * num_lanes_occupied) 
+			draw rectangle(vehicle_length*3, lane_width * num_lanes_occupied*3) 
 				at: pos color: color rotate: heading border: #black;
 			draw triangle(lane_width * num_lanes_occupied) 
 				at: pos color: #white rotate: heading + 90 border: #black;

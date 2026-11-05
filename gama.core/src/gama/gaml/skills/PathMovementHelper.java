@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.jts.algorithm.Distance;
-import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 
 import gama.api.GAMA;
 import gama.api.gaml.types.Types;
@@ -37,7 +40,6 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.api.utils.collections.Collector;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
@@ -143,6 +145,8 @@ public class PathMovementHelper {
 		/** The path followed. */
 		public IPath pathFollowed; // Only set when return_path is true
 
+		public IShape finalEdge;
+
 		/**
 		 * Instantiates a new movement result.
 		 *
@@ -179,13 +183,19 @@ public class PathMovementHelper {
 	 * @return initialization values (index, indexSegment, endIndexSegment, currentLocation, falseTarget)
 	 */
 	public static IList initMoveAlongPath3D(final IAgent agent, final IPath path, final IPoint cl) {
+		return initializationValues(initializePath3D(agent, path, cl));
+	}
+
+	private static IList initializationValues(final PathInitResult result) {
+		return result == null ? null : GamaListFactory.createWithoutCasting(Types.NO_TYPE, result.index,
+				result.indexSegment, result.endIndexSegment, result.currentLocation, result.falseTarget);
+	}
+
+	private static PathInitResult initializePath3D(final IAgent agent, final IPath path, final IPoint cl) {
 		IPoint currentLocation = cl.copy(GAMA.getRuntimeScope());
-		final IList initVals = GamaListFactory.create();
 
 		Integer index = 0;
 		Integer indexSegment = 1;
-		Integer endIndexSegment = 1;
-		IPoint falseTarget = null;
 		final IList<IShape> edges = path.getEdgeGeometry();
 		if (path.isVisitor(agent)) {
 			index = path.indexOf(agent);
@@ -216,27 +226,8 @@ public class PathMovementHelper {
 				i++;
 			}
 		}
-		final IPoint[] points = getPointsOf(edges.lastValue(GAMA.getRuntimeScope()));
-		int j = 0;
-		double dist = Double.MAX_VALUE;
-		final IPoint end = ((IShape) path.getEndVertex()).getLocation();
-		for (final IPoint pt : points) {
-			final double d = pt.euclidianDistanceTo(end);
-			if (d < dist) {
-				dist = d;
-				endIndexSegment = j;
-				falseTarget = pt;
-				if (dist == 0.0) { break; }
-
-			}
-			j++;
-		}
-		initVals.add(index);
-		initVals.add(indexSegment);
-		initVals.add(endIndexSegment);
-		initVals.add(currentLocation);
-		initVals.add(falseTarget);
-		return initVals;
+		final GamaSpatialPath.MovementTarget target = ((GamaSpatialPath) path).getMovementTarget();
+		return new PathInitResult(index, indexSegment, target.segmentIndex(), currentLocation, target.point());
 	}
 
 	/**
@@ -252,106 +243,78 @@ public class PathMovementHelper {
 	 * @return initialization values (index, indexSegment, endIndexSegment, currentLocation, falseTarget)
 	 */
 	public static IList initMoveAlongPath(final IAgent agent, final IPath path, final IPoint cl) {
+		return initializationValues(initializePath(agent, path, cl));
+	}
+
+	private static PathInitResult initializePath(final IAgent agent, final IPath path, final IPoint cl) {
 		IPoint currentLocation = cl;
-		try (final Collector.AsList initVals = Collector.getList()) {
-			Integer index = 0;
-			Integer indexSegment = 1;
-			Integer endIndexSegment = 0;
-			IPoint falseTarget = null;
-			final IList<IShape> edges = path.getEdgeGeometry();
-			if (edges.isEmpty()) return null;
-			final int nb = edges.size();
-			if (path.getGraph() == null && nb == 1 && edges.get(0).getInnerGeometry().getNumPoints() == 2) {
-				index = 0;
-				indexSegment = 0;
-				endIndexSegment = 0;
-				falseTarget = ((IShape) path.getEndVertex()).getLocation();
-				path.acceptVisitor(agent);
+		Integer index = 0;
+		Integer indexSegment = 1;
+		Integer endIndexSegment = 0;
+		IPoint falseTarget = null;
+		final IList<IShape> edges = path.getEdgeGeometry();
+		if (edges.isEmpty()) return null;
+		final int nb = edges.size();
+		if (path.getGraph() == null && nb == 1 && edges.get(0).getInnerGeometry().getNumPoints() == 2) {
+			index = 0;
+			indexSegment = 0;
+			endIndexSegment = 0;
+			falseTarget = ((IShape) path.getEndVertex()).getLocation();
+			path.acceptVisitor(agent);
+
+		} else {
+			if (path.isVisitor(agent)) {
+				index = path.indexOf(agent);
+				indexSegment = path.indexSegmentOf(agent);
 
 			} else {
-				if (path.isVisitor(agent)) {
-					index = path.indexOf(agent);
-					indexSegment = path.indexSegmentOf(agent);
-
-				} else {
-					path.acceptVisitor(agent);
-					double distanceS = Double.MAX_VALUE;
-					IShape line = null;
-					for (int i = 0; i < nb; i++) {
-						line = edges.get(i);
-						final double distS = Distance.pointToSegment(currentLocation.toCoordinate(),
-								getFirstPointOf(line).toCoordinate(), getLastPointOf(line).toCoordinate());
-						if (distS < distanceS) {
-							distanceS = distS;
-							index = i;
-						}
-					}
-					line = edges.get(index);
-					final IPoint[] points = getPointsOf(line);
-					if (contains(points, currentLocation)) {
-						currentLocation = GamaPointFactory.create(currentLocation);
-						indexSegment = indexOf(points, currentLocation) + 1;
-					} else {
-						currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
-						if (points.length >= 3) {
-							distanceS = Double.MAX_VALUE;
-							final int nbSp = points.length;
-							for (int i = 0; i < nbSp - 1; i++) {
-								final double distS = Distance.pointToSegment(currentLocation.toCoordinate(),
-										points[i].toCoordinate(), points[i + 1].toCoordinate());
-								if (distS < distanceS) {
-									distanceS = distS;
-									indexSegment = i + 1;
-									currentLocation.setZ(points[i].getZ() + (points[i + 1].getZ() - points[i].getZ())
-											* currentLocation.distance(points[i]) / points[i].distance(points[i + 1]));
-								}
-							}
-						} else if (points.length >= 2) {
-							final IPoint c0 = points[0];
-							final IPoint c1 = points[1];
-							currentLocation.setZ(c0.getZ()
-									+ (c1.getZ() - c0.getZ()) * currentLocation.distance(c0) / line.getPerimeter());
-						} else {
-							currentLocation.setZ(points[0].getZ());
-						}
+				path.acceptVisitor(agent);
+				double distanceS = Double.MAX_VALUE;
+				IShape line = null;
+				for (int i = 0; i < nb; i++) {
+					line = edges.get(i);
+					final double distS = Distance.pointToSegment(currentLocation.toCoordinate(),
+							getFirstPointOf(line).toCoordinate(), getLastPointOf(line).toCoordinate());
+					if (distS < distanceS) {
+						distanceS = distS;
+						index = i;
 					}
 				}
-				final IShape lineEnd = edges.get(nb - 1);
-				final IPoint end = ((IShape) path.getEndVertex()).getLocation();
-				final IPoint[] points = getPointsOf(lineEnd);
-				if (contains(points, end)) {
-					falseTarget = GamaPointFactory.create(end);
-					endIndexSegment = indexOf(points, end) + 1;
+				line = edges.get(index);
+				final IPoint[] points = getPointsOf(line);
+				if (contains(points, currentLocation)) {
+					currentLocation = GamaPointFactory.create(currentLocation);
+					indexSegment = indexOf(points, currentLocation) + 1;
 				} else {
-					falseTarget = SpatialPunctal._closest_point_to(end, lineEnd);
-					endIndexSegment = 1;
+					currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
 					if (points.length >= 3) {
-						double distanceT = Double.MAX_VALUE;
-						for (int i = 0; i < points.length - 1; i++) {
-							final double distT = Distance.pointToSegment(falseTarget.toCoordinate(),
+						distanceS = Double.MAX_VALUE;
+						final int nbSp = points.length;
+						for (int i = 0; i < nbSp - 1; i++) {
+							final double distS = Distance.pointToSegment(currentLocation.toCoordinate(),
 									points[i].toCoordinate(), points[i + 1].toCoordinate());
-							if (distT < distanceT) {
-								distanceT = distT;
-								endIndexSegment = i + 1;
-								falseTarget.setZ(points[i].getZ() + (points[i + 1].getZ() - points[i].getZ())
-										* falseTarget.distance3D(points[i]) / points[i].distance3D(points[i + 1]));
+							if (distS < distanceS) {
+								distanceS = distS;
+								indexSegment = i + 1;
+								currentLocation.setZ(points[i].getZ() + (points[i + 1].getZ() - points[i].getZ())
+										* currentLocation.distance(points[i]) / points[i].distance(points[i + 1]));
 							}
 						}
-					} else {
+					} else if (points.length >= 2) {
 						final IPoint c0 = points[0];
 						final IPoint c1 = points[1];
-						falseTarget.setZ(c0.getZ()
-								+ (c1.getZ() - c0.getZ()) * falseTarget.distance3D(c0) / lineEnd.getPerimeter());
+						currentLocation.setZ(c0.getZ()
+								+ (c1.getZ() - c0.getZ()) * currentLocation.distance(c0) / line.getPerimeter());
+					} else {
+						currentLocation.setZ(points[0].getZ());
 					}
 				}
 			}
-			initVals.add(index);
-			initVals.add(indexSegment);
-			initVals.add(endIndexSegment);
-			initVals.add(currentLocation);
-			initVals.add(falseTarget);
-			return initVals.items();
+			final GamaSpatialPath.MovementTarget target = ((GamaSpatialPath) path).getMovementTarget();
+			falseTarget = target.point();
+			endIndexSegment = target.segmentIndex();
 		}
+		return new PathInitResult(index, indexSegment, endIndexSegment, currentLocation, falseTarget);
 	}
 
 	/**
@@ -368,96 +331,99 @@ public class PathMovementHelper {
 	 *            the current location
 	 * @return initialization values (index, indexSegment, reverse)
 	 */
-	@SuppressWarnings ("null")
 	public static IList initMoveAlongPath(final IScope scope, final IAgent agent, final GamaSpatialGraph graph,
 			final IPoint currentLoc) {
+		final PathInitResult result = initializeGraph(scope, agent, graph, currentLoc);
+		return result == null ? null : GamaListFactory.createWithoutCasting(Types.NO_TYPE, result.index,
+				result.indexSegment, result.reverse);
+	}
+
+	@SuppressWarnings ("null")
+	private static PathInitResult initializeGraph(final IScope scope, final IAgent agent, final GamaSpatialGraph graph,
+			final IPoint currentLoc) {
 		IPoint currentLocation = currentLoc;
-		try (final Collector.AsList initVals = Collector.getList()) {
-			Integer index = 0;
-			Integer indexSegment = 1;
-			Integer reverse = 0;
-			final IList<IShape> edges = graph.getEdges();
-			if (edges.isEmpty()) return null;
-			final int nb = edges.size();
-			if (nb == 1 && edges.get(0).getInnerGeometry().getNumPoints() == 2) {
-				index = 0;
-				indexSegment = 1;
-			} else {
-				IShape line = null;
-				index = (Integer) agent.getAttribute("index_on_path");
-				indexSegment = (Integer) agent.getAttribute("index_on_path_segment");
-				reverse = (Integer) agent.getAttribute("reverse");
-				if (index == null || indexSegment == null) {
-					reverse = scope.getRandom().between(0, 1);
-					final boolean optimization = graph.edgeSet().size() > 1000;
-					final double dist = optimization
-							? Math.sqrt(scope.getSimulation().getArea()) / graph.edgeSet().size() * 100 : -1;
-					if (graph.isAgentEdge()) {
-						final IAgentFilter filter = In.edgesOf(graph);
-						if (optimization) {
-							final java.util.Collection<IAgent> ags = scope.getSimulation().getTopology()
-									.getNeighborsOf(scope, currentLocation, dist, filter);
-							if (!ags.isEmpty()) {
-								double distMin = Double.MAX_VALUE;
-								for (final IAgent e : ags) {
-									final double d = currentLocation.euclidianDistanceTo(e);
-									if (d < distMin) {
-										line = e;
-										distMin = d;
-									}
+		Integer index = 0;
+		Integer indexSegment = 1;
+		Integer reverse = 0;
+		final IList<IShape> edges = graph.getEdges();
+		if (edges.isEmpty()) return null;
+		final int nb = edges.size();
+		if (nb == 1 && edges.get(0).getInnerGeometry().getNumPoints() == 2) {
+			index = 0;
+			indexSegment = 1;
+		} else {
+			IShape line = null;
+			index = (Integer) agent.getAttribute("index_on_path");
+			indexSegment = (Integer) agent.getAttribute("index_on_path_segment");
+			reverse = (Integer) agent.getAttribute("reverse");
+			if (index == null || indexSegment == null) {
+				reverse = scope.getRandom().between(0, 1);
+				final boolean optimization = graph.edgeSet().size() > 1000;
+				final double dist = optimization
+						? Math.sqrt(scope.getSimulation().getArea()) / graph.edgeSet().size() * 100 : -1;
+				if (graph.isAgentEdge()) {
+					final IAgentFilter filter = In.edgesOf(graph);
+					if (optimization) {
+						final java.util.Collection<IAgent> ags = scope.getSimulation().getTopology()
+								.getNeighborsOf(scope, currentLocation, dist, filter);
+						if (!ags.isEmpty()) {
+							double distMin = Double.MAX_VALUE;
+							for (final IAgent e : ags) {
+								final double d = currentLocation.euclidianDistanceTo(e);
+								if (d < distMin) {
+									line = e;
+									distMin = d;
 								}
 							}
 						}
-						if (line == null) {
-							line = scope.getSimulation().getTopology().getAgentClosestTo(scope, currentLocation,
-									filter);
+					}
+					if (line == null) {
+						line = scope.getSimulation().getTopology().getAgentClosestTo(scope, currentLocation,
+								filter);
+					}
+					index = graph.getEdgeIndex(line);
+				} else {
+					double distanceS = Double.MAX_VALUE;
+					int i = 0;
+					for (final IShape candidate : edges) {
+						final double distS = candidate.euclidianDistanceTo(currentLocation);
+						if (distS < distanceS) {
+							distanceS = distS;
+							index = i;
 						}
-						index = edges.indexOf(line);
-					} else {
-						double distanceS = Double.MAX_VALUE;
-						for (int i = 0; i < nb; i++) {
-							line = edges.get(i);
-							final double distS = line.euclidianDistanceTo(currentLocation);
+						i++;
+					}
+					line = (IShape) graph.getEdgeAt(index);
+				}
+				final IPoint[] points = getPointsOf(line);
+				if (contains(points, currentLocation)) {
+					currentLocation = GamaPointFactory.create(currentLocation);
+					indexSegment = indexOf(points, currentLocation) + 1;
+				} else {
+					currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
+					if (points.length >= 3) {
+						Double distanceS = Double.MAX_VALUE;
+						for (int i = 0; i < points.length - 1; i++) {
+							final double distS = Distance.pointToSegment(currentLocation.toCoordinate(),
+									points[i].toCoordinate(), points[i + 1].toCoordinate());
 							if (distS < distanceS) {
 								distanceS = distS;
-								index = i;
+								indexSegment = i + 1;
+								currentLocation.setZ(points[i].getZ() + (points[i + 1].getZ() - points[i].getZ())
+										* currentLocation.distance3D(points[i])
+										/ points[i].distance3D(points[i + 1]));
 							}
 						}
-						line = edges.get(index);
-					}
-					final IPoint[] points = getPointsOf(line);
-					if (contains(points, currentLocation)) {
-						currentLocation = GamaPointFactory.create(currentLocation);
-						indexSegment = indexOf(points, currentLocation) + 1;
 					} else {
-						currentLocation = SpatialPunctal._closest_point_to(currentLocation, line);
-						if (points.length >= 3) {
-							Double distanceS = Double.MAX_VALUE;
-							for (int i = 0; i < points.length - 1; i++) {
-								final double distS = Distance.pointToSegment(currentLocation.toCoordinate(),
-										points[i].toCoordinate(), points[i + 1].toCoordinate());
-								if (distS < distanceS) {
-									distanceS = distS;
-									indexSegment = i + 1;
-									currentLocation.setZ(points[i].getZ() + (points[i + 1].getZ() - points[i].getZ())
-											* currentLocation.distance3D(points[i])
-											/ points[i].distance3D(points[i + 1]));
-								}
-							}
-						} else {
-							indexSegment = 1;
-							currentLocation.setZ(points[0].getZ() + (points[1].getZ() - points[0].getZ())
-									* currentLocation.distance3D(points[0]) / line.getPerimeter());
-						}
+						indexSegment = 1;
+						currentLocation.setZ(points[0].getZ() + (points[1].getZ() - points[0].getZ())
+								* currentLocation.distance3D(points[0]) / line.getPerimeter());
 					}
 				}
 			}
-
-			initVals.add(index);
-			initVals.add(indexSegment);
-			initVals.add(reverse);
-			return initVals.items();
 		}
+
+		return new PathInitResult(index, indexSegment, reverse);
 	}
 
 	/**
@@ -474,9 +440,21 @@ public class PathMovementHelper {
 	public static double computeWeight(final IGraph graph, final IPath path, final IShape line) {
 		if (graph == null || path == null || line == null) return 1.0;
 		final IShape realShape = path.getRealObject(line);
-		if (realShape == null || realShape.getGeometry() == null
-				|| realShape.getGeometry().getPerimeter() == 0) return 1;
-		return graph.getEdgeWeight(realShape) / realShape.getGeometry().getPerimeter();
+		if (realShape == null || realShape.getGeometry() == null) return 1;
+		final double perimeter = realShape.getGeometry().getPerimeter();
+		return perimeter == 0 ? 1 : graph.getEdgeWeight(realShape) / perimeter;
+	}
+
+	private static CoordinateSequence coordinatesOf(final IShape shape) {
+		final Geometry geometry = shape.getInnerGeometry();
+		return geometry instanceof LineString line ? line.getCoordinateSequence()
+				: new CoordinateArraySequence(geometry.getCoordinates());
+	}
+
+	private static IPoint interpolate(final IPoint from, final IPoint to, final double ratio) {
+		return GamaPointFactory.create(from.getX() + (to.getX() - from.getX()) * ratio,
+				from.getY() + (to.getY() - from.getY()) * ratio,
+				from.getZ() + (to.getZ() - from.getZ()) * ratio);
 	}
 
 	/**
@@ -498,38 +476,34 @@ public class PathMovementHelper {
 	public static MovementResult moveAlongGraph(final IScope scope, final IAgent agent, final GamaSpatialGraph graph,
 			final double distance, final IMap probaEdge) {
 		IPoint currentLocation = agent.getLocation().copy(scope);
-		final IList indexVals = initMoveAlongPath(scope, agent, graph, currentLocation);
+		final PathInitResult indexVals = initializeGraph(scope, agent, graph, currentLocation);
 		if (indexVals == null) return null;
 
-		int index = (Integer) indexVals.get(0);
-		int indexSegment = (Integer) indexVals.get(1);
-		int inverse = (Integer) indexVals.get(2);
-		IShape edge = (IShape) graph.getEdges().get(index);
+		int index = indexVals.index;
+		int indexSegment = indexVals.indexSegment;
+		int inverse = indexVals.reverse;
+		IShape edge = (IShape) graph.getEdgeAt(index);
 		double remainingDistance = distance;
 		double travelledDist = 0.0;
-		double computedHeading = 0.0;
+		IPoint headingFrom = null, headingTo = null;
 
 		while (true) {
-			Coordinate coords[] = edge.getInnerGeometry().getCoordinates();
-			if (!graph.isDirected() && inverse == 1) {
-				final int si = coords.length;
-				final Coordinate coords2[] = new Coordinate[si];
-				for (int i = 0; i < coords.length; i++) { coords2[i] = coords[si - 1 - i]; }
-				coords = coords2;
-			}
+			final CoordinateSequence coords = coordinatesOf(edge);
+			final boolean reversed = !graph.isDirected() && inverse == 1;
 
 			final double perimeter = edge.getGeometry() == null ? 0 : edge.getGeometry().getPerimeter();
 			final double weight = perimeter == 0 ? 1 : graph.getEdgeWeight(edge) / perimeter;
-			for (int j = indexSegment; j < coords.length; j++) {
-				final IPoint pt = GamaPointFactory.create(coords[j]);
+			for (int j = indexSegment; j < coords.size(); j++) {
+				final IPoint pt = GamaPointFactory.create(coords.getCoordinate(reversed ? coords.size() - 1 - j : j));
 				final double dis = pt.distance3D(currentLocation);
 				final double dist = weight * dis;
-				computedHeading = SpatialRelations.towards(scope, currentLocation, pt);
+				headingFrom = currentLocation;
+				headingTo = pt;
 
 				if (remainingDistance < dist) {
 					final double ratio = remainingDistance / dist;
 					travelledDist += dis * ratio;
-					currentLocation = currentLocation.plus(pt.minus(currentLocation).times(ratio));
+					currentLocation = interpolate(currentLocation, pt, ratio);
 					remainingDistance = 0;
 					break;
 				}
@@ -537,7 +511,7 @@ public class PathMovementHelper {
 					currentLocation = pt;
 					travelledDist += dis;
 					remainingDistance = 0;
-					if (indexSegment < coords.length - 1) {
+					if (indexSegment < coords.size() - 1) {
 						indexSegment++;
 					} else {
 						indexSegment = 1;
@@ -549,7 +523,7 @@ public class PathMovementHelper {
 
 				remainingDistance = remainingDistance - dist;
 				indexSegment++;
-				if (j == coords.length - 1) {
+				if (j == coords.size() - 1) {
 					IShape node = (IShape) graph.getEdgeTarget(edge);
 					if (!graph.isDirected() && !node.getLocation().equals(currentLocation)) {
 						node = (IShape) graph.getEdgeSource(edge);
@@ -572,7 +546,7 @@ public class PathMovementHelper {
 						}
 						edge = nextRoads.get(scope.getRandom().choiceIn(distribution));
 					}
-					index = graph.getEdges().indexOf(edge);
+					index = graph.getEdgeIndex(edge);
 					if (!graph.isDirected()) {
 						if (currentLocation.equals(graph.getEdgeSource(edge))) {
 							inverse = 0;
@@ -587,9 +561,11 @@ public class PathMovementHelper {
 			indexSegment = 1;
 		}
 
+		final double computedHeading = headingFrom == null ? 0 : SpatialRelations.towards(scope, headingFrom, headingTo);
 		MovementResult result =
 				new MovementResult(currentLocation, index, indexSegment, travelledDist, computedHeading);
 		result.finalReverse = inverse;
+		result.finalEdge = edge;
 		return result;
 	}
 
@@ -616,59 +592,54 @@ public class PathMovementHelper {
 		final IPoint startLocation = returnPath ? agent.getLocation().copy(scope) : null;
 		IPoint currentLocation = agent.getLocation().copy(scope);
 
-		final IList indexVals = ((GamaSpatialPath) path).isThreeD() ? initMoveAlongPath3D(agent, path, currentLocation)
-				: initMoveAlongPath(agent, path, currentLocation);
+		final PathInitResult indexVals = ((GamaSpatialPath) path).isThreeD() ? initializePath3D(agent, path, currentLocation)
+				: initializePath(agent, path, currentLocation);
 		if (indexVals == null) return null;
 
-		// Pre-size collections for performance
 		final IList<IShape> segments = returnPath ? GamaListFactory.create(Types.GEOMETRY) : null;
 		final IMap agents = returnPath ? GamaMapFactory.createUnordered() : null;
 
-		int index = (Integer) indexVals.get(0);
-		int indexSegment = (Integer) indexVals.get(1);
-		final int endIndexSegment = (Integer) indexVals.get(2);
-		currentLocation = (IPoint) indexVals.get(3);
-		final IPoint falseTarget = (IPoint) indexVals.get(4);
+		int index = indexVals.index;
+		int indexSegment = indexVals.indexSegment;
+		final int endIndexSegment = indexVals.endIndexSegment;
+		currentLocation = indexVals.currentLocation;
+		final IPoint falseTarget = indexVals.falseTarget;
 		final IList<IShape> edges = path.getEdgeGeometry();
 		final int nb = edges.size();
 		double remainingDistance = distance;
 		double travelledDist = 0.0;
-		double computedHeading = 0.0;
+		IPoint headingFrom = null, headingTo = null;
 		final GamaSpatialGraph graph = (GamaSpatialGraph) path.getGraph();
 
 		for (int i = index; i < nb; i++) {
 			final IShape line = edges.get(i);
-			final Coordinate coords[] = line.getInnerGeometry().getCoordinates();
+			final CoordinateSequence coords = coordinatesOf(line);
 
-			double weight;
-			if (weights == null) {
-				weight = computeWeight(graph, path, line);
-			} else {
-				final IShape realShape = path.getRealObject(line);
-				final double perimeter =
-						realShape == null || realShape.getGeometry() == null ? 0 : realShape.getGeometry().getPerimeter();
-				final Double edgeWeight = realShape == null ? null : (Double) weights.get(realShape);
-				final Double w = edgeWeight == null || perimeter == 0 ? null : edgeWeight / perimeter;
-				weight = w == null ? computeWeight(graph, path, line) : w;
-			}
+			final IShape realShape = path.getRealObject(line);
+			final IShape realGeometry = realShape == null ? null : realShape.getGeometry();
+			final double perimeter = realGeometry == null ? 0 : realGeometry.getPerimeter();
+			final Double edgeWeight = weights == null || realShape == null ? null : (Double) weights.get(realShape);
+			final double weight = perimeter == 0 ? 1 : edgeWeight != null ? edgeWeight / perimeter
+					: graph == null ? 1 : graph.getEdgeWeight(realShape) / perimeter;
 
-			for (int j = indexSegment; j < coords.length; j++) {
+			for (int j = indexSegment; j < coords.size(); j++) {
 				IPoint pt = null;
 				if (i == nb - 1 && j == endIndexSegment) {
 					pt = falseTarget;
 				} else {
-					pt = GamaPointFactory.create(coords[j]);
+					pt = GamaPointFactory.create(coords.getCoordinate(j));
 				}
 				final double dis = pt.distance3D(currentLocation);
 				final double dist = weight * dis;
-				computedHeading = SpatialRelations.towards(scope, currentLocation, pt);
+				headingFrom = currentLocation;
+				headingTo = pt;
 
 				if (remainingDistance < dist) {
 					if (returnPath) {
 						final IPoint pto = currentLocation.copy(scope);
 						final double ratio = remainingDistance / dist;
 						travelledDist += dis * ratio;
-						currentLocation = currentLocation.plus(pt.minus(currentLocation).times(ratio));
+						currentLocation = interpolate(currentLocation, pt, ratio);
 						remainingDistance = 0;
 
 						final IShape gl = GamaShapeFactory.buildLine(pto, currentLocation);
@@ -681,7 +652,7 @@ public class PathMovementHelper {
 					} else {
 						final double ratio = remainingDistance / dist;
 						travelledDist += dis * ratio;
-						currentLocation = currentLocation.plus(pt.minus(currentLocation).times(ratio));
+						currentLocation = interpolate(currentLocation, pt, ratio);
 						remainingDistance = 0;
 					}
 					break;
@@ -698,7 +669,7 @@ public class PathMovementHelper {
 					}
 					currentLocation = pt;
 					remainingDistance = 0;
-					if (indexSegment < coords.length - 1) {
+					if (indexSegment < coords.size() - 1) {
 						indexSegment++;
 					} else {
 						if (index < nb - 1) { index++; }
@@ -731,6 +702,7 @@ public class PathMovementHelper {
 			index++;
 		}
 
+		final double computedHeading = headingFrom == null ? 0 : SpatialRelations.towards(scope, headingFrom, headingTo);
 		MovementResult result =
 				new MovementResult(currentLocation, index, indexSegment, travelledDist, computedHeading);
 

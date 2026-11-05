@@ -18,6 +18,7 @@ import static java.lang.Math.min;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.jgrapht.Graph;
+import org.locationtech.jts.algorithm.Distance;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
@@ -63,6 +64,88 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 
 	/** The real objects. */
 	IMap<IShape, IShape> realObjects; // key = part of the geometry
+
+	public record MovementTarget(int segmentIndex, IPoint point) {}
+
+	private record MovementTargetCache(Geometry geometry, double[] coordinates, double x, double y, double z,
+			boolean threeD, MovementTarget target) {}
+
+	private transient volatile MovementTargetCache movementTarget;
+
+	/**
+	 * Reuses destination projection while checking coordinates too: path geometries and target locations are mutable.
+	 * The returned point must not be modified.
+	 */
+	public MovementTarget getMovementTarget() {
+		final IShape last = segments.get(segments.size() - 1);
+		final Geometry geometry = last.getInnerGeometry();
+		final IPoint end = target.getLocation();
+		final IPoint[] points = getPointsOf(last);
+		final MovementTargetCache cached = movementTarget;
+		boolean unchanged = cached != null && cached.geometry() == geometry
+				&& cached.threeD() == threeD && cached.x() == end.getX() && cached.y() == end.getY()
+				&& cached.z() == end.getZ() && cached.coordinates().length == points.length * 3;
+		if (unchanged) {
+			for (int i = 0; i < points.length; i++) {
+				final IPoint p = points[i];
+				if (cached.coordinates()[3 * i] != p.getX()
+						|| cached.coordinates()[3 * i + 1] != p.getY()
+						|| cached.coordinates()[3 * i + 2] != p.getZ()) {
+					unchanged = false;
+					break;
+				}
+			}
+		}
+		if (unchanged) return cached.target();
+		IPoint projected = null;
+		int segment = threeD ? 1 : 0;
+		if (threeD) {
+			double best = Double.MAX_VALUE;
+			for (int i = 0; i < points.length; i++) {
+				final double distance = points[i].euclidianDistanceTo(end);
+				if (distance < best) {
+					best = distance;
+					segment = i;
+					projected = GamaPointFactory.create(points[i]);
+					if (distance == 0) break;
+				}
+			}
+		} else {
+			final int vertex = ArrayUtils.indexOf(points, end);
+			if (vertex >= 0) {
+				projected = GamaPointFactory.create(end);
+				segment = vertex + 1;
+			} else {
+				projected = SpatialPunctal._closest_point_to(end, last);
+				segment = 1;
+				if (points.length >= 3) {
+					double best = Double.MAX_VALUE;
+					for (int i = 0; i < points.length - 1; i++) {
+						final double distance = Distance.pointToSegment(projected.toCoordinate(),
+								points[i].toCoordinate(), points[i + 1].toCoordinate());
+						if (distance < best) {
+							best = distance;
+							segment = i + 1;
+							projected.setZ(points[i].getZ() + (points[i + 1].getZ() - points[i].getZ())
+									* projected.distance3D(points[i]) / points[i].distance3D(points[i + 1]));
+						}
+					}
+				} else {
+					projected.setZ(points[0].getZ() + (points[1].getZ() - points[0].getZ())
+							* projected.distance3D(points[0]) / last.getPerimeter());
+				}
+			}
+		}
+		final MovementTarget result = new MovementTarget(segment, projected);
+		final double[] coordinates = new double[points.length * 3];
+		for (int i = 0; i < points.length; i++) {
+			coordinates[3 * i] = points[i].getX();
+			coordinates[3 * i + 1] = points[i].getY();
+			coordinates[3 * i + 2] = points[i].getZ();
+		}
+		movementTarget = new MovementTargetCache(geometry, coordinates, end.getX(), end.getY(), end.getZ(), threeD, result);
+		return result;
+	}
 
 	/**
 	 * Instantiates a new gama spatial path.
@@ -150,6 +233,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 	public void init(final IGraph<IShape, IShape> g, final IShape start, final IShape target,
 			final IList<? extends IShape> _edges, final boolean modify_edges) {
 		super.init(g, start, target, _edges, modify_edges);
+		movementTarget = null;
 		source = start;
 		this.target = target;
 		this.graph = g;

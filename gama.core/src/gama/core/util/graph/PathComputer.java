@@ -9,8 +9,12 @@
  ********************************************************************************************************/
 package gama.core.util.graph;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.RandomAccess;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -66,6 +70,63 @@ import gama.core.util.matrix.GamaIntMatrix;
  * @date 30 oct. 2023
  */
 public class PathComputer<V, E> implements IPathComputer<V, E> {
+
+	/**
+	 * Cached suffixes share one route snapshot until a caller modifies an individual list.
+	 */
+	private static final class RouteSuffix<E> extends AbstractList<E> implements RandomAccess {
+		private final List<E> route;
+		private final int offset;
+		private List<E> mutable;
+
+		RouteSuffix(final List<E> route, final int offset) {
+			this.route = route;
+			this.offset = offset;
+		}
+
+		@Override
+		public int size() { return mutable == null ? route.size() - offset : mutable.size(); }
+
+		@Override
+		public E get(final int index) {
+			java.util.Objects.checkIndex(index, size());
+			return mutable == null ? route.get(offset + index) : mutable.get(index);
+		}
+
+		private List<E> writable() {
+			if (mutable == null) { mutable = new ArrayList<>(route.subList(offset, route.size())); }
+			return mutable;
+		}
+
+		@Override
+		public E set(final int index, final E element) { return writable().set(index, element); }
+
+		@Override
+		public void add(final int index, final E element) {
+			writable().add(index, element);
+			modCount++;
+		}
+
+		@Override
+		public boolean addAll(final int index, final Collection<? extends E> elements) {
+			final boolean changed = writable().addAll(index, elements);
+			if (changed) { modCount++; }
+			return changed;
+		}
+
+		@Override
+		public E remove(final int index) {
+			final E result = writable().remove(index);
+			modCount++;
+			return result;
+		}
+
+		@Override
+		protected void removeRange(final int from, final int to) {
+			writable().subList(from, to).clear();
+			modCount++;
+		}
+	}
 
 	/**
 	 *
@@ -514,22 +575,21 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	 *            the target
 	 */
 	private void saveShortestPaths(final List<E> edges, final V source, final V target) {
+		final Map<Pair<V, V>, IList<IList<E>>> cache = shortestPathComputed;
+		final List<E> route = new ArrayList<>(edges);
 		V s = source;
 		final IList<IList<E>> spl = GamaListFactory.create(Types.LIST.of(graph.getGamlType().getContentType()));
-		spl.add(GamaListFactory.createWithoutCasting(graph.getGamlType().getContentType(), edges));
-		shortestPathComputed.put(new Pair<>(source, target), spl);
-		final List<E> edges2 = GamaListFactory.create(graph.getScope(), graph.getGamlType().getContentType(), edges);
-		for (int i = 0; i < edges.size(); i++) {
-			final E edge = edges2.remove(0);
-			if (edges2.isEmpty()) { break; }
-			// DEBUG.LOG("s : " + s + " j : " + j + " i: " + i);
+		spl.add(GamaListFactory.wrap(graph.getGamlType().getContentType(), new RouteSuffix<>(route, 0)));
+		cache.put(new Pair<>(source, target), spl);
+		for (int i = 0; i < route.size() - 1; i++) {
+			final E edge = route.get(i);
 			V nwS = graph.getEdgeTarget(edge);
 			if (!graph.isDirected() && nwS.equals(s)) { nwS = graph.getEdgeSource(edge); }
 			final Pair<V, V> pp = new Pair<>(nwS, target);
-			if (!shortestPathComputed.containsKey(pp)) {
+			if (!cache.containsKey(pp)) {
 				final IList<IList<E>> spl2 = GamaListFactory.create(graph.getGamlType().getContentType());
-				spl2.add(GamaListFactory.createWithoutCasting(graph.getGamlType().getContentType(), edges2));
-				shortestPathComputed.put(pp, spl2);
+				spl2.add(GamaListFactory.wrap(graph.getGamlType().getContentType(), new RouteSuffix<>(route, i + 1)));
+				cache.putIfAbsent(pp, spl2);
 			}
 			s = nwS;
 
@@ -714,9 +774,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@Override
 	public void setVersion(final int version) {
 		this.version = version;
-		// shortestPathComputed.clear();
-		shortestPathComputed = new ConcurrentHashMap<>();
-
+		invalidateRoutingData();
 	}
 
 	/**
@@ -728,8 +786,12 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@Override
 	public void incVersion() {
 		version++;
-		// shortestPathComputed.clear();
+		invalidateRoutingData();
+	}
+
+	private void invalidateRoutingData() {
 		shortestPathComputed = new ConcurrentHashMap<>();
+		optimizer = null;
 		contractionHierarchyBD = null;
 		transitNodeRouting = null;
 		linkedJGraph = null;

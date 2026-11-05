@@ -1549,15 +1549,6 @@ public class GamaPreferences {
 							} catch (CoreException e) {}
 						}).hidden();
 
-		/**
-		 * Whether an optimized but potentially approximate path computation algorithm should be used for the GAML
-		 * {@code path_between} operators and {@code goto} action. May cause agents to "jump" over obstacles in some
-		 * edge cases.
-		 */
-		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
-				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
-				IType.BOOL, true).in(NAME, SAFE).inPlayer(false);
-
 		/** The Constant CAST_CONTAINER_CONTENTS. */
 		public static final Pref<Boolean> CAST_CONTAINER_CONTENTS = create("pref_cast_container_contents",
 				"Cast the elements of a container to its declared type (If true, no verification is performed on the type of elements added to a container, which may lead to runtime errors)",
