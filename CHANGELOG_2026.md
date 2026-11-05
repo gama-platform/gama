@@ -19,6 +19,13 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Fixed-argument operator invocation
+
+Generated unary and binary operator helpers accept operands directly instead of allocating an argument array on each
+evaluation. Operand order, lazy evaluation, conversions and error reporting are unchanged. Existing array-based
+helpers remain supported through a compatibility fallback; operators with three or more operands retain their
+existing invocation path. Regenerating operator registrations enables the specialized helpers.
+
 ### Chart image sizing in OpenGL
 
 Chart raster sizes use the magnitude of signed OpenGL layer dimensions, preventing negative image sizes when

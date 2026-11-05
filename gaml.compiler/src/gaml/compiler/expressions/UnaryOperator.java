@@ -98,7 +98,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	public Object _value(final IScope scope) throws GamaRuntimeException {
 		final Object childValue = prototype.getLazyness()[0] ? child : child.value(scope);
 		try {
-			return prototype.getHelper().get(scope, childValue);
+			return prototype.getHelper().getUnary(scope, childValue);
 		} catch (final GamaRuntimeException e1) {
 			e1.addContext("when applying the " + literalValue() + " operator on " + childValue);
 			throw e1;

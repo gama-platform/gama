@@ -147,7 +147,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 		try {
 			leftVal = prototype.getLazyness()[0] ? exprs[0] : exprs[0].value(scope);
 			rightVal = prototype.getLazyness()[1] ? exprs[1] : exprs[1].value(scope);
-			return prototype.getHelper().get(scope, leftVal, rightVal);
+			return prototype.getHelper().getBinary(scope, leftVal, rightVal);
 		} catch (final GamaRuntimeException ge) {
 			throw ge;
 		} catch (final Throwable ex) {

@@ -72,4 +72,52 @@ public interface IGamaGetter<T> {
 	 */
 	T get(IScope scope, Object... arguments);
 
+	/**
+	 * Invokes a unary getter, using the array-based entry point for legacy implementations.
+	 */
+	default T getUnary(final IScope scope, final Object operand) {
+		return get(scope, operand);
+	}
+
+	/**
+	 * Invokes a binary getter, using the array-based entry point for legacy implementations.
+	 */
+	default T getBinary(final IScope scope, final Object left, final Object right) {
+		return get(scope, left, right);
+	}
+
+	/**
+	 * A unary operator helper that does not allocate an operand array on direct invocation.
+	 *
+	 * @param <T> the result type
+	 */
+	@FunctionalInterface
+	interface Unary<T> extends IGamaGetter<T> {
+
+		@Override
+		T getUnary(IScope scope, Object operand);
+
+		@Override
+		default T get(final IScope scope, final Object... arguments) {
+			return getUnary(scope, arguments[0]);
+		}
+	}
+
+	/**
+	 * A binary operator helper that does not allocate an operand array on direct invocation.
+	 *
+	 * @param <T> the result type
+	 */
+	@FunctionalInterface
+	interface Binary<T> extends IGamaGetter<T> {
+
+		@Override
+		T getBinary(IScope scope, Object left, Object right);
+
+		@Override
+		default T get(final IScope scope, final Object... arguments) {
+			return getBinary(scope, arguments[0], arguments[1]);
+		}
+	}
+
 }
