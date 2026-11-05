@@ -96,7 +96,7 @@ public class GamaNavigator extends CommonNavigator
 	/** The find control. */
 	private NavigatorSearchControl findControl;
 
-	/** Key under which the expanded elements are stored (in the memento and in the workspace preferences). */
+	/** Key under which the expanded elements are stored in the workspace preferences. */
 	private static final String EXPANDED_STATE = "EXPANDED_STATE";
 
 	/** Separator of the expanded elements in their serialized form. */
@@ -357,10 +357,7 @@ public class GamaNavigator extends CommonNavigator
 	public void saveState(final IMemento newMemento) {
 		if (PreferencesHelper.KEEP_NAVIGATOR_STATE.getValue()) {
 			final String state = computeExpandedState();
-			if (state != null) {
-				newMemento.putString(EXPANDED_STATE, state);
-				storeExpandedState(state);
-			}
+			if (state != null) { storeExpandedState(state); }
 		}
 		super.saveState(newMemento);
 	}
@@ -440,8 +437,7 @@ public class GamaNavigator extends CommonNavigator
 	 */
 	private void restoreState() {
 		if (!PreferencesHelper.KEEP_NAVIGATOR_STATE.getValue()) return;
-		String saved = getWorkspacePreferences().get(EXPANDED_STATE, null);
-		if (saved == null && memento != null) { saved = memento.getString(EXPANDED_STATE); }
+		final String saved = getWorkspacePreferences().get(EXPANDED_STATE, null);
 		if (saved == null || saved.isEmpty()) return;
 		final List<VirtualContent<?>> contents = new ArrayList<>();
 		final String[] names = saved.split(SEPARATOR);
