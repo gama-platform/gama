@@ -188,13 +188,19 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	@Override
 	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
 			final IAgentFilter f, final boolean contained) {
+		return allInEnvelope(scope, source, envelope, f, contained, true);
+	}
+
+	@Override
+	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
+			final IAgentFilter f, final boolean contained, final boolean shuffle) {
 		if (disposed) return Collections.EMPTY_LIST;
 		Iterable<ISpatialIndex> indices = add(scope, f);
 		try (final ICollector<IAgent> agents = Collector.getOrderedSet()) {
 			for (final ISpatialIndex si : indices) {
-				agents.addAll(si.allInEnvelope(scope, source, envelope, f, contained));
+				agents.addAll(si.allInEnvelope(scope, source, envelope, f, contained, shuffle));
 			}
-			agents.shuffleInPlaceWith(scope.getRandom());
+			if (shuffle) { agents.shuffleInPlaceWith(scope.getRandom()); }
 			return agents.items();
 		}
 	}

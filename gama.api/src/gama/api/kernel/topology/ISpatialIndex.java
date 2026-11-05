@@ -193,6 +193,15 @@ public interface ISpatialIndex {
 	}
 
 	/**
+	 * Envelope query with optional randomization. Routing uses unshuffled candidates so endpoint lookup does not
+	 * consume the simulation's random numbers. Implementations without randomized queries can use the default.
+	 */
+	default Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
+			final IAgentFilter f, final boolean contained, final boolean shuffle) {
+		return allInEnvelope(scope, source, envelope, f, contained);
+	}
+
+	/**
 	 * Finds all agents within a specified distance.
 	 * 
 	 * <p>Returns all agents whose distance from the source shape is less than or equal

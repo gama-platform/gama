@@ -19,6 +19,17 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Spatial routing and movement performance
+
+Routing on agent-typed edge networks now uses nearby spatial-index candidates instead of scanning every edge for each
+endpoint. It still considers all equally nearest overlapping edges, including edges at different elevations, and
+selects the least-weight reachable route without trying farther attachments. Geometry-edge networks and the
+experimental location-based distance setting retain exhaustive lookup, as do graphs with mixed agent/geometry edges.
+Routing candidate queries do not consume simulation random numbers.
+
+Point-agent movement no longer allocates a temporary identity set for each spatial-index removal. Non-point
+removal retains deferred, identity-deduplicated disposal of shared spatial keys.
+
 ### Adjustable editor delays for large models
 
 **Preferences > Editors > Edition** now offers two settings to reduce background

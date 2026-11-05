@@ -350,6 +350,12 @@ public class GamaOctTree implements ISpatialIndex {
 			return octree.allInEnvelope(scope, source, envelope, f, contained);
 		}
 
+		@Override
+		public synchronized Collection<IAgent> allInEnvelope(final IScope scope, final IShape source,
+				final IEnvelope envelope, final IAgentFilter f, final boolean contained, final boolean shuffle) {
+			return octree.allInEnvelope(scope, source, envelope, f, contained, shuffle);
+		}
+
 		/**
 		 * Returns all agents within the given distance from the source, under a lock.
 		 *
@@ -595,12 +601,14 @@ public class GamaOctTree implements ISpatialIndex {
 	public void remove(final IEnvelope previous, final IAgent agent) {
 		final IEnvelope current = previous == null ? agent.getEnvelope() : previous;
 		if (current == null) return;
-		final Set<IIntersectable> removed = Collections.newSetFromMap(new IdentityHashMap<>());
 		if (current.getArea() == 0.0) {
-			root.remove(current.center(), agent, removed);
-		} else {
-			root.remove(current, agent, removed);
+			final IIntersectable removed = root.remove(current.center(), agent);
+			if (removed != null && removed != current) { removed.dispose(); }
+			current.dispose();
+			return;
 		}
+		final Set<IIntersectable> removed = Collections.newSetFromMap(new IdentityHashMap<>());
+		root.remove(current, agent, removed);
 		// Leaves can share a key: release it only after every reference has been removed.
 		removed.add(current);
 		removed.forEach(IIntersectable::dispose);
@@ -631,11 +639,16 @@ public class GamaOctTree implements ISpatialIndex {
 	 */
 	protected Collection<IAgent> findIntersects(final IScope scope, final IShape source, final IEnvelope r,
 			final IAgentFilter filter) {
+		return findIntersects(scope, source, r, filter, true);
+	}
+
+	private Collection<IAgent> findIntersects(final IScope scope, final IShape source, final IEnvelope r,
+			final IAgentFilter filter, final boolean shuffle) {
 		try (final ICollector<IAgent> list = Collector.getOrderedSet()) {
 			root.findIntersects(r, list);
 			if (list.isEmpty()) return GamaListFactory.create();
 			filter.filter(scope, source, list);
-			list.shuffleInPlaceWith(scope.getRandom());
+			if (shuffle) { list.shuffleInPlaceWith(scope.getRandom()); }
 			return list.items();
 		}
 	}
@@ -798,6 +811,12 @@ public class GamaOctTree implements ISpatialIndex {
 	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
 			final IAgentFilter f, final boolean contained) {
 		return findIntersects(scope, source, envelope, f);
+	}
+
+	@Override
+	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
+			final IAgentFilter f, final boolean contained, final boolean shuffle) {
+		return findIntersects(scope, source, envelope, f, shuffle);
 	}
 
 	// =========================================================================
@@ -1014,7 +1033,7 @@ public class GamaOctTree implements ISpatialIndex {
 		 *
 		 * <p>
 		 * If this is a leaf, the agent is removed from {@link #objects} and its spatial key (if non-{@code null})
-		 * is collected for disposal after traversal. Otherwise, the point is routed to the correct child.
+		 * is returned for disposal after traversal. Otherwise, the point is routed to the correct child.
 		 * </p>
 		 *
 		 * @param p
@@ -1022,13 +1041,8 @@ public class GamaOctTree implements ISpatialIndex {
 		 * @param a
 		 *            the agent to remove
 		 */
-		private void remove(final IPoint p, final IShape a, final Set<IIntersectable> removed) {
-			if (nwf == null) {
-				final IIntersectable env = objects.remove(a);
-				if (env != null) { removed.add(env); }
-			} else {
-				getNode(p).remove(p, a, removed);
-			}
+		private IIntersectable remove(final IPoint p, final IShape a) {
+			return nwf == null ? objects.remove(a) : getNode(p).remove(p, a);
 		}
 
 		/**

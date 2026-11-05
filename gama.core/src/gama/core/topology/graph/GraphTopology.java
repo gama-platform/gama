@@ -23,6 +23,7 @@ import com.google.common.collect.Ordering;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.topology.ISpatialIndex;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
@@ -36,6 +37,8 @@ import gama.api.types.misc.IContainer;
 import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.AbstractTopology;
@@ -82,11 +85,69 @@ public class GraphTopology extends AbstractTopology {
 	@Override
 	public boolean isContinuous() { return false; }
 
-	private List<IShape> closestPathEdges(final IShape endpoint, final boolean optimized) {
+	private List<IShape> closestPathEdges(final IScope scope, final IShape endpoint, final boolean optimized) {
+		// Geometry-typed graphs can mix agents with geometries that are absent from the simulation index.
+		if (optimized || !getPlaces().getGamlType().getContentType().isAgentType()
+				|| !((GamaSpatialGraph) getPlaces()).isAgentEdge() || getPlaces().edgeSet().isEmpty())
+			return closestPathEdges(endpoint, getPlaces().edgeSet(), optimized);
+
+		final ISpatialIndex index = scope.getSimulation().getTopology().getSpatialIndex();
+		final IAgentFilter filter = In.edgesOf(getPlaces());
+		final IEnvelope bounds = GamaEnvelopeFactory.of(endpoint);
+		final IEnvelope world = scope.getSimulation().getEnvelope();
+		try {
+			final double maxRadius = Math.max(
+					Math.max(Math.abs(world.getMaxX() - bounds.getMinX()),
+							Math.abs(world.getMinX() - bounds.getMaxX())),
+					Math.max(Math.abs(world.getMaxY() - bounds.getMinY()),
+							Math.abs(world.getMinY() - bounds.getMaxY())));
+			if (Double.isFinite(maxRadius) && !bounds.isNull()) {
+				double radius = 0;
+				while (true) {
+					final Collection<IAgent> candidates =
+							pathEdgesInEnvelope(scope, endpoint, index, filter, bounds, radius);
+					if (!candidates.isEmpty()) {
+						final List<IShape> nearest = closestPathEdges(endpoint, candidates, false);
+						if (nearest.isEmpty()) break;
+						final double distance = endpoint.euclidianDistanceTo(nearest.getFirst());
+						// A nonempty square need not contain the nearest edge: complete the search to this upper bound.
+						if (distance <= radius) return nearest;
+						if (!Double.isFinite(distance)) break;
+						return closestPathEdges(endpoint,
+								pathEdgesInEnvelope(scope, endpoint, index, filter, bounds, distance), false);
+					}
+					if (radius >= maxRadius) break;
+					radius = radius == 0 ? maxRadius / 1024 : Math.min(maxRadius, radius * 2);
+					if (radius == 0) break;
+				}
+			}
+		} finally {
+			bounds.dispose();
+			world.dispose();
+		}
+		// Graphs whose edges are not available in the simulation index still use exhaustive attachment lookup.
+		return closestPathEdges(endpoint, getPlaces().edgeSet(), false);
+	}
+
+	private Collection<IAgent> pathEdgesInEnvelope(final IScope scope, final IShape endpoint, final ISpatialIndex index,
+			final IAgentFilter filter, final IEnvelope bounds, final double radius) {
+		// Routing geometry distances are 2D, including when the simulation uses an octree.
+		final IEnvelope search = GamaEnvelopeFactory.of(
+				Math.nextDown(bounds.getMinX() - radius), Math.nextUp(bounds.getMaxX() + radius),
+				Math.nextDown(bounds.getMinY() - radius), Math.nextUp(bounds.getMaxY() + radius),
+				-Double.MAX_VALUE, Double.MAX_VALUE);
+		try {
+			return index.allInEnvelope(scope, endpoint, search, filter, false, false);
+		} finally {
+			search.dispose();
+		}
+	}
+
+	private List<IShape> closestPathEdges(final IShape endpoint, final Collection<? extends IShape> candidates,
+			final boolean optimized) {
 		final List<IShape> result = new ArrayList<>();
 		double distMin = Double.MAX_VALUE;
-		// The spatial index returns a single winner; overlapping edges can belong to different components.
-		for (final IShape edge : getPlaces().edgeSet()) {
+		for (final IShape edge : candidates) {
 			final double dist = optimized ? endpoint.getLocation().euclidianDistanceTo(edge.getLocation())
 					: endpoint.euclidianDistanceTo(edge);
 			if (dist < distMin) {
@@ -165,12 +226,12 @@ public class GraphTopology extends AbstractTopology {
 			startingEdges = Collections.singletonList(null);
 		} else {
 			final IShape currentEdge = getPathEdge(scope, source);
-			startingEdges = currentEdge == null ? closestPathEdges(source, optimizedClosestTo)
+			startingEdges = currentEdge == null ? closestPathEdges(scope, source, optimizedClosestTo)
 					: currentPathEdges(source, currentEdge);
 		}
 		if (startingEdges.isEmpty()) return null;
 		final List<IShape> targetEdges =
-				targetNode ? Collections.singletonList(null) : closestPathEdges(target, optimizedClosestTo);
+				targetNode ? Collections.singletonList(null) : closestPathEdges(scope, target, optimizedClosestTo);
 		if (targetEdges.isEmpty()) return null;
 		return pathBetweenCandidates(scope, startingEdges, targetEdges, sourceN, targetN, sourceNode, targetNode,
 				graph.isDirected());
