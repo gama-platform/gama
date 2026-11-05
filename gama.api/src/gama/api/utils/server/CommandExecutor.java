@@ -142,34 +142,41 @@ public class CommandExecutor implements ICommandExecuter {
 	 */
 	protected void process(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
 		final String cmd_type = String.valueOf(map.get(IKeyword.TYPE));
-		GamaServerMessage res;
+		final GamaWebSocketServer webSocketServer =
+				server instanceof GamaWebSocketServer ws && LOAD.equals(cmd_type) ? ws : null;
+		if (webSocketServer != null) { webSocketServer.beginLoadStateDeferral(socket); }
 		try {
-			final ISocketCommand command = commands.get(cmd_type);
-			if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
-			res = command.execute(server, socket, map);
-		} catch (Throwable t) {
-			// We ensure that every request gets an answer, even in case of complete crash
-			if (server instanceof GamaWebSocketServer webSocketServer) {
-				webSocketServer.getServerConsole().error("Error executing command '" + cmd_type + "'", t);
-			}
-			DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
-			res = new CommandResponse(MessageType.GamaServerError, t, map, false);
-		}
-		try {
-			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
-				if (server instanceof GamaWebSocketServer webSocketServer
-						&& (res.type == MessageType.MalformedRequest || res.type == MessageType.UnableToExecuteRequest
-								|| res.type == MessageType.RuntimeError)) {
-					webSocketServer.getServerConsole().message(gama.api.ui.ConsoleEvent.Level.WARNING,
-							GamaWebSocketServer.getSocketId(socket), "Command '" + cmd_type + "': " + res.content);
+			GamaServerMessage res;
+			try {
+				final ISocketCommand command = commands.get(cmd_type);
+				if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
+				res = command.execute(server, socket, map);
+			} catch (Throwable t) {
+				// We ensure that every request gets an answer, even in case of complete crash
+				if (server instanceof GamaWebSocketServer ws) {
+					ws.getServerConsole().error("Error executing command '" + cmd_type + "'", t);
 				}
-				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+				DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
+				res = new CommandResponse(MessageType.GamaServerError, t, map, false);
 			}
-		} catch (final RuntimeException e) {
-			if (server instanceof GamaWebSocketServer webSocketServer) {
-				webSocketServer.getServerConsole().error("Error sending response to command '" + cmd_type + "'", e);
+			try {
+				if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+					if (server instanceof GamaWebSocketServer ws
+							&& (res.type == MessageType.MalformedRequest || res.type == MessageType.UnableToExecuteRequest
+									|| res.type == MessageType.RuntimeError)) {
+						ws.getServerConsole().message(gama.api.ui.ConsoleEvent.Level.WARNING,
+								GamaWebSocketServer.getSocketId(socket), "Command '" + cmd_type + "': " + res.content);
+					}
+					socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+				}
+			} catch (final RuntimeException e) {
+				if (server instanceof GamaWebSocketServer ws) {
+					ws.getServerConsole().error("Error sending response to command '" + cmd_type + "'", e);
+				}
+				DEBUG.ERR("Error while sending the response to command '" + cmd_type + "'", e);
 			}
-			DEBUG.ERR("Error while sending the response to command '" + cmd_type + "'", e);
+		} finally {
+			if (webSocketServer != null) { webSocketServer.finishLoadStateDeferral(socket); }
 		}
 	}
 

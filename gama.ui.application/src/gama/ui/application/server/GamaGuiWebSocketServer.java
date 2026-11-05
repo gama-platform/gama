@@ -341,12 +341,14 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 		if (closing && previousExperiment != null && experiment != previousExperiment) return;
 		final State effectiveState = closing ? State.NONE : state;
 		if (effectiveState == currentState && experiment == previousExperiment && ws == currentStateSocket) return;
-		ws.send(GAMA.getJsonEncoder()
-				.valueOf(new GamaServerMessage(MessageType.SimulationStatus, effectiveState.name(),
-						config.expId().isBlank() ? "0" : config.expId())).toString());
+		final GamaServerMessage status =
+				new GamaServerMessage(MessageType.SimulationStatus, effectiveState.name(),
+						config.expId().isBlank() ? "0" : config.expId());
 		currentState = effectiveState;
 		currentStateExperiment = new WeakReference<>(experiment);
 		currentStateSocket = ws;
+		if (deferExperimentState(ws, status)) return;
+		ws.send(GAMA.getJsonEncoder().valueOf(status).toString());
 	}
 
 	/**

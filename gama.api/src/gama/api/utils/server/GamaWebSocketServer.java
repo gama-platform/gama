@@ -67,6 +67,9 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	/** The ping timers. map of all connected clients and their associated timers running ping requests */
 	protected final Map<WebSocket, Timer> pingTimers = new HashMap<>();
 
+	private final Map<WebSocket, Integer> loadStateDeferrals = new HashMap<>();
+	private final Map<WebSocket, GamaServerMessage> deferredExperimentStates = new HashMap<>();
+
 	/** The console. */
 	protected final IConsoleListener console = new GamaServerConsoleListener();
 
@@ -77,6 +80,38 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	private final GamaServerConsole serverConsole;
 	private final PrintStream previousErrorStream = System.err;
 	private PrintStream serverErrorStream;
+
+	final synchronized void beginLoadStateDeferral(final WebSocket socket) {
+		loadStateDeferrals.merge(socket, 1, Integer::sum);
+	}
+
+	final void finishLoadStateDeferral(final WebSocket socket) {
+		final GamaServerMessage deferredState;
+		synchronized (this) {
+			final Integer count = loadStateDeferrals.get(socket);
+			if (count == null) return;
+			if (count > 1) {
+				loadStateDeferrals.put(socket, count - 1);
+				return;
+			}
+			loadStateDeferrals.remove(socket);
+			deferredState = deferredExperimentStates.remove(socket);
+		}
+		if (deferredState == null || !org.java_websocket.enums.ReadyState.OPEN.equals(socket.getReadyState())) return;
+		try {
+			socket.send(GAMA.getJsonEncoder().valueOf(deferredState).toString());
+		} catch (final RuntimeException e) {
+			serverConsole.error("Error sending deferred experiment state", e);
+			DEBUG.ERR("Error sending deferred experiment state", e);
+		}
+	}
+
+	protected final synchronized boolean deferExperimentState(final WebSocket socket,
+			final GamaServerMessage state) {
+		if (!loadStateDeferrals.containsKey(socket)) return false;
+		deferredExperimentStates.put(socket, state);
+		return true;
+	}
 
 	// Is thread local because the decoder is stateful
 	// TODO: It may be better to have one decoder per open connection (needs to be benchmarked) but good enough for now
