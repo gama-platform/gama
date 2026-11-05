@@ -19,6 +19,29 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Chart image sizing in OpenGL
+
+Chart raster sizes use the magnitude of signed OpenGL layer dimensions, preventing negative image sizes when
+camera projection produces negative screen coordinates. Zero-size layers are not drawn, and chart-quality scaling
+keeps nonempty OpenGL chart images at least one pixel wide. Other layer positioning and scaling are unchanged.
+
+### Runtime arguments and population queries
+
+Runtime action arguments bypass the compiler's value-based constant cache, avoiding full map/list hashing and
+preserving each supplied object's identity even when two argument values compare equal. Constant descriptions
+also avoid eagerly converting their values to an unused name string. Ordinary population
+emptiness checks stop at the first living agent, and size queries count living agents without building a
+temporary filtered list. Both queries retain the population's synchronization and exclude null/dead entries;
+grid population behavior is unchanged.
+
+### OpenGL text and polygon drawing reuse
+
+The legacy OpenGL renderer reuses prepared text outlines and polygon tessellations in bounded, renderer-local
+caches instead of rebuilding them on every redraw. Text keys include the content, font, precision, depth,
+wireframe and texture mode; polygon keys snapshot all contour coordinates, including holes and elevations,
+so in-place geometry changes cannot reuse stale triangles. Colors, textures, placement, lighting and picking
+remain applied at draw time. Each cache has a 16 MiB budget and is cleared when its renderer is disposed.
+
 ### Spatial routing and movement performance
 
 Routing on agent-typed edge networks now uses nearby spatial-index candidates instead of scanning every edge for each

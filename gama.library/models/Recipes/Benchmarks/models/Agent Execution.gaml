@@ -140,7 +140,13 @@ experiment Replications type: batch repeat: 3 keep_seed: true parallel: false
 
 	parameter "Load level (factor 2^level)" var: load_level among: [0, 1, 2, 3, 4, 5];
 	parameter "Load axis" var: load_axis among: ["size"];
-	parameter "Pause at completion" var: pause_at_end  <- false;
+	
+	init {
+		ask simulations {
+			pause_at_end <- false;
+		}
+	}
+
 }
 
 experiment Operations type: batch parent: Replications repeat: 3 keep_seed: true parallel: false until: finished {
