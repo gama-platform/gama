@@ -85,20 +85,19 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		loadStateDeferrals.merge(socket, 1, Integer::sum);
 	}
 
-	final void finishLoadStateDeferral(final WebSocket socket) {
+	final synchronized void finishLoadStateDeferral(final WebSocket socket) {
 		final GamaServerMessage deferredState;
-		synchronized (this) {
-			final Integer count = loadStateDeferrals.get(socket);
-			if (count == null) return;
-			if (count > 1) {
-				loadStateDeferrals.put(socket, count - 1);
-				return;
-			}
-			loadStateDeferrals.remove(socket);
-			deferredState = deferredExperimentStates.remove(socket);
+		final Integer count = loadStateDeferrals.get(socket);
+		if (count == null) return;
+		if (count > 1) {
+			loadStateDeferrals.put(socket, count - 1);
+			return;
 		}
+		loadStateDeferrals.remove(socket);
+		deferredState = deferredExperimentStates.remove(socket);
 		if (deferredState == null || !org.java_websocket.enums.ReadyState.OPEN.equals(socket.getReadyState())) return;
 		try {
+			// Keep state updates serialized with this send so a newer notification cannot overtake it.
 			socket.send(GAMA.getJsonEncoder().valueOf(deferredState).toString());
 		} catch (final RuntimeException e) {
 			serverConsole.error("Error sending deferred experiment state", e);
