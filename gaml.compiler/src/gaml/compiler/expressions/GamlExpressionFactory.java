@@ -33,6 +33,7 @@ import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
@@ -1154,6 +1155,15 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createAction(final String op, final IDescription callerContext, final IActionDescription action,
 			final IExpression call, final Arguments arguments) {
+		final ITypeDescription receiver = call == null ? callerContext.getTypeContext()
+				: call.getGamlType().getDenotedSpecies();
+		if (action.getTypeContext() instanceof IModelDescription && receiver != null
+				&& !receiver.hasAction(op, call instanceof SuperExpression)) {
+			callerContext.error("Action '" + op + "' is defined in global and is not available on "
+					+ receiver.getName() + ". Call it on the simulation (e.g. ask simulation { do "
+					+ op + "(); }).", IGamlIssue.WRONG_CONTEXT, callerContext.getUnderlyingElement());
+			return null;
+		}
 		// Verify that the provided arguments match the action's expected parameters
 		if (action.verifyArgs(callerContext, arguments))
 			// Create primitive operator for the action call

@@ -58,7 +58,17 @@ global {
 		}
 
 		//Creation of the food places placed randomly with a certain distance between each
-		loop times: number_of_food_places {
+		loop times: number_of_food_places { do add_food();}
+		//Creation of the ants that will be placed in the nest
+		create ant number: ants_number with: (location: center);
+	}
+	//Reflex to diffuse the pheromon among the grid
+	reflex diffuse {
+		diffuse var: road on: ant_grid proportion: diffusion_rate radius: 3 propagation: gradient method: convolution;
+	}
+	
+	action add_food() {
+		
 			point loc <- {rnd(gridsize - 10) + 5, rnd(gridsize - 10) + 5};
 			list<ant_grid> food_places <- (ant_grid where ((each distance_to loc) < 5));
 			ask food_places {
@@ -68,14 +78,9 @@ global {
 					color <- food_color;
 				}
 			}
-		}
-		//Creation of the ants that will be placed in the nest
-		create ant number: ants_number with: (location: center);
+		
 	}
-	//Reflex to diffuse the pheromon among the grid
-	reflex diffuse {
-		diffuse var: road on: ant_grid proportion: diffusion_rate radius: 3 propagation: gradient method: convolution;
-	}
+
 }
 
 	//Grid used to discretize the space to place food
@@ -131,7 +136,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//Initial state to make the ant wander 
 	state wandering initial: true {
-		do wander amplitude: 90.0;
+		do wander (amplitude: 90.0);
 		ant_grid here <- ant_grid(location);
 		float pr <- here.road;
 		transition to: carryingFood when: has_food;
@@ -139,7 +144,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//State to carry food once it has been found
 	state carryingFood {
-		self. goto (target: center);
+		self.goto (target: center);
 		transition to: wandering when: !has_food;
 	}
 	//State to follow a pheromon road if once has been found
@@ -217,38 +222,27 @@ experiment "With Inspector" type: gui parent:base{
 }
 
 experiment "Classic" type: gui parent:base {
-	user_command "Save" {
-		save simulation to: '../result/file.simulation' format: "json" ;}
+	bool fake;
 	
 	output {
-		layout #split parameters: false;
-		display Ants antialias: false type: 3d axes: true {
+		layout #split parameters: false consoles: false;
+		display Ants antialias: false type: 3d axes: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
 			agents "Grid" transparency: 0.4 value: ant_grid where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant aspect: info;
-			overlay position: {12, 12} size: {300, 340} background: nil {
-				ui_slider "Population" var: ants_number min: 1 max: 1000 step: 1
-					at: {12, 12} size: {276, 40} ;
-				ui_slider "Signal evaporation / cycle" var: evaporation_per_cycle min: 0.0 max: 240.0 step: 1.0
-					at: {12, 62} size: {276, 40} ;
-				ui_slider "Signal diffusion / cycle" var: diffusion_rate min: 0.0 max: 1.0 step: 0.01
-					at: {12, 112} size: {276, 40};
-				ui_slider "Grid width and height (next run)" var: gridsize min: 30 max: 200 step: 1
-					at: {12, 162} size: {276, 40} ;
-				ui_slider "Grid update frequency (next run)" var: grid_frequency min: 1 max: 100 step: 1
-					at: {12, 212} size: {276, 40}  background: nil;
-				ui_slider "Food depots (next run)" var: number_of_food_places min: 1 max: 20 step: 1
-					at: {12, 262} size: {276, 40}  background: #yellow with_alpha 0.5 font: font("Helvetica", 18, #bold);
-				ui_switch "Use agent icons" var: use_icons
-					at: {12, 312} size: {276, 28} ;
-				ui_switch "Display agent state" var: display_state
-					at: {12, 362} size: {276, 28} ;
-			}
+			overlay position: {12, 12} size: {300, 202}  {
+				ui_slider "Signal evaporation / cycle" var: evaporation_per_cycle min: 0.0 max: 240.0 step: 1.0 at: {12, 12} size: {276, 40} ;
+				ui_slider "Signal diffusion / cycle" var: diffusion_rate min: 0.0 max: 1.0 step: 0.01 at: {12, 62} size: {276, 40};
+				ui_switch "Use agent icons" var: use_icons at: {12, 112} size: {276, 28} ;
+				ui_switch "Display agent state" var: display_state at: {12, 162} size: {276, 28} ;
+				ui_button "Add food" at: {12, 212} size: {276, 28} { ask simulation {do add_food();}}	
+				ui_button "Image" at:{12, 262} size: {138, 138} toggle: true var: fake image: image(image_file('../images/ant_button.png'))  image_pressed: (image_file('../images/ant_pressed.png')) image_hover: (image_file('../images/ant_hover.png') );
+			} 
 		}
 
-	}
+	}				 
 }
 
 experiment Record parent: Classic record: true {}

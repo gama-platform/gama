@@ -45,7 +45,7 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 		// if (sd.isExperiment())
 		// sd = sd.getModelDescription();
 		final boolean control = "ui_button".equals(context.getKeyword()) || "ui_switch".equals(context.getKeyword())
-				|| "ui_slider".equals(context.getKeyword());
+				|| "ui_slider".equals(context.getKeyword()) || "ui_radio".equals(context.getKeyword());
 		final IStatementDescription action =
 				(IStatementDescription) GAML.getDescriptionFactory().create(element, sd, null);
 		if (action != null) {

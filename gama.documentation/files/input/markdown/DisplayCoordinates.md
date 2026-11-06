@@ -260,10 +260,20 @@ conversion cannot cancel two different axis scales.
 
 ## Overlay UI controls (initial pointer implementation)
 
-`ui_button`, `ui_switch` and `ui_slider` can be declared directly inside an
+`ui_button`, `ui_switch`, `ui_radio` and `ui_slider` can be declared directly inside an
 overlay with screen placement and screen contents. They are drawn using the
 same graphics pipeline as the overlay, in Java2D, OpenGL and OpenGL4.
-See the `Display UI Controls.gaml` recipe.
+See the `Display UI Controls.gaml` recipe and these additional recipes in
+`Recipes/Visualization/models`:
+
+* `Display UI Controls - Interactions.gaml`: simulation actions change other
+  controls' bindings, labels, accents and availability.
+* `Display UI Controls - Four Styles.gaml`: four simultaneous simulations share
+  one panel definition, with Liquid Glass-inspired, GAMA FlatButton, minimalist
+  and Midnight Arcade styles supplied as simulation attributes. The glass style
+  uses transparency, not native backdrop blur.
+* `Display UI Controls - Simulation Toolbar.gaml`: native experiment operations
+  with recreated toolbar icons and a real minimum-cycle-duration slider.
 
 ```gaml
 overlay position: {16, 16} size: {240, 160} {
@@ -280,11 +290,15 @@ overlay position: {16, 16} size: {240, 160} {
 not a temporary drawing variable.
 The binding is assigned before an optional handler runs. `value:` instead
 reads an expression and requires a change handler; no assignment is automatic.
-These facets are mutually exclusive. A momentary button needs `action:` or a final block;
+These facets are mutually exclusive. A momentary button needs `action:`, `command:` or a final block;
 switches, toggle buttons and sliders accept `on_change:` or a final block, not both.
 Handler facets accept an argument-free action or an inline block.
 Inline handlers execute in the experiment context, like `event` blocks.
-Named actions execute on their declaring model's simulation or experiment.
+Named global actions execute on the display's owning simulation; named experiment
+actions execute on the experiment. In multi-simulation experiments, the experiment's
+`simulation` attribute can refer to a different simulation from the display's owner.
+For inline handlers, store `self` in a typed global attribute and `ask` that attribute,
+as in the Four Styles recipe, instead of assuming `ask simulation` targets this display.
 The typed local `ui_value` (`bool` for switches and toggle buttons, `float` for sliders) is available
 in a value control's inline handler or final block. It is not declared in the
 model, a separately declared named action or the enclosing overlay.
@@ -300,7 +314,8 @@ All controls accept these appearance and interaction facets:
 | `background:` | Background colour; `nil` means transparent | `nil` |
 | `color:` | Text colour, or `#adaptive` for scene-dependent black/white text | `#adaptive`, including when inactive |
 | `accent:` | Slider tracks, switch indicators and button interaction highlights | GAMA neutral: `rgb(102, 114, 126)` |
-| `border:` | Border colour; `nil` means no border | Translucent white |
+| `border:` | Border colour; explicit `nil` means no border | `accent:` for buttons (momentary or toggle); `nil` for switches, radios and sliders |
+| `rounded:` | Capsule outline when true; FlatButton-style corners (8 logical-pixel arc) when false | `true` |
 | `active:` | Accepts pointer interaction; `false` leaves the control visible | `true` |
 | `font:` | Label font | Helvetica, 14 |
 
@@ -350,16 +365,20 @@ indicators remain visible. Set an explicit translucent `background:` to
 enable the glass-style fill and shadow; rounded corners and interaction
 indicators are independent of that background.
 
-Controls use fully rounded capsule edges and inset contents. Horizontal
+Controls use fully rounded capsule edges by default. `rounded: false` uses
+the FlatButton geometry: a rectangle with an 8 logical-pixel corner arc,
+clamped for very small controls. The fill, shadow and border
+and adaptive-text background follow this outline; switch indicators and slider
+thumbs retain their usual shapes. Contents remain inset in both modes. Horizontal
 padding is at least 18 logical pixels on normal-sized controls and grows
 with their height; compact widths reduce it proportionally. Slider thumbs
 stay inside this padding at both ends, and pointer values use the same
-padded track as the rendering. Button images are inset from the rounded
-border. These insets do not change the declared `size:` or input bounds.
+padded track as the rendering. These insets do not change the declared `size:`
+or input bounds.
 
-`accent:` applies to all three controls, including toggle buttons. It is
-evaluated on each redraw, independently of `color:`, `background:` and button
-images. Its alpha is preserved when deriving highlights; inactive indicators
+`accent:` applies to all three controls, including non-image toggle buttons. It is
+evaluated on each redraw, independently of `color:` and `background:`.
+Its alpha is preserved when deriving highlights; inactive indicators
 use a lower opacity of the same accent colour. `accent: nil` is invalid.
 For example:
 
@@ -384,19 +403,70 @@ ui_button "Running" toggle: true value: running on_change: {
 and update their binding on release inside the button, before invoking the handler.
 The accent-coloured border indicates the hovered, pressed or checked state.
 
+Momentary buttons can invoke the native experiment toolbar with a constant string
+`command:` instead of `action:` or a final block:
+
+```gaml
+ui_button "Play / Pause" command: "play_pause";
+ui_button "Step" command: "step";
+ui_button "Sync / async" command: "sync";
+ui_button "Reload" command: "reload";
+ui_button "Stop" command: "stop";
+```
+
+These use the same frontmost-experiment operations as the native toolbar, not
+simulation-local movement flags. `step` requests one cycle. `sync` toggles waiting
+for outputs. `reload` recreates the run, and `stop` closes the experiments and their
+views, returning to modeling. Play/Pause and Step have the toolbar's experiment-wide
+scope, affecting all simulations it controls. Commands cannot be combined with
+toggle mode, bindings, handlers or final blocks. Image facets remain supported.
+The example uses a combined Play/Pause icon and a fixed Sync/async icon; these
+icons do not mirror the native toolbar's checked or running-state appearance.
+For duration, bind a slider to the experiment's `minimum_cycle_duration`
+(seconds); this changes real scheduling, not the model's simulated `step` duration.
+
 Buttons accept `image:`, `image_pressed:`, `image_hover:` and, when `toggle: true`,
 `image_checked:`. Each accepts an image provider, an image file or a path,
-or `nil` to omit that image. Images stretch to the padded control interior, above the
-background and below the border and label; `color:` does not tint them.
+or `nil` to omit that image. Declaring any image facet makes the button image-only,
+even if its current value is `nil`: no label, background, shadow or border is drawn.
+Appearance facets (`color:`, `font:`, `accent:`, `background:`, `border:` and
+`rounded:`) are ignored. The selected image is centered in `size:` and scaled
+proportionally to fit, without stretching, padding, tinting or rounded clipping.
+Its own transparency is preserved. The full declared rectangle remains clickable;
+`active:`, toggle bindings and handlers continue to work normally.
 While active, a supplied pressed image has priority over hover, then checked,
 then the default image. An omitted checked image falls back to `image_pressed:`,
 then `image:`. Inactive buttons use only their checked/default appearance.
-The label remains optional, so image-only buttons are possible.
+If no image resolves for the current state, the button is invisible but retains
+its declared interaction bounds.
 
 Slider limits default to 0 and 100. An omitted step is continuous for float
 bindings and 1 for integer bindings; an explicit step must be positive.
 Integer bindings also require integer bounds and steps. Steps are measured from
 the minimum, with the maximum also reachable.
+
+`ui_radio` displays a label and a switch-style circle on the right: a soft
+accent ring with a white inset when unchecked, and a full-accent ring with a
+centered accent dot when checked. It requires a writable boolean `var:` and
+a non-empty string `group:`. Group names are local to an overlay, not shared
+across overlays or displays.
+
+```gaml
+ui_radio "Icons" var: use_icons group: "ant_display" at: {12, 12};
+ui_radio "Agent states" var: display_state group: "ant_display" at: {12, 52};
+```
+
+On release inside a radio, its binding becomes `true` and all other radios in
+the same group become `false`, including inactive radios. Clicking the selected
+radio does not uncheck it. All bindings are updated before the changed radios'
+optional `on_change:` handlers (or final blocks) run; `ui_value` contains each
+radio's new boolean value. Unchanged radios do not invoke a handler.
+An initial group with no selection is allowed. Initialize at most one binding
+to `true`; model-side writes are not automatically normalized. Only radios
+present in the overlay's current drawing participate in selection. Use a
+different boolean variable for each option; `value:` is not supported.
+The radio's outer control is borderless and transparent by default, like a
+switch; its circle remains visible independently of `border:` and `background:`.
 
 This first implementation uses left-pointer press/release. Buttons activate
 on release inside their bounds; switches and toggle buttons toggle on release inside; sliders

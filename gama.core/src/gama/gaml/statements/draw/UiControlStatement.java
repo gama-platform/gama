@@ -12,7 +12,6 @@ package gama.gaml.statements.draw;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-import java.util.List;
 import java.util.Locale;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -25,6 +24,7 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
@@ -54,14 +54,16 @@ import gama.api.ui.IStatusMessage;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.OverlayLayer;
 
-@symbol(name = { "ui_button", "ui_switch", "ui_slider" }, kind = ISymbolKind.SEQUENCE_STATEMENT,
+@symbol(name = { "ui_button", "ui_switch", "ui_slider", "ui_radio" }, kind = ISymbolKind.SEQUENCE_STATEMENT,
 		with_sequence = true)
 @inside(symbols = "overlay")
 @facets(value = {
 		@facet(name = "label", type = IType.STRING, optional = true, doc = @doc("Text shown on the control.")),
 		@facet(name = "var", type = IType.NONE, optional = true, doc = @doc("Writable variable bound to this control.")),
+		@facet(name = "group", type = IType.STRING, optional = true, doc = @doc("Required for ui_radio: a non-empty group name. Selection clears the other radio bindings in the same overlay and group, including inactive radios.")),
 		@facet(name = "value", type = IType.NONE, optional = true, doc = @doc("Read expression; ui_value is available in the change handler.")),
 		@facet(name = "min", type = IType.FLOAT, optional = true, doc = @doc("Slider minimum, default 0.")),
 		@facet(name = "max", type = IType.FLOAT, optional = true, doc = @doc("Slider maximum, default 100.")),
@@ -73,15 +75,17 @@ import gama.core.outputs.layers.OverlayLayer;
 		@facet(name = "color", type = IType.COLOR, optional = true, doc = @doc("Text colour; defaults to #adaptive, choosing black or white per label from the scene pixels beneath the overlay, composited with defined overlay and control backgrounds at their rendered opacity. An explicit colour remains unchanged when inactive.")),
 		@facet(name = "accent", type = IType.COLOR, optional = true, doc = @doc("Colour of slider tracks, switch indicators and button interaction highlights. Defaults to GAMA's neutral colour, rgb(102, 114, 126). Cannot be nil.")),
 		@facet(name = "background", type = IType.COLOR, optional = true, doc = @doc("Control background colour; defaults to nil (transparent), including while hovered, pressed or checked.")),
-		@facet(name = "border", type = IType.COLOR, optional = true, doc = @doc("Border colour, or nil for no border; defaults to a translucent white edge.")),
+		@facet(name = "border", type = IType.COLOR, optional = true, doc = @doc("Border colour; defaults to accent for buttons (momentary or toggle), otherwise nil. Explicit nil disables the border.")),
+		@facet(name = "rounded", type = IType.BOOL, optional = true, doc = @doc("Control outline: true (default) uses capsule edges; false uses FlatButton-style corners with an 8-pixel arc. Switch indicators and slider thumbs keep their shape.")),
 		@facet(name = "active", type = IType.BOOL, optional = true, doc = @doc("Whether this control accepts input; default true.")),
 		@facet(name = "toggle", type = IType.BOOL, optional = true, doc = @doc("Constant button mode: true binds a persistent boolean checked state.")),
-		@facet(name = "image", type = IType.NONE, optional = true, doc = @doc("Button image: an image provider, image file or path. Stretched to the padded control interior.")),
+		@facet(name = "image", type = IType.NONE, optional = true, doc = @doc("Button image: an image provider, image file or path. Declaring any image facet makes the button image-only: no text, background or border. Images are centered and scaled proportionally to fit size:.")),
 		@facet(name = "image_pressed", type = IType.NONE, optional = true, doc = @doc("Button image while pressed inside its bounds; otherwise falls back to hover, checked or default image.")),
 		@facet(name = "image_hover", type = IType.NONE, optional = true, doc = @doc("Button image while hovered; otherwise falls back to checked or default image.")),
 		@facet(name = "image_checked", type = IType.NONE, optional = true, doc = @doc("Toggle button image while checked; defaults to image_pressed, then image.")),
 		@facet(name = "action", type = IType.ACTION, optional = true, doc = @doc("Momentary button handler, as an action or block.")),
-		@facet(name = "on_change", type = IType.ACTION, optional = true, doc = @doc("Switch, toggle button or slider change handler, as an action or block."))
+		@facet(name = "command", type = IType.STRING, optional = true, doc = @doc("Native experiment toolbar command for a momentary button: play_pause, step, sync, reload or stop. Uses the same frontmost-experiment operations as the toolbar; replaces action: and final blocks.")),
+		@facet(name = "on_change", type = IType.ACTION, optional = true, doc = @doc("Switch, radio, toggle button or slider change handler, as an action or block. Radio group bindings are updated before handlers run; ui_value is false for deselected radios and true for the selected radio.")),
 }, omissible = "label")
 @validator(UiControlStatement.ControlValidator.class)
 @doc("Screen-overlay controls. A final block handles activation/change, never drawing. var: binds directly; value: requires a handler. Inline handlers run on the experiment, like event blocks. Pointer activation commits on release.")
@@ -116,16 +120,38 @@ public class UiControlStatement extends AbstractStatementSequence {
 	public static class ControlValidator implements IDescriptionValidator<IDescription> {
 		@Override
 		public void validate(final IDescription d) {
-			for (final String facet : new String[] { "accent", "background", "border" }) {
+			final boolean imageButton = "ui_button".equals(d.getKeyword())
+					&& (d.hasFacet("image") || d.hasFacet("image_pressed")
+							|| d.hasFacet("image_hover") || d.hasFacet("image_checked"));
+			for (final String facet : imageButton ? new String[0] : new String[] { "accent", "background", "border" }) {
 				final IExpression expression = d.getFacetExpr(facet);
 				if (expression != null && expression.isConst() && expression.getConstValue() == AdaptiveColor.INSTANCE) {
 					d.error("#adaptive is only supported as the text color: of controls.");
 				}
 			}
 			final boolean buttonKind = "ui_button".equals(d.getKeyword());
+			final boolean radio = "ui_radio".equals(d.getKeyword());
+			if (radio) {
+				if (!d.hasFacet("group")) d.error("ui_radio requires group:.");
+				if (!d.hasFacet("var") || d.hasFacet("value")) {
+					d.error("ui_radio requires a writable boolean var: binding, not value:.");
+				}
+				final IExpression group = d.getFacetExpr("group");
+				if (group != null && group.isConst()
+						&& (!(group.getConstValue() instanceof String name) || name.isBlank())) {
+					d.error("ui_radio group: must be a non-empty string.");
+				}
+			} else if (d.hasFacet("group")) {
+				d.error("group: is only supported by ui_radio.");
+			}
 			final IExpression toggleMode = d.getFacetExpr("toggle");
 			final boolean toggle = buttonKind && toggleMode != null && Boolean.TRUE.equals(toggleMode.getConstValue());
 			final boolean button = buttonKind && !toggle;
+			final IExpression command = d.getFacetExpr("command");
+			if (d.hasFacet("command") && (!button || command == null || !command.isConst()
+					|| !isNativeCommand(command.getConstValue()))) {
+				d.error("command: requires a momentary button and a constant string: play_pause, step, sync, reload or stop.");
+			}
 			if (toggleMode != null && (!buttonKind || !toggleMode.isConst())) {
 				d.error("toggle: is a constant boolean facet for ui_button only.");
 			}
@@ -146,8 +172,16 @@ public class UiControlStatement extends AbstractStatementSequence {
 					&& !action.getArgNames().isEmpty()) {
 				d.error("UI handler actions must be argument-free.");
 			}
-			final boolean block = d.getOwnChildren().iterator().hasNext();
-			if (button && !block && !d.hasFacet("action")) d.error("A button needs action: or a final block.");
+			final var source = d.getUnderlyingElement();
+			final var blockFeature = source == null ? null : source.eClass().getEStructuralFeature("block");
+			final boolean block = d.getOwnChildren().iterator().hasNext()
+					|| blockFeature != null && source.eIsSet(blockFeature);
+			if (button && !block && !d.hasFacet("action") && !d.hasFacet("command")) {
+				d.error("A button needs action:, command: or a final block.");
+			}
+			if (d.hasFacet("command") && (block || d.hasFacet("action"))) {
+				d.error("Use command: alone, not together with action: or a final block.");
+			}
 			if (block && d.hasFacet(button ? "action" : "on_change")) {
 				d.error("Use either a handler facet or a final block, not both.");
 			}
@@ -161,8 +195,8 @@ public class UiControlStatement extends AbstractStatementSequence {
 			}
 			final IExpression e = d.getFacetExpr("var", "value");
 			if (e != null && !button) {
-				if (("ui_switch".equals(d.getKeyword()) || toggle) && e.getGamlType().id() != IType.BOOL) {
-					d.error("Switches and toggle buttons require a boolean value.");
+				if (("ui_switch".equals(d.getKeyword()) || radio || toggle) && e.getGamlType().id() != IType.BOOL) {
+					d.error("Switches, radios and toggle buttons require a boolean value.");
 				}
 				if ("ui_slider".equals(d.getKeyword()) && !e.getGamlType().isNumber()) {
 					d.error("ui_slider requires a numeric value.");
@@ -220,12 +254,22 @@ public class UiControlStatement extends AbstractStatementSequence {
 			throw GamaRuntimeException.error("An integer slider needs representable integer bounds and an integer step", scope);
 		}
 		final Rectangle2D bounds = new Rectangle2D.Double(x, y, w, h);
-		final Object shown = overlay.registerControl(this, bounds, current, enabled, min, max, step);
+		final Object groupValue = isRadio() ? evaluate(scope, "group", null) : null;
+		if (isRadio() && (!(groupValue instanceof String name) || name.isBlank())) {
+			throw GamaRuntimeException.error("ui_radio group: must be a non-empty string", scope);
+		}
+		final String group = isRadio() ? (String) groupValue : null;
+		final Object shown = overlay.registerControl(this, bounds, current, enabled, min, max, step, group);
+		if ("ui_button".equals(kind) && (hasFacet("image") || hasFacet("image_pressed")
+				|| hasFacet("image_hover") || hasFacet("image_checked"))) {
+			final IImageProvider image = buttonImage(scope, overlay, enabled, toggle && Cast.asBool(scope, shown));
+			if (image != null) drawImage(scope, g, x, y, w, h, image);
+			return null;
+		}
 		final IColor color = (IColor) evaluate(scope, "color", AdaptiveColor.INSTANCE);
 		final IColor accent = (IColor) evaluate(scope, "accent", IStatusMessage.NEUTRAL_COLOR);
 		final IColor background = (IColor) evaluate(scope, "background", null);
-		final IColor border = (IColor) evaluate(scope, "border",
-				GamaColorFactory.createWithRGBA(255, 255, 255, enabled ? 225 : 155));
+		final IColor border = (IColor) evaluate(scope, "border", "ui_button".equals(kind) ? accent : null);
 		final IFont font = (IFont) evaluate(scope, "font", GamaFontFactory.createFont("Helvetica", 14));
 		if (color == null || font == null) {
 			throw GamaRuntimeException.error("UI control color and font cannot be nil", scope);
@@ -238,13 +282,14 @@ public class UiControlStatement extends AbstractStatementSequence {
 		}
 		final boolean hovered = enabled && overlay.isControlHovered(this);
 		final boolean pressed = enabled && overlay.isControlPressed(this);
-		final boolean checked = ("ui_switch".equals(kind) || toggle) && Cast.asBool(scope, shown);
+		final boolean checked = ("ui_switch".equals(kind) || isRadio() || toggle) && Cast.asBool(scope, shown);
 		final IColor controlAccent = enabled ? accent : accent.withAlpha(accent.alpha() / 255d * .45);
 		final double accentOpacity = controlAccent.alpha() / 255d;
 		final IColor fill = background == null ? null : checked ? controlAccent.withAlpha(accentOpacity * .18)
 				: pressed ? controlAccent.withAlpha(accentOpacity * .22) : hovered
 						? background.withAlpha(Math.min(1, background.alpha() / 255d + .12)) : background;
-		final double radius = Math.min(w, h) / 2;
+		final boolean rounded = Cast.asBool(scope, evaluate(scope, "rounded", true));
+		final double radius = rounded ? Math.min(w, h) / 2 : Math.min(4, Math.min(w, h) / 2);
 		final double padding = contentPadding(w, h);
 		final AdaptiveColor.Background adaptiveBackground = color == AdaptiveColor.INSTANCE && fill != null
 				? new AdaptiveColor.Background(new RoundRectangle2D.Double(x, y, w, h, 2 * radius, 2 * radius), fill, 1)
@@ -254,15 +299,10 @@ public class UiControlStatement extends AbstractStatementSequence {
 					GamaColorFactory.createWithRGBA(20, 33, 54, 35), null, radius);
 		}
 		drawRoundedRectangle(g, x, y, w, h, fill, null, radius);
-		if ("ui_button".equals(kind)) {
-			final IImageProvider image = buttonImage(scope, overlay, enabled, toggle && checked);
-			final double inset = Math.min(6, Math.min(w, h) * .12);
-			if (image != null) {
-				drawImage(g, x + inset, y + inset, w - 2 * inset, h - 2 * inset, image, radius - inset);
-			}
-		}
-		drawRoundedRectangle(g, x, y, w, h, null,
-				hovered || pressed || checked ? controlAccent.withAlpha(accentOpacity * .72) : border, radius);
+		final boolean highlighted = border != null
+				&& (hovered || pressed || checked && !"ui_switch".equals(kind) && !isRadio());
+		drawRoundedRectangle(g, x, y, w, h, null, highlighted ? controlAccent.withAlpha(accentOpacity * .72) : border,
+				radius);
 		final String label = Cast.asString(scope, evaluate(scope, "label", ""));
 		if (isSlider()) {
 			final double fraction = Math.clamp((Cast.asFloat(scope, shown) - min) / (max - min), 0, 1);
@@ -282,6 +322,23 @@ public class UiControlStatement extends AbstractStatementSequence {
 			final String displayValue = integer ? Integer.toString((int) Math.round(Cast.asFloat(scope, shown)))
 					: String.format(Locale.ROOT, "%.2f", Cast.asFloat(scope, shown));
 			drawText(g, displayValue, x + w - padding, y + h * .32, color, font, 1, .5, valueContrast, adaptiveBackground);
+		} else if (isRadio()) {
+			final double diameter = Math.min(w - 2 * padding, Math.min(20, h * .65));
+			final double circleX = x + w - diameter - padding, circleY = y + (h - diameter) / 2;
+			drawText(g, label, x + padding, y + h / 2, color, font, 0, .5, labelContrast, adaptiveBackground);
+			drawRoundedRectangle(g, circleX, circleY, diameter, diameter,
+					checked ? controlAccent : controlAccent.withAlpha(accentOpacity * .3), null, diameter / 2);
+			final double inset = Math.min(2, diameter * .1);
+			final double innerDiameter = diameter - 2 * inset;
+			drawRoundedRectangle(g, circleX + inset, circleY + inset, innerDiameter, innerDiameter,
+					GamaColorFactory.createWithRGBA(255, 255, 255, 250),
+					controlAccent.withAlpha(accentOpacity * .12), innerDiameter / 2);
+			if (checked) {
+				final double dotDiameter = innerDiameter * .55;
+				final double dotInset = (diameter - dotDiameter) / 2;
+				drawRoundedRectangle(g, circleX + dotInset, circleY + dotInset, dotDiameter, dotDiameter,
+						controlAccent, null, dotDiameter / 2);
+			}
 		} else if ("ui_switch".equals(kind)) {
 			final double trackWidth = Math.min(w - 2 * padding, Math.min(38, h * 1.35));
 			final double trackHeight = Math.min(trackWidth, Math.min(20, h * .65));
@@ -384,11 +441,21 @@ public class UiControlStatement extends AbstractStatementSequence {
 		return attributes;
 	}
 
-	private static void drawImage(final IGraphics g, final double x, final double y, final double w,
-			final double h, final IImageProvider image, final double radius) {
-		final ShapeDrawingAttributes attributes = rectangleAttributes(GamaColorFactory.WHITE, null);
-		attributes.setTextures(List.of(image));
-		g.drawShape(roundedRectangle(x, y, w, h, radius), attributes);
+	private static void drawImage(final IScope scope, final IGraphics g, final double x, final double y, final double w,
+			final double h, final IImageProvider image) {
+		final int width = image.getCols(scope), height = image.getRows(scope);
+		if (width <= 0 || height <= 0) {
+			throw GamaRuntimeException.error("Button images must have positive dimensions", scope);
+		}
+		final double scale = Math.min(w / width, h / height);
+		final double imageWidth = width * scale, imageHeight = height * scale;
+		final IPoint location = g.is2D()
+				? GamaPointFactory.create(x + (w - imageWidth) / 2, y + (h - imageHeight) / 2)
+				: GamaPointFactory.create(x + w / 2, y + h / 2);
+		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(
+				Scaling3D.of(imageWidth, imageHeight, 0), null, location,
+				GamaColorFactory.WHITE, null, null, null, true, false);
+		g.drawAsset(image, attributes);
 	}
 
 	private IImageProvider buttonImage(final IScope scope, final OverlayLayer overlay, final boolean active,
@@ -415,25 +482,66 @@ public class UiControlStatement extends AbstractStatementSequence {
 
 	public boolean isSlider() { return "ui_slider".equals(kind); }
 
+	public boolean isRadio() { return "ui_radio".equals(kind); }
+
 	public Object changedValue(final Object current) {
+		if (isRadio()) return true;
 		return "ui_switch".equals(kind) || toggle ? !((Boolean) current) : current;
 	}
 
+	public Object getBoundValue(final IScope scope) { return binding.value(scope); }
+
+	public void setBoundValue(final IScope scope, final Object newValue) {
+		if (binding instanceof IVarExpression variable) {
+			variable.setVal(scope, variable.getGamlType().cast(scope, newValue, null, false), false);
+		}
+	}
+
 	public void activate(final IScope scope, final Object newValue) {
+		if (hasFacet("command")) {
+			final Object command = evaluate(scope, "command", null);
+			final boolean accepted = switch (String.valueOf(command)) {
+				case "play_pause" -> GAMA.startPauseFrontmostExperiment(false);
+				case "step" -> GAMA.stepFrontmostExperiment(false);
+				case "reload" -> GAMA.reloadFrontmostExperiment(false);
+				case "sync" -> {
+					if (GAMA.isSynchronized()) GAMA.desynchronizeFrontmostExperiment();
+					else GAMA.synchronizeFrontmostExperiment();
+					yield true;
+				}
+				case "stop" -> {
+					Thread.ofVirtual().name("overlay stop experiment")
+							.start(() -> GAMA.closeAllExperiments(true, false));
+					yield true;
+				}
+				default -> throw GamaRuntimeException.error("Unknown native UI command: " + command, scope);
+			};
+			if (!accepted) throw GamaRuntimeException.error("Native UI command was not accepted: " + command, scope);
+			return;
+		}
+		setBoundValue(scope, newValue);
+		notifyChange(scope, newValue);
+	}
+
+	private static boolean isNativeCommand(final Object command) {
+		return command instanceof String name && switch (name) {
+			case "play_pause", "step", "sync", "reload", "stop" -> true;
+			default -> false;
+		};
+	}
+
+	public void notifyChange(final IScope scope, final Object newValue) {
 		enterScope(scope);
 		try {
 			if (!"ui_button".equals(kind) || toggle) {
 				scope.addVarWithValue("ui_value", newValue);
-				if (binding instanceof IVarExpression variable) {
-					variable.setVal(scope, variable.getGamlType().cast(scope, newValue, null, false), false);
-				}
 			}
 			if (handler != null) {
 				final Object action = compiledHandler == null ? handler.value(scope) : compiledHandler;
 				if (!(action instanceof IExecutable executable)) {
 					throw GamaRuntimeException.error("The UI handler must resolve to an action", scope);
 				}
-				final var agent = handlerInSimulation ? scope.getSimulation() : scope.getExperiment();
+				final var agent = handlerInSimulation ? scope.getRoot().getSimulation() : scope.getExperiment();
 				if (agent != null && !agent.dead()) scope.execute(executable, agent, null);
 			} else if (commands != null) {
 				for (final IStatement statement : commands) {

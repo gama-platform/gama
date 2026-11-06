@@ -74,7 +74,8 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 	public IStatementDescription buildDescription(final String keyword, final Facets facets, final EObject element,
 			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol artefact) {
 		if (artefact.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
-		if ("ui_button".equals(keyword) || "ui_switch".equals(keyword) || "ui_slider".equals(keyword)) {
+		if ("ui_button".equals(keyword) || "ui_switch".equals(keyword) || "ui_slider".equals(keyword)
+				|| "ui_radio".equals(keyword)) {
 			return new UiControlDescription(keyword, enclosing, children, element, facets);
 		}
 		if (IKeyword.ACTION.equals(keyword))

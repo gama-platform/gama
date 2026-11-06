@@ -142,7 +142,7 @@ import gama.api.annotations.validator;
 						name = IKeyword.BACKGROUND,
 						type = IType.COLOR,
 						optional = true,
-						doc = @doc ("The background color of the overlay displayed inside the view. Nil by default, so only its contents are drawn (the bottom overlay remains black).")),
+						doc = @doc ("The background color of the overlay displayed inside the view. Its alpha is preserved and combined with the layer transparency. Nil by default, so only its contents are drawn (the bottom overlay remains black).")),
 				@facet (
 						name = IKeyword.COLOR,
 						type = { IType.LIST, IType.COLOR },
