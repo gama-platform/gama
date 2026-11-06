@@ -140,13 +140,16 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		if (delta == null) return;
 		try {
 			delta.accept(node -> {
+				final IResource resource = node.getResource();
+				// The workspace root groups deltas; it is not an indexed resource.
+				if (resource.getType() == IResource.ROOT) return true;
 				final int kind = node.getKind();
 				if (kind == IResourceDelta.REMOVED) {
-					enqueue(new Change(node.getResource().getFullPath(), node.getResource(), true));
+					enqueue(new Change(resource.getFullPath(), resource, true));
 					return false;
 				}
 				if (kind == IResourceDelta.ADDED || kind == IResourceDelta.CHANGED) {
-					enqueue(new Change(node.getResource().getFullPath(), node.getResource(), false));
+					enqueue(new Change(resource.getFullPath(), resource, false));
 				}
 				return true;
 			});

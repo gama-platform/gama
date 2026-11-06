@@ -11,7 +11,6 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parser.IParser;
 
 import gaml.compiler.gaml.Block;
-import gaml.compiler.gaml.S_Callable;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_Species;
@@ -129,32 +128,15 @@ public final class ActionExtractionSource {
 
 	/** Contains both the replacement call and new action, so validation also catches caller-scope errors. */
 	public ActionBodyContext bodyContext(final ActionDraft draft, final boolean include, final URI uri) {
-		String rendered = render(new ActionDraft(draft.name(), draft.returnType(), false, draft.arguments(), draft.body()), include);
+		String marker = "/*__action_wizard_body_context__*/";
+		while (source.contains(marker)) marker += "_";
+		String rendered = render(new ActionDraft(draft.name(), draft.returnType(), false, draft.arguments(), marker), include);
 		var parsed = parser.parse(new StringReader(rendered));
 		if (parsed.hasSyntaxErrors()) throw new IllegalArgumentException("The action and replacement call must contain valid GAML statements.");
-		S_Callable created = null;
-		int ownerSize = Integer.MAX_VALUE;
-		for (var it = parsed.getRootASTElement().eAllContents(); it.hasNext();) {
-			if (!(it.next() instanceof S_Callable candidate) || !draft.name().equals(candidate.getName())
-					|| !(candidate.eContainer() instanceof Block block) || !owner(block.eContainer())) continue;
-			INode enclosing = NodeModelUtils.findActualNodeFor(block.eContainer());
-			if (enclosing.getOffset() <= offset && enclosing.getEndOffset() > offset && enclosing.getLength() < ownerSize) {
-				created = candidate;
-				ownerSize = enclosing.getLength();
-			}
-		}
-		if (created == null) throw new IllegalStateException("Cannot locate the extracted action body.");
-		INode node = NodeModelUtils.findActualNodeFor(created.getBlock());
-		int bodyStart = node.getOffset() + node.getText().indexOf('{') + 1;
-		int bodyEnd = node.getOffset() + node.getText().lastIndexOf('}');
-		// Empty actions normalize their boundary whitespace when rendered.
-		if (draft.body().isBlank())
-			return new ActionBodyContext(uri, rendered.substring(0, bodyStart), rendered.substring(bodyStart));
-		String body = rendered.substring(bodyStart, bodyEnd);
-		int start = body.indexOf(draft.body());
-		if (start < 0) throw new IllegalStateException("The extracted body changed while preparing validation.");
-		// ActionSource may add boundary line breaks; retain those outside the exact editable draft body.
-		return new ActionBodyContext(uri, rendered.substring(0, bodyStart + start),
-				rendered.substring(bodyStart + start + draft.body().length()));
+		int start = rendered.indexOf(marker);
+		if (start < 0 || rendered.indexOf(marker, start + marker.length()) >= 0)
+			throw new IllegalStateException("Cannot locate the extracted action body.");
+		return new ActionBodyContext(uri, rendered.substring(0, start),
+				rendered.substring(start + marker.length()));
 	}
 }
