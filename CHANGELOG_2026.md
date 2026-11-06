@@ -54,7 +54,11 @@ motion first. Mouse buttons, keys, other layers, and generic `#mouse_listener` e
 
 OpenGL animation now renders on its animator thread rather than waiting for the SWT event queue. Its optional
 frame-rate limit uses the duration of each frame, and ordinary mouse movement no longer reads GPU depth pixels
-for every event.
+for every event. Both OpenGL backends let SWT size and embed native windows before showing them, avoid an extra
+native fullscreen round-trip on their first appearance unless their host changed shells, and suppress background
+erasure in the native host. Hidden launch canvases only attach their native window when revealed.
+The SWT placeholder matches the display background. A cleared background is presented during startup, and
+subsequent buffer swaps require a complete rendered scene, avoiding flicker while the first scene is prepared.
 
 **Migration:** the spatial-index synchronization preference and its GAML variable
 `gama.pref_synchronize_quadtree` have been removed. Delete reads, assignments, and save/restore code referring to

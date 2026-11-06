@@ -19,8 +19,9 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Monitor;
+import org.eclipse.swt.widgets.Shell;
 
 import com.jogamp.common.util.locks.RecursiveLock;
 import com.jogamp.nativewindow.NativeSurface;
@@ -46,6 +47,7 @@ import gama.dev.DEBUG;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.shared.bindings.IDelegateEventsToParent;
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -58,7 +60,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	}
 
 	/** The canvas. */
-	Control canvas;
+	NewtCanvasSWT canvas;
 
 	/** The drawable. */
 	GLWindow drawable;
@@ -89,6 +91,9 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	/** Indicates that the native peer has just been created and not yet shown once. */
 	private boolean nativePeerJustCreated;
+
+	/** Shell owning the native peer at creation or its last reparent. */
+	private Shell nativePeerShell;
 
 	/** Guards explicit native peer shutdown so dispose paths stay idempotent. */
 	private volatile boolean nativePeerDisposalRequested;
@@ -125,7 +130,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		this.renderer = renderer;
 		visible = initiallyVisible;
 		super.setVisible(initiallyVisible);
-		setBackground(parent.getBackground());
+		GamaColors.setBackground(GamaColors.get(renderer.getData().getBackgroundColor()).color(), parent, this);
 		setMonitor(parent.getMonitor());
 		parent.addControlListener(new ControlAdapter() {
 			@Override
@@ -157,9 +162,9 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 					if (isDetached) {
 						if (!detached) {
 							// DEBUG.OUT("Reparenting because of detached");
-							// A peer that has never been shown (e.g. display opened directly in fullscreen) must not
-							// be reparented, but the transition is recorded so that re-attaching it reparents it
-							if (!nativePeerJustCreated) { reparentWindow(); }
+							// New peers attach directly to their first shell. Only reparent one already attached
+							// elsewhere, but record detachment so that re-attaching it still reparents it.
+							if (!nativePeerJustCreated || needsNativePeerReparenting()) { reparentWindow(); }
 							detached = true;
 						}
 
@@ -195,6 +200,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		drawable = null;
 		canvas = null;
 		nativePeerJustCreated = false;
+		nativePeerShell = null;
 		final Runnable shutdown = () -> {
 			if (currentAnimator != null) { currentAnimator.stop(); }
 			if (currentDrawable != null) { currentDrawable.destroy(); }
@@ -213,10 +219,17 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		if (drawable != null || isDisposed()) return;
 		final GLCapabilities cap = defineCapabilities();
 		drawable = GLWindow.create(cap);
-		drawable.setAutoSwapBufferMode(true);
-		canvas = new NewtCanvasSWT(this, SWT.NONE, drawable);
-		canvas.setBackground(getBackground());
+		drawable.setAutoSwapBufferMode(false);
+		canvas = new NewtCanvasSWT(this, SWT.NO_BACKGROUND, visible ? drawable : null);
+		GamaColors.setBackground(getBackground(), canvas);
 		canvas.setVisible(visible);
+		final Listener nativePeerCreated = e -> {
+			if (nativePeerShell == null && drawable != null && drawable.isNativeValid()) {
+				nativePeerShell = canvas.getShell();
+			}
+		};
+		canvas.addListener(SWT.Resize, nativePeerCreated);
+		canvas.addListener(SWT.Paint, nativePeerCreated);
 		for (final GLEventListener listener : pendingGlListeners) {
 			drawable.addGLEventListener(listener);
 		}
@@ -225,7 +238,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			drawable.addMouseListener(listener);
 		}
 		animator = new GamaGLAnimator(drawable);
-		drawable.setVisible(visible);
+		// SWT embeds, sizes and shows the native child on its first meaningful resize or paint.
 		nativePeerJustCreated = true;
 		layout(true, true);
 	}
@@ -506,16 +519,24 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	public Window getNEWTWindow() { return drawable; }
 
 	/**
+	 * Returns whether moving the SWT host left its native peer attached to another shell.
+	 */
+	public boolean needsNativePeerReparenting() {
+		return drawable != null && drawable.isNativeValid() && nativePeerShell != getShell();
+	}
+
+	/**
 	 * Reparent window.
 	 */
 	public void reparentWindow() {
 		DEBUG.OUT("Entering making GLWindow " + name + " reparent ");
-		if (!visible || drawable == null) return;
+		if (!visible || drawable == null || !drawable.isNativeValid()) return;
 		final Window w = drawable;
 		setWindowVisible(false);
 		w.setFullscreen(true);
 		w.setFullscreen(false);
 		setWindowVisible(visible);
+		nativePeerShell = getShell();
 		fixSurfaceScaleOnWindows();
 	}
 
@@ -625,7 +646,13 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			setMonitor(getParent().getMonitor());
 		}
 		if (v) { ensureNativePeer(); }
-		if (canvas != null && !canvas.isDisposed()) { canvas.setVisible(v); }
+		if (canvas != null && !canvas.isDisposed()) {
+			if (v && canvas.getNEWTChild() == null) {
+				canvas.setNEWTChild(drawable);
+				if (drawable.isNativeValid()) { nativePeerShell = canvas.getShell(); }
+			}
+			canvas.setVisible(v);
+		}
 		if (drawable != null) { setWindowVisible(v); }
 		if (v) { fixSurfaceScaleOnWindows(); }
 		if (!isDisposed()) { super.setVisible(v); }
