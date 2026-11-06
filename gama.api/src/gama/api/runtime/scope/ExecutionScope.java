@@ -27,6 +27,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
@@ -359,6 +360,9 @@ public class ExecutionScope implements IScope {
 	/** The agent context. */
 	protected AgentExecutionContext agentContext;
 
+	/** Reuses the last immutable agent frame without allocating a cache for short-lived scope copies. */
+	private AgentExecutionContext cachedAgentFrame;
+
 	/** The additional context. */
 	protected final SpecialContext additionalContext = new SpecialContext();
 
@@ -500,7 +504,10 @@ public class ExecutionScope implements IScope {
 	 * @return the agent execution context
 	 */
 	public AgentExecutionContext createChildContext(final IObject agent) {
-		return new AgentExecutionContext(agent, agentContext);
+		if (cachedAgentFrame != null && cachedAgentFrame.agent() == agent
+				&& cachedAgentFrame.outer() == agentContext) return cachedAgentFrame;
+		cachedAgentFrame = new AgentExecutionContext(agent, agentContext);
+		return cachedAgentFrame;
 	}
 
 	/**
@@ -518,6 +525,7 @@ public class ExecutionScope implements IScope {
 		invocation = null;
 		setExecutionContext(null);
 		agentContext = null;
+		cachedAgentFrame = null;
 		additionalContext.clear();
 		// currentSymbol = null;
 		setFlowStatus(FlowStatus.DISPOSE);
@@ -1097,6 +1105,17 @@ public class ExecutionScope implements IScope {
 		final boolean pushed = push(object);
 		try {
 			this.setCurrentAgentOrObjectAttributeValue(name, v);
+		} finally {
+			if (pushed) { pop(object); }
+		}
+	}
+
+	@Override
+	public void setAgentVariableValue(final IObject object, final IVariable variable, final Object value) {
+		if (!canContinue(object)) return;
+		final boolean pushed = push(object);
+		try {
+			variable.setVal(this, object, value);
 		} finally {
 			if (pushed) { pop(object); }
 		}

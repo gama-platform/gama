@@ -35,9 +35,12 @@ import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.grid.GridPopulation;
 /**
- * The Class CompoundSpatialIndex.
+ * The simulation's population indices. Use {@link #create(IEnvelope, boolean)} to synchronize complete operations,
+ * including lazy population registration and species caches, when the simulation can execute concurrently.
  */
 public class CompoundSpatialIndex implements ISpatialIndex.Compound {
+
+	private static final Object MERGE_LOCK = new Object();
 
 	/** The disposed. */
 	boolean disposed = false;
@@ -69,12 +72,90 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	 * @param parallel
 	 *            the parallel
 	 */
-	public CompoundSpatialIndex(final IEnvelope bounds, final boolean parallel) {
+	private CompoundSpatialIndex(final IEnvelope bounds, final boolean parallel) {
 		this.bounds = bounds;
 		this.parallel = parallel;
 		final double biggest = Math.max(bounds.getWidth(), bounds.getHeight());
 		steps = new double[] { biggest / 100, biggest / 50, biggest / 20, biggest / 10, biggest / 2, biggest,
 				biggest * Math.sqrt(2) };
+	}
+
+	public static CompoundSpatialIndex create(final IEnvelope bounds, final boolean parallel) {
+		return parallel ? new SynchronizedCompoundSpatialIndex(bounds) : new CompoundSpatialIndex(bounds, false);
+	}
+
+	private static final class SynchronizedCompoundSpatialIndex extends CompoundSpatialIndex {
+
+		private SynchronizedCompoundSpatialIndex(final IEnvelope bounds) {
+			super(bounds, true);
+		}
+
+		@Override
+		public synchronized void insert(final IAgent agent) {
+			super.insert(agent);
+		}
+
+		@Override
+		public synchronized void remove(final IEnvelope previous, final IAgent agent) {
+			super.remove(previous, agent);
+		}
+
+		@Override
+		public synchronized void update(final IEnvelope previous, final IAgent agent) {
+			super.update(previous, agent);
+		}
+
+		@Override
+		public synchronized IAgent firstAtDistance(final IScope scope, final IShape source, final double dist,
+				final IAgentFilter filter) {
+			return super.firstAtDistance(scope, source, dist, filter);
+		}
+
+		@Override
+		public synchronized IAgent firstAtDistance(final IScope scope, final IShape source, final double[] distances,
+				final IAgentFilter filter) {
+			return super.firstAtDistance(scope, source, distances, filter);
+		}
+
+		@Override
+		public synchronized Collection<IAgent> firstAtDistance(final IScope scope, final IShape source,
+				final double dist, final IAgentFilter filter, final int number,
+				final Collection<IAgent> alreadyChosen) {
+			return super.firstAtDistance(scope, source, dist, filter, number, alreadyChosen);
+		}
+
+		@Override
+		public synchronized Collection<IAgent> allInEnvelope(final IScope scope, final IShape source,
+				final IEnvelope envelope, final IAgentFilter filter, final boolean contained) {
+			return super.allInEnvelope(scope, source, envelope, filter, contained);
+		}
+
+		@Override
+		public synchronized Collection<IAgent> allInEnvelope(final IScope scope, final IShape source,
+				final IEnvelope envelope, final IAgentFilter filter, final boolean contained, final boolean shuffle) {
+			return super.allInEnvelope(scope, source, envelope, filter, contained, shuffle);
+		}
+
+		@Override
+		public synchronized Collection<IAgent> allAtDistance(final IScope scope, final IShape source,
+				final double dist, final IAgentFilter filter) {
+			return super.allAtDistance(scope, source, dist, filter);
+		}
+
+		@Override
+		public synchronized void remove(final ISpecies species) {
+			super.remove(species);
+		}
+
+		@Override
+		public synchronized void update(final IScope scope, final IEnvelope envelope, final boolean parallel) {
+			super.update(scope, envelope, true);
+		}
+
+		@Override
+		public synchronized void dispose() {
+			super.dispose();
+		}
 	}
 
 	@Override
@@ -96,17 +177,25 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	}
 
 	@Override
+	public void update(final IEnvelope previous, final IAgent agent) {
+		if (disposed || agent == null) return;
+		final ISpatialIndex index = spatialIndexes.get(agent.getSpecies());
+		if (index == null) {
+			insert(agent);
+		} else {
+			index.update(previous, agent);
+		}
+	}
+
+	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
 		if (disposed) return null;
 		Iterable<ISpatialIndex> indices = add(scope, f);
 		try (final Collector.AsList<IAgent> shapes = Collector.getList()) {
-			for (final double step : steps) {
-				for (final ISpatialIndex si : indices) {
-					if (si == null) { continue; }
-					final IAgent first = si.firstAtDistance(scope, source, step, f);
-					if (first != null) { shapes.add(first); }
-				}
-				if (!shapes.isEmpty()) { break; }
+			for (final ISpatialIndex si : indices) {
+				if (si == null) { continue; }
+				final IAgent first = si.firstAtDistance(scope, source, steps, f);
+				if (first != null) { shapes.add(first); }
 			}
 			int size = shapes.items().size();
 			if (size == 0) return null;
@@ -188,13 +277,19 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	@Override
 	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
 			final IAgentFilter f, final boolean contained) {
+		return allInEnvelope(scope, source, envelope, f, contained, true);
+	}
+
+	@Override
+	public Collection<IAgent> allInEnvelope(final IScope scope, final IShape source, final IEnvelope envelope,
+			final IAgentFilter f, final boolean contained, final boolean shuffle) {
 		if (disposed) return Collections.EMPTY_LIST;
 		Iterable<ISpatialIndex> indices = add(scope, f);
 		try (final ICollector<IAgent> agents = Collector.getOrderedSet()) {
 			for (final ISpatialIndex si : indices) {
-				agents.addAll(si.allInEnvelope(scope, source, envelope, f, contained));
+				agents.addAll(si.allInEnvelope(scope, source, envelope, f, contained, shuffle));
 			}
-			agents.shuffleInPlaceWith(scope.getRandom());
+			if (shuffle) { agents.shuffleInPlaceWith(scope.getRandom()); }
 			return agents.items();
 		}
 	}
@@ -218,6 +313,7 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 		if (disposed) return;
 		disposed = true;
 		spatialIndexes.clear();
+		cachedSpeciesIndices.clear();
 	}
 
 	/**
@@ -313,6 +409,7 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	@Override
 	public void remove(final ISpecies species) {
 		spatialIndexes.remove(species);
+		cachedSpeciesIndices.clear();
 	}
 
 	/**
@@ -340,9 +437,17 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	@Override
 	public void mergeWith(final Compound spatialIndex) {
 		final CompoundSpatialIndex other = (CompoundSpatialIndex) spatialIndex;
-		if (null == other) return;
-		other.spatialIndexes.forEach((species, index) -> { spatialIndexes.put(species, index); });
-		spatialIndex.dispose();
+		if (other == null || other == this) return;
+		// Serialize merges before taking both monitors, so opposite-direction merges cannot deadlock.
+		synchronized (MERGE_LOCK) {
+			synchronized (this) {
+				synchronized (other) {
+					spatialIndexes.putAll(other.spatialIndexes);
+					cachedSpeciesIndices.clear();
+					other.dispose();
+				}
+			}
+		}
 	}
 
 }

@@ -29,6 +29,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.object.IObject;
+import gama.api.types.misc.IContainer;
 import gama.api.types.object.GamaObjectType;
 import gama.dev.DEBUG;
 
@@ -56,6 +57,8 @@ import gama.dev.DEBUG;
  * <li><b>Common supertype cache:</b> Stores computed common supertypes</li>
  * <li><b>Distance cache:</b> Stores hierarchy distance computations</li>
  * <li><b>Translatability cache:</b> Stores type translation compatibility checks</li>
+ * <li><b>Container type cache:</b> Shares descriptions keyed by exact container and parameter identities, with at most
+ * 4096 entries per manager</li>
  * </ul>
  *
  * <p>
@@ -178,6 +181,33 @@ public class TypesManager implements ITypesManager {
 	 * </p>
 	 */
 	private final Set<IType<?>> uniqueTypes = ConcurrentHashMap.newKeySet();
+
+	private record ContainerTypeKey(IContainerType<IContainer<?, ?>> container, IType<?> key, IType<?> content) {
+		@Override
+		public boolean equals(final Object other) {
+			return other instanceof ContainerTypeKey k && container == k.container && key == k.key
+					&& content == k.content;
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * (31 * System.identityHashCode(container) + System.identityHashCode(key))
+					+ System.identityHashCode(content);
+		}
+	}
+
+	private final Cache<ContainerTypeKey, ParametricType> containerTypes =
+			newBuilder().maximumSize(4096).expireAfterAccess(5, MINUTES).build();
+
+	@Override
+	public ParametricType getParametricType(final IContainerType<IContainer<?, ?>> container,
+			final IType<?> keyType, final IType<?> contentType) {
+		final ContainerTypeKey key = new ContainerTypeKey(container, keyType, contentType);
+		final ParametricType cached = containerTypes.getIfPresent(key);
+		if (cached != null) return cached;
+		return containerTypes.asMap().computeIfAbsent(key,
+				k -> new ParametricType(this, k.container, k.key, k.content));
+	}
 
 	/**
 	 * Cache for isAssignableFrom operations.
@@ -607,7 +637,7 @@ public class TypesManager implements ITypesManager {
 	 * <ul>
 	 * <li>Clears the types map (removes all type name → type mappings)</li>
 	 * <li>Clears the uniqueTypes set</li>
-	 * <li>Invalidates all 4 relationship caches (assignability, common supertype, distance, translatability)</li>
+	 * <li>Invalidates the relationship caches and shared container type descriptions</li>
 	 * </ul>
 	 *
 	 * <p>
@@ -623,6 +653,7 @@ public class TypesManager implements ITypesManager {
 		commonSupertypeCache.invalidateAll();
 		distanceCache.invalidateAll();
 		translatabilityCache.invalidateAll();
+		containerTypes.invalidateAll();
 	}
 
 	/**

@@ -106,9 +106,9 @@ import gama.api.kernel.simulation.ISimulationAgent;
  * <p>
  * AgentExecutionContext instances are immutable: popping a context from a scope does not alter it. A context chain can
  * therefore be shared, without copying it, by several scopes and threads (forked scopes of a parallel execution, copies
- * of a scope made by other threads...), even after the scope that created it has popped it. Contexts are not pooled, as
- * a pool would recycle (and alter) contexts still referenced by other scopes, and as the allocation of such small,
- * short-lived, objects is cheaper than the synchronization required by a pool.
+ * of a scope made by other threads...), even after the scope that created it has popped it. ExecutionScope can reuse
+ * its last unchanged frame for the same object and outer context. Frames are never mutated or recycled for another
+ * object; clearing the scope releases its cache.
  * </p>
  *
  * @see ExecutionScope

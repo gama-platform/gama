@@ -17,6 +17,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.kernel.agent.IAgent;
@@ -490,6 +491,13 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *             If the variable doesn't exist or cannot be modified
 	 */
 	void setAgentVarValue(IObject agent, String name, Object v) throws GamaRuntimeException;
+
+	/**
+	 * Sets an already resolved variable belonging to the target, retaining the usual scope and setter semantics.
+	 */
+	default void setAgentVariableValue(final IObject agent, final IVariable variable, final Object value) {
+		setAgentVarValue(agent, variable.getName(), value);
+	}
 
 	/**
 	 * Returns the value of a global variable defined at the simulation level.

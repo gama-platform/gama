@@ -27,8 +27,10 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
@@ -118,6 +120,32 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	/** The hide. */
 	final Listener hide = event -> hide();
 
+	/** Hides the popup when a click occurs outside it. */
+	private final Listener dismissOnOutsideClick;
+
+	/** The popup shell currently observed for deactivation. */
+	private Shell observedPopupShell;
+
+	/** Delay (in ms) during which a dismissed popup cannot be reopened by the same click. */
+	private static final long REOPEN_DELAY = 300;
+
+	/** The last time the popup was hidden. */
+	private volatile long lastHideTime;
+
+	/** Whether rows were added or removed, or a text no longer fits, since the last sizing. */
+	private boolean needsResize;
+
+	/**
+	 * Sets the text of a label and records whether the popup needs to be enlarged to show it.
+	 */
+	private void setText(final Label label, final String text) {
+		if (text.equals(label.getText())) return;
+		label.setText(text);
+		if (!needsResize && label.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x > label.getSize().x) {
+			needsResize = true;
+		}
+	}
+
 	/** The provider. */
 	private final StatusControlContribution status;
 
@@ -133,15 +161,27 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	 *
 	 */
 	public StatusHistoryPopUpMenu(final StatusControlContribution status) {
-		super(WorkbenchHelper.getShell(), PopupDialog.HOVER_SHELLSTYLE, false, false, false, false, false, null, null);
+		super(WorkbenchHelper.getShell(), SWT.NO_TRIM | SWT.NO_FOCUS, false, false, false, false, false, null, null);
 		this.status = status;
+		dismissOnOutsideClick = event -> {
+			if (!(event.widget instanceof Control control)) return;
+			final Shell popupShell = getShell();
+			if (popupShell != null && !popupShell.isDisposed() && control.getShell() != popupShell
+					&& !this.status.isStatusControl(control)) { hide(); }
+		};
 		final Shell shell = status.getControllingShell();
 		shell.addListener(SWT.Move, hide);
 		shell.addListener(SWT.Resize, hide);
 		shell.addListener(SWT.Close, hide);
-		shell.addListener(SWT.Deactivate, hide);
 		shell.addListener(SWT.Hide, hide);
-		shell.addListener(SWT.Dispose, event -> close());
+		final Display display = shell.getDisplay();
+		display.addFilter(SWT.Deactivate, hide);
+		display.addFilter(SWT.MouseDown, dismissOnOutsideClick);
+		shell.addListener(SWT.Dispose, event -> {
+			display.removeFilter(SWT.Deactivate, hide);
+			display.removeFilter(SWT.MouseDown, dismissOnOutsideClick);
+			close();
+		});
 	}
 
 	@Override
@@ -181,7 +221,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 				time.setText(sdf.format(new Date(command.timeStamp())));
 				image.setImage(GamaIcon.named(command.icon()).image());
 				labelComposite.setData(command);
-				label.setText(GamlIdiomsProvider.toText(command.message()));
+				setText(label, GamlIdiomsProvider.toText(command.message()));
 				label.setForeground(command.isError() ? GamaColors.get(command.color()).color()
 						: contents.getForeground());
 				label.setToolTipText(command.exception() == null ? command.message() : command.exception().getAllText());
@@ -193,6 +233,7 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 			}
 		}
 		if (size < labels.size()) {
+			needsResize = true;
 			for (int i = size; i < labels.size(); i++) {
 				labels.get(i).dispose();
 				labels.remove(i);
@@ -350,14 +391,23 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	 */
 	@Override
 	protected Point getDefaultLocation(final Point initialSize) {
-		return status.getLocation();
+		final Point location = status.getLocation();
+		final Shell shell = getShell();
+		final Point size = initialSize == null && shell != null && !shell.isDisposed() ? shell.getSize() : initialSize;
+		final Rectangle area = status.getControllingShell().getMonitor().getClientArea();
+		if (size != null) {
+			location.x = Math.max(area.x, Math.min(location.x, area.x + area.width - size.x));
+			location.y = Math.max(area.y, Math.min(location.y, area.y + area.height - size.y));
+		}
+		return location;
 	}
 
 	@Override
 	protected Point getDefaultSize() {
-		int width = status.getWidth();
-		if (width <= 0) { width = SWT.DEFAULT; }
-		return getShell().computeSize(width, SWT.DEFAULT, true);
+		final Point size = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+		final Rectangle area = status.getControllingShell().getMonitor().getClientArea();
+		size.x = Math.min(Math.max(size.x, status.getWidth()), area.width);
+		return size;
 	}
 
 	/**
@@ -374,12 +424,44 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 		final Shell shell = getShell();
 		if (shell != null && !shell.isDisposed()) {
 			createContents(parent);
-			shell.setLocation(getDefaultLocation(null));
-			shell.setSize(getDefaultSize());
+			observePopupShell(shell);
+			needsResize = false;
+			final Point size = getDefaultSize();
+			shell.setSize(size);
+			shell.setLocation(getDefaultLocation(size));
 			shell.setVisible(true);
 		} else {
 			open();
+			observePopupShell(getShell());
 		}
+	}
+
+	private void observePopupShell(final Shell shell) {
+		if (shell == null || shell.isDisposed() || shell == observedPopupShell) return;
+		observedPopupShell = shell;
+		shell.addListener(SWT.Deactivate, hide);
+		shell.addListener(SWT.Dispose, event -> observedPopupShell = null);
+	}
+
+	/**
+	 * Updates the contents without changing the popup's visibility.
+	 */
+	public void refresh() {
+		final Shell shell = getShell();
+		if (shell == null || shell.isDisposed() || !shell.isVisible()) return;
+		createContents(parent);
+		if (!needsResize) return;
+		needsResize = false;
+		final Point size = getDefaultSize();
+		// Grows only: shorter texts do not shrink the popup while it is visible
+		size.x = Math.max(size.x, shell.getSize().x);
+		if (!size.equals(shell.getSize())) {
+			shell.setSize(size);
+		} else {
+			shell.layout(true, true);
+		}
+		final Point location = getDefaultLocation(size);
+		if (!location.equals(shell.getLocation())) { shell.setLocation(location); }
 	}
 
 	/**
@@ -387,7 +469,18 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 	 */
 	public void hide() {
 		final Shell shell = getShell();
-		if (shell != null && !shell.isDisposed()) { shell.setVisible(false); }
+		if (shell != null && !shell.isDisposed() && shell.isVisible()) {
+			shell.setVisible(false);
+			lastHideTime = System.currentTimeMillis();
+		}
+	}
+
+	/**
+	 * Whether the popup has been hidden within the last few milliseconds. Used to prevent a click on the status control
+	 * from reopening the popup it has just dismissed (through a deactivation event delivered before the click).
+	 */
+	public boolean wasJustHidden() {
+		return System.currentTimeMillis() - lastHideTime < REOPEN_DELAY;
 	}
 
 	/**

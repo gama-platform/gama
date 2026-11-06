@@ -39,9 +39,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
-import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
@@ -55,6 +53,7 @@ import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.caches.GeometryCache;
 import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
 import gama.ui.display.opengl.renderer.caches.ITextureCache;
+import gama.ui.display.opengl.renderer.caches.PolygonTessellationCache;
 import gama.ui.display.opengl.renderer.caches.TextureCache2;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -65,7 +64,6 @@ import gama.ui.display.opengl.scene.mesh.MeshObject;
 import gama.ui.display.opengl.scene.resources.ResourceDrawer;
 import gama.ui.display.opengl.scene.text.TextDrawer;
 import gama.ui.shared.utils.DPIHelper;
-import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
 
 /**
  * A class that represents an intermediate state between the rendering and the opengl state. It captures all the
@@ -190,11 +188,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The object is wireframe. */
 	protected volatile boolean objectIsWireframe;
 
-	/** The tobj. */
-	final GLUtessellatorImpl tobj = (GLUtessellatorImpl) GLU.gluNewTess();
-
-	/** The gl tesselator drawer. */
-	final VertexVisitor glTesselatorDrawer;
+	private final PolygonTessellationCache polygonTessellations = new PolygonTessellationCache();
 
 	/** The ratios. */
 	// World
@@ -235,11 +229,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		glu = new GLU();
 		// pickingState = renderer.getPickingHelper();
 		geometryCache = new GeometryCache(renderer, this);
-		glTesselatorDrawer = (final double[] ordinates) -> { tobj.gluTessVertex(ordinates, 0, ordinates); };
-		GLU.gluTessCallback(tobj, GLU.GLU_TESS_VERTEX, this);
-		GLU.gluTessCallback(tobj, GLU.GLU_TESS_BEGIN, this);
-		GLU.gluTessCallback(tobj, GLU.GLU_TESS_END, this);
-		GLU.gluTessProperty(tobj, GLU.GLU_TESS_TOLERANCE, 0.1);
 		TextDrawer td = new TextDrawer(this);
 		var gd = new GeometryDrawer(this);
 		var rd = new ResourceDrawer(this);
@@ -296,6 +285,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		for (MeshDrawer md : meshDrawers.values()) { md.dispose(); }
 		geometryCache.dispose();
 		textureCache.dispose();
+		polygonTessellations.dispose();
 		gl = null;
 
 	}
@@ -332,7 +322,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	@Override
-	public void unproject(final double x, final double y, final double depth, final double[] result) {
+	public synchronized void unproject(final double x, final double y, final double depth, final double[] result) {
 		glu.gluUnProject(x, y, depth, mvmatrix, 0, projmatrix, 0, viewport, 0, result, 0);
 	}
 
@@ -487,9 +477,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		//
 		// translateBy(0d, 0d, maxDim * 0.2);
 		getRenderer().getCameraHelper().animate();
-		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-		gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, mvmatrix, 0);
-		gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projmatrix, 0);
+		synchronized (this) {
+			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+			gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, mvmatrix, 0);
+			gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projmatrix, 0);
+		}
 	}
 
 	/**
@@ -868,17 +860,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param drawer
 	 */
 	public void drawPolygon(final Polygon p, final ICoordinates yNegatedVertices, final boolean clockwise) {
-		GLU.gluTessBeginPolygon(tobj, null);
-		GLU.gluTessBeginContour(tobj);
-		yNegatedVertices.visitClockwise(glTesselatorDrawer);
-		GLU.gluTessEndContour(tobj);
-		GeometryUtils.applyToInnerGeometries(p, geom -> {
-			GLU.gluTessBeginContour(tobj);
-			GamaCoordinateSequenceFactory.pointsOf(geom).visitYNegatedCounterClockwise(glTesselatorDrawer);
-			GLU.gluTessEndContour(tobj);
-		});
-		GLU.gluTessEndPolygon(tobj);
-		// }
+		polygonTessellations.draw(p, yNegatedVertices, this);
 	}
 
 	/**

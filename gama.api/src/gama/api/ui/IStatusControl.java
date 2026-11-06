@@ -33,4 +33,9 @@ public interface IStatusControl {
 	 */
 	default void updateWith(final IStatusMessage m) {}
 
+	/**
+	 * Hides any transient popup owned by this control.
+	 */
+	default void hidePopup() {}
+
 }

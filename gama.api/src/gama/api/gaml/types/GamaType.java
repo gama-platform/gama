@@ -956,7 +956,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 			return t;
 		final IType<?> kt = keyType == Types.NO_TYPE ? t.getGamlType().getKeyType() : keyType;
 		final IType<?> ct = contentType == Types.NO_TYPE ? t.getGamlType().getContentType() : contentType;
-		return new ParametricType(t.getTypesManager(), t.getGamlType(), kt, ct);
+		return ParametricType.create(t.getTypesManager(), t.getGamlType(), kt, ct);
 	}
 
 	/**

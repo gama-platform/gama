@@ -637,7 +637,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 
 	@Override
 	public IExecutionResult schedule(final IScope scope) {
-		if (!dead()) { return scope.init(this); }
+		if (!dead()) return scope.init(this);
 		return IExecutionResult.PASSED;
 	}
 
@@ -725,7 +725,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	}
 
 	/**
-	 * Gets the attributes of the agents
+	 * Gets the attributes of the agents. Avoids possible double initialisation
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @return the attributes
@@ -733,8 +733,20 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 */
 	@Override
 	public IMap<String, Object> getAttributes(final boolean createIfNeeded) {
-		if (createIfNeeded) { attributes.compareAndSet(null, GamaMapFactory.create(Types.STRING, Types.NO_TYPE)); }
-		return attributes.get();
+		IMap<String, Object> att = attributes.get();
+		if (createIfNeeded && att == null) {
+			att = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
+			if (!attributes.compareAndSet(null, att)) { att = attributes.get(); }
+		}
+		return att;
+	}
+
+	@Override
+	public Object getAttribute(final String key, final Object defaultValue) {
+		if (getClass() != MinimalAgent.class && getClass() != GamlAgent.class)
+			return IAgent.super.getAttribute(key, defaultValue);
+		final IMap<String, Object> att = getAttributes(false);
+		return att == null ? defaultValue : att.getOrDefault(key, defaultValue);
 	}
 
 	/**

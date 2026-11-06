@@ -61,10 +61,11 @@ public class ChartLayer extends AbstractLayer implements ILayer.Chart {
 		IChart chart = getChart();
 		int x = dg.getLayerWidth();
 		int y = dg.getLayerHeight();
+		if (x == 0 || y == 0) return;
 		if (!dg.is2D()) {
-			final double quality = GamaPreferences.Displays.CHART_QUALITY.getValue();
-			x = Math.max(1, (int) Math.round(x * quality));
-			y = Math.max(1, (int) Math.round(y * quality));
+			// Projected layer dimensions can be signed; raster dimensions cannot.
+			final double size = Math.min(Math.abs((double) x), Math.abs((double) y));
+			y = x = Math.max(1, (int) Math.round(size * GamaPreferences.Displays.CHART_QUALITY.getValue()));
 		}
 		final boolean antialias = !dg.is2D() || dg.getSurface().getData().isAntialias();
 		final BufferedImage im = chart.getImage(x, y, antialias);

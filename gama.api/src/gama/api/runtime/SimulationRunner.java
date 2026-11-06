@@ -300,10 +300,13 @@ public class SimulationRunner implements ISimulationRunner {
 			return true;
 		}
 
-		/** Runs the tasks waiting in the mailbox, without blocking. */
+		/** Runs the current batch without letting newly posted tasks indefinitely delay the next step. */
 		private void processPendingTasks() {
-			Runnable task;
-			while ((task = mailbox.poll()) != null) { if (!handleWhileBusy(task)) return; }
+			final int pending = mailbox.size();
+			for (int i = 0; i < pending; i++) {
+				final Runnable task = mailbox.poll();
+				if (task == null || !handleWhileBusy(task)) return;
+			}
 		}
 
 		/**

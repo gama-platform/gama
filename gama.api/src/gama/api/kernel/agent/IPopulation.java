@@ -563,6 +563,11 @@ public interface IPopulation<T extends IAgent>
 	boolean hasUpdatableVariables();
 
 	/**
+	 * Whether this population needs its automatic step. Explicit agent steps and actions remain independent.
+	 */
+	default boolean needsAutomaticStep() { return true; }
+
+	/**
 	 * Returns the topology associated to this population.
 	 *
 	 * @return

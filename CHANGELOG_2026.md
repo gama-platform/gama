@@ -19,6 +19,182 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Automatic spatial-index synchronization
+
+Spatial-index synchronization is now decided automatically for each simulation before its indices are created.
+The decision covers species and grid scheduling configured through `parallel:` or the concurrency preferences,
+parallel `ask` statements in nested or inherited behaviors, and species using the `thread` skill.
+Interactive experiments are synchronized because display event handlers, rendering, and agent inspectors can
+access simulation state from other threads. Displays and event layers also enable synchronization in headless
+experiments. The selected experiment's behaviors and outputs are considered; other experiments are excluded.
+
+Nonconstant `parallel:` expressions conservatively enable synchronization even if their initial value is `false`
+or `0`, because they can enable concurrency later. Constant `false` or `0` does not request synchronization.
+The decision considers potential concurrency rather than the current population size, so an initially small
+population remains protected if it later exceeds its parallel-execution threshold.
+
+Concurrent simulations synchronize complete quadtree/octree operations and compound-index operations, including
+lazy population registration and species caches. Headless simulations with no concurrent execution or display
+retain the unsynchronized fast path.
+Synchronization is retained across environment rebuilds and topology merges; an environment rebuild can enable
+it when needed, but does not disable it once enabled. The decision does not modify or persist any user preference.
+Running independent batch simulations in parallel does not, by itself, require synchronized spatial indices.
+
+Synchronization can reduce throughput in models with many concurrent spatial queries or moving agents.
+It protects index operations, not arbitrary shared agent state, and does not make parallel execution reproducible.
+
+Display event callbacks are scheduled on the simulation thread between steps instead of executing on the display
+input thread; if there is no simulation, they are scheduled on the experiment. Mouse positions are captured when
+the event arrives, including for specific mouse events, so delayed callbacks use the originating position.
+Callbacks may run later when the simulation is busy, and pending callbacks are discarded if their display closes
+or their simulation dies or changes. Independently running `thread` skill actions can still access agents concurrently.
+For specific `#mouse_move` and `#mouse_drag` layers, consecutive pending motions from the same layer are coalesced
+to the latest position, normally at most once every 33 milliseconds. An intervening event flushes the pending
+motion first. Mouse buttons, keys, other layers, and generic `#mouse_listener` events are not coalesced.
+
+OpenGL animation now renders on its animator thread rather than waiting for the SWT event queue. Its optional
+frame-rate limit uses the duration of each frame, and ordinary mouse movement no longer reads GPU depth pixels
+for every event. Both OpenGL backends let SWT size and embed native windows before showing them, avoid an extra
+native fullscreen round-trip on their first appearance unless their host changed shells, and suppress background
+erasure in the native host. Hidden launch canvases only attach their native window when revealed.
+The SWT placeholder matches the display background. A cleared background is presented during startup, and
+subsequent buffer swaps require a complete rendered scene, avoiding flicker while the first scene is prepared.
+
+**Migration:** the spatial-index synchronization preference and its GAML variable
+`gama.pref_synchronize_quadtree` have been removed. Delete reads, assignments, and save/restore code referring to
+that variable; no replacement setting is needed. Previously saved values no longer affect index creation.
+The bundled Boids and Preferences examples have been updated accordingly.
+
+### Passive populations and agent access
+
+Standard populations with the default reflex architecture skip automatic scheduling when they have no reflexes,
+variable updates, overridden step or micro-species. Initialization, explicit actions and explicit agent steps remain
+unchanged. Custom agents, architectures and populations, mirror species and explicit scheduling/frequency/parallel facets
+retain their normal scheduling path.
+
+Stored attributes on standard agents are read with one lookup; missing attributes still use their initialization fallback,
+while explicitly stored nil values remain nil. Standard population updates reuse their resolved variable declarations,
+preserving coercion, bounds and change notifications. Execution scopes reuse their most recent immutable agent
+frame for an identical object/outer-context pair, without recycling mutable execution contexts, allocating caches
+in short-lived scope copies or sharing mutable cache state between scope copies.
+
+### Shared container type descriptions
+
+Repeated construction of the same container type reuses its type description and type expression through a
+thread-safe, bounded cache owned by the relevant type manager. Cache keys use exact type identities, keeping
+model-specific types distinct; disposing a manager clears its entries. Compiled list expressions pass their
+existing list type directly to each fresh list, avoiding redundant metadata construction and lookup.
+Container contents remain independent.
+
+### Two-argument numeric minimum and maximum
+
+`min(a, b)` and `max(a, b)` compare numeric operands directly instead of constructing a temporary list.
+All four int/float combinations are supported: two ints return an int, and mixed or float operands return a float.
+The existing ordered-comparison behavior for NaN and signed zeros is preserved. Container operands and calls
+with more than two arguments retain their existing behavior.
+
+### Independent series-chart rendering
+
+Series, XY and scatter charts capture independent rendering snapshots under the live-data lock, then paint without
+holding that lock. Snapshots include interval datasets, axes, renderers, marker sizes, category labels and legends.
+Unchanged charts reuse their last completed image; data, style, image-size and antialiasing changes trigger a redraw.
+Every chart update and recorded/exported value is retained, and synchronized display acknowledgments are unchanged.
+Other chart types retain their existing live-data rendering lock.
+
+### Fixed-argument operator invocation
+
+Generated unary and binary operator helpers accept operands directly instead of allocating an argument array on each
+evaluation. Operand order, lazy evaluation, conversions and error reporting are unchanged. Existing array-based
+helpers remain supported through a compatibility fallback; operators with three or more operands retain their
+existing invocation path. Regenerating operator registrations enables the specialized helpers.
+
+### Chart image sizing in OpenGL
+
+Chart raster sizes use the magnitude of signed OpenGL layer dimensions, preventing negative image sizes when
+camera projection produces negative screen coordinates. Zero-size layers are not drawn, and chart-quality scaling
+keeps nonempty OpenGL chart images at least one pixel wide. Other layer positioning and scaling are unchanged.
+
+### Runtime arguments and population queries
+
+Runtime action arguments bypass the compiler's value-based constant cache, avoiding full map/list hashing and
+preserving each supplied object's identity even when two argument values compare equal. Constant descriptions
+also avoid eagerly converting their values to an unused name string. Ordinary population
+emptiness checks stop at the first living agent, and size queries count living agents without building a
+temporary filtered list. Both queries retain the population's synchronization and exclude null/dead entries;
+grid population behavior is unchanged.
+
+### OpenGL text and polygon drawing reuse
+
+The legacy OpenGL renderer reuses prepared text outlines and polygon tessellations in bounded, renderer-local
+caches instead of rebuilding them on every redraw. Text keys include the content, font, precision, depth,
+wireframe and texture mode; polygon keys snapshot all contour coordinates, including holes and elevations,
+so in-place geometry changes cannot reuse stale triangles. Colors, textures, placement, lighting and picking
+remain applied at draw time. Each cache has a 16 MiB budget and is cleared when its renderer is disposed.
+
+### Spatial routing and movement performance
+
+Routing on agent-typed edge networks now uses nearby spatial-index candidates instead of scanning every edge for each
+endpoint. It still considers all equally nearest overlapping edges, including edges at different elevations, and
+selects the least-weight reachable route without trying farther attachments. Geometry-edge networks and the
+experimental location-based distance setting retain exhaustive lookup, as do graphs with mixed agent/geometry edges.
+Routing candidate queries do not consume simulation random numbers.
+
+Point-agent movement no longer allocates a temporary identity set for each spatial-index removal. Non-point
+removal retains deferred, identity-deduplicated disposal of shared spatial keys.
+
+### Quadtree query and update speed
+
+Single-nearest queries now visit the closest quadtree partitions first, skipping partitions that cannot improve the
+result instead of repeatedly scanning expanding search areas. Equal-distance candidates remain randomly selected;
+the number and order of random draws change, so seeded runs can differ from earlier versions. Searches across
+populations compare each population's nearest candidate.
+
+Distance queries use tighter search envelopes. Leaf splits reuse stored spatial keys rather than rebuilding
+agent envelopes, ordinary insertions avoid the bounds-expansion lock, and point agents staying in the same leaf
+update their existing entry without removal and reinsertion. Boundary crossings and geometry changes retain
+the general update path. Exact shape distances, including point elevations, are preserved.
+
+### Octree query and update speed
+
+The octree now applies the same optimizations in all three dimensions: direct single-nearest traversal,
+tighter search boxes, same-leaf point updates, reuse of stored keys during splits, and a bounds-expansion
+lock only when needed. Its distance rules remain unchanged: exact 3D distances between points and 3D
+bounding-box approximations for other shapes. Equal-distance neighbours remain randomly selected, but
+the number and order of random draws change, so seeded runs can differ from earlier versions.
+
+### Movement along paths and graphs
+
+Graph movement now uses lazily indexed edges instead of walking the graph's edge set for each edge lookup or
+intersection crossing. The index follows the existing edge order and is rebuilt after edges are added or removed,
+not when weights change. Both 2D and 3D moving skills reuse the final edge directly.
+
+Path following reuses the destination projection while checking for changes to the target or the final road's
+coordinates. Movement reads line coordinates directly, traverses reversed roads without reversing arrays, computes
+only the final heading, and avoids repeated road-length evaluations and temporary initialization lists on the hot
+path. Dynamic weights, intersection choices and optional returned travel paths retain their existing behavior.
+
+### Routing cache and weight-update speed
+
+Applying a map or list of graph weights now skips unchanged values and invalidates routing data once per batch,
+instead of once per edge. Reapplying identical weights preserves cached routes. Actual changes also reset
+precomputed routing algorithms, including Floyd-Warshall; list weights follow the existing edge iteration order
+without repeated indexed lookups into the edge set.
+
+Reading a graph's vertex set no longer clears its routing cache. The set remains live, and removing vertices through
+it also removes their incident edges and invalidates routing data. Adding vertices or edges invalidates cached
+routing data at the mutation rather than relying on a later read.
+
+Cached routes and their intermediate-to-destination suffixes share one private route snapshot, replacing repeated
+suffix copying with linear-time cache construction. Returned routes remain independently mutable; modifying an
+exposed cached suffix copies only that suffix and cannot alter the others.
+
+### Endpoint route candidate construction
+
+When several equally nearest edges can attach a source or destination to a network, routing now compares their
+edge lists before constructing spatial paths. Only the winning candidate gets its oriented and trimmed path
+geometries. Candidate weights, iteration-order tie breaking, and directed/undirected route selection remain
+unchanged; single-candidate queries keep their existing construction path.
+
 ### Adjustable editor delays for large models
 
 **Preferences > Editors > Edition** now offers two settings to reduce background
@@ -148,6 +324,9 @@ and no longer force a layout on every movement.
 Mouse and keyboard event actions that refresh outputs no longer make the AWT
 event thread wait for rendering on itself, or consume the simulation's render
 acknowledgment. This affects interactive event-layer models such as Moving Agents.
+
+The macOS desktop product disables the Java2D Metal pipeline to reduce remaining mouse-movement stalls.
+See the [startup workaround](README.md#macos-java2d-mouse-stutter) for its limitations and configuration.
 
 ### Snapshots and image saving: faster, optionally asynchronous
 

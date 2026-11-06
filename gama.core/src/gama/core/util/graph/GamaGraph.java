@@ -9,9 +9,12 @@
  ********************************************************************************************************/
 package gama.core.util.graph;
 
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +52,7 @@ import gama.api.types.graph.EdgeToAdd;
 import gama.api.types.graph.GamaPathFactory;
 import gama.api.types.graph.GraphEvent;
 import gama.api.types.graph.GraphEvent.GraphEventType;
+import gama.api.types.graph.GraphObject;
 import gama.api.types.graph.GraphObjectToAdd;
 import gama.api.types.graph.IGraph;
 import gama.api.types.graph.IGraphEventListener;
@@ -109,6 +113,82 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	/** Maps each edge object (container value) to its internal graph edge wrapper. */
 	protected final Map<E, _Edge<V, E>> edgeMap;
+
+	private record IndexedEdges<E>(List<E> edges, Map<E, Integer> indices) {}
+
+	private transient volatile IndexedEdges<E> indexedEdges;
+
+	private transient Set<V> verticesView;
+
+	private final class VertexSet extends AbstractSet<V> {
+		@Override
+		public int size() { return vertexMap.size(); }
+
+		@Override
+		public boolean contains(final Object vertex) { return containsVertex(vertex); }
+
+		@Override
+		public boolean remove(final Object vertex) { return removeVertex(vertex); }
+
+		@Override
+		public Iterator<V> iterator() {
+			final Iterator<V> vertices = vertexMap.keySet().iterator();
+			return new Iterator<>() {
+				private V current;
+				private boolean canRemove;
+
+				@Override
+				public boolean hasNext() { return vertices.hasNext(); }
+
+				@Override
+				public V next() {
+					current = vertices.next();
+					canRemove = true;
+					return current;
+				}
+
+				@Override
+				public void remove() {
+					if (!canRemove) throw new IllegalStateException();
+					for (final Object edge : edgesOf(current)) { removeEdge(edge); }
+					vertices.remove();
+					canRemove = false;
+					getPathComputer().incVersion();
+					dispatchEvent(graphScope,
+							new GraphEvent(graphScope, GamaGraph.this, null, current, GraphEventType.VERTEX_REMOVED));
+				}
+			};
+		}
+	}
+
+	private IndexedEdges<E> edgeIndices() {
+		final IndexedEdges<E> cached = indexedEdges;
+		if (cached != null && cached.edges().size() == edgeMap.size()) return cached;
+		final List<E> edges = new ArrayList<>(edgeMap.keySet());
+		final Map<E, Integer> indices = new IdentityHashMap<>(edges.size());
+		for (int i = 0; i < edges.size(); i++) { indices.put(edges.get(i), i); }
+		final IndexedEdges<E> result = new IndexedEdges<>(edges, indices);
+		indexedEdges = result;
+		return result;
+	}
+
+	/**
+	 * Returns an edge in graph iteration order without walking the edge set on each lookup.
+	 */
+	public E getEdgeAt(final int index) {
+		final List<E> edges = edgeIndices().edges();
+		return index >= edges.size() ? null : edges.get(index);
+	}
+
+	/**
+	 * Returns an edge's position in graph iteration order, or -1 if it is absent.
+	 */
+	public int getEdgeIndex(final Object edge) {
+		final IndexedEdges<E> cached = edgeIndices();
+		final Integer index = cached.indices().get(edge);
+		// Shape hashes can change with geometry; canonical graph edges are looked up by identity.
+		return index == null ? cached.edges().indexOf(edge) : index;
+	}
 
 	@Override
 	public Map<E, _Edge<V, E>> getEdgeMap() { return edgeMap; }
@@ -785,6 +865,8 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		// if ( edge == null ) { return false; }
 		edgeMap.put((E) e, edge);
+		indexedEdges = null;
+		getPathComputer().incVersion();
 		dispatchEvent(graphScope, new GraphEvent(graphScope, this, e, null, GraphEventType.EDGE_ADDED));
 		return true;
 
@@ -847,6 +929,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		}
 		// if ( vertex == null ) { return false; }
 		vertexMap.put((V) v, vertex);
+		getPathComputer().incVersion();
 		dispatchEvent(graphScope, new GraphEvent(graphScope, this, null, v, GraphEventType.VERTEX_ADDED));
 		return true;
 
@@ -1022,6 +1105,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		getPathComputer().incVersion();
 		edge.removeFromVerticesAs(e);
 		edgeMap.remove(e);
+		indexedEdges = null;
 		if (generatedEdges.contains(e)) { ((IAgent) e).dispose(); }
 		dispatchEvent(graphScope, new GraphEvent(graphScope, this, e, null, GraphEventType.EDGE_REMOVED));
 		return true;
@@ -1052,22 +1136,24 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	@Override
 	public void setEdgeWeight(final Object e, final double weight) {
-		if (!containsEdge(e)) return;
-		getPathComputer().incVersion();
-		getEdge(e).setWeight(weight);
+		if (setWeightIfChanged(getEdge(e), weight)) { getPathComputer().incVersion(); }
 	}
 
 	@Override
 	public void setVertexWeight(final Object v, final double weight) {
-		if (!containsVertex(v)) return;
-		getPathComputer().incVersion();
-		getVertex(v).setWeight(weight);
+		if (setWeightIfChanged(getVertex(v), weight)) { getPathComputer().incVersion(); }
+	}
+
+	private boolean setWeightIfChanged(final GraphObject<?, ?, ?> object, final double weight) {
+		if (object == null || Double.compare(object.getWeight(), weight) == 0) return false;
+		object.setWeight(weight);
+		return true;
 	}
 
 	@Override
-	public Set vertexSet() {
-		getPathComputer().incVersion();
-		return vertexMap.keySet();
+	public Set<V> vertexSet() {
+		if (verticesView == null) { verticesView = new VertexSet(); }
+		return verticesView;
 	}
 
 	/**
@@ -1239,7 +1325,11 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	public boolean isDirected() { return directed; }
 
 	@Override
-	public void setDirected(final boolean b) { directed = b; }
+	public void setDirected(final boolean b) {
+		if (directed == b) return;
+		directed = b;
+		getPathComputer().incVersion();
+	}
 
 	@Override
 	public IGraph copy(final IScope scope) {
@@ -1261,18 +1351,35 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	@Override
 	public void setWeights(final Map w) {
 		final Map<Object, Double> weights = w;
-		for (final Map.Entry<Object, Double> entry : weights.entrySet()) {
-			Object target = entry.getKey();
-			if (target instanceof IPair) {
-				target = getEdge(((IPair) target).key(), ((IPair) target).value());
-				setEdgeWeight(target, Cast.asFloat(graphScope, entry.getValue()));
-			} else if (containsEdge(target)) {
-				setEdgeWeight(target, Cast.asFloat(graphScope, entry.getValue()));
-			} else {
-				setVertexWeight(target, Cast.asFloat(graphScope, entry.getValue()));
+		boolean changed = false;
+		try {
+			for (final Map.Entry<Object, Double> entry : weights.entrySet()) {
+				final Object target = entry.getKey();
+				final GraphObject<?, ?, ?> object = target instanceof IPair pair
+						? getEdge(getEdge(pair.key(), pair.value()))
+						: containsEdge(target) ? getEdge(target) : getVertex(target);
+				changed |= setWeightIfChanged(object, Cast.asFloat(graphScope, entry.getValue()));
 			}
+		} finally {
+			// A conversion failure can leave earlier assignments applied.
+			if (changed) { getPathComputer().incVersion(); }
 		}
+	}
 
+	/**
+	 * Assigns weights in edge iteration order, invalidating routing data once if anything changes.
+	 */
+	public void setEdgeWeights(final IScope scope, final List<?> weights) {
+		if (edgeMap.size() != weights.size()) return;
+		boolean changed = false;
+		final Iterator<?> values = weights.iterator();
+		try {
+			for (final _Edge<V, E> edge : edgeMap.values()) {
+				changed |= setWeightIfChanged(edge, Cast.asFloat(scope, values.next()));
+			}
+		} finally {
+			if (changed) { getPathComputer().incVersion(); }
+		}
 	}
 
 	/**

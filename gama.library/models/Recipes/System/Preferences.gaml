@@ -272,9 +272,6 @@ experiment 'Display Preferences' type: gui {
 		//Default color scheme for simulations in UI
 		write sample(gama.pref_simulation_colors);
 
-		//Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents
-		write sample(gama.pref_synchronize_quadtree);
-
 		//In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)
 		write sample(gama.pref_texture_orientation);
 
@@ -544,9 +541,6 @@ experiment 'Set Preferences' type: gui {
 
 		//Default color scheme for simulations in UI
 		gama.pref_simulation_colors <- 'Qualitative (9 colors)';
-
-		//Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents
-		gama.pref_synchronize_quadtree <- true;
 
 		//In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)
 		gama.pref_texture_orientation <- true;

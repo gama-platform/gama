@@ -12,7 +12,7 @@ global {
 	int base_operations <- 20;
 	int base_survivors <- 64;
 	int load_level <- 0;
-	string load_axis <- "size";
+	string load_axis <- "size" among: ["size", "operations", "both"];
 	int container_size;
 	int operations_per_cycle;
 	int survivor_slots;
@@ -73,10 +73,10 @@ global {
 			last_boundary_at <- gama.machine_time;
 		}
 		if cycle > warmup_cycles {
-			float duration <- gama.machine_time - last_boundary_at;
-			elapsed_ms <- elapsed_ms + duration;
-			window_ms <- window_ms + duration;
-			max_cycle_ms <- max(max_cycle_ms, duration);
+			float dd <- gama.machine_time - last_boundary_at;
+			elapsed_ms <- elapsed_ms + dd;
+			window_ms <- window_ms + dd;
+			max_cycle_ms <- max(max_cycle_ms, dd);
 			completed_cycles <- completed_cycles + 1;
 			window_count <- window_count + 1;
 			if completed_cycles mod sample_cycles = 0 or completed_cycles = measured_cycles {
@@ -90,7 +90,7 @@ global {
 			finished <- true;
 			do report(phase: "RESULT");
 			if pause_at_end {
-				do pause;
+				do pause();
 			}
 		}
 	}
@@ -150,15 +150,15 @@ experiment Replications type: batch repeat: 3 keep_seed: true parallel: false
 
 	parameter "Load level (factor 2^level)" var: load_level among: [0, 1, 2, 3, 4, 5];
 	parameter "Load axis" var: load_axis among: ["size"];
-	parameter "Pause at completion" var: pause_at_end among: [false];
+	parameter "Pause at completion" var: pause_at_end <- false;
 }
 
 experiment Operations type: batch parent: Replications repeat: 3 keep_seed: true parallel: false until: finished {
-	parameter "Load axis" var: load_axis among: ["operations"];
+	parameter "Load axis" var: load_axis  <- "operations";
 }
 
 experiment Stress type: batch parent: Replications repeat: 1 keep_seed: true parallel: false until: finished {
-	parameter "Load axis" var: load_axis among: ["both"];
+	parameter "Load axis" var: load_axis <- "both";
 }
 
 experiment Profile type: gui parent: Benchmark benchmark: true {}

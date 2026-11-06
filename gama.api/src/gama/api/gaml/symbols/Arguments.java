@@ -66,7 +66,7 @@ public class Arguments extends Facets {
 	public Arguments(final Map<String, Object> myArgs) {
 		this();
 		if (myArgs != null) {
-			myArgs.forEach((k, v) -> put(k, GAML.getExpressionDescriptionFactory().createConstant(v)));
+			myArgs.forEach((k, v) -> put(k, GAML.getExpressionDescriptionFactory().createConstantNoCache(v)));
 		}
 	}
 
@@ -120,7 +120,8 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Evaluates all argument expressions in the given scope and returns them as constant expressions.
+	 * Evaluates all argument expressions in the given scope and returns them as uncached constant expressions.
+	 * Runtime values retain their identity and are not hashed or compared by the compiler's constant cache.
 	 *
 	 * @param scope
 	 *            the scope in which the argument expressions should be evaluated
@@ -131,7 +132,9 @@ public class Arguments extends Facets {
 		result.setCaller(caller);
 		forEach((s, e) -> {
 			final IExpression exp = getExpr(s);
-			if (exp != null) { result.put(s, GAML.getExpressionDescriptionFactory().createConstant(exp.value(scope))); }
+			if (exp != null) {
+				result.put(s, GAML.getExpressionDescriptionFactory().createConstantNoCache(exp.value(scope)));
+			}
 		});
 		return result;
 	}

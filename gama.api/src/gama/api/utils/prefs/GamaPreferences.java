@@ -754,7 +754,7 @@ public class GamaPreferences {
 
 		/** Whether all parameter categories in the parameters view should be automatically expanded at startup. */
 		public static final Pref<Boolean> CORE_EXPAND_PARAMS = create("pref_experiment_expand_params",
-				"Automatically expand the parameters categories", false, IType.BOOL, true).in(NAME, PARAMETERS);
+				"Automatically expand the parameters categories", true, IType.BOOL, true).in(NAME, PARAMETERS);
 
 		/**
 		 * Whether monitor outputs should be displayed in the parameters view rather than in a dedicated monitor view.
@@ -1529,14 +1529,6 @@ public class GamaPreferences {
 				IType.BOOL, true).in(NAME, UNSAFE).inPlayer(false);
 
 		/**
-		 * Whether operations on the spatial index (quadtree) should be synchronized to prevent concurrency errors.
-		 * Recommended for interactive models or parallel models. May slow down simulations with many mobile agents.
-		 */
-		public static final Pref<Boolean> QUADTREE_SYNCHRONIZATION = create("pref_synchronize_quadtree",
-				"Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents",
-				true, IType.BOOL, true).in(NAME, UNSAFE).inPlayer(false);
-
-		/**
 		 * Whether constant GAML expressions should be evaluated at compile time and replaced by their results (constant
 		 * folding). Enabling this triggers a clean rebuild of all models. Hidden from the preferences UI.
 		 */
@@ -1548,15 +1540,6 @@ public class GamaPreferences {
 										null);
 							} catch (CoreException e) {}
 						}).hidden();
-
-		/**
-		 * Whether an optimized but potentially approximate path computation algorithm should be used for the GAML
-		 * {@code path_between} operators and {@code goto} action. May cause agents to "jump" over obstacles in some
-		 * edge cases.
-		 */
-		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
-				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
-				IType.BOOL, true).in(NAME, SAFE).inPlayer(false);
 
 		/** The Constant CAST_CONTAINER_CONTENTS. */
 		public static final Pref<Boolean> CAST_CONTAINER_CONTENTS = create("pref_cast_container_contents",

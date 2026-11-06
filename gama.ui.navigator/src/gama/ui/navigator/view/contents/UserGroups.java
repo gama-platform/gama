@@ -267,7 +267,7 @@ public final class UserGroups {
 	public static void refreshNavigator() {
 		gama.ui.shared.utils.WorkbenchHelper.runInUI("Refresh groups", 5, m -> {
 			final NavigatorRoot root = NavigatorRoot.getInstance();
-			for (final TopLevelFolder folder : root.getFolders()) { folder.initializeChildren(); }
+			for (final TopLevelFolder folder : root.getWorkspaceFolders()) { folder.initializeChildren(); }
 			WorkbenchHelper.refreshNavigator();
 		});
 	}

@@ -27,32 +27,15 @@ import gama.api.constants.GamlFileExtension;
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class NavigatorRoot extends VirtualContent implements IAdaptable {
 
-	/** The user folder. */
-	private TopLevelFolder userFolder;
-
-	/** The test folder. */
-	private TopLevelFolder testFolder;
-
-	/** The library folder (contains both built-in core models and plugin models). */
-	private TopLevelFolder libraryFolder;
-
-	/** The tutorials folder. */
-	private TopLevelFolder tutorialsFolder;
-
-	/** The recipes folder. */
-	private TopLevelFolder recipesFolder;
-
-	/** The data folder. */
-	private TopLevelFolder dataFolder;
-
-	/** The demos folder. */
-	private TopLevelFolder demosFolder;
-
 	/** The Constant instance. */
 	private final static NavigatorRoot instance = new NavigatorRoot();
 
 	/** The mapper. */
 	private ResourceManager mapper;
+
+	private TopLevelFolderRegistry folders;
+
+	private boolean loadingContributions;
 
 	/**
 	 * Instantiates a new navigator root.
@@ -67,8 +50,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the user folder
 	 */
 	public TopLevelFolder getUserFolder() {
-		if (userFolder == null) { userFolder = new UserProjectsFolder(this, "User"); }
-		return userFolder;
+		return getFolderRegistry().getWorkspaceFolder("user");
 	}
 
 	/**
@@ -77,8 +59,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the test folder
 	 */
 	public TopLevelFolder getTestFolder() {
-		if (testFolder == null) { testFolder = new TestModelsFolder(this, "Tests"); }
-		return testFolder;
+		return getFolderRegistry().getWorkspaceFolder("tests");
 	}
 
 	/**
@@ -87,8 +68,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the library folder
 	 */
 	public TopLevelFolder getLibraryFolder() {
-		if (libraryFolder == null) { libraryFolder = new ModelsLibraryFolder(this, "Library"); }
-		return libraryFolder;
+		return getFolderRegistry().getWorkspaceFolder("library");
 	}
 
 	/**
@@ -97,8 +77,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the data folder
 	 */
 	public TopLevelFolder getDataFolder() {
-		if (dataFolder == null) { dataFolder = new DataFolder(this, "Data"); }
-		return dataFolder;
+		return getFolderRegistry().getWorkspaceFolder("data");
 	}
 
 	/**
@@ -107,8 +86,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the demos folder
 	 */
 	public TopLevelFolder getDemosFolder() {
-		if (demosFolder == null) { demosFolder = new DemosFolder(this, "Demos"); }
-		return demosFolder;
+		return getFolderRegistry().getWorkspaceFolder("demos");
 	}
 
 	/**
@@ -117,8 +95,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the tutorials folder
 	 */
 	public TopLevelFolder getTutorialsFolder() {
-		if (tutorialsFolder == null) { tutorialsFolder = new TutorialsFolder(this, "Tutorials"); }
-		return tutorialsFolder;
+		return getFolderRegistry().getWorkspaceFolder("tutorials");
 	}
 
 	/**
@@ -127,8 +104,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the recipes folder
 	 */
 	public TopLevelFolder getRecipesFolder() {
-		if (recipesFolder == null) { recipesFolder = new RecipesFolder(this, "Recipes"); }
-		return recipesFolder;
+		return getFolderRegistry().getWorkspaceFolder("recipes");
 	}
 
 	/**
@@ -139,10 +115,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 */
 	public void resetVirtualFolders(final ResourceManager manager) {
 		if (manager != null) { this.setManager(manager); }
-		for (final TopLevelFolder folder : new TopLevelFolder[] { dataFolder, demosFolder, libraryFolder,
-				recipesFolder, tutorialsFolder, testFolder, userFolder }) {
-			if (folder != null) { folder.initializeChildren(); }
-		}
+		if (folders != null) { folders.resetWorkspaceFolders(); }
 	}
 
 	/**
@@ -166,7 +139,8 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	@Override
 	public Object[] getNavigatorChildren() {
 		final TopLevelFolder user = getUserFolder();
-		return java.util.Arrays.stream(getFolders()).filter(f -> f == user || f.hasChildren()).toArray();
+		return java.util.Arrays.stream(getFolders())
+				.filter(f -> f == user || f.isVisibleWhenEmpty() || f.hasChildren()).toArray();
 	}
 
 	/**
@@ -175,8 +149,37 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the folders
 	 */
 	public TopLevelFolder[] getFolders() {
-		return new TopLevelFolder[] { getDataFolder(), getDemosFolder(), getLibraryFolder(), getRecipesFolder(),
-				getTutorialsFolder(), getTestFolder(), getUserFolder() };
+		final TopLevelFolder[] workspaceFolders = getWorkspaceFolders();
+		if (mapper == null || mapper.isDisposed()) return workspaceFolders;
+		if (loadingContributions)
+			throw new IllegalStateException("A navigator folder factory must not enumerate the root's folders");
+		loadingContributions = true;
+		try {
+			return getFolderRegistry().getFolders();
+		} finally {
+			loadingContributions = false;
+		}
+	}
+
+	private TopLevelFolderRegistry getFolderRegistry() {
+		if (folders == null) { folders = new TopLevelFolderRegistry(this); }
+		return folders;
+	}
+
+	/** Built-in project categories only; workspace changes must not initialize or reparent remote hierarchies. */
+	public TopLevelFolder[] getWorkspaceFolders() {
+		return getFolderRegistry().getWorkspaceFolders();
+	}
+
+	/** Disposes optional roots on navigator shutdown; reopening creates fresh contributions. */
+	public void disposeContributions() {
+		if (folders != null) { folders.disposeContributions(); }
+	}
+
+	/** Finds a top-level folder by its stable identifier rather than its label. */
+	public TopLevelFolder getFolderById(final String id) {
+		for (final TopLevelFolder folder : getFolders()) { if (folder.getId().equals(id)) return folder; }
+		return null;
 	}
 
 	@Override
@@ -234,7 +237,9 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @param libraryFolder
 	 *            the new library folder
 	 */
-	public void setLibraryFolder(final TopLevelFolder libraryFolder) { this.libraryFolder = libraryFolder; }
+	public void setLibraryFolder(final TopLevelFolder libraryFolder) {
+		getFolderRegistry().replaceWorkspaceFolder("library", libraryFolder);
+	}
 
 	/**
 	 * Sets the user folder.
@@ -242,7 +247,9 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @param userFolder
 	 *            the new user folder
 	 */
-	public void setUserFolder(final TopLevelFolder userFolder) { this.userFolder = userFolder; }
+	public void setUserFolder(final TopLevelFolder userFolder) {
+		getFolderRegistry().replaceWorkspaceFolder("user", userFolder);
+	}
 
 	/**
 	 * Sets the test folder.
@@ -250,7 +257,9 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @param testFolder
 	 *            the new test folder
 	 */
-	public void setTestFolder(final TopLevelFolder testFolder) { this.testFolder = testFolder; }
+	public void setTestFolder(final TopLevelFolder testFolder) {
+		getFolderRegistry().replaceWorkspaceFolder("tests", testFolder);
+	}
 
 	/**
 	 * Sets the tutorials folder.
@@ -258,7 +267,9 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @param tutorialsFolder
 	 *            the new tutorials folder
 	 */
-	public void setTutorialsFolder(final TopLevelFolder tutorialsFolder) { this.tutorialsFolder = tutorialsFolder; }
+	public void setTutorialsFolder(final TopLevelFolder tutorialsFolder) {
+		getFolderRegistry().replaceWorkspaceFolder("tutorials", tutorialsFolder);
+	}
 
 	/**
 	 * Sets the recipes folder.
@@ -266,7 +277,9 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @param recipesFolder
 	 *            the new recipes folder
 	 */
-	public void setRecipesFolder(final TopLevelFolder recipesFolder) { this.recipesFolder = recipesFolder; }
+	public void setRecipesFolder(final TopLevelFolder recipesFolder) {
+		getFolderRegistry().replaceWorkspaceFolder("recipes", recipesFolder);
+	}
 
 	@Override
 	public ResourceManager getManager() { return mapper; }
@@ -287,6 +300,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the folder
 	 */
 	public TopLevelFolder getFolder(final String s) {
+		for (final TopLevelFolder folder : getWorkspaceFolders()) { if (folder.getName().equals(s)) return folder; }
 		for (final TopLevelFolder folder : getFolders()) { if (folder.getName().equals(s)) return folder; }
 		return null;
 	}

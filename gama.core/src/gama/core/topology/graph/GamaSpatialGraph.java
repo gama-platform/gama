@@ -305,7 +305,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 
 	@Override
 	public Set<IShape> vertexSet() {
-		return vertexMap.keySet();
+		return super.vertexSet();
 	}
 
 	/**
@@ -398,6 +398,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 			throw e1;
 		}
 		edgeMap.put(e, edge);
+		getPathComputer().incVersion();
 		dispatchEvent(scope, new GraphEvent(scope, this, e, null, GraphEventType.EDGE_ADDED));
 		return true;
 	}

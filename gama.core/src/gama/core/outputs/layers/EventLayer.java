@@ -9,12 +9,21 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
@@ -51,6 +60,33 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	private String event;
 
 	private KeyCombination combination;
+
+	/** Latest queued legacy motion per simulation; discrete events form ordering barriers. */
+	private static final WeakHashMap<ISimulationAgent, WeakReference<PendingMotion>> pendingMotion =
+			new WeakHashMap<>();
+
+	private static final ScheduledExecutorService motionScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+		final Thread thread = new Thread(r, "Display motion scheduler");
+		thread.setDaemon(true);
+		return thread;
+	});
+
+	private static final class PendingMotion {
+
+		final EventLayer layer;
+		final IGraphicsScope source;
+		final int kind;
+		UserInputEvent input;
+		ScheduledFuture<?> timer;
+		boolean submitted;
+
+		PendingMotion(final EventLayer layer, final IGraphicsScope source, final int kind, final UserInputEvent input) {
+			this.layer = layer;
+			this.source = source;
+			this.kind = kind;
+			this.input = input;
+		}
+	}
 
 	/**
 	 * Instantiates a new event layer.
@@ -166,12 +202,12 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 
 	@Override
 	public void mouseMove(final int x, final int y) {
-		if (MOUSE_MOVED == listenedEvent) { executeEvent(x, y); }
+		if (MOUSE_MOVED == listenedEvent) { executeEvent(x, y, MOUSE_MOVED); }
 	}
 
 	@Override
 	public void mouseDrag(final int x, final int y, final int button) {
-		if (MOUSE_DRAGGED == listenedEvent && button == 1) { executeEvent(x, y); }
+		if (MOUSE_DRAGGED == listenedEvent && button == 1) { executeEvent(x, y, MOUSE_DRAGGED); }
 	}
 
 	@Override
@@ -198,24 +234,93 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	 *            the y
 	 */
 	private void executeEvent(final int x, final int y) {
-		executeEvent(x, y, executionScope, false);
+		executeEvent(x, y, 0);
 	}
 
-	private void executeEvent(final int x, final int y, final IScope scope, final boolean observedInput) {
-		final IAgent agent = ((ILayerStatement.Event) definition).getExecuter(scope);
-		if (agent == null) return;
-		final IExecutable executer = ((ILayerStatement.Event) definition).getExecutable(scope);
-		if (executer == null) return;
-		if (!observedInput && getModelCoordinatesFrom(x, y, surface) == null) return;
-		GAMA.runAndUpdateAll(() -> scope.execute(executer, agent, null));
+	private void executeEvent(final int x, final int y, final int motionKind) {
+		UserInputEvent input = null;
+		if (x != -1 || y != -1) {
+			final IPoint location = getModelCoordinatesFrom(x, y, surface);
+			if (location == null) return;
+			input = new UserInputEvent("", "", "",
+					GamaPointFactory.create(location.getX(), location.getY(), location.getZ()),
+					GamaPointFactory.create(x, y));
+		}
+		executeEvent(input, motionKind);
 	}
 
-	private void executeUserEvent(final int x, final int y, final UserInputEvent input) {
+	private void executeEvent(final UserInputEvent input) {
+		executeEvent(input, 0);
+	}
+
+	private void executeEvent(final UserInputEvent input, final int motionKind) {
 		final IGraphicsScope source = executionScope;
 		if (source == null || source.isClosed()) return;
-		try (IGraphicsScope scope = source.copy("for user input")) {
-			scope.setData(UserInputEvent.SCOPE_KEY, input);
-			executeEvent(x, y, scope, true);
+		final ISimulationAgent simulation = source.getSimulation();
+		final IExperimentAgent experiment = source.getExperiment();
+		if (simulation != null && !simulation.isInOwnThread()) {
+			synchronized (pendingMotion) {
+				final WeakReference<PendingMotion> reference = pendingMotion.get(simulation);
+				final PendingMotion previous = reference == null ? null : reference.get();
+				if (motionKind != 0 && previous != null && previous.layer == this && previous.source == source
+						&& previous.kind == motionKind) {
+					previous.input = input;
+					return;
+				}
+				pendingMotion.remove(simulation);
+				if (previous != null) { submitMotion(simulation, previous); }
+				if (motionKind == 0) {
+					simulation.executeAction(ignored -> {
+						runEvent(source, simulation, input);
+						return null;
+					});
+				} else {
+					final PendingMotion motion = new PendingMotion(this, source, motionKind, input);
+					pendingMotion.put(simulation, new WeakReference<>(motion));
+					motion.timer = motionScheduler.schedule(() -> {
+						synchronized (pendingMotion) { submitMotion(simulation, motion); }
+					}, 33, TimeUnit.MILLISECONDS);
+				}
+			}
+		} else {
+			if (simulation != null) {
+				synchronized (pendingMotion) { pendingMotion.remove(simulation); }
+				runEvent(source, simulation, input);
+			} else if (experiment != null) {
+				experiment.executeAction(ignored -> {
+					runEvent(source, null, input);
+					return null;
+				});
+			}
+		}
+	}
+
+	/** Called under pendingMotion's lock, so barriers are posted after the motion they follow. */
+	private static void submitMotion(final ISimulationAgent simulation, final PendingMotion motion) {
+		if (motion.submitted) return;
+		motion.submitted = true;
+		if (motion.timer != null) { motion.timer.cancel(false); }
+		simulation.executeAction(ignored -> {
+			final UserInputEvent input;
+			synchronized (pendingMotion) {
+				final WeakReference<PendingMotion> current = pendingMotion.get(simulation);
+				if (current != null && current.get() == motion) { pendingMotion.remove(simulation); }
+				input = motion.input;
+			}
+			motion.layer.runEvent(motion.source, simulation, input);
+			return null;
+		});
+	}
+
+	private void runEvent(final IGraphicsScope source, final ISimulationAgent simulation, final UserInputEvent input) {
+		if (source.isClosed() || simulation != null && (simulation.dead() || source.getSimulation() != simulation))
+			return;
+		try (IGraphicsScope scope = source.copyForGraphics("for user input")) {
+			if (input != null) { scope.setData(UserInputEvent.SCOPE_KEY, input); }
+			final IAgent agent = ((ILayerStatement.Event) definition).getExecuter(scope);
+			if (agent == null || agent.dead()) return;
+			final IExecutable executer = ((ILayerStatement.Event) definition).getExecutable(scope);
+			if (executer != null) { GAMA.runAndUpdateAll(() -> scope.execute(executer, agent, null)); }
 		}
 	}
 
@@ -231,7 +336,7 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 
 	@Override
 	public void userKeyPressed(final String key) {
-		if (IEventLayerDelegate.KEY_LISTENER.equals(event)) { executeUserEvent(-1, -1, UserInputEvent.keyboard(key)); }
+		if (IEventLayerDelegate.KEY_LISTENER.equals(event)) { executeEvent(UserInputEvent.keyboard(key)); }
 	}
 
 	@Override
@@ -239,7 +344,7 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 
 	@Override
 	public void userMouseEvent(final UserInputEvent input, final int x, final int y) {
-		if (listensToUserMouseEvents()) { executeUserEvent(x, y, input); }
+		if (listensToUserMouseEvents()) { executeEvent(input); }
 	}
 
 	@Override

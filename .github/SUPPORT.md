@@ -3,7 +3,19 @@
 #### **Installing GAMA extensions**
 
 Use **Support > Install GAMA extensions...** in a packaged GAMA installation,
-then choose the extension to install. The submenu discovers installable features
+then **Choose plugins to install...** to open the simplified installer.
+Check individual plugins or entire categories, or use **Select all** and
+**Deselect all**. Installed plugins remain visible but cannot be selected again;
+older installed versions are offered as updates. A plugin listed in several
+categories shares the same selection and is installed only once.
+Click **Next** to resolve all selected plugins together, then review the selected
+plugins and the complete dependency additions, replacements and removals.
+**Finish** schedules a single background installation and Eclipse prompts for a
+restart when it completes. **Back** lets you change the selection; canceling
+dependency resolution does not install anything.
+Individual extension menu entries open the same wizard with that feature selected.
+
+The submenu and wizard share a catalogue of installable features discovered
 from the main GAMA repository, <https://updates.gama-platform.org/2026-06/>,
 the optional plugin repository, <https://updates.gama-platform.org/plugin/2026-06/>, and
 <https://gama-platform.org/gama.copilot/> in background jobs started during
@@ -13,10 +25,12 @@ Discovery is disabled in exported-player mode.
 It keeps the list in memory and refreshes it on opening after an hour; use
 **Refresh extension list** to check immediately. The three sites load independently,
 and entries appear as each site finishes. Refresh jobs are visible in Eclipse's
-Progress view; **Cancel refresh** requests cancellation of outstanding reads.
+Progress view; the submenu's **Cancel refresh** requests cancellation of outstanding reads.
+The wizard fills as sites finish loading and has its own **Refresh list** button.
 Entries are grouped by the category labels published in the update sites' p2
-metadata, shown as disabled gray headings. Categories with the same label across
-sites share a group; features in multiple categories appear in each group.
+metadata, shown as submenus in the menu and checkable groups in the wizard.
+Categories with the same label across sites share a group; features in multiple
+categories appear in each group.
 Features without a category appear under **Uncategorized**.
 Groups and their entries are sorted alphabetically. Entries are named
 **Install &lt;Name&gt; extension...**, using the published feature name (or its
@@ -28,11 +42,24 @@ that is not included in the composite repository does not appear.
 Unavailable sites are reported, and any previously discovered entries for those
 sites remain available until a successful refresh.
 
-GAMA selects the feature and update sites,
-resolves dependencies in the background, and opens an installation review without
-requiring you to browse repositories or select individual plug-ins. Review the
-changes, accept the applicable licenses, confirm trust when prompted, and restart
-GAMA when Eclipse requests it. License and signature checks are not bypassed.
+GAMA selects the update sites and resolves dependencies without requiring you to
+browse repositories or select individual dependency plug-ins.
+Resolution first uses the selected plugins' sites and the installed profile.
+The Eclipse 2026-03 repository is consulted only if that cannot resolve the
+selection, avoiding unrelated optional Eclipse components when the installed
+platform already satisfies the plugins. Synthetic Java execution-environment
+units from update sites are excluded: installing plugins must not replace the
+Java environment recorded for GAMA.
+Finishing the simplified installer automatically accepts the licenses of all
+added plugins and dependencies, including installer components.
+**Trust all plugin publishers, including unsigned plugins** is enabled by default
+on the review page. It skips p2's signing-certificate and unsigned-code trust
+prompts for this installation only, including its dependencies. Uncheck it to
+retain Eclipse's normal trust verification and prompts. This does not change
+global Eclipse trust settings or the general **Install other extensions...**
+installer, and download integrity checks remain active.
+**Plugins execute code with your permissions; automatic trust does not establish
+that a plugin is safe. Only install software from sources you trust.**
 
 Diagramming installs the GAMA graphical modeling feature, including Graphiti,
 GEF and its EMF dependencies, from the 2026-06 graphical modeling update site.
@@ -48,7 +75,7 @@ On each menu opening, feature versions in the installation profile are compared
 with the discovered repository versions. Features already installed at the same
 or a newer version are disabled and labeled **(Installed) &lt;Name&gt; extension...**.
 An older installed version is labeled **Update &lt;Name&gt; extension...** and opens
-the p2 update review for that feature, using the same dependency repositories.
+the simplified wizard with that feature selected, using the same dependency repositories.
 Installation and update preparation recheck the profile and repository before
 opening their review wizard. **Support > Check for updates...** remains available
 to check all installed software.

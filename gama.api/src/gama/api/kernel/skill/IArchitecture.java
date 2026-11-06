@@ -231,6 +231,12 @@ import gama.api.runtime.scope.IScope;
 public interface IArchitecture extends ISkill, IStatement {
 
 	/**
+	 * Whether automatic steps can execute behavior, including population pre-step hooks. Custom architectures are active
+	 * unless they opt out. This does not cover variable updates, overridden steps or micro-populations.
+	 */
+	default boolean hasAutomaticBehaviors() { return true; }
+
+	/**
 	 * Inits the.
 	 *
 	 * @param scope

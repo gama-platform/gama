@@ -16,6 +16,7 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -45,20 +46,31 @@ public final class ImportProject extends AbstractHandler {
 					selected = file.getLocation().toOSString();
 			}
 		}
-		if (selected == null) {
-			final var dialog = new FileDialog(window.getShell(), SWT.OPEN);
-			dialog.setText("Import GAMA project (.gamp or .zip)");
-			dialog.setFilterExtensions(new String[] { "*.gamp;*.zip", "*.*" });
-			dialog.setFilterNames(new String[] { "GAMA projects and ZIP archives", "All files" });
-			selected = dialog.open();
-			if (selected == null) return null;
-		}
 		String group = event.getParameter(GROUP_PARAMETER);
 		final var selection = HandlerUtil.getCurrentSelection(event);
 		if (group == null && selection instanceof IStructuredSelection structured
 				&& structured.getFirstElement() instanceof UserGroupFolder folder)
 			group = folder.getRelativePath().toPortableString();
+		if (selected == null) {
+			openFromChooser(window.getShell(), group);
+			return null;
+		}
 		return open(Path.of(selected), group == null ? "" : group);
+	}
+
+	public static boolean openFromChooser(final Shell shell, final String group) {
+		final var dialog = new FileDialog(shell, SWT.OPEN);
+		dialog.setText("Import GAMA project (.gamp or .zip)");
+		dialog.setFilterExtensions(new String[] { "*.gamp;*.zip", "*.*" });
+		dialog.setFilterNames(new String[] { "GAMA projects and ZIP archives", "All files" });
+		final String selected = dialog.open();
+		if (selected == null) return false;
+		try {
+			return open(Path.of(selected), group == null ? "" : group);
+		} catch (final java.nio.file.InvalidPathException e) {
+			report(e, false);
+			return false;
+		}
 	}
 
 	public static boolean open(final Path archive, final String group) {

@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Navigator top-level folders</title>
+<style type="text/css">@import url("file:/Applications/Eclipse 2026-03.app/Contents/Eclipse/configuration/org.eclipse.osgi/483/0/.cp/book.css");</style>
+<style type="text/css">@import url("file:/Applications/Eclipse 2026-03.app/Contents/Eclipse/configuration/org.eclipse.osgi/504/0/.cp/schema.css");</style>
+</HEAD>
+<BODY>
+<H1 style="text-align:center">Navigator top-level folders</H1>
+<p></p>
+<h6 class="CaptionFigColumn SchemaHeader">Identifier: </h6>gama.ui.navigator.topLevelFolders<p></p>
+<h6 class="CaptionFigColumn SchemaHeader">Description: </h6>Declares the GAMA navigator's built-in workspace categories and optional independent virtual hierarchies.
+         Factories are instantiated lazily and their folders retained across workspace refreshes. Downstream folders
+         do not register GAML extensions or classify local projects. Restart after installing or removing plug-ins.<p></p>
+<h6 class="CaptionFigColumn SchemaHeader">Configuration Markup:</h6>
+<p></p>
+<p class="code SchemaDtd">&lt;!ELEMENT <a name="e.extension">extension</a> (<a href="#e.folder">folder</a>+)&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST extension</p>
+<p class="code SchemaDtdAttlist">point&nbsp;CDATA #REQUIRED</p>
+<p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</p>
+<p class="code SchemaDtdAttlist">name&nbsp;&nbsp;CDATA #IMPLIED&gt;</p>
+<p></p>
+<ul class="ConfigMarkupAttlistDesc">
+</ul>
+<br><p class="code SchemaDtd">&lt;!ELEMENT <a name="e.folder">folder</a> EMPTY&gt;</p>
+<p class="code SchemaDtd">&lt;!ATTLIST folder</p>
+<p class="code SchemaDtdAttlist">id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
+<p class="code SchemaDtdAttlist">class&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</p>
+<p class="code SchemaDtdAttlist">name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</p>
+<p class="code SchemaDtdAttlist">category&nbsp;(DATA|DEMOS|LIBRARY|RECIPES|TUTORIALS|TESTS|USER) </p>
+<p class="code SchemaDtdAttlist">before&nbsp;&nbsp;&nbsp;(data|demos|library|recipes|tutorials|tests|user) </p>
+<p class="code SchemaDtdAttlist">order&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED&gt;</p>
+<p></p>
+<ul class="ConfigMarkupAttlistDesc">
+<li><b>id</b> - Globally unique, stable identifier, preferably qualified by the contributing plug-in ID.
+                  Built-in anchor IDs are reserved. Used for viewer identity and expansion-state persistence,
+                  not as the display label.</li>
+<li><b>class</b> - Public no-argument implementation of ITopLevelFolderProvider. Downstream providers must return a
+                  non-workspace TopLevelFolder attached to the supplied NavigatorRoot, promptly and without I/O.
+                  The navigator's own category declarations use WorkspaceFolderProvider.</li>
+<li><b>name</b> - Display name used by the built-in WorkspaceFolderProvider. Independent providers supply their
+                  folder's display name themselves; they may read this attribute through IExecutableExtension.</li>
+<li><b>category</b> - Navigator-owned workspace classification, not available to downstream plug-ins. When present,
+                  id must equal the lowercase category name and the declaration must belong to gama.ui.navigator.
+                  Omitting this attribute declares an independent non-workspace hierarchy.</li>
+<li><b>before</b> - Places this contribution immediately before a built-in folder in the logical ordering.
+                  Defaults to before User. The position is retained even when the anchor is hidden because it is empty.
+                  Contributions cannot anchor to one another.</li>
+<li><b>order</b> - Ascending integer priority among contributions at the same anchor, default 0.
+                  Equal priorities are ordered by contribution ID, not registry enumeration order.
+                  Workspace categories themselves use this value for their anchor ordering.</li>
+</ul>
+<br><br>
+<p class="note SchemaCopyright">
+</p>
+</BODY>
+</HTML>

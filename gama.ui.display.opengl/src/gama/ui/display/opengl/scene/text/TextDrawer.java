@@ -47,7 +47,10 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.nio.DoubleBuffer;
+import java.util.Arrays;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUtessellator;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -60,6 +63,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
+import gama.dev.DEBUG;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -133,6 +137,23 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	/** The depth. */
 	double width, height, depth;
 
+	private record TextKey(String text, Font font, double precision, double depth, boolean wireframe,
+			boolean textured) {}
+
+	private record TextMesh(double width, double height, double boundsX, double boundsMaxY, double[] faces,
+			double[] textures, double[] normals, double[] sides, int[] contours) {
+
+		int weight(final TextKey key) {
+			return 256 + key.text().length() * 2 + contours.length * Integer.BYTES
+					+ (faces.length + textures.length + normals.length + sides.length) * Double.BYTES;
+		}
+	}
+
+	private final Cache<TextKey, TextMesh> meshes = CacheBuilder.newBuilder().maximumWeight(16 * 1024 * 1024)
+			.weigher((TextKey key, TextMesh mesh) -> mesh.weight(key)).build();
+
+	private boolean tessellationFailed;
+
 	/**
 	 * Instantiates a new text drawer.
 	 *
@@ -156,10 +177,25 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			drawBitmap(s.getObject(), attributes);
 		} else {
 			Font font = attributes.getFont().getAwtFont();
-			Shape shape = font.createGlyphVector(context, s.getObject()).getOutline();
-			final Rectangle2D bounds = shape.getBounds2D();
 			this.depth = attributes.getDepth();
 			this.border = attributes.getBorder();
+			final TextKey key = new TextKey(s.getObject(), font, attributes.getPrecision(), depth,
+					gl.isWireframe(), gl.isTextured());
+			TextMesh mesh = meshes.getIfPresent(key);
+			if (mesh != null) {
+				width = mesh.width();
+				height = mesh.height();
+				restore(faceVertexBuffer, mesh.faces());
+				restore(faceTextureBuffer, mesh.textures());
+				restore(sideNormalBuffer, mesh.normals());
+				restore(sideQuadsBuffer, mesh.sides());
+				System.arraycopy(mesh.contours(), 0, indices, 0, mesh.contours().length);
+				currentIndex = mesh.contours().length - 1;
+				drawText(attributes, mesh.boundsX(), mesh.boundsMaxY());
+				return;
+			}
+			Shape shape = font.createGlyphVector(context, s.getObject()).getOutline();
+			final Rectangle2D bounds = shape.getBounds2D();
 			this.width = bounds.getWidth();
 			this.height = bounds.getHeight();
 			faceVertexBuffer.clear();
@@ -174,11 +210,28 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			contourStartX = Double.MIN_VALUE;
 			contourStartY = Double.MIN_VALUE;
 			contourStartNormalPos = -1;
+			tessellationFailed = false;
 			process(shape.getPathIterator(AT, attributes.getPrecision()));
-			// process() already flips all buffers internally
-			drawText(attributes, bounds);
+			if (!tessellationFailed) {
+				mesh = new TextMesh(width, height, bounds.getX(), bounds.getMaxY(), snapshot(faceVertexBuffer),
+						snapshot(faceTextureBuffer), snapshot(sideNormalBuffer), snapshot(sideQuadsBuffer),
+						Arrays.copyOf(indices, currentIndex + 1));
+				meshes.put(key, mesh);
+			}
+			drawText(attributes, bounds.getX(), bounds.getMaxY());
 		}
+	}
 
+	private static double[] snapshot(final DoubleBuffer buffer) {
+		final double[] result = new double[buffer.limit()];
+		buffer.get(0, result);
+		return result;
+	}
+
+	private static void restore(final DoubleBuffer buffer, final double[] data) {
+		buffer.clear();
+		buffer.put(data);
+		buffer.flip();
 	}
 
 	/**
@@ -261,10 +314,12 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *
 	 * @param attributes
 	 *            the attributes
-	 * @param bounds
-	 *            the AWT outline bounds before the Y-axis flip
+	 * @param boundsX
+	 *            the AWT outline X position
+	 * @param boundsMaxY
+	 *            the AWT outline maximum Y before the Y-axis flip
 	 */
-	void drawText(final IDrawingAttributes attributes, final Rectangle2D bounds) {
+	void drawText(final IDrawingAttributes attributes, final double boundsX, final double boundsMaxY) {
 
 		final IPoint p = attributes.getLocation();
 
@@ -277,8 +332,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final double locY = rotated ? 0 : p.getY();
 			final double locZ = rotated ? 0 : p.getZ();
 			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			final double x = -bounds.getX() - width * anchor.getX();
-			final double y = bounds.getMaxY() - height * anchor.getY();
+			final double x = -boundsX - width * anchor.getX();
+			final double y = boundsMaxY - height * anchor.getY();
 			gl.translateBy(locX + x * scale, locY + y * scale,
 					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
@@ -445,6 +500,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 
 	@Override
 	public void dispose() {
+		meshes.invalidateAll();
+		GLU.gluDeleteTess(tobj);
 		faceVertexBuffer = faceTextureBuffer = sideNormalBuffer = sideQuadsBuffer = null;
 	}
 
@@ -527,6 +584,12 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	@Override
 	public void combine(final double[] coords, final Object[] data, final float[] weight, final Object[] outData) {
 		outData[0] = coords.clone();
+	}
+
+	@Override
+	public void error(final int code) {
+		tessellationFailed = true;
+		DEBUG.ERR("OpenGL text tessellation: " + new GLU().gluErrorString(code));
 	}
 
 	/**

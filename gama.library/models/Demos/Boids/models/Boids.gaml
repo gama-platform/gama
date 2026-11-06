@@ -242,17 +242,6 @@ experiment "Interactive" type: gui autorun: true{
 	parameter 'Apply Wind ?' var: apply_wind ;     
 	parameter 'Moving Obstacles ?' var: moving_obstacles  ;    
 	parameter 'Direction of the wind' var: wind_vector ;  
-	bool previous_state <- gama.pref_synchronize_quadtree;
-	
-	init {
-		// The preference is explicitly set so as to avoid concurrency problems 
-		gama.pref_synchronize_quadtree <- true;
-	}
-	
-	abort {
-		gama.pref_synchronize_quadtree <- previous_state;
-	}
-	
 	//Minimum duration of a step to better see the movements
 	float minimum_cycle_duration <- 0.01;
 
@@ -268,5 +257,4 @@ experiment "Interactive" type: gui autorun: true{
 
 	}
 }
-
 

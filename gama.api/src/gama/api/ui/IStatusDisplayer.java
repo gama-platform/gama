@@ -142,4 +142,9 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	 */
 	default void setExperimentTarget(final IStatusControl target) {}
 
+	/**
+	 * Hides the status bar popups (experiment and status history), if any is currently visible.
+	 */
+	default void hideStatusPopups() {}
+
 }

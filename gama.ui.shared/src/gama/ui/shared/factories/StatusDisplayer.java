@@ -306,6 +306,21 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	@Override
 	public void setExperimentTarget(final IStatusControl l) { experimentControl = l; }
 
+	@Override
+	public void hideStatusPopups() {
+		final IStatusControl experiment = experimentControl;
+		final IStatusControl status = statusControl;
+		final Runnable hide = () -> {
+			if (experiment != null) { experiment.hidePopup(); }
+			if (status != null) { status.hidePopup(); }
+		};
+		if (WorkbenchHelper.isDisplayThread()) {
+			hide.run();
+		} else {
+			WorkbenchHelper.asyncRun(hide);
+		}
+	}
+
 	/**
 	 * Returns the current status control target.
 	 *

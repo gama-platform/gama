@@ -67,6 +67,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 	private static boolean failed;
 	private static MenuManager activeMenu;
 	private static final List<Job> jobs = new ArrayList<>();
+	private static final List<Runnable> listeners = new ArrayList<>();
 
 	@Override
 	public void earlyStartup() {
@@ -95,19 +96,17 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 
 	private static void populate(final MenuManager menu) {
 		menu.removeAll();
-		final Map<String, Version> installed = new LinkedHashMap<>();
-		final var profile = InstallExtension.installationProfile(ProvisioningUI.getDefaultUI());
-		if (profile != null) {
-			for (final IInstallableUnit unit : profile.query(QueryUtil.createIUGroupQuery(), null)) {
-				installed.merge(unit.getId(), unit.getVersion(), (first, second) ->
-						first.compareTo(second) >= 0 ? first : second);
+		menu.add(new Action("Choose plugins to install...") {
+			@Override
+			public void run() {
+				InstallExtension.install(menu.getMenu().getShell(), null);
 			}
-		}
-		final var entries = new LinkedHashMap<String, Extension>();
-		catalogue.values().forEach(list -> list.forEach(extension -> entries.merge(extension.featureId(), extension,
-				InstallExtensionsContribution::mergeExtensions)));
+		});
+		menu.add(new Separator());
+		final Map<String, Version> installed = installedVersions();
+		final var entries = availableExtensions();
 		final Map<String, List<Extension>> groups = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-		entries.values().forEach(extension -> extension.categories().forEach(category ->
+		entries.forEach(extension -> extension.categories().forEach(category ->
 				groups.computeIfAbsent(category, _ -> new ArrayList<>()).add(extension)));
 		groups.forEach((category, extensions) -> {
 			final MenuManager categoryMenu = new MenuManager(category);
@@ -156,6 +155,37 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 		menu.add(refresh);
 	}
 
+	static Map<String, Version> installedVersions() {
+		final Map<String, Version> installed = new LinkedHashMap<>();
+		final var profile = InstallExtension.installationProfile(ProvisioningUI.getDefaultUI());
+		if (profile != null) {
+			for (final IInstallableUnit unit : profile.query(QueryUtil.createIUGroupQuery(), null)) {
+				installed.merge(unit.getId(), unit.getVersion(), (first, second) ->
+						first.compareTo(second) >= 0 ? first : second);
+			}
+		}
+		return installed;
+	}
+
+	static List<Extension> availableExtensions() {
+		final var entries = new LinkedHashMap<String, Extension>();
+		catalogue.values().forEach(list -> list.forEach(extension -> entries.merge(extension.featureId(), extension,
+				InstallExtensionsContribution::mergeExtensions)));
+		return List.copyOf(entries.values());
+	}
+
+	static boolean isLoading() { return pending > 0; }
+
+	static boolean hasFailed() { return failed; }
+
+	static void addListener(final Runnable listener) { listeners.add(listener); }
+
+	static void removeListener(final Runnable listener) { listeners.remove(listener); }
+
+	static void ensureLoaded(final Display display) {
+		if (lastRefresh == 0 || System.nanoTime() - lastRefresh >= REFRESH_INTERVAL) refresh(display);
+	}
+
 	private static void addMessage(final IMenuManager menu, final String message) {
 		final Action action = new Action(message) {};
 		action.setEnabled(false);
@@ -174,7 +204,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 				List.copyOf(categories));
 	}
 
-	private static void refresh(final Display display) {
+	static void refresh(final Display display) {
 		if (pending > 0) return;
 		pending = REPOSITORIES.size();
 		failed = false;
@@ -182,6 +212,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 		for (final URI source : REPOSITORIES) {
 			refreshSite(source, display);
 		}
+		List.copyOf(listeners).forEach(Runnable::run);
 	}
 
 	private static void refreshSite(final URI source, final Display display) {
@@ -222,6 +253,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 					failed |= !result.isOK();
 					// Keep the last successful list for any temporarily unavailable site.
 					if (result.isOK()) catalogue.put(source, List.copyOf(extensions));
+					List.copyOf(listeners).forEach(Runnable::run);
 					if (activeMenu != null && activeMenu.getMenu() != null && !activeMenu.getMenu().isDisposed()) {
 						populate(activeMenu);
 						activeMenu.update(true);

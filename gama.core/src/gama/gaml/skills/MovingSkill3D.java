@@ -258,7 +258,7 @@ public class MovingSkill3D extends MovingSkill {
 				if (result != null) {
 					agent.setAttribute(IKeyword.REAL_SPEED, result.travelledDistance / scope.getClock().getStepInSeconds());
 					agent.setAttribute(MovementAttributes.INDEX_ON_PATH, result.finalIndex);
-					setCurrentEdge(agent, graph);
+					agent.setAttribute(MovementAttributes.CURRENT_EDGE, result.finalEdge);
 					agent.setAttribute(MovementAttributes.INDEX_ON_PATH_SEGMENT, result.finalIndexSegment);
 					agent.setAttribute(MovementAttributes.REVERSE, result.finalReverse);
 					setLocation(agent, result.finalLocation);

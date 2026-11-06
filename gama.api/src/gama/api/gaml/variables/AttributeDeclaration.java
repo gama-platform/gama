@@ -234,6 +234,8 @@ import gama.dev.DEBUG;
 @SuppressWarnings ({ "rawtypes" })
 public class AttributeDeclaration extends Symbol implements IVariable {
 
+	private static final Object ABSENT_ATTRIBUTE = new Object();
+
 	static {
 		DEBUG.OFF();
 	}
@@ -995,9 +997,10 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 		if (functionExpression != null) return scope.evaluate(functionExpression, object).getValue();
 		// Var not yet initialized. May happen when asking for its value while initializing an editor
 		// See Issue #2781 + Issue #3920
-		if (!object.hasAttribute(name) && (isNotModifiable || initExpression != null /* && initExpression.isConst() */)
-				&& !description.isBuiltIn())
-			return getInitialValue(scope);
+		if ((isNotModifiable || initExpression != null) && !description.isBuiltIn()) {
+			final Object stored = object.getAttribute(name, ABSENT_ATTRIBUTE);
+			return stored == ABSENT_ATTRIBUTE ? getInitialValue(scope) : stored;
+		}
 		return object.getAttribute(name);
 	}
 

@@ -13,12 +13,126 @@ import java.util.Arrays;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.random.IRandom;
+import gama.api.utils.random.RandomUtils;
 
 /**
  * Hilbert-Schmidt Independence Criterion (HSIC) implementation. HSIC is a kernel-based statistic to test the
  * independence of two variables.
  */
 public class HSIC {
+
+	/** Relative tolerance for floating-point tie comparisons in permutation tests. */
+	private static final double TIE_TOLERANCE = 1e-12;
+
+	/** Threshold beyond which pairwise differences could overflow Double.MAX_VALUE on subtraction. */
+	private static final double OVERFLOW_SAFE_BOUND = Double.MAX_VALUE / 2.0;
+
+	/**
+	 * Encapsulates a one-dimensional sample observation vector with precomputed scale and bandwidth.
+	 *
+	 * @param values
+	 *            the observations
+	 * @param scale
+	 *            overflow/underflow scale factor (0.5 for extreme values, 1.0 otherwise)
+	 * @param bandwidth
+	 *            RBF kernel bandwidth parameter
+	 */
+	private record Sample(double[] values, double scale, double bandwidth) {
+
+		static Sample of(final double[] data) {
+			final double scale = computeScale(data);
+			final double sigma = estimateBandwidth(data, scale);
+			return new Sample(data, scale, sigma);
+		}
+
+		int size() { return values.length; }
+
+		double[][] gramMatrix() {
+			return computeGramMatrix(values, bandwidth, scale);
+		}
+
+		CenteredKernel toCenteredKernel() {
+			final double[][] centered = centerMatrix(gramMatrix());
+			double normSq = 0.0;
+			for (final double[] row : centered) {
+				for (final double val : row) { normSq += val * val; }
+			}
+			return new CenteredKernel(centered, Math.sqrt(normSq));
+		}
+	}
+
+	/**
+	 * Encapsulates a pair of equal-length samples for independence analysis.
+	 *
+	 * @param x
+	 *            sample observations for the first variable
+	 * @param y
+	 *            sample observations for the second variable
+	 */
+	private record SamplePair(Sample x, Sample y) {
+
+		static SamplePair of(final double[] xData, final double[] yData) {
+			validateFiniteInputs(xData, yData);
+			return new SamplePair(Sample.of(xData), Sample.of(yData));
+		}
+
+		int size() { return x.size(); }
+	}
+
+	/**
+	 * Encapsulates a double-centered Gram kernel matrix along with its Frobenius norm.
+	 *
+	 * @param matrix
+	 *            the centered Gram matrix
+	 * @param frobeniusNorm
+	 *            the Frobenius norm (square root of sum of squared elements)
+	 */
+	private record CenteredKernel(double[][] matrix, double frobeniusNorm) {
+		int size() { return matrix.length; }
+	}
+
+	/**
+	 * Encapsulates the execution state of an HSIC permutation test.
+	 *
+	 * @param scope
+	 *            the execution scope for cancellation checks
+	 * @param kx
+	 *            centered kernel of the first variable
+	 * @param ky
+	 *            centered kernel of the second variable
+	 * @param permutations
+	 *            number of permutation replications
+	 */
+	private record PermutationTest(IScope scope, CenteredKernel kx, CenteredKernel ky, int permutations) {
+
+		int countExceeding(final IRandom rnd) {
+			final int n = kx.size();
+			final int[] perm = initialPermutation(n);
+			final double observedTrace = computeTrace(perm);
+			final double threshold = observedTrace - TIE_TOLERANCE * kx.frobeniusNorm() * ky.frobeniusNorm();
+			int count = 0;
+			for (int p = 0; p < permutations; p++) {
+				checkInterrupted(scope);
+				rnd.shuffleInPlace(perm);
+				if (computeTrace(perm) >= threshold) { count++; }
+			}
+			return count;
+		}
+
+		private double computeTrace(final int[] perm) {
+			final double[][] kc = kx.matrix();
+			final double[][] lc = ky.matrix();
+			final int n = kc.length;
+			double trace = 0.0;
+			for (int i = 0; i < n; i++) {
+				final double[] kcRow = kc[i];
+				final double[] lcRow = lc[perm[i]];
+				for (int j = 0; j < n; j++) { trace += kcRow[j] * lcRow[perm[j]]; }
+			}
+			return trace;
+		}
+	}
 
 	/**
 	 * Computes the normalized HSIC value (R2-HSIC) for two sets of observations. This value is bounded between 0 and 1,
@@ -31,13 +145,17 @@ public class HSIC {
 	 * @return the normalized HSIC value
 	 */
 	public static double computeNormalizedHSIC(final double[] x, final double[] y) {
-		double hsicXY = computeHSIC(x, y, true); // Use unbiased estimator
-		double hsicXX = computeHSIC(x, x, true);
-		double hsicYY = computeHSIC(y, y, true);
+		validateInputs(x, y);
+		if (x.length < 2) return 0.0;
 
-		double den = Math.sqrt(Math.max(0, hsicXX) * Math.max(0, hsicYY));
-		if (den == 0) return 0.0;
-		return Math.max(0, hsicXY) / den;
+		final boolean unbiased = x.length >= 4;
+		final double hsicXY = computeHSIC(x, y, unbiased);
+		final double hsicXX = computeHSIC(x, x, unbiased);
+		final double hsicYY = computeHSIC(y, y, unbiased);
+
+		final double den = Math.sqrt(Math.max(0.0, hsicXX) * Math.max(0.0, hsicYY));
+		if (den <= 0.0) return 0.0;
+		return Math.min(1.0, Math.max(0.0, hsicXY) / den);
 	}
 
 	/**
@@ -52,58 +170,68 @@ public class HSIC {
 	 * @return the HSIC value
 	 */
 	public static double computeHSIC(final double[] x, final double[] y, final boolean unbiased) {
-		int n = x.length;
-		if (n != y.length) throw new IllegalArgumentException("Input arrays must have the same length");
+		final int n = x == null ? 0 : x.length;
 		if (n < (unbiased ? 4 : 2)) return 0.0;
 
-		double sigmaX = estimateBandwidth(x);
-		double sigmaY = estimateBandwidth(y);
+		final SamplePair pair = SamplePair.of(x, y);
+		final double[][] K = pair.x().gramMatrix();
+		final double[][] L = pair.y().gramMatrix();
 
-		double[][] K = computeGramMatrix(x, sigmaX);
-		double[][] L = computeGramMatrix(y, sigmaY);
+		return unbiased ? computeUnbiased(K, L) : computeBiased(K, L);
+	}
 
-		if (unbiased) {
-			// Unbiased estimator formula according to Song et al. (2007)
-			// HSIC = 1/(n(n-3)) * [ trace(KL) + sum(K)sum(L)/( (n-1)(n-2) ) - 2/(n-2) sum(K*L_rows) ]
-			// with diagonal elements of K and L set to 0.
-			for (int i = 0; i < n; i++) {
-				K[i][i] = 0;
-				L[i][i] = 0;
+	/**
+	 * Computes the unbiased HSIC estimator according to Song et al. (2007).
+	 */
+	private static double computeUnbiased(final double[][] K, final double[][] L) {
+		final int n = K.length;
+		zeroDiagonal(K);
+		zeroDiagonal(L);
+
+		double traceKL = 0.0;
+		double sumK = 0.0;
+		double sumL = 0.0;
+		double sumKLrows = 0.0;
+
+		for (int i = 0; i < n; i++) {
+			double rowK = 0.0;
+			double rowL = 0.0;
+			for (int j = 0; j < n; j++) {
+				traceKL += K[i][j] * L[j][i];
+				rowK += K[i][j];
+				rowL += L[i][j];
 			}
-
-			double traceKL = 0;
-			double sumK = 0;
-			double sumL = 0;
-			double sumKLrows = 0;
-
-			double[] rowSumsK = new double[n];
-			double[] rowSumsL = new double[n];
-
-			for (int i = 0; i < n; i++) {
-				for (int j = 0; j < n; j++) {
-					traceKL += K[i][j] * L[j][i];
-					rowSumsK[i] += K[i][j];
-					rowSumsL[i] += L[i][j];
-				}
-				sumK += rowSumsK[i];
-				sumL += rowSumsL[i];
-			}
-
-			for (int i = 0; i < n; i++) { sumKLrows += rowSumsK[i] * rowSumsL[i]; }
-
-			return (traceKL + sumK * sumL / ((n - 1.0) * (n - 2.0)) - 2.0 * sumKLrows / (n - 2.0)) / (n * (n - 3.0));
+			sumK += rowK;
+			sumL += rowL;
+			sumKLrows += rowK * rowL;
 		}
-		// Biased (empirical) estimator
-		double[][] Kc = centerMatrix(K);
-		double[][] Lc = centerMatrix(L);
-		double trace = 0;
-		for (int i = 0; i < n; i++) { for (int j = 0; j < n; j++) { trace += Kc[i][j] * Lc[j][i]; } }
-		return trace / Math.pow(n - 1, 2);
+
+		final double term1 = traceKL;
+		final double term2 = (sumK * sumL) / ((n - 1.0) * (n - 2.0));
+		final double term3 = (2.0 * sumKLrows) / (n - 2.0);
+		return (term1 + term2 - term3) / (n * (n - 3.0));
+	}
+
+	/**
+	 * Computes the empirical (biased) HSIC estimator.
+	 */
+	private static double computeBiased(final double[][] K, final double[][] L) {
+		final double[][] Kc = centerMatrix(K);
+		final double[][] Lc = centerMatrix(L);
+		final int n = Kc.length;
+		double trace = 0.0;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) { trace += Kc[i][j] * Lc[j][i]; }
+		}
+		final double denom = (n - 1.0) * (n - 1.0);
+		return Math.max(0.0, trace) / denom;
 	}
 
 	/**
 	 * Computes the p-value for the HSIC test using a permutation test.
 	 *
+	 * @param scope
+	 *            the execution scope providing interruption status and random stream
 	 * @param x
 	 *            observations of the first variable
 	 * @param y
@@ -113,53 +241,50 @@ public class HSIC {
 	 * @return the p-value
 	 */
 	public static double computePValue(final IScope scope, final double[] x, final double[] y, final int permutations) {
-		if (permutations <= 0)
-			throw GamaRuntimeException.error("hsic_p_value requires a positive permutation count", scope);
-		if (x == null || y == null || x.length != y.length || x.length < 2)
-			throw GamaRuntimeException.error("hsic_p_value requires equally sized arrays of at least two observations", scope);
-		for (int i = 0; i < x.length; i++) {
-			if (!Double.isFinite(x[i]) || !Double.isFinite(y[i]))
-				throw GamaRuntimeException.error("hsic_p_value requires finite observations", scope);
-		}
-		if (scope.interrupted())
-			throw GamaRuntimeException.error("hsic_p_value computation was interrupted", scope);
-		double observedHSIC = computeHSIC(x, y, false); // Use biased for p-value stability
-		int count = 0;
-		double[] yPerm = y.clone();
-		java.util.Random rnd = new java.util.Random();
-
-		for (int p = 0; p < permutations; p++) {
-			if (scope.interrupted())
-				throw GamaRuntimeException.error("hsic_p_value computation was interrupted", scope);
-			// Shuffle yPerm (Fisher-Yates)
-			for (int i = yPerm.length - 1; i > 0; i--) {
-				int index = rnd.nextInt(i + 1);
-				double temp = yPerm[index];
-				yPerm[index] = yPerm[i];
-				yPerm[i] = temp;
-			}
-			if (computeHSIC(x, yPerm, false) >= observedHSIC) { count++; }
-		}
+		validatePValuePreconditions(scope, x, y, permutations);
+		final SamplePair pair = SamplePair.of(x, y);
+		final PermutationTest test = new PermutationTest(scope, pair.x().toCenteredKernel(), pair.y().toCenteredKernel(), permutations);
+		final int count = test.countExceeding(resolveRandom(scope));
 		return (count + 1.0) / (permutations + 1.0);
 	}
 
 	/**
-	 * Compute gram matrix.
-	 *
-	 * @param data
-	 *            the data
-	 * @param sigma
-	 *            the sigma
-	 * @return the double[][]
+	 * Initializes an identity permutation index array.
 	 */
-	private static double[][] computeGramMatrix(final double[] data, final double sigma) {
-		int n = data.length;
-		double[][] gram = new double[n][n];
-		double gamma = 1.0 / (2.0 * sigma * sigma);
+	private static int[] initialPermutation(final int n) {
+		final int[] perm = new int[n];
+		for (int i = 0; i < n; i++) { perm[i] = i; }
+		return perm;
+	}
+
+	/**
+	 * Determines whether the sample contains extreme values that require 0.5 pre-scaling to prevent
+	 * overflow on pairwise subtraction, or whether direct subtraction can be used to preserve full precision
+	 * for subnormal numbers (down to {@link Double#MIN_VALUE}).
+	 */
+	private static double computeScale(final double[] data) {
+		double max = 0.0;
+		for (final double v : data) {
+			final double abs = Math.abs(v);
+			if (abs > max) { max = abs; }
+		}
+		return max > OVERFLOW_SAFE_BOUND ? 0.5 : 1.0;
+	}
+
+	/**
+	 * Computes the RBF Gram matrix. When {@code scale == 0.5}, differences are pre-scaled by 0.5 to avoid
+	 * overflow on extreme values; when {@code scale == 1.0}, direct differences preserve exact subnormal precision.
+	 */
+	private static double[][] computeGramMatrix(final double[] data, final double sigma, final double scale) {
+		final int n = data.length;
+		final double[][] gram = new double[n][n];
 		for (int i = 0; i < n; i++) {
-			for (int j = i; j < n; j++) {
-				double distSq = Math.pow(data[i] - data[j], 2);
-				double val = Math.exp(-gamma * distSq);
+			gram[i][i] = 1.0;
+			final double xi = scale == 1.0 ? data[i] : scale * data[i];
+			for (int j = i + 1; j < n; j++) {
+				final double xj = scale == 1.0 ? data[j] : scale * data[j];
+				final double ratio = (xi - xj) / sigma;
+				final double val = Math.exp(-0.5 * ratio * ratio);
 				gram[i][j] = val;
 				gram[j][i] = val;
 			}
@@ -168,24 +293,20 @@ public class HSIC {
 	}
 
 	/**
-	 * Center matrix.
-	 *
-	 * @param matrix
-	 *            the matrix
-	 * @return the double[][]
+	 * Double-centers a symmetric matrix ({@code H M H} where {@code H = I - (1/n) 1 1^T}).
 	 */
 	private static double[][] centerMatrix(final double[][] matrix) {
-		int n = matrix.length;
-		double[] rowMeans = new double[n];
-		double totalMean = 0;
+		final int n = matrix.length;
+		final double[] rowMeans = new double[n];
+		double totalMean = 0.0;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) { rowMeans[i] += matrix[i][j]; }
 			totalMean += rowMeans[i];
 			rowMeans[i] /= n;
 		}
-		totalMean /= n * n;
+		totalMean /= (double) n * n;
 
-		double[][] centered = new double[n][n];
+		final double[][] centered = new double[n][n];
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) { centered[i][j] = matrix[i][j] - rowMeans[i] - rowMeans[j] + totalMean; }
 		}
@@ -193,22 +314,123 @@ public class HSIC {
 	}
 
 	/**
-	 * Median heuristic for bandwidth estimation.
+	 * Median heuristic for the RBF bandwidth in the given scale. Uses direct pairwise distances when
+	 * {@code scale == 1.0} (preventing subnormal precision loss) and half-scaled distances when {@code scale == 0.5}
+	 * (preventing overflow). Falls back to the median of strictly positive distances when ties dominate, and to 1.0
+	 * when all values are identical.
 	 */
-	private static double estimateBandwidth(final double[] data) {
-		int n = data.length;
-		if (n < 2) return 1.0;
-		int size = n * (n - 1) / 2;
-		double[] dists = new double[size];
-		int count = 0;
+	private static double estimateBandwidth(final double[] data, final double scale) {
+		if (data.length < 2) return 1.0;
+		final double[] dists = computePairwiseDistances(data, scale);
+		Arrays.sort(dists);
+		final double median = medianSlice(dists, 0, dists.length);
+		if (median > 0.0) return median;
+		return findFirstPositiveMedian(dists);
+	}
+
+	/**
+	 * Computes pairwise distances in the chosen scale.
+	 */
+	private static double[] computePairwiseDistances(final double[] data, final double scale) {
+		final int n = data.length;
+		final long pairCount = (long) n * (n - 1) / 2;
+		if (pairCount > Integer.MAX_VALUE - 8)
+			throw new IllegalArgumentException("Sample size exceeds maximum supported capacity");
+		final double[] dists = new double[(int) pairCount];
+		int idx = 0;
 		for (int i = 0; i < n; i++) {
+			final double xi = scale == 1.0 ? data[i] : scale * data[i];
 			for (int j = i + 1; j < n; j++) {
-				double d = Math.abs(data[i] - data[j]);
-				dists[count++] = d * d; // Use squared distance for median heuristic in RBF
+				final double xj = scale == 1.0 ? data[j] : scale * data[j];
+				dists[idx++] = Math.abs(xi - xj);
 			}
 		}
-		Arrays.sort(dists);
-		double medianSq = dists[size / 2];
-		return medianSq == 0 ? 1.0 : Math.sqrt(medianSq);
+		return dists;
+	}
+
+	/**
+	 * Finds the median among strictly positive distances for zero-inflated / tied samples.
+	 * When identical observations or ties dominate the sample (such as discrete or duplicate values),
+	 * the global median of pairwise distances can be zero. Since a zero bandwidth would cause a 0/0 division
+	 * in the RBF kernel, this fallback computes the median strictly over positive distances to define a
+	 * meaningful scale of variation between distinct points.
+	 */
+	private static double findFirstPositiveMedian(final double[] sortedDists) {
+		for (int k = 0; k < sortedDists.length; k++) {
+			if (sortedDists[k] > 0.0) return medianSlice(sortedDists, k, sortedDists.length);
+		}
+		return 1.0;
+	}
+
+	/**
+	 * Computes the exact median of the sorted slice {@code sorted[lo..hi)}.
+	 * Uses {@code sorted[mid - 1] + 0.5 * (sorted[mid] - sorted[mid - 1])} for even lengths to avoid
+	 * underflow to zero when averaging identical subnormal numbers (down to {@link Double#MIN_VALUE}).
+	 */
+	private static double medianSlice(final double[] sorted, final int lo, final int hi) {
+		final int len = hi - lo;
+		final int mid = lo + (len >>> 1);
+		if ((len & 1) == 1) return sorted[mid];
+		return sorted[mid - 1] + 0.5 * (sorted[mid] - sorted[mid - 1]);
+	}
+
+	/**
+	 * Sets diagonal elements of a square matrix to 0.
+	 */
+	private static void zeroDiagonal(final double[][] matrix) {
+		for (int i = 0; i < matrix.length; i++) { matrix[i][i] = 0.0; }
+	}
+
+	/**
+	 * Validates that input arrays are non-null and have identical lengths.
+	 */
+	private static void validateInputs(final double[] x, final double[] y) {
+		if (x == null || y == null)
+			throw new IllegalArgumentException("Input arrays must be non-null");
+		if (x.length != y.length)
+			throw new IllegalArgumentException("Input arrays must have the same length");
+	}
+
+	/**
+	 * Validates that input arrays are non-null, equal-length, and contain only finite numbers.
+	 */
+	private static void validateFiniteInputs(final double[] x, final double[] y) {
+		validateInputs(x, y);
+		for (int i = 0; i < x.length; i++) {
+			if (!Double.isFinite(x[i]) || !Double.isFinite(y[i]))
+				throw new IllegalArgumentException("Input arrays must contain finite values");
+		}
+	}
+
+	/**
+	 * Validates preconditions for the permutation p-value test.
+	 */
+	private static void validatePValuePreconditions(final IScope scope, final double[] x, final double[] y,
+			final int permutations) {
+		if (permutations <= 0)
+			throw GamaRuntimeException.error("hsic_p_value requires a positive permutation count", scope);
+		if (x == null || y == null || x.length != y.length || x.length < 2)
+			throw GamaRuntimeException.error(
+					"hsic_p_value requires equally sized arrays of at least two observations", scope);
+		for (int i = 0; i < x.length; i++) {
+			if (!Double.isFinite(x[i]) || !Double.isFinite(y[i]))
+				throw GamaRuntimeException.error("hsic_p_value requires finite observations", scope);
+		}
+		checkInterrupted(scope);
+	}
+
+	/**
+	 * Checks if the current simulation scope was cancelled or interrupted.
+	 */
+	private static void checkInterrupted(final IScope scope) {
+		if (scope != null && scope.interrupted())
+			throw GamaRuntimeException.error("hsic_p_value computation was interrupted", scope);
+	}
+
+	/**
+	 * Obtains the random generator from scope or defaults to a new RandomUtils instance.
+	 */
+	private static IRandom resolveRandom(final IScope scope) {
+		return scope == null || scope.getRandom() == null ? new RandomUtils() : scope.getRandom();
 	}
 }

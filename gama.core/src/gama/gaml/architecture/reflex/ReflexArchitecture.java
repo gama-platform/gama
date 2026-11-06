@@ -55,6 +55,11 @@ public class ReflexArchitecture extends AbstractArchitecture {
 	public ReflexArchitecture() {}
 
 	@Override
+	public boolean hasAutomaticBehaviors() {
+		return getClass() != ReflexArchitecture.class || _reflexes != null && !_reflexes.isEmpty();
+	}
+
+	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		clearBehaviors();
 		for (final ISymbol c : children) { addBehavior((IStatement) c); }

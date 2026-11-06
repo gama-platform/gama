@@ -170,6 +170,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		openGL.setGL(drawable.getGL());
 		cameraHelper.initialize();
 		openGL.initializeGLStates(data.getBackgroundColor());
+		// Present the cleared background once while the first scene is being prepared.
+		drawable.swapBuffers();
 		lightHelper.initialize();
 		// We mark the renderer as inited
 		inited = true;
@@ -245,6 +247,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public void display(final GLAutoDrawable drawable) {
+		// JOGL otherwise swaps even when this callback returns without drawing a scene.
+		drawable.setAutoSwapBufferMode(false);
 		// Fullscreen reparenting can resize the native surface without delivering a reshape callback.
 		reshape(drawable, 0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 		if (!sceneHelper.isReady()) {
@@ -259,6 +263,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			schedulePendingInitialVisibleRedraw();
 			if (synchronizer != null) { synchronizer.release(); }
 		}
+		drawable.setAutoSwapBufferMode(true);
 		schedulePendingSceneUpdate();
 		//
 		// if (!visible) {
@@ -357,7 +362,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			schedulePendingInitialVisibleRedraw();
 		}
 		surface.updateDisplay(true, synchronizer);
-		getCanvas().updateVisibleStatus(getCanvas().isVisible());
 	}
 
 	@Override

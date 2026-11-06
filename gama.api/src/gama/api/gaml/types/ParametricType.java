@@ -84,6 +84,17 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	private String name;
 
 	/**
+	 * Shares type descriptions within their owning manager, never by type name or numeric ID.
+	 */
+	static ParametricType create(final ITypesManager manager, final IContainerType<IContainer<?, ?>> container,
+			final IType<?> key, final IType<?> content) {
+		final ITypesManager owner = Types.findMoreSpecificTypesManagerAmong(manager, container.getTypesManager(),
+				key.getTypesManager(), content.getTypesManager());
+		return owner == null ? new ParametricType(null, container, key, content)
+				: owner.getParametricType(container, key, content);
+	}
+
+	/**
 	 * Constructs a new parametric type.
 	 * <p>
 	 * The types manager is determined by finding the most specific manager among the base type and the parameter types,
@@ -104,10 +115,10 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 		type = t;
 		contentsType = ct;
 		keyType = kt;
-		expression = GAML.getExpressionFactory().createTypeExpression(this);
 		// Inherit the typesManager from the base type
 		this.typesManager = Types.findMoreSpecificTypesManagerAmong(manager, t.getTypesManager(), kt.getTypesManager(),
 				ct.getTypesManager());
+		expression = GAML.getExpressionFactory().createTypeExpression(this);
 	}
 
 	/**
@@ -504,7 +515,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			final IType<?> genericCast = type.typeIfCasting(exp);
 			final IType<?> ct = contentsType == Types.NO_TYPE ? genericCast.getContentType() : contentsType;
 			final IType<?> kt = keyType == Types.NO_TYPE ? genericCast.getKeyType() : keyType;
-			return new ParametricType(typesManager, type, kt, ct);
+			return create(typesManager, type, kt, ct);
 		}
 		return this;
 	}
@@ -550,7 +561,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return new ParametricType(typesManager, this, kt, ct);
+		return create(typesManager, this, kt, ct);
 
 	}
 
@@ -574,7 +585,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return new ParametricType(typesManager, this, kt, ct);
+		return create(typesManager, this, kt, ct);
 
 	}
 

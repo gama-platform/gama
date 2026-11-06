@@ -54,6 +54,9 @@ import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
 import gama.api.types.topology.ITopology;
 import gama.api.utils.benchmark.StopWatch;
+import gama.core.agent.GamlAgent;
+import gama.core.agent.MinimalAgent;
+import gama.core.topology.grid.GridPopulation;
 import one.util.streamex.StreamEx;
 
 /**
@@ -112,6 +115,8 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 	/** The is step overriden. */
 	protected final boolean isInitOverriden, isStepOverriden;
 
+	private final boolean passiveCandidate;
+
 	/** The is disposing. */
 	protected boolean isDisposing = false;
 	/** The notifier. */
@@ -147,6 +152,11 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 		});
 		isInitOverriden = result[0];
 		isStepOverriden = result[1];
+		final Class<? extends IAgent> agentClass = species.getDescription().getJavaBase();
+		final boolean standardAgent = agentClass == MinimalAgent.class || agentClass == GamlAgent.class;
+		final var stepAction = species.getAction(ISpecies.stepActionName);
+		passiveCandidate = (getClass() == GamaPopulation.class || getClass() == GridPopulation.class) && standardAgent
+				&& !isStepOverriden && stepAction != null && stepAction.getDescription().isBuiltIn();
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -197,6 +207,13 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 	}
 
 	@Override
+	public boolean needsAutomaticStep() {
+		return !passiveCandidate || hasUpdatableVariables() || species.hasMicroSpecies() || species.isMirror()
+				|| species.getSchedule() != null || species.getFrequency() != null || species.getConcurrency() != null
+				|| species.getArchitecture().hasAutomaticBehaviors();
+	}
+
+	@Override
 	public boolean isInitOverriden() { return isInitOverriden; }
 
 	@Override
@@ -215,7 +232,12 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 		for (final IVariable v : updatableVars) {
 			try (StopWatch w = GAMA.benchmark(scope, v)) {
 				scope.setCurrentSymbol(v);
-				scope.setAgentVarValue(a, v.getName(), v.getUpdatedValue(scope));
+				final Object value = v.getUpdatedValue(scope);
+				if (a.getClass() == MinimalAgent.class || a.getClass() == GamlAgent.class) {
+					scope.setAgentVariableValue(a, v, value);
+				} else {
+					scope.setAgentVarValue(a, v.getName(), value);
+				}
 			}
 		}
 		scope.setCurrentSymbol(null);
@@ -396,6 +418,7 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	public boolean step(final IScope scope) throws GamaRuntimeException {
+		if (!needsAutomaticStep()) return true;
 		final IExpression frequencyExp = species.getFrequency();
 		if (frequencyExp != null) {
 			final int frequency = Cast.asInt(scope, frequencyExp.value(scope));

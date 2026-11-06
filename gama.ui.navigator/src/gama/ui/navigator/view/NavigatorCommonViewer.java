@@ -60,7 +60,7 @@ public class NavigatorCommonViewer extends CommonViewer {
 
 		private Object key(final Object element) {
 			if (element instanceof VirtualContent<?> content) {
-				Object identifier = content.getName();
+				Object identifier = content.getId();
 				if (content instanceof WrappedResource<?, ?> resource) {
 					identifier = resource.getResource();
 				} else if (content instanceof WrappedSyntacticContent syntax && syntax.getURI() != null) {
@@ -73,6 +73,29 @@ public class NavigatorCommonViewer extends CommonViewer {
 			return element;
 		}
 	};
+
+	private Runnable contentRefreshListener;
+
+	private Runnable contentRefreshPreparation;
+
+	void setContentRefreshListeners(final Runnable before, final Runnable after) {
+		contentRefreshPreparation = before;
+		contentRefreshListener = after;
+	}
+
+	@Override
+	public void refresh(final Object element, final boolean updateLabels) {
+		if (contentRefreshPreparation != null) { contentRefreshPreparation.run(); }
+		super.refresh(element, updateLabels);
+		if (contentRefreshListener != null) { contentRefreshListener.run(); }
+	}
+
+	@Override
+	public void refresh(final boolean updateLabels) {
+		if (contentRefreshPreparation != null) { contentRefreshPreparation.run(); }
+		super.refresh(updateLabels);
+		if (contentRefreshListener != null) { contentRefreshListener.run(); }
+	}
 
 	static {
 		DEBUG.OFF();
@@ -154,20 +177,25 @@ public class NavigatorCommonViewer extends CommonViewer {
 		NavigatorContentProvider.FILE_CHILDREN_ENABLED = false;
 		final IStructuredSelection currentSelection = (IStructuredSelection) getSelection();
 		if (currentSelection == null || currentSelection.isEmpty()) {
-			NavigatorRoot.getInstance().accept(content -> {
-				if (content.getType() == VirtualContentType.PROJECT) {
-					GAMA.getGui().getStatus().informStatus("Expanding projects", IStatusMessage.COMPILE_ICON);
-					Widget w = internalExpand(content, true);
-					if (w != null) { internalExpandToLevel(w, 3); }
-				}
-				return true;
-			});
+			for (final TopLevelFolder folder : NavigatorRoot.getInstance().getWorkspaceFolders()) {
+				folder.accept(content -> {
+					if (content.getType() == VirtualContentType.PROJECT) {
+						GAMA.getGui().getStatus().informStatus("Expanding projects", IStatusMessage.COMPILE_ICON);
+						Widget w = internalExpand(content, true);
+						if (w != null) { internalExpandToLevel(w, 3); }
+					}
+					return true;
+				});
+			}
 
 		} else {
 			final Iterator<?> it = currentSelection.iterator();
 			while (it.hasNext()) {
 				final Object o = it.next();
-				if (o instanceof TopLevelFolder || o instanceof UserGroupFolder || o instanceof IContainer) {
+				if (o instanceof VirtualContent<?> content && content.getTopLevelFolder() != null
+						&& !content.getTopLevelFolder().isWorkspaceFolder()) {
+					expandToLevel(o, 1);
+				} else if (o instanceof TopLevelFolder || o instanceof UserGroupFolder || o instanceof IContainer) {
 					expandToLevel(o, AbstractTreeViewer.ALL_LEVELS); // 2
 				}
 			}

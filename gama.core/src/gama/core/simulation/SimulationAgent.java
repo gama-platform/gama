@@ -13,9 +13,11 @@ package gama.core.simulation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -31,6 +33,8 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
@@ -322,23 +326,50 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void setTopology(final IScope scope, final IShape shape) {
 		// A topology has already been computed. We update it and updates all
 		// the agents present in the spatial index
-		final boolean[] parallel = { GamaExecutorService.CONCURRENCY_SPECIES.getValue() };
-
-		if (!parallel[0]) {
-			getSpecies().getDescription().visitMicroSpecies(s -> {
-				parallel[0] = GamaExecutorService.getParallelism(scope, s.getFacetExpr(IKeyword.PARALLEL),
-						Caller.SPECIES) > 0;
-				return !parallel[0];
-			});
-		}
+		final IExperimentAgent experiment = getExperiment();
+		final Set<IDescription> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+		final boolean parallel = experiment != null && !experiment.isHeadless()
+				|| requiresSpatialIndexSynchronization(scope, getSpecies().getDescription(), visited)
+				|| experiment != null
+						&& requiresSpatialIndexSynchronization(scope, experiment.getSpecies().getDescription(), visited);
 
 		if (topology != null) {
-			topology.updateEnvironment(scope, shape, parallel[0]);
+			topology.updateEnvironment(scope, shape, parallel);
 		} else {
 			final IExpression expr = getSpecies().getFacet(IKeyword.TORUS);
 			final boolean torus = expr != null && Cast.asBool(scope, expr.value(scope));
-			setTopology(new RootTopology(scope, shape, torus, parallel[0]));
+			setTopology(new RootTopology(scope, shape, torus, parallel));
 		}
+	}
+
+	/**
+	 * Detects potential concurrency before agents are indexed, including inherited behaviors and nested species.
+	 * Dynamic parallel facets are treated conservatively: their initial value does not predict later execution.
+	 * Displays and their event layers can execute model expressions on other threads, including in headless
+	 * experiments. Parallel experiments alone do not require locking, since each simulation owns its spatial index.
+	 */
+	private boolean requiresSpatialIndexSynchronization(final IScope scope, final IDescription description,
+			final Set<IDescription> visited) {
+		if (!visited.add(description)) return false;
+		if (description instanceof IExperimentDescription
+				&& (getExperiment() == null || description != getExperiment().getSpecies().getDescription())) return false;
+		if (IKeyword.DISPLAY.equals(description.getKeyword()) || IKeyword.EVENT.equals(description.getKeyword()))
+			return true;
+		Caller caller = Caller.NONE;
+		if (description instanceof ISpeciesDescription species) {
+			for (final String skill : species.getSkillsNames()) {
+				if (IKeyword.THREAD_SKILL.equals(skill)) return true;
+			}
+			if (!(description instanceof IExperimentDescription)) {
+				caller = species.isGrid() ? Caller.GRID : Caller.SPECIES;
+			}
+		}
+		if (caller != Caller.NONE || IKeyword.ASK.equals(description.getKeyword())) {
+			final IExpression parallel = description.getFacetExpr(IKeyword.PARALLEL);
+			if ((parallel != null && !parallel.isConst())
+					|| GamaExecutorService.getParallelism(scope, parallel, caller) > 0) return true;
+		}
+		return !description.visitChildren(child -> !requiresSpatialIndexSynchronization(scope, child, visited));
 	}
 
 	@Override

@@ -376,6 +376,10 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	// constant from WizardArchiveFileResourceImportPage1
 	static final String[] FILE_IMPORT_MASK = { "*.gamp;*.jar;*.zip;*.tar;*.tar.gz;*.tgz", "*.*" }; //$NON-NLS-1$ //$NON-NLS-2$
 
+	/** The Constant PROJECT_IMPORT_MESSAGE. */
+	private static final String PROJECT_IMPORT_MESSAGE =
+			"Select a folder or an archive " + "(.zip, .tar, .tgz, or .gamp) containing GAMA projects.";
+
 	/** The initial path. */
 	// The initial path to set
 	final String initialPath;
@@ -417,7 +421,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		this.initialPath = initialPath;
 		setPageComplete(false);
 		setTitle("Import GAMA projects");
-		setMessage("Select a directory or an archive to search for existing GAMA projects.");
+		setMessage(PROJECT_IMPORT_MESSAGE);
 	}
 
 	@Override
@@ -816,7 +820,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	void updateProjectsList(final String path, final boolean forceUpdate) {
 		// on an empty path empty selectedProjects
 		if (path == null || path.length() == 0) {
-			setMessage("Select a directory or an archive to search for existing GAMA projects.");
+			setMessage(PROJECT_IMPORT_MESSAGE);
 			selectedProjects = new ProjectRecord[0];
 			projectsList.refresh(true);
 			projectsList.setCheckedElements(selectedProjects);
@@ -836,7 +840,8 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 			selectedProjects = new ProjectRecord[0];
 			projectsList.refresh(true);
 			setErrorMessage(null);
-			setMessage("Choose Finish to preview and import this project archive, including group, collision and plugin options.");
+			setMessage(
+					"Choose Finish to preview and import this project archive, including group, collision and plugin options.");
 			setPageComplete(new File(path).isFile());
 			lastPath = path;
 			return;
@@ -932,12 +937,13 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		if (displayConflictWarning && displayInvalidWarning) {
 			setMessage(DataTransferMessages.WizardProjectsImportPage_projectsInWorkspaceAndInvalid, WARNING);
 		} else if (displayConflictWarning) {
-			setMessage("Some projects use a name that already exists (grayed). If you select them, you will be asked for another name.",
+			setMessage(
+					"Some projects use a name that already exists (grayed). If you select them, you will be asked for another name.",
 					WARNING);
 		} else if (displayInvalidWarning) {
 			setMessage(DataTransferMessages.WizardProjectsImportPage_projectsInvalid, WARNING);
 		} else {
-			setMessage("Select a directory or an archive to search for existing GAMA projects.");
+			setMessage(PROJECT_IMPORT_MESSAGE);
 		}
 		setPageComplete(projectsList.getCheckedElements().length > 0);
 		if (selectedProjects.length == 0) {
@@ -1138,6 +1144,11 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		return lower.endsWith(".gamp") || lower.endsWith(".zip");
 	}
 
+	/**
+	 * Creates the projects.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean createProjects() {
 		saveWidgetValues();
 		if (projectFromArchiveRadio.getSelection() && isProjectArchive(archivePathField.getText().trim())) {
@@ -1145,10 +1156,11 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 			final var commands = workbench.getService(org.eclipse.ui.commands.ICommandService.class);
 			final var handlers = workbench.getService(org.eclipse.ui.handlers.IHandlerService.class);
 			try {
-				final var command = org.eclipse.core.commands.ParameterizedCommand.generateCommand(
-						commands.getCommand("gama.ui.export.importProject"),
-						java.util.Map.of("gama.ui.export.projectPath", archivePathField.getText().trim(),
-								"gama.ui.export.projectGroup", groupField == null ? "" : groupField.getText().trim()));
+				final var command = org.eclipse.core.commands.ParameterizedCommand
+						.generateCommand(commands.getCommand("gama.ui.export.importProject"),
+								java.util.Map.of("gama.ui.export.projectPath", archivePathField.getText().trim(),
+										"gama.ui.export.projectGroup",
+										groupField == null ? "" : groupField.getText().trim()));
 				if (command == null) throw new IllegalStateException("The GAMA project importer is not available");
 				return Boolean.TRUE.equals(handlers.executeCommand(command, null));
 			} catch (final org.eclipse.core.commands.common.CommandException | RuntimeException e) {
@@ -1237,8 +1249,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 * @throws InterruptedException
 	 */
 	IStatus createExistingProject(final ProjectRecord record, final String group, final Shell shell,
-			final IProgressMonitor monitor)
-			throws InterruptedException {
+			final IProgressMonitor monitor) throws InterruptedException {
 		final String projectName = record.getProjectName();
 		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		final IProject project = workspace.getRoot().getProject(projectName);
@@ -1277,9 +1288,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		File importSource = null;
 		final boolean inPlace = !record.renamed && isSourceInPlace(record, group);
 		final boolean copy = (copyFiles || record.renamed) && !inPlace;
-		if (inPlace && group.isEmpty()) {
-			record.description.setLocation(null);
-		}
+		if (inPlace && group.isEmpty()) { record.description.setLocation(null); }
 		if (copy) {
 			// import project from location copying files - use default project
 			// location for this workspace
@@ -1387,9 +1396,8 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		final String group = groupField == null ? "" : groupField.getText().trim();
 		for (int i = 0; i < selectedProjects.length; i++) {
 			final String projectName = selectedProjects[i].getProjectName();
-			selectedProjects[i].hasConflicts = isProjectInWorkspace(projectName)
-					|| copyFiles && isProjectInWorkspacePath(projectName, group)
-							&& !isSourceInPlace(selectedProjects[i], group);
+			selectedProjects[i].hasConflicts = isProjectInWorkspace(projectName) || copyFiles
+					&& isProjectInWorkspacePath(projectName, group) && !isSourceInPlace(selectedProjects[i], group);
 			projectRecords.add(selectedProjects[i]);
 		}
 		return projectRecords.toArray(new ProjectRecord[projectRecords.size()]);

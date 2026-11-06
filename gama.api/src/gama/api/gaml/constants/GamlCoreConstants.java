@@ -534,7 +534,7 @@ public interface GamlCoreConstants {
 			altNames = { "user_location_in_world", "mouse_world_location" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("The mouse location in world coordinates, independently of the layer coordinate mode. Input callback snapshots take precedence; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position."))
+			doc = @doc ("The mouse location in world coordinates, independently of the layer coordinate mode. During a mouse event callback this is a snapshot from the display that received the event; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position."))
 	@tests ({ @test ("#user_location is point") }) IPoint user_location = GamaPointFactory.create();
 
 	/** The user location in display. */
@@ -543,7 +543,7 @@ public interface GamlCoreConstants {
 			altNames = { "mouse_screen_location" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("The mouse location in viewport pixels, not overlay-local coordinates, independently of the layer coordinate mode. Input callback snapshots take precedence; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position.")) IPoint user_location_in_display =
+			doc = @doc ("The mouse location in viewport pixels, not overlay-local coordinates, independently of the layer coordinate mode. During a mouse event callback this is a snapshot from the display that received the event; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position.")) IPoint user_location_in_display =
 					GamaPointFactory.create();
 
 	/** The camera location. */

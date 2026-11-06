@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="gama.ui.navigator" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appinfo>
+         <meta.schema plugin="gama.ui.navigator" id="topLevelFolders" name="Navigator top-level folders"/>
+      </appinfo>
+      <documentation>
+         Declares the GAMA navigator's built-in workspace categories and optional independent virtual hierarchies.
+         Factories are instantiated lazily and their folders retained across workspace refreshes. Downstream folders
+         do not register GAML extensions or classify local projects. Restart after installing or removing plug-ins.
+      </documentation>
+   </annotation>
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="folder" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+   <element name="folder">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Globally unique, stable identifier, preferably qualified by the contributing plug-in ID.
+                  Built-in anchor IDs are reserved. Used for viewer identity and expansion-state persistence,
+                  not as the display label.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Public no-argument implementation of ITopLevelFolderProvider. Downstream providers must return a
+                  non-workspace TopLevelFolder attached to the supplied NavigatorRoot, promptly and without I/O.
+                  The navigator's own category declarations use WorkspaceFolderProvider.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":gama.ui.navigator.view.contents.ITopLevelFolderProvider"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="optional">
+            <annotation>
+               <documentation>
+                  Display name used by the built-in WorkspaceFolderProvider. Independent providers supply their
+                  folder's display name themselves; they may read this attribute through IExecutableExtension.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="category" use="optional">
+            <annotation>
+               <documentation>
+                  Navigator-owned workspace classification, not available to downstream plug-ins. When present,
+                  id must equal the lowercase category name and the declaration must belong to gama.ui.navigator.
+                  Omitting this attribute declares an independent non-workspace hierarchy.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="DATA"/>
+                  <enumeration value="DEMOS"/>
+                  <enumeration value="LIBRARY"/>
+                  <enumeration value="RECIPES"/>
+                  <enumeration value="TUTORIALS"/>
+                  <enumeration value="TESTS"/>
+                  <enumeration value="USER"/>
+               </restriction>
+            </simpleType>
+         </attribute>
+         <attribute name="before" use="optional" default="user">
+            <annotation>
+               <documentation>
+                  Places this contribution immediately before a built-in folder in the logical ordering.
+                  Defaults to before User. The position is retained even when the anchor is hidden because it is empty.
+                  Contributions cannot anchor to one another.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="data"/>
+                  <enumeration value="demos"/>
+                  <enumeration value="library"/>
+                  <enumeration value="recipes"/>
+                  <enumeration value="tutorials"/>
+                  <enumeration value="tests"/>
+                  <enumeration value="user"/>
+               </restriction>
+            </simpleType>
+         </attribute>
+         <attribute name="order" type="int" use="optional" default="0">
+            <annotation>
+               <documentation>
+                  Ascending integer priority among contributions at the same anchor, default 0.
+                  Equal priorities are ordered by contribution ID, not registry enumeration order.
+                  Workspace categories themselves use this value for their anchor ordering.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+</schema>

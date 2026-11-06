@@ -29,16 +29,16 @@ global {
 
 	init {
 		create center number: num_points;
-		do rebuild_cells;
+		do rebuild_cells();
 	}
 
 	reflex animate {
 		if (moving_seeds) {
 			ask center {
-				do wander amplitude: 12.0;
+				do wander (amplitude: 12.0);
 			}
 		}
-		do rebuild_cells;
+		do rebuild_cells();
 	}
 
 	action rebuild_cells() {
@@ -86,10 +86,10 @@ experiment voronoi type: gui autorun: true {
 			create center number: num_points - length(center);
 		} else if (num_points < length(center)) {
 			ask (length(center) - num_points) among center {
-				do die;
+				do die();
 			}
 		}
-		do rebuild_cells;
+		do rebuild_cells();
 	}
 	parameter "Color palette" var: palette category: "Mosaic" {
 		colors <- brewer_colors(palette, 11);
@@ -112,7 +112,7 @@ experiment voronoi type: gui autorun: true {
 	output {
 		layout #split navigator: false tray: false consoles: false editors: false;
 		display "Voronoi - glass islands" background: backdrop type: 3d axes: false {
-			camera 'default' location: {120.848,142.658,66.9886} target: {51.4698,55.4377,0.0};
+			//camera 'default' location: {120.848,142.658,66.9886} target: {51.4698,55.4377,0.0};
 			light #ambient intensity: 165;
 			species center aspect: glass;
 		}

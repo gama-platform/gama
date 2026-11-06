@@ -214,7 +214,7 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 			if (kt == Types.NO_TYPE) return this;
 			ct = getContentType();
 		}
-		return new ParametricType(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
+		return ParametricType.create(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
 
 	}
 
@@ -241,7 +241,7 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return new ParametricType(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
+		return ParametricType.create(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
 
 	}
 

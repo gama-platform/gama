@@ -191,6 +191,18 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	public String getName() { return name; }
 
 	/**
+	 * Stable identifier within the parent, used for viewer identity and contributed expansion paths. Override when
+	 * labels can change or siblings can have the same label. It must be nonempty and independent of fetched content.
+	 */
+	public String getId() { return getName(); }
+
+	/**
+	 * Cached children available to search and state restoration. Lazy contributions must override this method if
+	 * {@link #getNavigatorChildren()} schedules loading; this method must never trigger I/O or load another page.
+	 */
+	public Object[] getCachedChildren() { return getNavigatorChildren(); }
+
+	/**
 	 * Gets the parent.
 	 *
 	 * @return the parent

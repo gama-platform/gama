@@ -16,6 +16,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import gama.api.GAMA;
@@ -36,10 +38,13 @@ import one.util.streamex.StreamEx;
 public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGamaIcons, IGamaColors {
 
 	/** The children. */
-	WrappedProject[] children;
+	WrappedProject[] children = new WrappedProject[0];
 
 	/** What is displayed directly under this folder: the projects and, for user projects, the groups. */
-	Object[] content;
+	Object[] content = EMPTY;
+
+	/** Assigned by the extension registry, never derived from a translated display label. */
+	private String contributionId;
 
 	/** The groups of user projects displayed in this folder. */
 	private final java.util.Map<org.eclipse.core.runtime.IPath, UserGroupFolder> groups = new java.util.HashMap<>();
@@ -71,9 +76,50 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	}
 
 	/**
+	 * Creates a non-workspace folder. Subclasses supply their own {@code VirtualContent} hierarchy by overriding
+	 * {@link #getNavigatorChildren()}, {@link #hasChildren()} and, for lazy content, {@link #getCachedChildren()}.
+	 * Unlike the workspace constructor, this does not scan projects or invoke subclass methods.
+	 */
+	protected TopLevelFolder(final NavigatorRoot root, final String name, final ImageDescriptor icon,
+			final String statusMessage, final GamaUIColor statusColor) {
+		super(root, name);
+		this.icon = icon;
+		this.statusMessage = statusMessage;
+		this.statusColor = statusColor;
+		category = null;
+	}
+
+	@Override
+	public final String getId() {
+		if (contributionId != null) return contributionId;
+		return isWorkspaceFolder() ? category.name().toLowerCase(java.util.Locale.ROOT) : super.getId();
+	}
+
+	void setContributionId(final String id) { contributionId = id; }
+
+	/** Whether this folder classifies local workspace projects rather than owning an independent hierarchy. */
+	public final boolean isWorkspaceFolder() { return category != null; }
+
+	/** Empty contributed roots remain visible, including while offline or waiting for their first load. */
+	public boolean isVisibleWhenEmpty() { return !isWorkspaceFolder(); }
+
+	/**
+	 * Explicit Refresh action, run with a progress monitor off the UI thread. Contributions may override to invalidate
+	 * their caches or fetch new content, honoring cancellation and reporting failures as {@link CoreException}.
+	 * Publish UI-owned child snapshots on the UI thread and call {@link ResourceManager#refreshContent(VirtualContent)}.
+	 */
+	public void refresh(final IProgressMonitor monitor) throws CoreException {
+		if (isWorkspaceFolder()) { initializeChildren(); }
+	}
+
+	/** Releases contribution-owned jobs, listeners and images when the navigator content provider is disposed. */
+	public void dispose() {}
+
+	/**
 	 * Initialize children.
 	 */
 	public void initializeChildren() {
+		if (!isWorkspaceFolder()) return;
 		final var root = GAMA.getWorkspaceManager().getRoot();
 		final List<IProject> accepted = StreamEx.of(root.getProjects()).filter(this::privateAccepts).toList();
 		final List<WrappedProject> flat = new ArrayList<>();
@@ -125,7 +171,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * @return {@code true} if the project should appear in this folder
 	 */
 	public final boolean privateAccepts(final IProject project) {
-		if (project == null || !project.exists()) return false;
+		if (!isWorkspaceFolder() || project == null || !project.exists()) return false;
 		return ProjectCategory.of(project) == category;
 	}
 
@@ -134,6 +180,9 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 
 	@Override
 	public String getStatusMessage() { return statusMessage; }
+
+	@Override
+	public GamaUIColor getStatusColor() { return isWorkspaceFolder() ? super.getStatusColor() : statusColor; }
 
 	// @Override
 	// public Color getColor() {
@@ -145,6 +194,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 
 	@Override
 	public void getSuffix(final StringBuilder sb) {
+		if (!isWorkspaceFolder()) return;
 		final var projectCount = children.length;
 		sb.append(projectCount).append(" project");
 		if (projectCount > 1) { sb.append("s"); }
@@ -166,7 +216,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	/**
 	 * Gets the category of the projects displayed in this folder.
 	 *
-	 * @return the category
+	 * @return the category, or {@code null} for an independent contributed hierarchy
 	 */
 	public ProjectCategory getCategory() { return category; }
 

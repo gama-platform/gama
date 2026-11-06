@@ -23,6 +23,7 @@ import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
 import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -63,7 +64,10 @@ public class RefreshActionProvider extends CommonActionProvider {
 		runAllTestsAction.selectionChanged(selection);
 		if (runAllTestsAction.isEnabled()) { menu.appendToGroup("group.refresh", runAllTestsAction); }
 		menu.appendToGroup("group.refresh", refreshAction);
-		menu.appendToGroup("group.refresh", cleanAndUpdateAction);
+		final boolean independentSelection = !selection.isEmpty() && selection.toList().stream()
+				.allMatch(o -> o instanceof VirtualContent<?> content && content.getTopLevelFolder() != null
+						&& !content.getTopLevelFolder().isWorkspaceFolder());
+		if (!independentSelection) { menu.appendToGroup("group.refresh", cleanAndUpdateAction); }
 		if (selection.size() == 1) {
 			final Object o = selection.getFirstElement();
 			if (o instanceof UserGroupFolder g) {

@@ -52,7 +52,8 @@ public class ConstantExpressionDescription extends ConstantExpression implements
 	 *            the t
 	 */
 	public ConstantExpressionDescription(final Object object, final IType<?> t) {
-		super(object, t);
+		// Descriptions serialize their value on demand; the inherited setName is a no-op.
+		super(object, t, null);
 	}
 
 	@Override

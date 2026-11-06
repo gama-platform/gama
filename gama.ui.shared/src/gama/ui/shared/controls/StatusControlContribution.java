@@ -76,6 +76,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The Constant WIDTH. */
 	private final static int WIDTH = 300;
 
+	private static final long IDLE_DELAY_MS = 3000;
+
 	/** Jobs that are implementation details rather than user-visible tasks. */
 	private static final Set<String> USELESS_JOBS = Set.of("Win32 refresh daemon", "Animation start",
 			"Decoration Calculation", "Update Capability Enablement for Natures", "Status refresh",
@@ -176,9 +178,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				}
 				if (historyPopup.isVisible()) {
 					historyPopup.hide();
-				} else {
-					WorkbenchHelper.asyncRun(historyPopup::display);
-				}
+				} else if (!historyPopup.wasJustHidden()) { historyPopup.display(); }
 			}
 
 		});
@@ -208,9 +208,9 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				WorkbenchHelper.asyncRun(() -> {
 					historyPopup.addFinishedStatus(name, StatusMessageFactory.CUSTOM(name + " (finished)",
 							StatusType.REGULAR, isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null));
-					if (historyPopup.isVisible()) { historyPopup.display(); }
+					if (historyPopup.isVisible()) { historyPopup.refresh(); }
 					idleJob.cancel();
-					idleJob.schedule();
+					idleJob.schedule(IDLE_DELAY_MS);
 				});
 			}
 
@@ -261,6 +261,16 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	public Shell getControllingShell() { return label.getShell(); }
 
 	/**
+	 * Whether the control is the status button itself.
+	 */
+	boolean isStatusControl(final Control control) { return label == control; }
+
+	@Override
+	public void hidePopup() {
+		if (historyPopup != null && historyPopup.isVisible()) { historyPopup.hide(); }
+	}
+
+	/**
 	 * Gets the absolute origin.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -303,7 +313,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		try {
 			if (m != null && m.type() != StatusType.NONE) {
 				historyPopup.addStatus(m);
-				if (historyPopup.isVisible()) { historyPopup.display(); }
+				if (historyPopup.isVisible()) { historyPopup.refresh(); }
 			}
 			// Background jobs and experiment disposal must not hide an unacknowledged error.
 			if (currentStatus == StatusType.ERROR && m != null && !m.isError()) return;
@@ -333,7 +343,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			}
 		} finally {
 			isUpdating = false;
-			if (currentStatus != StatusType.ERROR) { idleJob.schedule(2000); }
+			if (currentStatus != StatusType.ERROR) { idleJob.schedule(IDLE_DELAY_MS); }
 		}
 
 	}

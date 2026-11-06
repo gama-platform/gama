@@ -414,6 +414,27 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 		}
 	}
 
+	@Override
+	public int size() {
+		synchronized (agentsContainer) {
+			int count = 0;
+			for (final T agent : agentsContainer) {
+				if (agent != null && !agent.dead()) { count++; }
+			}
+			return count;
+		}
+	}
+
+	@Override
+	public boolean isEmpty() {
+		synchronized (agentsContainer) {
+			for (final T agent : agentsContainer) {
+				if (agent != null && !agent.dead()) return false;
+			}
+			return true;
+		}
+	}
+
 	// -----------------------------------------------------------------------
 	// Synchronized mutations – all writes acquire the same monitor as reads
 	// so that the display thread never iterates a concurrently modified list.

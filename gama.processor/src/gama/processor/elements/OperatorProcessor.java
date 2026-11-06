@@ -127,19 +127,28 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 	 */
 	private void buildHelperCall(final StringBuilder sb, final boolean hasScope, final boolean isStatic,
 			final String[] classes, final String methodCall) {
-		sb.append(',').append("(s,o)->");
+		final boolean unary = classes.length == 1;
+		final boolean binary = classes.length == 2;
+		sb.append(',');
+		if (unary || binary) {
+			sb.append("(gama.api.additions.IGamaGetter.").append(unary ? "Unary" : "Binary")
+					.append(")(s,o0").append(binary ? ",o1" : "").append(")->");
+		} else {
+			sb.append("(s,o)->");
+		}
 		final int start = isStatic ? 0 : 1;
 		final String firstArg = hasScope ? "s" : "";
 		if (isStatic) {
 			sb.append(methodCall).append('(').append(firstArg);
 		} else {
 			final String methodName = extractMethod(methodCall, false);
-			sb.append("((").append(classes[0]).append(")o[0]).").append(methodName).append('(').append(firstArg);
+			sb.append("((").append(classes[0]).append(')').append(unary || binary ? "o0" : "o[0]")
+					.append(").").append(methodName).append('(').append(firstArg);
 		}
 		if (start < classes.length) {
 			if (hasScope) { sb.append(','); }
 			for (int i = start; i < classes.length; i++) {
-				param(sb, classes[i], "o[" + i + "]");
+				param(sb, classes[i], unary || binary ? "o" + i : "o[" + i + "]");
 				sb.append(i != classes.length - 1 ? "," : "");
 			}
 		}

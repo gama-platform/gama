@@ -22,6 +22,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -41,7 +42,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.navigator.CommonViewer;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.swt.IFocusService;
 
 import com.google.common.cache.Cache;
@@ -53,6 +53,7 @@ import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
+import gama.ui.navigator.view.contents.WrappedResource;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.PreferencesHelper;
@@ -76,18 +77,27 @@ public class NavigatorSearchControl {
 	 */
 	boolean shouldSelect(final Object o) {
 		if (appliedBody) {
-			if (!(o instanceof WrappedGamaFile file)) return false;
-			final IFile resource = file.getResource();
-			final Long stamp = bodyMatches.get(resource);
-			return stamp != null && resource.isAccessible() && stamp == resource.getModificationStamp();
+			if (o instanceof WrappedGamaFile file) {
+				final IFile resource = file.getResource();
+				final Long stamp = bodyMatches.get(resource);
+				return stamp != null && resource.isAccessible() && stamp == resource.getModificationStamp();
+			}
+			return o instanceof WrappedResource<?, ?> resource
+					&& visibleResourcePaths.contains(resource.getResource().getFullPath());
 		}
-		if (appliedModelsOnly && (!(o instanceof WrappedGamaFile file)
-				|| !GamlFileExtension.isAny(file.getResource().getName()))) return false;
 		if (!(o instanceof VirtualContent<?> content)) return false;
+		if (content instanceof WrappedResource<?, ?> resource) {
+			final IPath path = resource.getResource().getFullPath();
+			if (visibleResourcePaths.contains(path)) return true;
+			for (IResource parent = resource.getResource().getParent(); parent != null; parent = parent.getParent()) {
+				if (matchedContainers.contains(parent.getFullPath())) return true;
+			}
+			return false;
+		}
+		if (appliedModelsOnly) return false;
 		return switch (content.getType()) {
 			case FILE, FOLDER, PROJECT, VIRTUAL_FOLDER ->
-				content.getName().toLowerCase(Locale.ROOT).contains(appliedPattern)
-						|| content instanceof WrappedGamaFile file && file.hasTag(appliedPattern);
+				content.getName().toLowerCase(Locale.ROOT).contains(appliedPattern);
 			default -> false;
 		};
 	}
@@ -156,19 +166,21 @@ public class NavigatorSearchControl {
 		 */
 		private boolean internalSelect(final VirtualContent<?> element, final boolean considerVirtualContent) {
 			if (appliedPattern.isEmpty()) return true;
-			// Containers never match a models-only search, so walking up the parents is useless.
-			if (!appliedBody && !appliedModelsOnly) {
+			if (!appliedBody) {
 				if (shouldSelect(element)) return true;
-				for (VirtualContent<?> parent = element.getParent(); parent != null; parent = parent.getParent()) {
-					switch (parent.getType()) {
-						case FOLDER, PROJECT, VIRTUAL_FOLDER:
-							if (shouldSelect(parent)) return true;
-							break;
-						default:
-							break;
+				if (!appliedModelsOnly) {
+					for (VirtualContent<?> parent = element.getParent(); parent != null; parent = parent.getParent()) {
+						switch (parent.getType()) {
+							case FOLDER, PROJECT, VIRTUAL_FOLDER:
+								if (shouldSelect(parent)) return true;
+								break;
+							default:
+								break;
+						}
 					}
 				}
 			}
+			if (element instanceof WrappedResource<?, ?>) return shouldSelect(element);
 			switch (element.getType()) {
 				case FILE:
 					if (shouldSelect(element)) return true;
@@ -176,7 +188,7 @@ public class NavigatorSearchControl {
 							&& GamlFileExtension.isAny(file.getResource().getName())))
 						return false;
 					if (!appliedBody) {
-						for (final Object child : element.getNavigatorChildren()) {
+						for (final Object child : element.getCachedChildren()) {
 							if (child instanceof VirtualContent<?> content
 									&& content.getType() == VirtualContent.VirtualContentType.FILE
 									&& select(content, false)) return true;
@@ -192,9 +204,9 @@ public class NavigatorSearchControl {
 				case ROOT:
 				case VIRTUAL_FOLDER:
 				default:
-					final Object[] children = element.getNavigatorChildren();
+					final Object[] children = element.getCachedChildren();
 					for (final Object element2 : children) {
-						if (select((VirtualContent<?>) element2, false)) return true;
+						if (element2 instanceof VirtualContent<?> content && select(content, false)) return true;
 					}
 					return false;
 			}
@@ -218,6 +230,12 @@ public class NavigatorSearchControl {
 
 	/** The applied model-file restriction. */
 	private boolean appliedModelsOnly;
+
+	/** Matching resource paths and their ancestors for the active search. */
+	private Set<IPath> visibleResourcePaths = Set.of();
+
+	/** Resource paths of directly matching containers, used to retain their descendants. */
+	private Set<IPath> matchedContainers = Set.of();
 
 	/** The search generation. */
 	private volatile long searchGeneration;
@@ -258,6 +276,9 @@ public class NavigatorSearchControl {
 
 	/** The filter. */
 	final NamePatternFilter filter = new NamePatternFilter();
+
+	/** Prevents a filter-driven refresh from scheduling another search. */
+	private boolean updatingSearch;
 
 	/**
 	 * Instantiates a new navigator search control.
@@ -406,16 +427,30 @@ public class NavigatorSearchControl {
 					}
 					if (monitor.isCanceled() || generation != searchGeneration) return Status.CANCEL_STATUS;
 					if (!display.isDisposed()) {
-						display.asyncExec(() -> applySearch(query, true, onlyModels, matches, generation));
+						final Set<IPath> paths = new HashSet<>();
+						for (final IFile file : matches.keySet()) {
+							for (IResource resource = file; resource != null; resource = resource.getParent()) {
+								paths.add(resource.getFullPath());
+							}
+						}
+						display.asyncExec(() -> applySearch(query, true, onlyModels, matches, paths, Set.of(),
+								generation));
 					}
 					return Status.OK_STATUS;
 				}
 			};
 		} else {
-			pendingSearch = new UIJob(display, "Search navigator titles") {
+			pendingSearch = new Job("Search navigator titles") {
 				@Override
-				public IStatus runInUIThread(final IProgressMonitor monitor) {
-					if (!monitor.isCanceled()) { applySearch(query, false, onlyModels, Map.of(), generation); }
+				protected IStatus run(final IProgressMonitor monitor) {
+					final NavigatorSearchIndex.Results results =
+							NavigatorSearchIndex.getInstance().search(query, onlyModels, monitor);
+					if (results == null || monitor.isCanceled() || generation != searchGeneration)
+						return Status.CANCEL_STATUS;
+					if (!display.isDisposed()) {
+						display.asyncExec(() -> applySearch(query, false, onlyModels, Map.of(),
+								results.visiblePaths(), results.matchingContainers(), generation));
+					}
 					return Status.OK_STATUS;
 				}
 			};
@@ -480,7 +515,9 @@ public class NavigatorSearchControl {
 	 *            the generation
 	 */
 	private void applySearch(final String query, final boolean body, final boolean onlyModels,
-			final Map<IFile, Long> matches, final long generation) {
+			final Map<IFile, Long> matches, final Set<IPath> visibleResourcePaths,
+			final Set<IPath> matchedContainers,
+			final long generation) {
 		if (generation != searchGeneration || find.isDisposed() || treeViewer == null
 				|| treeViewer.getControl().isDisposed())
 			return;
@@ -488,6 +525,8 @@ public class NavigatorSearchControl {
 		appliedBody = body;
 		appliedModelsOnly = onlyModels;
 		bodyMatches = matches;
+		this.visibleResourcePaths = visibleResourcePaths;
+		this.matchedContainers = matchedContainers;
 		refreshSearch();
 	}
 
@@ -498,12 +537,24 @@ public class NavigatorSearchControl {
 		scheduleSearch(0);
 	}
 
+	void contentChanged() {
+		filter.reset();
+		if (!updatingSearch && !appliedPattern.isEmpty() && find != null && !find.isDisposed()) {
+			scheduleSearch(0);
+		}
+	}
+
+	boolean isSearching() { return !appliedPattern.isEmpty(); }
+
 	/**
 	 * Refresh search.
 	 */
 	private void refreshSearch() {
 		if (expandedElementsBeforeSearch == null) { expandedElementsBeforeSearch = treeViewer.getExpandedElements(); }
 		treeViewer.getControl().setRedraw(false);
+		final boolean cachedChildrenOnly = NavigatorContentProvider.CACHED_CHILDREN_ONLY;
+		NavigatorContentProvider.CACHED_CHILDREN_ONLY = true;
+		updatingSearch = true;
 		try {
 			filter.reset();
 			if (!Arrays.asList(treeViewer.getFilters()).contains(filter)) {
@@ -521,6 +572,8 @@ public class NavigatorSearchControl {
 				treeViewer.refresh(false);
 			}
 		} finally {
+			updatingSearch = false;
+			NavigatorContentProvider.CACHED_CHILDREN_ONLY = cachedChildrenOnly;
 			treeViewer.getControl().setRedraw(true);
 		}
 	}
@@ -532,6 +585,8 @@ public class NavigatorSearchControl {
 		cancelSearch();
 		appliedPattern = "";
 		bodyMatches = Map.of();
+		visibleResourcePaths = Set.of();
+		matchedContainers = Set.of();
 		filter.reset();
 		if (treeViewer == null || treeViewer.getControl().isDisposed()) return;
 		treeViewer.getControl().setRedraw(false);

@@ -65,6 +65,7 @@
       </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts
+-Dsun.java2d.metal=false
       </vmArgsMac>
       <vmArgsWin>-Dfile.encoding=UTF-8
 -Dorg.eclipse.swt.browser.DefaultType=edge

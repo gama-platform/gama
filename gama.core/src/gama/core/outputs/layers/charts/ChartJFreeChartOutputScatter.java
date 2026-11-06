@@ -20,9 +20,13 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItemSource;
+import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
@@ -44,11 +48,12 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.DefaultIntervalXYDataset;
 import org.jfree.data.xy.XYIntervalDataItem;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
@@ -73,6 +78,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		String myid;
 		boolean useSize;
 		AffineTransform transform = new AffineTransform();
+		private DoubleList snapshotScale;
 
 		public boolean isUseSize() { return useSize; }
 		public void setUseSize(final IScope scope, final boolean useSize) { this.useSize = useSize; }
@@ -81,11 +87,23 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		@Override
 		public Shape getItemShape(final int row, final int col) {
-			if (isUseSize() && myoutput != null) {
-				transform.setToScale(myoutput.getScale(myid, col), myoutput.getScale(myid, col));
+			if (isUseSize() && (myoutput != null || snapshotScale != null)) {
+				final double scale = myoutput != null ? myoutput.getScale(myid, col)
+						: col >= 0 && col < snapshotScale.size() ? snapshotScale.get(col) : 1;
+				transform.setToScale(scale, scale);
 				return transform.createTransformedShape(super.getItemShape(row, col));
 			}
 			return super.getItemShape(row, col);
+		}
+
+		@Override
+		public Object clone() throws CloneNotSupportedException {
+			final CustomXYErrorRenderer copy = (CustomXYErrorRenderer) super.clone();
+			copy.transform = new AffineTransform();
+			final DoubleList scales = myoutput == null ? snapshotScale : myoutput.markerScale.get(myid);
+			copy.snapshotScale = scales == null ? new DoubleList(0) : scales.clone();
+			copy.myoutput = null;
+			return copy;
 		}
 	}
 
@@ -100,6 +118,88 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 	public ChartJFreeChartOutputScatter(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
+	}
+
+	@Override
+	protected boolean supportsRenderingSnapshot() {
+		return type == SERIES_CHART || type == XY_CHART || type == SCATTER_CHART;
+	}
+
+	@Override
+	protected JFreeChart createRenderingSnapshot() {
+		try {
+			final JFreeChart copy = (JFreeChart) chart.clone();
+			final XYPlot plot = copy.getXYPlot();
+			final var datasets = new HashMap<>(plot.getDatasets());
+			// XYPlot.clone() shares datasets and registers itself as a listener on the live collections.
+			for (final var entry : datasets.entrySet()) {
+				if (entry.getValue() != null) { plot.setDataset(entry.getKey(), null); }
+			}
+			for (final var entry : datasets.entrySet()) {
+				if (entry.getValue() == null) continue;
+				final XYIntervalSeriesCollection source = (XYIntervalSeriesCollection) entry.getValue();
+				final DefaultIntervalXYDataset snapshot = new DefaultIntervalXYDataset();
+				for (int i = 0; i < source.getSeriesCount(); i++) {
+					final double[][] values = new double[6][source.getItemCount(i)];
+					for (int j = 0; j < values[0].length; j++) {
+						values[0][j] = source.getXValue(i, j);
+						values[1][j] = source.getStartXValue(i, j);
+						values[2][j] = source.getEndXValue(i, j);
+						values[3][j] = source.getYValue(i, j);
+						values[4][j] = source.getStartYValue(i, j);
+						values[5][j] = source.getEndYValue(i, j);
+					}
+					snapshot.addSeries(source.getSeriesKey(i), values);
+				}
+				plot.setDataset(entry.getKey(), snapshot);
+			}
+			// Legend generators can capture the live output and scope. Resolve their items while holding the lock.
+			plot.setFixedLegendItems(chart.getXYPlot().getLegendItems());
+			final var subtitles = new ArrayList<>(copy.getSubtitles());
+			copy.clearSubtitles();
+			for (final var title : subtitles) {
+				copy.addSubtitle(title instanceof LegendTitle legend ? snapshotLegend(legend, plot) : title);
+			}
+			for (final var annotation : new ArrayList<>(plot.getAnnotations())) {
+				if (annotation instanceof XYTitleAnnotation title && title.getTitle() instanceof LegendTitle legend) {
+					plot.removeAnnotation(annotation);
+					final XYTitleAnnotation replacement = new XYTitleAnnotation(title.getX(), title.getY(),
+							snapshotLegend(legend, plot), title.getTitleAnchor());
+					replacement.setMaxWidth(title.getMaxWidth());
+					replacement.setMaxHeight(title.getMaxHeight());
+					replacement.setToolTipText(title.getToolTipText());
+					replacement.setURL(title.getURL());
+					plot.addAnnotation(replacement);
+				}
+			}
+			return copy;
+		} catch (final CloneNotSupportedException e) {
+			throw new IllegalStateException("Unable to create an independent chart rendering snapshot", e);
+		}
+	}
+
+	private LegendTitle snapshotLegend(final LegendTitle source, final XYPlot plot) {
+		// LegendTitle.clone() shares its mutable layout containers, so construct a fresh title.
+		final LegendTitle copy = new LegendTitle(plot);
+		copy.setSources(new LegendItemSource[] { plot });
+		copy.setVisible(source.isVisible());
+		copy.setPosition(source.getPosition());
+		copy.setHorizontalAlignment(source.getHorizontalAlignment());
+		copy.setVerticalAlignment(source.getVerticalAlignment());
+		copy.setMargin(source.getMargin());
+		copy.setPadding(source.getPadding());
+		copy.setFrame(source.getFrame());
+		copy.setBackgroundPaint(source.getBackgroundPaint());
+		copy.setItemFont(source.getItemFont());
+		copy.setItemPaint(source.getItemPaint());
+		copy.setItemLabelPadding(source.getItemLabelPadding());
+		copy.setLegendItemGraphicEdge(source.getLegendItemGraphicEdge());
+		copy.setLegendItemGraphicAnchor(source.getLegendItemGraphicAnchor());
+		copy.setLegendItemGraphicLocation(source.getLegendItemGraphicLocation());
+		copy.setLegendItemGraphicPadding(source.getLegendItemGraphicPadding());
+		copy.setSortOrder(source.getSortOrder());
+		configureLegendOrientation(copy);
+		return copy;
 	}
 
 	@Override
@@ -566,18 +666,41 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	public void setUseXLabels(final IScope scope, final IExpression expval) {
 		if (chart == null) return;
 		final XYPlot pp = (XYPlot) chart.getPlot();
-		((NumberAxis) pp.getDomainAxis()).setNumberFormatOverride(new NumberFormat() {
-			@Override
-			public StringBuffer format(final double number, final StringBuffer toAppendTo, final FieldPosition pos) {
-				final int ind = chartdataset.XSeriesValues.indexOf(number);
-				if (ind >= 0 && ind < chartdataset.Xcategories.size()) return new StringBuffer(chartdataset.Xcategories.get(ind));
-				return new StringBuffer();
-			}
-			@Override
-			public StringBuffer format(final long number, final StringBuffer toAppendTo, final FieldPosition pos) { return new StringBuffer("n" + number); }
-			@Override
-			public Number parse(final String source, final ParsePosition parsePosition) { return null; }
-		});
+		((NumberAxis) pp.getDomainAxis()).setNumberFormatOverride(new CategoryNumberFormat(chartdataset));
+	}
+
+	private static class CategoryNumberFormat extends NumberFormat {
+		private ChartDataSet source;
+		private DoubleList values;
+		private List<String> categories;
+
+		CategoryNumberFormat(final ChartDataSet source) { this.source = source; }
+
+		@Override
+		public Object clone() {
+			final CategoryNumberFormat copy = (CategoryNumberFormat) super.clone();
+			copy.values = (source == null ? values : source.XSeriesValues).clone();
+			copy.categories = new ArrayList<>(source == null ? categories : source.Xcategories);
+			copy.source = null;
+			return copy;
+		}
+
+		@Override
+		public StringBuffer format(final double number, final StringBuffer toAppendTo, final FieldPosition pos) {
+			final DoubleList x = source == null ? values : source.XSeriesValues;
+			final List<String> labels = source == null ? categories : source.Xcategories;
+			final int ind = x.indexOf(number);
+			if (ind >= 0 && ind < labels.size()) return new StringBuffer(labels.get(ind));
+			return new StringBuffer();
+		}
+
+		@Override
+		public StringBuffer format(final long number, final StringBuffer toAppendTo, final FieldPosition pos) {
+			return new StringBuffer("n" + number);
+		}
+
+		@Override
+		public Number parse(final String source, final ParsePosition parsePosition) { return null; }
 	}
 
 	@Override

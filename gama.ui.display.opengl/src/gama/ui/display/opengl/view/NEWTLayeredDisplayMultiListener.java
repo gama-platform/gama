@@ -24,6 +24,7 @@ import com.jogamp.newt.event.WindowUpdateEvent;
 
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.runtime.SystemInfo;
+import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.KeyCombination;
@@ -31,6 +32,7 @@ import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayDecorator;
 import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;
+import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * A listener for NEWT events
@@ -246,6 +248,7 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void mousePressed(final MouseEvent e) {
 		if (!ok.get()) return;
+		WorkbenchHelper.getService(IStatusDisplayer.class).hideStatusPopups();
 		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DOWN, e.getX(), e.getY(), e.getButton());
 		// DEBUG.OUT("Mouse pressed with button " + e.getButton() + " modifiers " + e.getModifiersString(null));
 		if (e.getButton() == 3 || e.isControlDown()) {
