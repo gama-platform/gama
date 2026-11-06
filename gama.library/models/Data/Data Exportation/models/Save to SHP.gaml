@@ -35,7 +35,7 @@ species building {
 }
 experiment main type: gui {
 	output {
-		display map {
+		display main {
 			species building;
 		}
 	}
