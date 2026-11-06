@@ -203,7 +203,8 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			case _OPEN:
 				lastRuntimeError = null;
 				try {
-					final boolean opened = _job.loadAndBuildWithJson(parameters, stopCondition).passed();
+					final double seed = command.seed() == null ? _job.getSeed() : command.seed();
+					final boolean opened = _job.loadAndBuildWithJson(parameters, stopCondition, seed).passed();
 					if (!opened) { captureInitError(); }
 					return opened;
 				} catch (Exception e) {
@@ -251,7 +252,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			case _RELOAD:
 				lastRuntimeError = null;
 				try {
-					experiment.reload();
+					experiment.reload(command.seed());
 				} catch (final GamaRuntimeException e) {
 					e.printStackTrace();
 					closeExperiment(e);

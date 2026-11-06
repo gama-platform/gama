@@ -110,10 +110,8 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 */
 	boolean processOpen(final boolean andWait);
 
-	/** Opens the experiment with an optional seed for its initial random generator. */
-	default boolean processOpen(final boolean andWait, final Double seed) {
-		return seed == null && processOpen(andWait);
-	}
+	/** Opens the experiment with the supplied seed, or with the usual seed selection if it is null. */
+	boolean processOpen(boolean andWait, Double seed);
 
 	/**
 	 * Process pause.
@@ -134,6 +132,9 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @date 23 oct. 2023
 	 */
 	boolean processReload(final boolean andWait);
+
+	/** Reloads the experiment with the supplied seed, or with the usual seed selection if it is null. */
+	boolean processReload(boolean andWait, Double seed);
 
 	/**
 	 * Process step.

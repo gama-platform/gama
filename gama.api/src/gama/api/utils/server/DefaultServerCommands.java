@@ -352,15 +352,17 @@ public class DefaultServerCommands {
 			return e.getResponse();
 		}
 		final IList<?> params;
+		final double seed;
 		try {
 			params = ServerLoadRequest.parseParameters(map.get(PARAMETERS), map);
+			seed = ServerLoadRequest.parseSeed(map);
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
 		plan.setParameterValues(params);
 		plan.setStopCondition((String) map.get(ISocketCommand.UNTIL));
 		// actual reload
-		final boolean reloaded = plan.getController().processReload(true);
+		final boolean reloaded = plan.getController().processReload(true, seed);
 		// A runtime error raised by the init does not propagate, so it is checked separately from the reload status.
 		final GamaRuntimeException error = plan.getController().consumeLastRuntimeError();
 		if (error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);

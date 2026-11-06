@@ -604,6 +604,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	public synchronized IExecutionResult open(final Double seed) {
 
 		createAgent(seed);
+		final IParameter seedParameter = parameters.get(IKeyword.SEED);
+		// Default parameters can carry values from the previous agent across reloads.
+		if (seed != null && seedParameter != null) { seedParameter.setValue(myScope, agent.getSeed()); }
 
 		// We add the agent as soon as possible so as to make it possible to
 		// evaluate variables in the opening of the
@@ -667,6 +670,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	@Override
 	public void reload() {
+		reload(null);
+	}
+
+	@Override
+	public void reload(final Double seed) {
 		try {
 
 			reloading = true;
@@ -677,7 +685,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		} finally {
 			reloading = false;
 		}
-		open();
+		if (seed == null) {
+			open();
+		} else {
+			open(seed);
+		}
 	}
 
 	@Override

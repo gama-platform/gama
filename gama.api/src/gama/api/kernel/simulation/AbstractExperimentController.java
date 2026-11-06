@@ -445,6 +445,13 @@ public abstract class AbstractExperimentController implements IExperimentControl
 		return andWait ? synchronousReload() : asynchronousReload();
 	}
 
+	@Override
+	public boolean processReload(final boolean andWait, final Double seed) {
+		if (seed == null) return processReload(andWait);
+		final ExperimentCommand command = new ExperimentCommand(ExperimentCommandTypes._RELOAD, 0, seed);
+		return andWait ? processUserCommand(command) : offer(command);
+	}
+
 	/**
 	 * Process step.
 	 *
