@@ -277,8 +277,24 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 				if (DEFAULT_FONT.equals(val)) return null;
 				return castToFont(null, asString(null, val), false);
 			};
-			case IType.DATE -> (Supplier) () -> createFromISOString(toJavaString(asString(null, val)));
+			case IType.DATE -> memoizedDateSupplier(toJavaString(asString(null, val)));
 			default -> (Supplier) () -> asString(null, val);
+		};
+	}
+
+	private static Supplier<IDate> memoizedDateSupplier(final String val) {
+		return new Supplier<>() {
+			private IDate date;
+			private boolean initialized;
+
+			@Override
+			public synchronized IDate get() {
+				if (!initialized) {
+					date = createFromISOString(val);
+					initialized = true;
+				}
+				return date;
+			}
 		};
 	}
 
