@@ -36,7 +36,7 @@ public record ServerLoadRequest(File model, String experiment, IList<?> paramete
 		if (!GamlFileExtension.isGaml(model.toString()))
 			throw invalid(MessageType.UnableToExecuteRequest, "'" + model + "' is not a gaml file", command);
 		final IList<?> params = parseParameters(command.get(ISocketCommand.PARAMETERS), command);
-		final String experiment = command.get("experiment").toString().trim();
+		final String experiment = command.get("experiment").toString();
 		final String until = command.get(ISocketCommand.UNTIL) == null ? ""
 				: command.get(ISocketCommand.UNTIL).toString();
 		Double seed = null;
