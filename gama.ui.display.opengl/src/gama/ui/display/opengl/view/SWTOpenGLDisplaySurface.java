@@ -621,21 +621,23 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void selectionIn(final IEnvelope env) {
-
-		final IEnvelope envInWorld = GamaEnvelopeFactory.withYNegated(env);
-		final Collection<IAgent> agents = scope.getTopology().getSpatialIndex().allInEnvelope(scope,
-				envInWorld.center(), envInWorld, new Different(), false);
-		final Map<String, Runnable> actions = new LinkedHashMap<>();
-		final Map<String, Image> images = new HashMap<>();
-		images.put(renderer.getCameraHelper().isStickyROI() ? "Hide region" : "Keep region visible",
-				GamaIcon.named(IGamaIcons.MENU_INSPECT).image());
-		images.put("Focus on region", GamaIcon.named(IGamaIcons.DISPLAY_TOOLBAR_ZOOMFIT).image());
-		actions.put(renderer.getCameraHelper().isStickyROI() ? "Hide region" : "Keep region visible",
-				() -> renderer.getCameraHelper().toogleROI());
-		actions.put("Focus on region", () -> renderer.getCameraHelper().zoomFocus(env));
-		WorkbenchHelper.run(() -> {
-			final Menu menu = menuManager.buildROIMenu((int) renderer.getCameraHelper().getMousePosition().getX(),
-					(int) renderer.getCameraHelper().getMousePosition().getY(), agents, actions, images);
+		final IEnvelope region = GamaEnvelopeFactory.of(env);
+		final IEnvelope envInWorld = GamaEnvelopeFactory.withYNegated(region);
+		final int x = (int) renderer.getCameraHelper().getMousePosition().getX();
+		final int y = (int) renderer.getCameraHelper().getMousePosition().getY();
+		WorkbenchHelper.asyncRun(() -> {
+			if (disposed || renderer == null || menuManager == null) return;
+			final Collection<IAgent> agents = scope.getTopology().getSpatialIndex().allInEnvelope(scope,
+					envInWorld.center(), envInWorld, new Different(), false);
+			final Map<String, Runnable> actions = new LinkedHashMap<>();
+			final Map<String, Image> images = new HashMap<>();
+			images.put(renderer.getCameraHelper().isStickyROI() ? "Hide region" : "Keep region visible",
+					GamaIcon.named(IGamaIcons.MENU_INSPECT).image());
+			images.put("Focus on region", GamaIcon.named(IGamaIcons.DISPLAY_TOOLBAR_ZOOMFIT).image());
+			actions.put(renderer.getCameraHelper().isStickyROI() ? "Hide region" : "Keep region visible",
+					() -> renderer.getCameraHelper().toogleROI());
+			actions.put("Focus on region", () -> renderer.getCameraHelper().zoomFocus(region));
+			final Menu menu = menuManager.buildROIMenu(x, y, agents, actions, images);
 			menu.addMenuListener(new MenuListener() {
 
 				@Override

@@ -381,7 +381,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	private final org.joml.Vector3f unprojectResult = new org.joml.Vector3f();
 
 	@Override
-	public void unproject(final double x, final double y, final double depth, final double[] result) {
+	public synchronized void unproject(final double x, final double y, final double depth, final double[] result) {
 		final var modelView = new org.joml.Matrix4f(
 				(float) mvmatrix[0], (float) mvmatrix[1], (float) mvmatrix[2], (float) mvmatrix[3],
 				(float) mvmatrix[4], (float) mvmatrix[5], (float) mvmatrix[6], (float) mvmatrix[7],
@@ -559,16 +559,18 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		//
 		// translateBy(0d, 0d, maxDim * 0.2);
 		getRenderer().getCameraHelper().animate();
-		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
 		// Read matrices from our own MatrixStack, not from the deprecated GL state
 		// (GL_MODELVIEW_MATRIX / GL_PROJECTION_MATRIX are removed in core GL4).
 		float[] mv = new float[16];
 		float[] pr = new float[16];
 		modelViewMatrix.getCurrentMatrix().get(mv);
 		projectionMatrix.getCurrentMatrix().get(pr);
-		for (int i = 0; i < 16; i++) {
-			mvmatrix[i] = mv[i];
-			projmatrix[i] = pr[i];
+		synchronized (this) {
+			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+			for (int i = 0; i < 16; i++) {
+				mvmatrix[i] = mv[i];
+				projmatrix[i] = pr[i];
+			}
 		}
 	}
 

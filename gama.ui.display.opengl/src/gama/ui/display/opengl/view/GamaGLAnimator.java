@@ -12,6 +12,7 @@ package gama.ui.display.opengl.view;
 
 import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import com.jogamp.opengl.FPSCounter;
 import com.jogamp.opengl.GLAnimatorControl;
@@ -20,7 +21,6 @@ import com.jogamp.opengl.GLAutoDrawable;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -32,6 +32,8 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 
 	/** The fps changed. */
 	IPreferenceAfterChangeListener<Integer> fpsChanged = newValue -> targetFPS = newValue;
+
+	private final IPreferenceAfterChangeListener<Boolean> capChanged = newValue -> capFPS = newValue;
 
 	/** The cap FPS. */
 	protected volatile boolean capFPS = GamaPreferences.Displays.OPENGL_CAP_FPS.getValue();
@@ -118,6 +120,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 		// DEBUG.OUT("[GamaGLAnimator] Created animatorThread: " + animatorThread + " on OS: " + OS);
 		// }
 		GamaPreferences.Displays.OPENGL_FPS.onChange(fpsChanged);
+		GamaPreferences.Displays.OPENGL_CAP_FPS.onChange(capChanged);
 		setUpdateFPSFrames(FPSCounter.DEFAULT_FRAMES_PER_INTERVAL, null);
 	}
 
@@ -133,11 +136,11 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 		// animatorThread.getState()); }
 		this.stopRequested = false;
 		if (!animatorThread.isAlive()) {
+			resetFPSCounter();
 			animatorThread.start();
 			// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread started."); }
 		}
 		// else if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread already alive."); }
-		fpsStartTime = System.currentTimeMillis();
 		return true;
 	}
 
@@ -146,6 +149,8 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 		// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] stop() called. Thread state: " + animatorThread.getState());
 		// }
 		this.stopRequested = true;
+		LockSupport.unpark(animatorThread);
+		if (!animatorThread.isAlive()) { removePreferenceListeners(); }
 		if (WorkbenchHelper.isDisplayThread()) return true;
 		try {
 			if (animatorThread.isAlive()) {
@@ -154,16 +159,18 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 			}
 			// else if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread not alive at stop."); }
 		} catch (final InterruptedException e) {
-			// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] InterruptedException during stop: " + e.getMessage()); }
-		} finally {
-			this.stopRequested = false;
-			GamaPreferences.Displays.OPENGL_FPS.removeChangeListener(fpsChanged);
+			Thread.currentThread().interrupt();
 		}
 		return true;
 	}
 
+	private void removePreferenceListeners() {
+		GamaPreferences.Displays.OPENGL_FPS.removeChangeListener(fpsChanged);
+		GamaPreferences.Displays.OPENGL_CAP_FPS.removeChangeListener(capChanged);
+	}
+
 	@Override
-	public boolean isAnimating() { return true; }
+	public boolean isAnimating() { return isStarted() && !paused && !stopRequested; }
 
 	@Override
 	public boolean isPaused() { return paused; }
@@ -179,6 +186,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	@Override
 	public boolean resume() {
 		paused = false;
+		LockSupport.unpark(animatorThread);
 		// if (DEBUG.IS_ON()) {
 		// DEBUG.OUT("[GamaGLAnimator] resume() called. Thread state: " + animatorThread.getState());
 		// }
@@ -197,22 +205,27 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 		// if (DEBUG.IS_ON()) {
 		// DEBUG.OUT("[GamaGLAnimator] run() started on thread: " + Thread.currentThread() + " (OS: " + OS + ")");
 		// }
-		while (!stopRequested) {
-			try {
-				// if (DEBUG.IS_ON()) {
-				// DEBUG.OUT("[GamaGLAnimator] run() loop. paused=" + paused + ", stopRequested=" + stopRequested
-				// + ", thread state=" + animatorThread.getState());
-				// }
-				if (!paused) { WorkbenchHelper.run(displayRunnable); }
-				if (capFPS) {
-					final long frameDuration = 1000 / targetFPS;
-					final long timeSleep = frameDuration - fpsLastPeriod;
-					if (timeSleep >= 0) { THREADS.WAIT(timeSleep); }
+		try {
+			while (!stopRequested) {
+				final long frameStart = System.nanoTime();
+				try {
+					if (paused) {
+						LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(50));
+						continue;
+					}
+					displayRunnable.run();
+					tickFPS();
+					if (capFPS && targetFPS > 0) {
+						final long remaining = TimeUnit.SECONDS.toNanos(1) / targetFPS
+								- (System.nanoTime() - frameStart);
+						if (remaining > 0) { LockSupport.parkNanos(remaining); }
+					}
+				} catch (final RuntimeException ex) {
+					uncaughtException(this, null, ex);
 				}
-			} catch (final RuntimeException ex) {
-				uncaughtException(this, null, ex);
 			}
-			tickFPS();
+		} finally {
+			removePreferenceListeners();
 		}
 		// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] run() exiting. Thread: " + Thread.currentThread()); }
 	}

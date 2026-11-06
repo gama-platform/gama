@@ -652,7 +652,7 @@ public interface GamlCoreConstants {
 			altNames = { "user_location_in_world" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit holds the mouse's location in the world's coordinates. During a #mouse_listener callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used."))
+			doc = @doc ("This unit holds the mouse's location in the world's coordinates. During a mouse event callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used."))
 	@tests ({
 			@test ("#user_location is point")
 	})
@@ -664,7 +664,7 @@ public interface GamlCoreConstants {
 			value = "user_location_in_display",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("This unit holds the mouse's location in the display's coordinates. During a #mouse_listener callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used.")) IPoint user_location_in_display =
+			doc = @doc ("This unit holds the mouse's location in the display's coordinates. During a mouse event callback it is a snapshot from the display that received the event; otherwise, the last tracked position is used.")) IPoint user_location_in_display =
 					GamaPointFactory.create();
 
 	/** The camera location. */

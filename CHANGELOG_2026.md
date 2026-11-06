@@ -24,7 +24,9 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 Spatial-index synchronization is now decided automatically for each simulation before its indices are created.
 The decision covers species and grid scheduling configured through `parallel:` or the concurrency preferences,
 parallel `ask` statements in nested or inherited behaviors, and species using the `thread` skill.
-The selected experiment's behaviors are also considered; other experiments are excluded.
+Interactive experiments are synchronized because display event handlers, rendering, and agent inspectors can
+access simulation state from other threads. Displays and event layers also enable synchronization in headless
+experiments. The selected experiment's behaviors and outputs are considered; other experiments are excluded.
 
 Nonconstant `parallel:` expressions conservatively enable synchronization even if their initial value is `false`
 or `0`, because they can enable concurrency later. Constant `false` or `0` does not request synchronization.
@@ -32,15 +34,27 @@ The decision considers potential concurrency rather than the current population 
 population remains protected if it later exceeds its parallel-execution threshold.
 
 Concurrent simulations synchronize complete quadtree/octree operations and compound-index operations, including
-lazy population registration and species caches. Sequential simulations retain the unsynchronized fast path.
+lazy population registration and species caches. Headless simulations with no concurrent execution or display
+retain the unsynchronized fast path.
 Synchronization is retained across environment rebuilds and topology merges; an environment rebuild can enable
 it when needed, but does not disable it once enabled. The decision does not modify or persist any user preference.
 Running independent batch simulations in parallel does not, by itself, require synchronized spatial indices.
 
 Synchronization can reduce throughput in models with many concurrent spatial queries or moving agents.
 It protects index operations, not arbitrary shared agent state, and does not make parallel execution reproducible.
-Interactive models do not require synchronization merely because they have a UI: normal UI commands are routed
-through the simulation's action-execution mechanism.
+
+Display event callbacks are scheduled on the simulation thread between steps instead of executing on the display
+input thread; if there is no simulation, they are scheduled on the experiment. Mouse positions are captured when
+the event arrives, including for specific mouse events, so delayed callbacks use the originating position.
+Callbacks may run later when the simulation is busy, and pending callbacks are discarded if their display closes
+or their simulation dies or changes. Independently running `thread` skill actions can still access agents concurrently.
+For specific `#mouse_move` and `#mouse_drag` layers, consecutive pending motions from the same layer are coalesced
+to the latest position, normally at most once every 33 milliseconds. An intervening event flushes the pending
+motion first. Mouse buttons, keys, other layers, and generic `#mouse_listener` events are not coalesced.
+
+OpenGL animation now renders on its animator thread rather than waiting for the SWT event queue. Its optional
+frame-rate limit uses the duration of each frame, and ordinary mouse movement no longer reads GPU depth pixels
+for every event.
 
 **Migration:** the spatial-index synchronization preference and its GAML variable
 `gama.pref_synchronize_quadtree` have been removed. Delete reads, assignments, and save/restore code referring to
@@ -306,6 +320,9 @@ and no longer force a layout on every movement.
 Mouse and keyboard event actions that refresh outputs no longer make the AWT
 event thread wait for rendering on itself, or consume the simulation's render
 acknowledgment. This affects interactive event-layer models such as Moving Agents.
+
+The macOS desktop product disables the Java2D Metal pipeline to reduce remaining mouse-movement stalls.
+See the [startup workaround](README.md#macos-java2d-mouse-stutter) for its limitations and configuration.
 
 ### Snapshots and image saving: faster, optionally asynchronous
 

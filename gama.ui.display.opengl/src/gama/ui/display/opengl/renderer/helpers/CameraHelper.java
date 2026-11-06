@@ -494,11 +494,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			return;
 		}
 		mousePosition.setLocation(x, y, 0);
-		computeMouseLocationInTheWorld(x, y);
 		setCtrlPressed(isCtrl);
 		setShiftPressed(isShift);
 
 		if (!buttonPressed || button != 1) return;
+		computeMouseLocationInTheWorld(x, y);
 		final IPoint newPoint = GamaPointFactory.create(x, y);
 
 		if (!data.isCameraLocked() && isCtrl) {
@@ -762,11 +762,14 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		IOpenGL gl = renderer.getOpenGLHelper();
 		if (gl == null) return GamaPointFactory.create();
 		final double[] wcoord = new double[4];
-		final double x = (int) mouse.getX(), y = gl.getViewport()[3] - (int) mouse.getY();
-		gl.unproject(x, y, 0.1, wcoord);
-		result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
-		gl.unproject(x, y, 0.9, wcoord);
-		result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ()).normalize();
+		synchronized (gl) {
+			final double x = (int) mouse.getX(), y = gl.getViewport()[3] - (int) mouse.getY();
+			gl.unproject(x, y, 0.1, wcoord);
+			result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
+			gl.unproject(x, y, 0.9, wcoord);
+			result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ())
+					.normalize();
+		}
 		final double distance = camLoc.getZ() / -result.getZ();
 		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
 				0);

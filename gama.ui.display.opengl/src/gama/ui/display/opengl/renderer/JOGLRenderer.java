@@ -334,7 +334,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			schedulePendingInitialVisibleRedraw();
 		}
 		surface.updateDisplay(true, synchronizer);
-		getCanvas().updateVisibleStatus(getCanvas().isVisible());
 	}
 
 	@Override

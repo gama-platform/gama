@@ -92,6 +92,16 @@ Deferred graphics callbacks are registered in the API bundle, not the shared UI 
 activation happens during language loading, before the workbench exists; touching a shared-UI class
 at registration time can prematurely activate its workbench-dependent activator.
 
+### macOS Java2D mouse stutter
+
+The desktop product includes the JVM option `-Dsun.java2d.metal=false` on macOS to reduce mouse-movement stalls
+inside Java2D displays. For source launches or older installations without this option, add it to the launch
+configuration's VM arguments, or on its own line after `-vmargs` in the launcher's `.ini` file, then restart GAMA.
+Remove the option and restart to restore Java's default pipeline.
+
+This disables the Java2D Metal pipeline for the entire JVM; it does not disable GAMA's OpenGL displays. It can
+reduce stuttering but may not eliminate it, and Java2D performance may differ between models and systems.
+
 ## Repairing a workspace after switching GAMA installations
 
 GAMA reconciles bundled model projects with the running installation at startup, including when a workspace

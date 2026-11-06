@@ -320,7 +320,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	@Override
-	public void unproject(final double x, final double y, final double depth, final double[] result) {
+	public synchronized void unproject(final double x, final double y, final double depth, final double[] result) {
 		glu.gluUnProject(x, y, depth, mvmatrix, 0, projmatrix, 0, viewport, 0, result, 0);
 	}
 
@@ -475,9 +475,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		//
 		// translateBy(0d, 0d, maxDim * 0.2);
 		getRenderer().getCameraHelper().animate();
-		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-		gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, mvmatrix, 0);
-		gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projmatrix, 0);
+		synchronized (this) {
+			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+			gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, mvmatrix, 0);
+			gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projmatrix, 0);
+		}
 	}
 
 	/**

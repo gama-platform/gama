@@ -326,8 +326,12 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void setTopology(final IScope scope, final IShape shape) {
 		// A topology has already been computed. We update it and updates all
 		// the agents present in the spatial index
-		final boolean parallel = requiresSpatialIndexSynchronization(scope, getSpecies().getDescription(),
-				Collections.newSetFromMap(new IdentityHashMap<>()));
+		final IExperimentAgent experiment = getExperiment();
+		final Set<IDescription> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+		final boolean parallel = experiment != null && !experiment.isHeadless()
+				|| requiresSpatialIndexSynchronization(scope, getSpecies().getDescription(), visited)
+				|| experiment != null
+						&& requiresSpatialIndexSynchronization(scope, experiment.getSpecies().getDescription(), visited);
 
 		if (topology != null) {
 			topology.updateEnvironment(scope, shape, parallel);
@@ -341,13 +345,16 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	/**
 	 * Detects potential concurrency before agents are indexed, including inherited behaviors and nested species.
 	 * Dynamic parallel facets are treated conservatively: their initial value does not predict later execution.
-	 * Parallel experiments alone do not require locking, since each simulation owns its spatial index.
+	 * Displays and their event layers can execute model expressions on other threads, including in headless
+	 * experiments. Parallel experiments alone do not require locking, since each simulation owns its spatial index.
 	 */
 	private boolean requiresSpatialIndexSynchronization(final IScope scope, final IDescription description,
 			final Set<IDescription> visited) {
 		if (!visited.add(description)) return false;
 		if (description instanceof IExperimentDescription
 				&& (getExperiment() == null || description != getExperiment().getSpecies().getDescription())) return false;
+		if (IKeyword.DISPLAY.equals(description.getKeyword()) || IKeyword.EVENT.equals(description.getKeyword()))
+			return true;
 		Caller caller = Caller.NONE;
 		if (description instanceof ISpeciesDescription species) {
 			for (final String skill : species.getSkillsNames()) {
