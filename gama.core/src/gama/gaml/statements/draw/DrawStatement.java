@@ -154,7 +154,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc (
-								value = "Whether the object should be lighted or not (only applicable in the context of opengl displays)")),
+								value = "Whether the object should be lighted or not (only applicable in OpenGL displays). Defaults to false for lines without depth, including their arrowheads, and true for other geometries. An explicit value overrides this default.")),
 				@facet (
 						name = PERSPECTIVE,
 						type = IType.BOOL,
@@ -167,7 +167,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						optional = true,
 						doc = @doc (
 								value = """
-										The width in point units (not world units) to use in OpenGL displays for line-based geometries and for the borders or wireframes of arbitrary shapes. This value is passed directly to the underlying OpenGL line width setting, \
+										The width in screen pixels (not world units) for line-based geometries and for the borders or wireframes of arbitrary shapes in Java2D and OpenGL displays. It does not change with world zoom. In OpenGL, this value is passed directly to the underlying line width setting, \
 										so the effective rendering depends on the capabilities of the current GPU and driver. \
 										The default value is set by the preference found in Displays>OpenGL Rendering Properties""")), },
 

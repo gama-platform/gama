@@ -477,6 +477,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			if (border != null) { border = attributes.getColor(); }
 		}
 		final Shape s = sw.toShape(geometry);
+		final Stroke stroke = currentRenderer.getStroke();
 		try {
 			currentRenderer.setColor(IColor.toAWTColor(attributes.getColor()));
 			if (!isLine && !attributes.isEmpty()) {
@@ -496,12 +497,15 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			}
 			if (isLine || border != null || attributes.isEmpty()) {
 				if (border != null) { currentRenderer.setColor(IColor.toAWTColor(border)); }
+				currentRenderer.setStroke(new BasicStroke(attributes.getLineWidth().floatValue()));
 				currentRenderer.draw(s);
 			}
 			return s.getBounds2D();
 		} catch (final Exception e) {
 			e.printStackTrace();
 			return null;
+		} finally {
+			currentRenderer.setStroke(stroke);
 		}
 	}
 

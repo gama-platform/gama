@@ -12,6 +12,7 @@ package gama.gaml.statements.draw;
 import java.awt.geom.Rectangle2D;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
@@ -156,10 +157,12 @@ public class ShapeDrawer implements IDrawDelegate {
 	IDrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
 		Double depth = data.depth.get();
 		if (depth == null) { depth = shape.getDepth(); }
+		// Flat lines have no surface normal; their arrowheads must share the same unlit color.
+		final boolean flatLine = shape.getInnerGeometry() instanceof Lineal && (depth == null || depth == 0d);
 		return new ShapeDrawingAttributes(Scaling3D.of(data.getSize()), depth, data.rotation.get(), data.getLocation(),
 				data.empty.get(), data.color.get(), /* data.getColors(), */
 				data.border.get(), data.texture.get(), /* data.material.get(), */ scope.getAgent(),
-				shape.getGeometricalType(), data.lineWidth.get(), data.lighting.get());
+				shape.getGeometricalType(), data.lineWidth.get(), data.getLighting(!flatLine));
 	}
 
 	/**

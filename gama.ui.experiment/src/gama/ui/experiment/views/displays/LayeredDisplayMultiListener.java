@@ -231,11 +231,11 @@ public class LayeredDisplayMultiListener {
 	 */
 	public void mouseMove(final int x, final int y, final boolean modifier) {
 		view.requestOverlayUpdate();
-		// Always track the mouse position, even when modifier keys are held
-		setMousePosition(x, y);
 		final var controls = surface.getControlLayer();
-		if (controls != null && controls.controlMouseMove(x, y)) return;
-		if (modifier) return;
+		if (controls != null && controls.controlMouseMove(x, y) || modifier) {
+			setMousePosition(x, y);
+			return;
+		}
 		// DEBUG.LOG("Mouse moving on " + view.view.getPartName() + " at (" + x + "," + y + ")");
 		if (mouseIsDown) {
 			// Depending on the plateform or display, this case is never called,
@@ -251,8 +251,10 @@ public class LayeredDisplayMultiListener {
 			// technically does not change, but approximations are not likely to
 			// break anything.
 
+			setMousePosition(x, y);
 			surface.dispatchMouseEvent(SWT.DragDetect, x, y);
 		} else {
+			setMousePosition(x, y);
 			surface.dispatchMouseEvent(SWT.MouseMove, x, y);
 		}
 

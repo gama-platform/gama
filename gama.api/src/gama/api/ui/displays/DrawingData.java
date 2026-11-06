@@ -114,6 +114,11 @@ public class DrawingData extends AttributeHolder {
 		this.lineWidth = create(IKeyword.WIDTH, Types.FLOAT, GamaPreferences.Displays.CORE_LINE_WIDTH.getValue());
 	}
 
+	/** Uses the geometry's lighting default unless the draw statement explicitly supplies lighted:. */
+	public boolean getLighting(final boolean defaultValue) {
+		return symbol.hasFacet(IKeyword.LIGHTED) ? lighting.get() : defaultValue;
+	}
+
 	/**
 	 * Cast size.
 	 *
