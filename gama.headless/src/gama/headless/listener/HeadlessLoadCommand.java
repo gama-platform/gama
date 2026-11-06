@@ -84,7 +84,7 @@ public class HeadlessLoadCommand implements ISocketCommand {
 		final String end = request.until();
 		GamaServerExperimentJob selectedJob = new GamaServerExperimentJob(ff.getAbsoluteFile().toString(),
 				argExperimentName, socket, request.parameters(), end, config.hasConsole(), config.hasStatus(),
-				config.hasDialog(), config.hasRuntime(), request.seed() == null ? 0 : request.seed());
+				config.hasDialog(), config.hasRuntime(), request.seed());
 		selectedJob.load();
 		// we check if the experiment is present in the file
 		if (selectedJob.simulator.getModel().getExperiment(argExperimentName) == null)

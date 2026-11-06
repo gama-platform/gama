@@ -124,7 +124,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public IExecutionResult loadAndBuildWithJson(final IList params, final String endCond)
+	public IExecutionResult loadAndBuildWithJson(final IList params, final String endCond, final double seed)
 			throws IOException, GamaCompilationFailedException {
 		if (this.simulator == null) { this.load(); }
 		this.setup();
@@ -132,7 +132,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 		if (endCond != null && !endCond.isBlank()) {
 			simulator.getModel().getExperiment(experimentName).setStopCondition(endCond);
 		}
-		return simulator.setup(experimentName, this.seed, params, this);
+		return simulator.setup(experimentName, seed, params, this);
 	}
 
 	/**

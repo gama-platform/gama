@@ -343,7 +343,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					currentScope.getGui().getStatus().resetStatus();
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON, () -> {
 						currentScope.getGui().showLaunchingOverlay(experiment.getName());
-						experiment.reload();
+						experiment.reload(command.seed());
 					});
 					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
