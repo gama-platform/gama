@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -93,6 +95,10 @@ public class GamlEditorDragAndDropHandler {
 
 	/** The used names. */
 	protected static final Set<String> usedNames = new HashSet<>();
+
+	private static final Pattern MODEL_DECLARATION = Pattern.compile("(?m)^[\\t ]*model\\b[^\\r\\n]*");
+
+	private static final Pattern GLOBAL_DECLARATION = Pattern.compile("(?m)^[\\t ]*global\\b");
 
 	/**
 	 * Instantiates a new gaml editor drag and drop handler.
@@ -509,10 +515,12 @@ public class GamlEditorDragAndDropHandler {
 		sb.append(StringUtils.LN).append("import ").append('"').append(name).append('"').append(StringUtils.LN);
 		final StyledText st = getStyledText();
 		final String text = st.getText();
-		final int startOfGlobal = text.indexOf("global");
-		final int startOfModel = text.indexOf("\nmodel");
-		if (startOfGlobal == -1 && startOfModel == -1) return -1;
-		final int endOfModel = text.indexOf("\n", startOfModel + 1);
-		return endOfModel + 1;
+		final Matcher model = MODEL_DECLARATION.matcher(text);
+		if (model.find()) {
+			final int endOfModel = text.indexOf('\n', model.end());
+			return endOfModel == -1 ? text.length() : endOfModel + 1;
+		}
+		final Matcher global = GLOBAL_DECLARATION.matcher(text);
+		return global.find() ? global.start() : 0;
 	}
 }
