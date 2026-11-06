@@ -180,7 +180,8 @@ public class DefaultServerCommands {
 			if (!request.until().isBlank()) { plan.setStopCondition(request.until()); }
 			final boolean[] opened = { false };
 			GAMA.getGui().run("Opening experiment " + nameOfExperiment,
-					() -> opened[0] = GAMA.runGuiServerExperiment(nameOfExperiment, mm, request.configuration()), false);
+					() -> opened[0] = GAMA.runGuiServerExperiment(nameOfExperiment, mm, request.configuration(),
+						request.seed()), false);
 			final GamaRuntimeException error =
 					plan.getAgent() == null ? null : plan.getController().consumeLastRuntimeError();
 			if (error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);

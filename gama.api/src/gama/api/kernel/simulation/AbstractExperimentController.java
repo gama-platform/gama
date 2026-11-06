@@ -414,6 +414,13 @@ public abstract class AbstractExperimentController implements IExperimentControl
 		return andWait ? synchronousOpen() : asynchronousOpen();
 	}
 
+	@Override
+	public boolean processOpen(final boolean andWait, final Double seed) {
+		if (seed == null) return processOpen(andWait);
+		final ExperimentCommand command = new ExperimentCommand(ExperimentCommandTypes._OPEN, 0, seed);
+		return andWait ? processUserCommand(command) : offer(command);
+	}
+
 	/**
 	 * Process pause.
 	 *
