@@ -19,6 +19,34 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Automatic spatial-index synchronization
+
+Spatial-index synchronization is now decided automatically for each simulation before its indices are created.
+The decision covers species and grid scheduling configured through `parallel:` or the concurrency preferences,
+parallel `ask` statements in nested or inherited behaviors, and species using the `thread` skill.
+The selected experiment's behaviors are also considered; other experiments are excluded.
+
+Nonconstant `parallel:` expressions conservatively enable synchronization even if their initial value is `false`
+or `0`, because they can enable concurrency later. Constant `false` or `0` does not request synchronization.
+The decision considers potential concurrency rather than the current population size, so an initially small
+population remains protected if it later exceeds its parallel-execution threshold.
+
+Concurrent simulations synchronize complete quadtree/octree operations and compound-index operations, including
+lazy population registration and species caches. Sequential simulations retain the unsynchronized fast path.
+Synchronization is retained across environment rebuilds and topology merges; an environment rebuild can enable
+it when needed, but does not disable it once enabled. The decision does not modify or persist any user preference.
+Running independent batch simulations in parallel does not, by itself, require synchronized spatial indices.
+
+Synchronization can reduce throughput in models with many concurrent spatial queries or moving agents.
+It protects index operations, not arbitrary shared agent state, and does not make parallel execution reproducible.
+Interactive models do not require synchronization merely because they have a UI: normal UI commands are routed
+through the simulation's action-execution mechanism.
+
+**Migration:** the spatial-index synchronization preference and its GAML variable
+`gama.pref_synchronize_quadtree` have been removed. Delete reads, assignments, and save/restore code referring to
+that variable; no replacement setting is needed. Previously saved values no longer affect index creation.
+The bundled Boids and Preferences examples have been updated accordingly.
+
 ### Passive populations and agent access
 
 Standard populations with the default reflex architecture skip automatic scheduling when they have no reflexes,

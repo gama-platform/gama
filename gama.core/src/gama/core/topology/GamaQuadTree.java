@@ -34,7 +34,6 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.IIntersectable;
 import gama.api.utils.interfaces.IAgentFilter;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 
 /**
@@ -89,17 +88,17 @@ public class GamaQuadTree implements ISpatialIndex {
 	final boolean parallel;
 
 	/**
-	 * Creates the spatial index. Returns a synchronized quadtree if necessary (cf. #3576)
+	 * Creates the spatial index. Concurrent simulations receive a synchronized quadtree.
 	 *
 	 * @param envelope
 	 *            the envelope
 	 * @param parallel
-	 *            the parallel
+	 *            whether the simulation can access the index concurrently
 	 * @return the gama quad tree
 	 */
 	public static ISpatialIndex create(final IEnvelope envelope, final boolean parallel) {
 		ISpatialIndex qt = new GamaQuadTree(envelope, parallel);
-		if (GamaPreferences.Experimental.QUADTREE_SYNCHRONIZATION.getValue()) return new QuadTreeSynchronizer(qt);
+		if (parallel) return new QuadTreeSynchronizer(qt);
 		return qt;
 	}
 
@@ -186,7 +185,7 @@ public class GamaQuadTree implements ISpatialIndex {
 		}
 
 		@Override
-		public void dispose() {
+		public synchronized void dispose() {
 			quadtree.dispose();
 		}
 

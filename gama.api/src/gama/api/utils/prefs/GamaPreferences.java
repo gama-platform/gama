@@ -1529,14 +1529,6 @@ public class GamaPreferences {
 				IType.BOOL, true).in(NAME, UNSAFE).inPlayer(false);
 
 		/**
-		 * Whether operations on the spatial index (quadtree) should be synchronized to prevent concurrency errors.
-		 * Recommended for interactive models or parallel models. May slow down simulations with many mobile agents.
-		 */
-		public static final Pref<Boolean> QUADTREE_SYNCHRONIZATION = create("pref_synchronize_quadtree",
-				"Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents",
-				true, IType.BOOL, true).in(NAME, UNSAFE).inPlayer(false);
-
-		/**
 		 * Whether constant GAML expressions should be evaluated at compile time and replaced by their results (constant
 		 * folding). Enabling this triggers a clean rebuild of all models. Hidden from the preferences UI.
 		 */

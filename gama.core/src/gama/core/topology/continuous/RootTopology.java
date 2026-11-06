@@ -38,13 +38,16 @@ public class RootTopology extends ContinuousTopology {
 	public RootTopology(final IScope scope, final IShape geom, final boolean isTorus, final boolean hasParallelism) {
 		super(scope, geom);
 		final IEnvelope bounds = geom.getEnvelope();
-		spatialIndex = new CompoundSpatialIndex(bounds, hasParallelism);
+		spatialIndex = CompoundSpatialIndex.create(bounds, hasParallelism);
+		synchronizationEnabled = hasParallelism;
 		this.isTorus = isTorus;
 		root = this;
 	}
 
 	/** The spatial index. */
-	private final ISpatialIndex.Compound spatialIndex;
+	private volatile ISpatialIndex.Compound spatialIndex;
+
+	private boolean synchronizationEnabled;
 
 	/** The is torus. */
 	private final boolean isTorus;
@@ -63,7 +66,15 @@ public class RootTopology extends ContinuousTopology {
 	 *            the has parallelism
 	 */
 	public void updateEnvironment(final IScope scope, final IShape newEnv, final boolean hasParallelism) {
-		spatialIndex.update(scope, newEnv.getEnvelope(), hasParallelism);
+		if (hasParallelism && !synchronizationEnabled) {
+			final ISpatialIndex.Compound synchronizedIndex = CompoundSpatialIndex.create(newEnv.getEnvelope(), true);
+			synchronizedIndex.mergeWith(spatialIndex);
+			synchronizedIndex.update(scope, newEnv.getEnvelope(), true);
+			spatialIndex = synchronizedIndex;
+			synchronizationEnabled = true;
+		} else {
+			spatialIndex.update(scope, newEnv.getEnvelope(), synchronizationEnabled);
+		}
 	}
 
 	@Override
@@ -80,7 +91,16 @@ public class RootTopology extends ContinuousTopology {
 	 */
 	@Override
 	public void mergeWith(final ITopology other) {
-		if (other instanceof RootTopology rt) { spatialIndex.mergeWith(rt.spatialIndex); }
+		if (other instanceof RootTopology rt && rt != this) {
+			if (rt.synchronizationEnabled && !synchronizationEnabled) {
+				final ISpatialIndex.Compound synchronizedIndex =
+						CompoundSpatialIndex.create(getEnvironment().getEnvelope(), true);
+				synchronizedIndex.mergeWith(spatialIndex);
+				spatialIndex = synchronizedIndex;
+				synchronizationEnabled = true;
+			}
+			spatialIndex.mergeWith(rt.spatialIndex);
+		}
 	}
 
 	@Override

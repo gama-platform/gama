@@ -299,12 +299,12 @@ public interface ISpatialIndex {
 		 * positions. This may be called periodically or after significant changes to
 		 * improve query performance.</p>
 		 * 
-		 * <p>The parallel parameter enables multi-threaded index updates for better
-		 * performance with large populations.</p>
+		 * <p>The parallel parameter requests synchronized index operations when the simulation can execute
+		 * concurrently. It does not run the rebuild itself in parallel.</p>
 		 *
 		 * @param scope the current execution scope
 		 * @param envelope the bounding envelope for the update
-		 * @param parallel true to use parallel processing for the update
+		 * @param parallel true to synchronize index operations
 		 */
 		void update(IScope scope, IEnvelope envelope, boolean parallel);
 

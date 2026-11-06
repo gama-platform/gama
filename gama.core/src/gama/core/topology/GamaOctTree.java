@@ -35,7 +35,6 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.IIntersectable;
 import gama.api.utils.interfaces.IAgentFilter;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 
 /**
@@ -68,7 +67,7 @@ import gama.dev.DEBUG;
  *       {@link #minSize}. This prevents infinite splits in degenerate flat or linear worlds.</li>
  *   <li><b>Duplicate storage:</b> agents whose envelope spans multiple octants are stored in every leaf
  *       that their envelope overlaps (same strategy as {@link GamaQuadTree} for XY-spanning agents).</li>
- *   <li><b>Thread safety:</b> when {@link GamaPreferences.Experimental#QUADTREE_SYNCHRONIZATION} is
+ *   <li><b>Thread safety:</b> when the simulation's automatic concurrency detection sets {@code parallel} to
  *       {@code true}, the factory method returns an {@link OctTreeSynchronizer} that delegates to a
  *       single underlying {@code GamaOctTree} under a coarse-grained lock — identical to the quad-tree
  *       strategy.</li>
@@ -231,21 +230,19 @@ public class GamaOctTree implements ISpatialIndex {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Creates a spatial index for a 3D world. Returns a thread-safe wrapper when the
-	 * {@link GamaPreferences.Experimental#QUADTREE_SYNCHRONIZATION} preference is enabled (cf. issue #3576).
+	 * Creates a spatial index for a 3D world. Concurrent simulations receive a thread-safe wrapper.
 	 *
 	 * @param envelope
 	 *            the bounding envelope of the simulation world (must include valid min/max Z values for the
 	 *            3D partitioning to be effective; a flat/2D envelope works correctly but gives no Z benefit)
 	 * @param parallel
-	 *            {@code true} to use synchronized per-node maps (required when agents may be inserted or
-	 *            removed concurrently from multiple threads)
+	 *            {@code true} to synchronize complete index operations and per-node maps
 	 * @return a new {@link ISpatialIndex} backed by an OctTree, possibly wrapped in an
 	 *         {@link OctTreeSynchronizer}
 	 */
 	public static ISpatialIndex create(final IEnvelope envelope, final boolean parallel) {
 		ISpatialIndex ot = new GamaOctTree(envelope, parallel);
-		if (GamaPreferences.Experimental.QUADTREE_SYNCHRONIZATION.getValue()) return new OctTreeSynchronizer(ot);
+		if (parallel) return new OctTreeSynchronizer(ot);
 		return ot;
 	}
 
@@ -404,12 +401,8 @@ public class GamaOctTree implements ISpatialIndex {
 			return octree.allAtDistance(scope, source, dist, f);
 		}
 
-		/**
-		 * Disposes the underlying spatial index. This call is not synchronized because it is expected to be called
-		 * only when the index is no longer in use by any thread.
-		 */
 		@Override
-		public void dispose() {
+		public synchronized void dispose() {
 			octree.dispose();
 		}
 
