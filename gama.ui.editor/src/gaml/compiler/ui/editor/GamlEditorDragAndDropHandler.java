@@ -21,13 +21,16 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRewriteTarget;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
@@ -39,6 +42,7 @@ import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.dnd.IDragAndDropService;
 import org.eclipse.ui.part.ResourceTransfer;
@@ -69,8 +73,11 @@ public class GamlEditorDragAndDropHandler {
 	/** The rsrc. */
 	ResourceTransfer RSRC = ResourceTransfer.getInstance();
 
+	/** The local selection. */
+	LocalSelectionTransfer LOCAL_SELECTION = LocalSelectionTransfer.getTransfer();
+
 	/** The transfer all. */
-	Transfer[] TRANSFER_ALL = { FILE, RSRC, TEXT };
+	Transfer[] TRANSFER_ALL = { FILE, RSRC, LOCAL_SELECTION, TEXT };
 
 	/** The transfer text. */
 	Transfer[] TRANSFER_TEXT = { TEXT };
@@ -212,14 +219,14 @@ public class GamlEditorDragAndDropHandler {
 			 */
 			@Override
 			public void dropAccept(final DropTargetEvent event) {
-				if (RSRC.isSupportedType(event.currentDataType) || FILE.isSupportedType(event.currentDataType)) {
+				if (isResourceTransfer(event.currentDataType)) {
 					event.detail = DND.DROP_COPY;
 				}
 			}
 
 			@Override
 			public void dragEnter(final DropTargetEvent event) {
-				if (RSRC.isSupportedType(event.currentDataType) || FILE.isSupportedType(event.currentDataType)) {
+				if (isResourceTransfer(event.currentDataType)) {
 					event.detail = DND.DROP_COPY;
 					return;
 				}
@@ -263,6 +270,10 @@ public class GamlEditorDragAndDropHandler {
 						tryDropResources((IResource[]) data);
 						return;
 					}
+					if (LOCAL_SELECTION.isSupportedType(event.currentDataType)) {
+						tryDropSelection();
+						return;
+					}
 					if (FILE.isSupportedType(event.currentDataType) && data instanceof String[]) {
 						tryDropFiles((String[]) data);
 						return;
@@ -304,6 +315,11 @@ public class GamlEditorDragAndDropHandler {
 		dndService.addMergedDropTarget(st, DROP_MOVE | DROP_COPY, onlyText ? TRANSFER_TEXT : TRANSFER_ALL, listener);
 		fIsTextDragAndDropInstalled = true;
 
+	}
+
+	private boolean isResourceTransfer(final TransferData transferType) {
+		return RSRC.isSupportedType(transferType) || LOCAL_SELECTION.isSupportedType(transferType)
+				|| FILE.isSupportedType(transferType);
 	}
 
 	/**
@@ -350,6 +366,21 @@ public class GamlEditorDragAndDropHandler {
 		if (files.isEmpty()) return;
 		final IResource[] resources = files.toArray(new IResource[0]);
 		tryDropResources(resources);
+	}
+
+	private void tryDropSelection() {
+		final ISelection selection = LOCAL_SELECTION.getSelection();
+		if (!(selection instanceof IStructuredSelection structured)) return;
+		final List<IResource> resources = new ArrayList<>();
+		for (final Object element : structured.toList()) {
+			if (element instanceof IResource resource) {
+				resources.add(resource);
+			} else if (element instanceof IAdaptable adaptable) {
+				final IResource resource = adaptable.getAdapter(IResource.class);
+				if (resource != null) { resources.add(resource); }
+			}
+		}
+		tryDropResources(resources.toArray(new IResource[0]));
 	}
 
 	/**
