@@ -23,7 +23,7 @@ import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 
 /** Options shared by the GUI and headless implementations of the WebSocket {@code load} command. */
-public record ServerLoadRequest(File model, String experiment, IList<?> parameters, String until,
+public record ServerLoadRequest(File model, String experiment, IList<?> parameters, Double seed, String until,
 		GamaServerExperimentConfiguration configuration) {
 
 	public static ServerLoadRequest parse(final WebSocket socket, final Map<String, Object> command) {
@@ -39,7 +39,15 @@ public record ServerLoadRequest(File model, String experiment, IList<?> paramete
 		final String experiment = command.get("experiment").toString().trim();
 		final String until = command.get(ISocketCommand.UNTIL) == null ? ""
 				: command.get(ISocketCommand.UNTIL).toString();
-		return new ServerLoadRequest(model, experiment, params, until,
+		Double seed = null;
+		final Object seed_raw = command.get("seed");
+		if (seed_raw != null) {
+			try {
+				seed = Double.parseDouble(seed_raw.toString());
+			}
+			catch(Exception ex) {}
+		}
+		return new ServerLoadRequest(model, experiment, params, seed, until,
 				new GamaServerExperimentConfiguration(socket, experiment, flag(command, "console", true),
 						flag(command, "status", false), flag(command, "dialog", false), flag(command, "runtime", true)));
 	}

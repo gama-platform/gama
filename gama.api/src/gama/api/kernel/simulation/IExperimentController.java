@@ -33,7 +33,11 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 24 oct. 2023
 	 */
-	record ExperimentCommand(ExperimentCommandTypes type, int quantity) {}
+	record ExperimentCommand(ExperimentCommandTypes type, int quantity, Double seed) {
+		public ExperimentCommand(final ExperimentCommandTypes type, final int quantity) {
+			this(type, quantity, null);
+		}
+	}
 	
 	enum ExperimentCommandTypes {
 		_OPEN(),
@@ -105,6 +109,11 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @date 23 oct. 2023
 	 */
 	boolean processOpen(final boolean andWait);
+
+	/** Opens the experiment with an optional seed for its initial random generator. */
+	default boolean processOpen(final boolean andWait, final Double seed) {
+		return seed == null && processOpen(andWait);
+	}
 
 	/**
 	 * Process pause.

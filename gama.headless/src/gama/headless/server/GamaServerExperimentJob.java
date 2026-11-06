@@ -79,13 +79,13 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 *            the status
 	 * @param dialog
 	 *            the dialog
+	 * @param seed
+	 * 			The experiment seed.            
 	 */
 	public GamaServerExperimentJob(final String sourcePath, final String exp, final WebSocket sk, final IList p,
 			final String end, final boolean console, final boolean status, final boolean dialog,
-			final boolean runtime) {
-		// (final String sourcePath, final String exp, final long max, final String untilCond,
-		// final double s)
-		super(sourcePath, exp, 0, "", 0);
+			final boolean runtime, final double seed) {
+		super(sourcePath, exp, 0, "", seed);
 		socket = sk;
 		// params = p;
 		controller = new GamaServerExperimentController(this, p, end, socket, console, status, dialog, runtime);
