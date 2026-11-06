@@ -703,8 +703,12 @@ public class GamaPreferencesView {
 		var width = (int) size.getX();
 		var height = (int) size.getY();
 		Rectangle savedBounds = new Rectangle(x, y, width, height);
-		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
-		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();
+		// Native menu commands can run without an active SWT shell.
+		Shell referenceShell = WorkbenchHelper.getShell();
+		if (referenceShell == null || referenceShell.isDisposed()) { referenceShell = parentShell; }
+		if (referenceShell == null || referenceShell.isDisposed()) { referenceShell = shell; }
+		Rectangle monitorBounds = referenceShell.getMonitor().getBounds();
+		Rectangle shellBounds = referenceShell == shell ? monitorBounds : referenceShell.getBounds();
 		if (!savedBounds.intersects(monitorBounds)) {
 			// final Point p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 			x = shellBounds.x + 100;

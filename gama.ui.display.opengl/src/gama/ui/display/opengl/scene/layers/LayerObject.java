@@ -10,7 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.layers;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -18,6 +20,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.GamaShapeFactory;
@@ -32,7 +35,9 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;
+import gama.core.outputs.layers.OverlayStatement;
 import gama.core.util.file.GamaGeometryFile;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -250,6 +255,24 @@ public class LayerObject {
 		final LayerCoordinates previous = renderer.setCoordinateSystem(
 				layer == null ? LayerCoordinates.WORLD : layer.getData().getContentCoordinates());
 		try {
+			if (layer != null && layer.getDefinition() instanceof OverlayStatement overlay
+					&& overlay.mayUseAdaptiveText() && layer.getData() instanceof FramedLayerData frame
+					&& !renderer.getPickingHelper().isPicking()) {
+				final List<TextDrawingAttributes> texts = new ArrayList<>();
+				for (final AbstractObject object : currentList.asArray()) {
+					if (object instanceof StringObject string
+							&& string.getAttributes() instanceof TextDrawingAttributes text
+							&& text.getAdaptiveTextBounds() != null) {
+						texts.add(text);
+					}
+				}
+				final IColor background = frame.getBackgroundColor(renderer.getSurface().getScope());
+				final AdaptiveColor.Background adaptiveBackground = background == null ? null
+						: new AdaptiveColor.Background(new Rectangle2D.Double(0, 0,
+								frame.getSizeInPixels().getX(), frame.getSizeInPixels().getY()), background, 1);
+				renderer.getAdaptiveTextHelper().resolve(texts, frame.getPositionInPixels().getX(),
+						frame.getPositionInPixels().getY(), adaptiveBackground, alpha);
+			}
 			drawInCoordinates(gl);
 		} finally {
 			renderer.setCoordinateSystem(previous);
@@ -472,7 +495,14 @@ public class LayerObject {
 	protected final void drawObjects(final IOpenGL gl, final Trace list, final double alpha, final boolean picking) {
 		gl.setCurrentObjectAlpha(alpha);
 		prepareDrawing(gl, list);
-		for (final AbstractObject object : list.asArray()) { gl.getDrawerFor(object).draw(object, picking); }
+		for (final AbstractObject object : list.asArray()) {
+			if (picking && object instanceof StringObject string
+					&& string.getAttributes() instanceof TextDrawingAttributes text
+					&& text.getAdaptiveTextBounds() != null) {
+				continue;
+			}
+			gl.getDrawerFor(object).draw(object, picking);
+		}
 	}
 
 	/**

@@ -217,22 +217,35 @@ experiment "With Inspector" type: gui parent:base{
 }
 
 experiment "Classic" type: gui parent:base {
-	parameter 'Population:' var:ants_number unit: 'ants' category: 'Model';
-	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
-	parameter 'Rate of diffusion of the signal (per cycle):' var: diffusion_rate category: 'Model' unit: #percent;
-	parameter 'Use icons for the agents:' var: use_icons category: 'Display';
-	parameter 'Display state of agents:' var: display_state category: 'Display';
-	
 	user_command "Save" {
 		save simulation to: '../result/file.simulation' format: "json" ;}
 	
 	output {
+		layout #split parameters: false;
 		display Ants antialias: false type: 3d axes: true {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
 			agents "Grid" transparency: 0.4 value: ant_grid where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant aspect: info;
+			overlay position: {12, 12} size: {300, 340} background: nil {
+				ui_slider "Population" var: ants_number min: 1 max: 1000 step: 1
+					at: {12, 12} size: {276, 40} ;
+				ui_slider "Signal evaporation / cycle" var: evaporation_per_cycle min: 0.0 max: 240.0 step: 1.0
+					at: {12, 62} size: {276, 40} ;
+				ui_slider "Signal diffusion / cycle" var: diffusion_rate min: 0.0 max: 1.0 step: 0.01
+					at: {12, 112} size: {276, 40};
+				ui_slider "Grid width and height (next run)" var: gridsize min: 30 max: 200 step: 1
+					at: {12, 162} size: {276, 40} ;
+				ui_slider "Grid update frequency (next run)" var: grid_frequency min: 1 max: 100 step: 1
+					at: {12, 212} size: {276, 40}  background: nil;
+				ui_slider "Food depots (next run)" var: number_of_food_places min: 1 max: 20 step: 1
+					at: {12, 262} size: {276, 40}  background: #yellow with_alpha 0.5 font: font("Helvetica", 18, #bold);
+				ui_switch "Use agent icons" var: use_icons
+					at: {12, 312} size: {276, 28} ;
+				ui_switch "Display agent state" var: display_state
+					at: {12, 362} size: {276, 28} ;
+			}
 		}
 
 	}
@@ -289,4 +302,3 @@ experiment "3 Simulations" type: gui  parent:base{
 		}
 	}
 }
-

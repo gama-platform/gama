@@ -41,6 +41,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.util.List;
@@ -54,6 +55,7 @@ import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.Puntal;
 
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaShapeFactory;
@@ -69,10 +71,12 @@ import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.FramedLayerData;
 import gama.core.outputs.layers.OverlayLayer;
+import gama.core.outputs.layers.OverlayStatement;
 import gama.core.util.file.GamaGeometryFile;
 import gama.gaml.operators.Maths;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 
 /**
  *
@@ -91,6 +95,17 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	/** The normal renderer. */
 	private Graphics2D currentRenderer, overlayRenderer, normalRenderer;
+
+	private BufferedImage frameBuffer, sceneBeforeOverlay;
+	private boolean adaptiveOverlay;
+	private AdaptiveColor.Background adaptiveOverlayBackground;
+
+	public void setFrameBuffer(final BufferedImage image) { frameBuffer = image; }
+
+	public boolean needsAdaptiveText() {
+		return getSurface().getManager().getItems().stream()
+				.anyMatch(layer -> layer.getDefinition() instanceof OverlayStatement overlay && overlay.mayUseAdaptiveText());
+	}
 
 	/** The temporary envelope. */
 	private Rectangle2D temporaryEnvelope = null;
@@ -169,6 +184,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		if (currentRenderer != null) { currentRenderer.dispose(); }
 		if (normalRenderer != null) { normalRenderer.dispose(); }
 		if (overlayRenderer != null) { overlayRenderer.dispose(); }
+		if (sceneBeforeOverlay != null) { sceneBeforeOverlay.flush(); }
+		frameBuffer = sceneBeforeOverlay = null;
 	}
 
 	@Override
@@ -373,6 +390,14 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	@Override
 	public Rectangle2D drawString(final String string, final IDrawingAttributes attributes) {
+		if (attributes instanceof TextDrawingAttributes text && text.getAdaptiveTextBounds() != null) {
+			if (!adaptiveOverlay) {
+				throw new IllegalStateException("Adaptive text requires a pre-overlay scene capture");
+			}
+			text.resolveAdaptiveText(sceneBeforeOverlay, new Rectangle2D.Double(
+					-getXOffsetInPixels(), -getYOffsetInPixels(), getViewWidth(), getViewHeight()),
+					adaptiveOverlayBackground, currentLayerAlpha);
+		}
 		setFont(attributes.getFont().getAwtFont());
 		final String[] lines = string.split("\\r?\\n", -1);
 		final double lineHeight = currentRenderer.getFont().getLineMetrics("Ag",
@@ -582,12 +607,35 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	@Override
 	public void beginOverlay(final ILayer layer) {
 		if (layer instanceof OverlayLayer overlay) {
+			adaptiveOverlay = overlay.getDefinition() instanceof OverlayStatement statement && statement.mayUseAdaptiveText();
+			if (adaptiveOverlay) {
+				if (frameBuffer == null) {
+					throw new IllegalStateException("Adaptive text requires an image-backed Java2D renderer");
+				}
+				if (sceneBeforeOverlay == null || sceneBeforeOverlay.getWidth() != frameBuffer.getWidth()
+						|| sceneBeforeOverlay.getHeight() != frameBuffer.getHeight()) {
+					if (sceneBeforeOverlay != null) { sceneBeforeOverlay.flush(); }
+					sceneBeforeOverlay = new BufferedImage(frameBuffer.getWidth(), frameBuffer.getHeight(),
+							BufferedImage.TYPE_INT_RGB);
+				}
+				final Graphics2D capture = sceneBeforeOverlay.createGraphics();
+				try {
+					capture.setComposite(AlphaComposite.Src);
+					capture.drawImage(frameBuffer, 0, 0, null);
+				} finally {
+					capture.dispose();
+				}
+			}
 			currentRenderer = overlayRenderer;
 			final int x = (int) getXOffsetInPixels();
 			final int y = (int) getYOffsetInPixels();
 			final int w = getLayerWidth();
 			final int h = getLayerHeight();
 			final IColor background = overlay.getData().getBackgroundColor(getSurface().getScope());
+			final double arc = overlay.getData().isRounded() ? 10 : 0;
+			adaptiveOverlayBackground = adaptiveOverlay && background != null
+					? new AdaptiveColor.Background(new RoundRectangle2D.Double(0, 0, w, h, arc, arc), background, 1)
+					: null;
 			if (background != null) {
 				final var composite = currentRenderer.getComposite();
 				try {
@@ -615,6 +663,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	@Override
 	public void endOverlay() {
+		adaptiveOverlay = false;
+		adaptiveOverlayBackground = null;
 		currentRenderer = normalRenderer;
 	}
 

@@ -56,6 +56,7 @@ import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
 import gama.ui.display.opengl.renderer.helpers.LightHelper;
 import gama.ui.display.opengl.renderer.helpers.PickingHelper;
 import gama.ui.display.opengl.renderer.helpers.SceneHelper;
+import gama.ui.display.opengl.renderer.helpers.AdaptiveTextHelper;
 import gama.ui.display.opengl.scene.ModelScene;
 import gama.ui.display.opengl.view.GamaGLCanvas;
 import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
@@ -115,6 +116,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/** The scene helper. */
 	private final SceneHelper sceneHelper;
 
+	private final AdaptiveTextHelper adaptiveTextHelper;
+
 	/** The open GL. */
 	// OpenGL back-end
 	protected IOpenGL openGL;
@@ -140,7 +143,11 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		lightHelper = createLightHelper();
 		cameraHelper = new CameraHelper(this);
 		sceneHelper = new SceneHelper(this);
+		adaptiveTextHelper = new AdaptiveTextHelper(this);
 	}
+
+	@Override
+	public AdaptiveTextHelper getAdaptiveTextHelper() { return adaptiveTextHelper; }
 
 	@Override
 	public void setDisplaySurface(final IDisplaySurface d) {
@@ -368,6 +375,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public void dispose(final GLAutoDrawable drawable) {
 		sceneHelper.garbageCollect(openGL);
 		sceneHelper.dispose();
+		adaptiveTextHelper.dispose();
 		openGL.dispose();
 		keystoneHelper.dispose();
 		cameraHelper.dispose();

@@ -18,6 +18,7 @@ import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayer;
 import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
+import gama.ui.display.opengl.renderer.helpers.AdaptiveTextHelper;
 import gama.ui.display.opengl.renderer.helpers.IKeystoneHelper;
 import gama.ui.display.opengl.renderer.helpers.ILightHelper;
 import gama.ui.display.opengl.renderer.helpers.IPickingHelper;
@@ -125,6 +126,8 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 * @return the scene helper
 	 */
 	SceneHelper getSceneHelper();
+
+	AdaptiveTextHelper getAdaptiveTextHelper();
 
 	/**
 	 * Gets the data.

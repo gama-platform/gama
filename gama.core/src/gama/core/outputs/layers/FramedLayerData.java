@@ -40,8 +40,7 @@ public class FramedLayerData extends LayerData {
 	public FramedLayerData(final ILayerStatement def) throws GamaRuntimeException {
 		super(def);
 		border = create(IKeyword.BORDER, Types.COLOR, null);
-		background = create(IKeyword.BACKGROUND, Types.COLOR,
-				def instanceof OverlayStatement ? GamaColorFactory.BLACK : null);
+		background = create(IKeyword.BACKGROUND, Types.COLOR, null);
 	}
 
 	/**

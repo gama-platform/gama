@@ -125,6 +125,12 @@ Omitting the facet chooses a default by layer type:
 | Species, agents, grid, mesh, image/picture | `#world` | World data/locations |
 | Chart | `#screen` | Chart-managed data and axes |
 
+Layer frames, including overlays, default to `background: nil`: no background
+is painted behind their contents. Earlier overlays implicitly used black;
+specify `background: #black` to keep that appearance, or another colour for
+a visible panel. Display backgrounds and chart-background preferences are
+unchanged.
+
 `referential:` is available on graphics and overlays and can be supplied
 without `coordinates:`. Thus `overlay referential: #world` is a screen-placed
 world-content mini-map. A graphics layer still needs `coordinates: #screen`
@@ -291,14 +297,77 @@ All controls accept these appearance and interaction facets:
 
 | Facet | Meaning | Default |
 |---|---|---|
-| `background:` | Background colour; `nil` means transparent | White |
-| `color:` | Text colour, independent of the border and images | Black; gray when inactive |
-| `border:` | Border colour; `nil` means no border | `nil` |
+| `background:` | Background colour; `nil` means transparent | `nil` |
+| `color:` | Text colour, or `#adaptive` for scene-dependent black/white text | `#adaptive`, including when inactive |
+| `accent:` | Slider tracks, switch indicators and button interaction highlights | GAMA neutral: `rgb(102, 114, 126)` |
+| `border:` | Border colour; `nil` means no border | Translucent white |
 | `active:` | Accepts pointer interaction; `false` leaves the control visible | `true` |
 | `font:` | Label font | Helvetica, 14 |
 
 An explicit `color:` remains unchanged when inactive. `active:` replaces the
 initial implementation's `enabled:` facet.
+
+`#adaptive` is the default text colour for buttons, switches and sliders,
+including toggle buttons. Omitting `color:` is equivalent to
+`color: #adaptive`; an explicit colour overrides this behaviour.
+Previously, omitted colours used dark slate (`rgb(34, 43, 61)`) or muted
+slate when inactive (`rgb(110, 117, 129)`); specify those colours explicitly
+if needed. At render time, each label samples the actual scene pixels
+under its text bounds and composites any defined overlay background, then
+its own control background, using their rendered opacity. Omitted or `nil`
+backgrounds add nothing; opaque backgrounds replace the underlying pixels,
+while translucent backgrounds blend with them. Backgrounds only affect pixels
+inside their frame or rounded control shape, so overflowing text still uses
+the pixels beneath it. Hovered, pressed and checked control fills are included.
+Images, shadows and other overlay contents do not influence the choice.
+Sliders resolve their label and numeric value independently.
+The renderer chooses black or white from the composited
+relative luminance, with a small hysteresis band to avoid flickering around
+the contrast crossover. It updates on every rendered frame, including camera
+changes, and remains adaptive when inactive.
+
+Sampling uses overlay-local logical pixels, mapped to the backing image or
+native OpenGL viewport. Java2D and image displays preserve a pre-overlay scene;
+OpenGL and OpenGL4 share one bounded scene readback per adaptive overlay, not
+one readback per label. Explicit constant non-adaptive colours keep the
+existing rendering path without a scene capture when no other control needs
+adaptive text. Java2D also prepares a scene capture
+for dynamic control text colours, so they can switch to `#adaptive` without
+evaluating the expression twice. `#adaptive` has no fixed RGB components: it
+is currently supported only for control text, not `accent:`, `border:`,
+`background:` or ordinary `draw` statements.
+
+```gaml
+ui_button "Reset" action: reset_controls;
+ui_switch "Running" var: running;
+ui_slider "Speed" var: speed min: 0.0 max: 100.0;
+ui_button "Fixed text colour" color: #black action: reset_controls;
+```
+
+An omitted or `nil` background draws no control fill or shadow, including
+while hovered, pressed or checked. Labels, borders, slider tracks and switch
+indicators remain visible. Set an explicit translucent `background:` to
+enable the glass-style fill and shadow; rounded corners and interaction
+indicators are independent of that background.
+
+Controls use fully rounded capsule edges and inset contents. Horizontal
+padding is at least 18 logical pixels on normal-sized controls and grows
+with their height; compact widths reduce it proportionally. Slider thumbs
+stay inside this padding at both ends, and pointer values use the same
+padded track as the rendering. Button images are inset from the rounded
+border. These insets do not change the declared `size:` or input bounds.
+
+`accent:` applies to all three controls, including toggle buttons. It is
+evaluated on each redraw, independently of `color:`, `background:` and button
+images. Its alpha is preserved when deriving highlights; inactive indicators
+use a lower opacity of the same accent colour. `accent: nil` is invalid.
+For example:
+
+```gaml
+ui_button "Reset" accent: #teal action: reset_controls;
+ui_switch "Running" var: running accent: #teal;
+ui_slider "Speed" var: speed min: 0.0 max: 100.0 accent: #teal;
+```
 
 Buttons are momentary by default. `toggle: true` makes a button remain checked
 until its next activation, using a boolean binding instead of hidden widget state:
@@ -313,11 +382,11 @@ ui_button "Running" toggle: true value: running on_change: {
 
 `toggle:` must be constant. Toggle buttons use `on_change:`, not `action:`,
 and update their binding on release inside the button, before invoking the handler.
-Without an image, an inset outline indicates the pressed or checked state.
+The accent-coloured border indicates the hovered, pressed or checked state.
 
 Buttons accept `image:`, `image_pressed:`, `image_hover:` and, when `toggle: true`,
 `image_checked:`. Each accepts an image provider, an image file or a path,
-or `nil` to omit that image. Images stretch to the control bounds, above the
+or `nil` to omit that image. Images stretch to the padded control interior, above the
 background and below the border and label; `color:` does not tint them.
 While active, a supplied pressed image has priority over hover, then checked,
 then the default image. An omitted checked image falls back to `image_pressed:`,

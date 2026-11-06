@@ -9,8 +9,11 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
+import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.List;
+import java.util.Locale;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -39,6 +42,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.types.color.IColor;
 import gama.api.types.file.IGamaFile;
 import gama.api.types.font.GamaFontFactory;
@@ -46,6 +50,7 @@ import gama.api.types.font.IFont;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
+import gama.api.ui.IStatusMessage;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.interfaces.IImageProvider;
@@ -65,12 +70,13 @@ import gama.core.outputs.layers.OverlayLayer;
 		@facet(name = "size", type = IType.POINT, optional = true, doc = @doc("Screen extent, default {160,28}.")),
 		@facet(name = "anchor", type = IType.POINT, optional = true, doc = @doc("Anchor of the control rectangle; default #top_left.")),
 		@facet(name = "font", type = IType.FONT, optional = true, doc = @doc("Label font.")),
-		@facet(name = "color", type = IType.COLOR, optional = true, doc = @doc("Text colour.")),
-		@facet(name = "background", type = IType.COLOR, optional = true, doc = @doc("Control background colour, or nil for transparent; default white.")),
-		@facet(name = "border", type = IType.COLOR, optional = true, doc = @doc("Border colour, or nil for no border (default).")),
+		@facet(name = "color", type = IType.COLOR, optional = true, doc = @doc("Text colour; defaults to #adaptive, choosing black or white per label from the scene pixels beneath the overlay, composited with defined overlay and control backgrounds at their rendered opacity. An explicit colour remains unchanged when inactive.")),
+		@facet(name = "accent", type = IType.COLOR, optional = true, doc = @doc("Colour of slider tracks, switch indicators and button interaction highlights. Defaults to GAMA's neutral colour, rgb(102, 114, 126). Cannot be nil.")),
+		@facet(name = "background", type = IType.COLOR, optional = true, doc = @doc("Control background colour; defaults to nil (transparent), including while hovered, pressed or checked.")),
+		@facet(name = "border", type = IType.COLOR, optional = true, doc = @doc("Border colour, or nil for no border; defaults to a translucent white edge.")),
 		@facet(name = "active", type = IType.BOOL, optional = true, doc = @doc("Whether this control accepts input; default true.")),
 		@facet(name = "toggle", type = IType.BOOL, optional = true, doc = @doc("Constant button mode: true binds a persistent boolean checked state.")),
-		@facet(name = "image", type = IType.NONE, optional = true, doc = @doc("Button image: an image provider, image file or path. Stretched to the control bounds.")),
+		@facet(name = "image", type = IType.NONE, optional = true, doc = @doc("Button image: an image provider, image file or path. Stretched to the padded control interior.")),
 		@facet(name = "image_pressed", type = IType.NONE, optional = true, doc = @doc("Button image while pressed inside its bounds; otherwise falls back to hover, checked or default image.")),
 		@facet(name = "image_hover", type = IType.NONE, optional = true, doc = @doc("Button image while hovered; otherwise falls back to checked or default image.")),
 		@facet(name = "image_checked", type = IType.NONE, optional = true, doc = @doc("Toggle button image while checked; defaults to image_pressed, then image.")),
@@ -83,6 +89,9 @@ public class UiControlStatement extends AbstractStatementSequence {
 
 	public static final String OVERLAY_SCOPE_KEY = "gama.ui.overlay.controls";
 	private static final GeometryFactory GEOMETRIES = new GeometryFactory();
+	private static final FontRenderContext TEXT_CONTEXT = new FontRenderContext(null, true, true);
+	private final AdaptiveColor.Contrast labelContrast = new AdaptiveColor.Contrast();
+	private final AdaptiveColor.Contrast valueContrast = new AdaptiveColor.Contrast();
 	private final String kind;
 	private final boolean toggle;
 	private final IExpression binding, value, handler;
@@ -107,6 +116,12 @@ public class UiControlStatement extends AbstractStatementSequence {
 	public static class ControlValidator implements IDescriptionValidator<IDescription> {
 		@Override
 		public void validate(final IDescription d) {
+			for (final String facet : new String[] { "accent", "background", "border" }) {
+				final IExpression expression = d.getFacetExpr(facet);
+				if (expression != null && expression.isConst() && expression.getConstValue() == AdaptiveColor.INSTANCE) {
+					d.error("#adaptive is only supported as the text color: of controls.");
+				}
+			}
 			final boolean buttonKind = "ui_button".equals(d.getKeyword());
 			final IExpression toggleMode = d.getFacetExpr("toggle");
 			final boolean toggle = buttonKind && toggleMode != null && Boolean.TRUE.equals(toggleMode.getConstValue());
@@ -206,47 +221,160 @@ public class UiControlStatement extends AbstractStatementSequence {
 		}
 		final Rectangle2D bounds = new Rectangle2D.Double(x, y, w, h);
 		final Object shown = overlay.registerControl(this, bounds, current, enabled, min, max, step);
-		final IColor color = (IColor) evaluate(scope, "color", enabled ? GamaColorFactory.BLACK : GamaColorFactory.GRAY);
-		final IColor background = (IColor) evaluate(scope, "background", GamaColorFactory.WHITE);
-		final IColor border = (IColor) evaluate(scope, "border", null);
+		final IColor color = (IColor) evaluate(scope, "color", AdaptiveColor.INSTANCE);
+		final IColor accent = (IColor) evaluate(scope, "accent", IStatusMessage.NEUTRAL_COLOR);
+		final IColor background = (IColor) evaluate(scope, "background", null);
+		final IColor border = (IColor) evaluate(scope, "border",
+				GamaColorFactory.createWithRGBA(255, 255, 255, enabled ? 225 : 155));
 		final IFont font = (IFont) evaluate(scope, "font", GamaFontFactory.createFont("Helvetica", 14));
 		if (color == null || font == null) {
 			throw GamaRuntimeException.error("UI control color and font cannot be nil", scope);
 		}
-		drawRectangle(g, x, y, w, h, background, null);
+		if (accent == null) {
+			throw GamaRuntimeException.error("UI control accent cannot be nil", scope);
+		}
+		if (accent == AdaptiveColor.INSTANCE || background == AdaptiveColor.INSTANCE || border == AdaptiveColor.INSTANCE) {
+			throw GamaRuntimeException.error("#adaptive is only supported as the text color: of controls", scope);
+		}
+		final boolean hovered = enabled && overlay.isControlHovered(this);
+		final boolean pressed = enabled && overlay.isControlPressed(this);
+		final boolean checked = ("ui_switch".equals(kind) || toggle) && Cast.asBool(scope, shown);
+		final IColor controlAccent = enabled ? accent : accent.withAlpha(accent.alpha() / 255d * .45);
+		final double accentOpacity = controlAccent.alpha() / 255d;
+		final IColor fill = background == null ? null : checked ? controlAccent.withAlpha(accentOpacity * .18)
+				: pressed ? controlAccent.withAlpha(accentOpacity * .22) : hovered
+						? background.withAlpha(Math.min(1, background.alpha() / 255d + .12)) : background;
+		final double radius = Math.min(w, h) / 2;
+		final double padding = contentPadding(w, h);
+		final AdaptiveColor.Background adaptiveBackground = color == AdaptiveColor.INSTANCE && fill != null
+				? new AdaptiveColor.Background(new RoundRectangle2D.Double(x, y, w, h, 2 * radius, 2 * radius), fill, 1)
+				: null;
+		if (background != null) {
+			drawRoundedRectangle(g, x + 1, y + 2, w - 2, h - 1,
+					GamaColorFactory.createWithRGBA(20, 33, 54, 35), null, radius);
+		}
+		drawRoundedRectangle(g, x, y, w, h, fill, null, radius);
 		if ("ui_button".equals(kind)) {
-			final IImageProvider image = buttonImage(scope, overlay, enabled, toggle && Cast.asBool(scope, shown));
-			if (image != null) drawImage(g, x, y, w, h, image);
-			else if ((toggle && Cast.asBool(scope, shown)) || (enabled && overlay.isControlPressed(this))) {
-				drawRectangle(g, x + w * .08, y + h * .12, w * .84, h * .76, null, GamaColorFactory.GRAY);
+			final IImageProvider image = buttonImage(scope, overlay, enabled, toggle && checked);
+			final double inset = Math.min(6, Math.min(w, h) * .12);
+			if (image != null) {
+				drawImage(g, x + inset, y + inset, w - 2 * inset, h - 2 * inset, image, radius - inset);
 			}
 		}
-		drawRectangle(g, x, y, w, h, null, border);
+		drawRoundedRectangle(g, x, y, w, h, null,
+				hovered || pressed || checked ? controlAccent.withAlpha(accentOpacity * .72) : border, radius);
 		final String label = Cast.asString(scope, evaluate(scope, "label", ""));
 		if (isSlider()) {
 			final double fraction = Math.clamp((Cast.asFloat(scope, shown) - min) / (max - min), 0, 1);
-			drawRectangle(g, x + w * .05, y + h * .8, w * .9, Math.max(1, h * .08), GamaColorFactory.GRAY, null);
-			drawRectangle(g, x + w * .05 + w * .9 * fraction - 3, y + h * .68, 6, h * .3, GamaColorFactory.GRAY, null);
+			final double thumbRadius = sliderThumbRadius(w, h);
+			final double trackInset = getSliderTrackInset(w, h);
+			final double trackX = x + trackInset, trackWidth = w - 2 * trackInset;
+			final double trackHeight = Math.min(4, h * .1);
+			final double trackCenterY = y + h - Math.min(8, h * .15) - thumbRadius;
+			drawRoundedRectangle(g, trackX, trackCenterY - trackHeight / 2, trackWidth, trackHeight,
+					controlAccent.withAlpha(accentOpacity * .2), null, trackHeight / 2);
+			drawRoundedRectangle(g, trackX, trackCenterY - trackHeight / 2, trackWidth * fraction, trackHeight,
+					controlAccent, null, trackHeight / 2);
+			drawRoundedRectangle(g, trackX + trackWidth * fraction - thumbRadius, trackCenterY - thumbRadius,
+					2 * thumbRadius, 2 * thumbRadius,
+					GamaColorFactory.createWithRGBA(255, 255, 255, 245), controlAccent, thumbRadius);
+			drawText(g, label, x + padding, y + h * .32, color, font, 0, .5, labelContrast, adaptiveBackground);
+			final String displayValue = integer ? Integer.toString((int) Math.round(Cast.asFloat(scope, shown)))
+					: String.format(Locale.ROOT, "%.2f", Cast.asFloat(scope, shown));
+			drawText(g, displayValue, x + w - padding, y + h * .32, color, font, 1, .5, valueContrast, adaptiveBackground);
+		} else if ("ui_switch".equals(kind)) {
+			final double trackWidth = Math.min(w - 2 * padding, Math.min(38, h * 1.35));
+			final double trackHeight = Math.min(trackWidth, Math.min(20, h * .65));
+			final double trackX = x + w - trackWidth - padding, trackY = y + (h - trackHeight) / 2;
+			drawText(g, label, x + padding, y + h / 2, color, font, 0, .5, labelContrast, adaptiveBackground);
+			drawRoundedRectangle(g, trackX, trackY, trackWidth, trackHeight,
+					checked ? controlAccent : controlAccent.withAlpha(accentOpacity * .3), null,
+					trackHeight / 2);
+			final double knobInset = Math.min(2, trackHeight * .1);
+			final double knobSize = trackHeight - 2 * knobInset;
+			final double knobX = checked ? trackX + trackWidth - knobSize - knobInset : trackX + knobInset;
+			drawRoundedRectangle(g, knobX, trackY + knobInset, knobSize, knobSize,
+					GamaColorFactory.createWithRGBA(255, 255, 255, 250),
+					controlAccent.withAlpha(accentOpacity * .12), knobSize / 2);
+		} else {
+			drawText(g, label, x + w / 2, y + h / 2, color, font, .5, .5, labelContrast, adaptiveBackground);
 		}
-		final TextDrawingAttributes text = new TextDrawingAttributes(null, null,
-				GamaPointFactory.create(x + w / 2, y + h * (isSlider() ? .35 : .5)), color);
-		text.setFont(font);
-		text.setAnchor(GamaPointFactory.create(.5, .5));
-		g.drawString("ui_switch".equals(kind) ? label + (Cast.asBool(scope, shown) ? " [on]" : " [off]") : label, text);
 		return null;
 	}
 
-	private static void drawRectangle(final IGraphics g, final double x, final double y, final double w,
-			final double h, final IColor fill, final IColor border) {
-		if (fill == null && border == null) return;
-		final ShapeDrawingAttributes attributes = rectangleAttributes(fill, border);
-		g.drawShape(rectangle(x, y, w, h), attributes);
+	private static double contentPadding(final double width, final double height) {
+		return Math.min(width * .2, Math.max(18, height / 2));
 	}
 
-	private static Geometry rectangle(final double x, final double y, final double w, final double h) {
-		return GEOMETRIES.createPolygon(new Coordinate[] {
-				new Coordinate(x, y), new Coordinate(x + w, y), new Coordinate(x + w, y + h),
-				new Coordinate(x, y + h), new Coordinate(x, y) });
+	private static double sliderThumbRadius(final double width, final double height) {
+		return Math.min(7, Math.min(height * .175, width * .1));
+	}
+
+	/** Shared by rendering and pointer-to-value conversion so padded track endpoints remain exact. */
+	public static double getSliderTrackInset(final double width, final double height) {
+		return contentPadding(width, height) + sliderThumbRadius(width, height);
+	}
+
+	private static void drawText(final IGraphics g, final String value, final double x, final double y,
+			final IColor color, final IFont font, final double anchorX, final double anchorY,
+			final AdaptiveColor.Contrast contrast, final AdaptiveColor.Background background) {
+		if (value.isEmpty()) return;
+		final TextDrawingAttributes text = new TextDrawingAttributes(null, null, GamaPointFactory.create(x, y), color);
+		text.setFont(font);
+		text.setAnchor(GamaPointFactory.create(anchorX, anchorY));
+		if (color == AdaptiveColor.INSTANCE) {
+			text.setLighting(false);
+			final var awtFont = font.getAwtFont();
+			final double lineHeight = awtFont.getLineMetrics("Ag", TEXT_CONTEXT).getHeight();
+			Rectangle2D textBounds = null;
+			int lineNumber = 0;
+			for (final String line : value.split("\\r?\\n", -1)) {
+				final Rectangle2D glyphs = awtFont.createGlyphVector(TEXT_CONTEXT, line).getVisualBounds();
+				final double lineY = y + lineHeight * lineNumber++;
+				if (glyphs.isEmpty()) continue;
+				final Rectangle2D bounds = new Rectangle2D.Double(x - glyphs.getWidth() * anchorX,
+						lineY - glyphs.getHeight() * (1 - anchorY), glyphs.getWidth(), glyphs.getHeight());
+				if (textBounds == null) {
+					textBounds = bounds;
+				} else {
+					textBounds.add(bounds);
+				}
+			}
+			if (textBounds == null) return;
+			text.setAdaptiveText(textBounds, contrast, background);
+		}
+		g.drawString(value, text);
+	}
+
+	private static void drawRoundedRectangle(final IGraphics g, final double x, final double y, final double w,
+			final double h, final IColor fill, final IColor border, final double requestedRadius) {
+		if ((fill == null && border == null) || w <= 0 || h <= 0) return;
+		final ShapeDrawingAttributes attributes = rectangleAttributes(fill, border);
+		g.drawShape(roundedRectangle(x, y, w, h, requestedRadius), attributes);
+	}
+
+	private static Geometry roundedRectangle(final double x, final double y, final double w, final double h,
+			final double requestedRadius) {
+		final double radius = Math.min(Math.max(0, requestedRadius), Math.min(w, h) / 2);
+		if (radius == 0) {
+			return GEOMETRIES.createPolygon(new Coordinate[] {
+					new Coordinate(x, y), new Coordinate(x + w, y), new Coordinate(x + w, y + h),
+					new Coordinate(x, y + h), new Coordinate(x, y) });
+		}
+		final Coordinate[] coordinates = new Coordinate[53];
+		int index = 0;
+		for (int corner = 0; corner < 4; corner++) {
+			final double centerX = x + (corner == 0 || corner == 3 ? radius : w - radius);
+			final double centerY = y + (corner < 2 ? radius : h - radius);
+			final double start = Math.PI + corner * Math.PI / 2;
+			for (int segment = 0; segment <= 12; segment++) {
+				final double angle = start + segment * Math.PI / 24;
+				coordinates[index++] = new Coordinate(centerX + radius * Math.cos(angle),
+						centerY + radius * Math.sin(angle));
+			}
+		}
+		coordinates[index] = new Coordinate(coordinates[0]);
+		return GEOMETRIES.createPolygon(coordinates);
 	}
 
 	private static ShapeDrawingAttributes rectangleAttributes(final IColor fill, final IColor border) {
@@ -257,10 +385,10 @@ public class UiControlStatement extends AbstractStatementSequence {
 	}
 
 	private static void drawImage(final IGraphics g, final double x, final double y, final double w,
-			final double h, final IImageProvider image) {
+			final double h, final IImageProvider image, final double radius) {
 		final ShapeDrawingAttributes attributes = rectangleAttributes(GamaColorFactory.WHITE, null);
 		attributes.setTextures(List.of(image));
-		g.drawShape(rectangle(x, y, w, h), attributes);
+		g.drawShape(roundedRectangle(x, y, w, h, radius), attributes);
 	}
 
 	private IImageProvider buttonImage(final IScope scope, final OverlayLayer overlay, final boolean active,

@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,6 +83,8 @@ import gama.ui.shared.utils.DPIHelper;
 		value = { IKeyword.JAVA2D, IKeyword._2D })
 @doc ("Display that uses the Java2D technology to draw the layers in a SWT view")
 public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
+
+	private BufferedImage adaptiveFrame;
 
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
@@ -618,20 +621,41 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final boolean wasPainting = painting;
 		painting = true;
 		boolean painted = false;
+		final Graphics2D target = (Graphics2D) g;
+		Graphics2D drawing = target;
 		try {
-			super.paintComponent(g);
-			final Graphics2D g2d = (Graphics2D) g.create(getOrigin().x, getOrigin().y,
+			if (gg.needsAdaptiveText()) {
+				final double scaleX = Math.hypot(target.getTransform().getScaleX(), target.getTransform().getShearY());
+				final double scaleY = Math.hypot(target.getTransform().getScaleY(), target.getTransform().getShearX());
+				final int width = Math.max(1, (int) Math.ceil(getWidth() * scaleX));
+				final int height = Math.max(1, (int) Math.ceil(getHeight() * scaleY));
+				if (adaptiveFrame == null || adaptiveFrame.getWidth() != width || adaptiveFrame.getHeight() != height) {
+					if (adaptiveFrame != null) { adaptiveFrame.flush(); }
+					adaptiveFrame = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+				}
+				drawing = adaptiveFrame.createGraphics();
+				drawing.scale(scaleX, scaleY);
+				drawing.setRenderingHints(target.getRenderingHints());
+				gg.setFrameBuffer(adaptiveFrame);
+			} else {
+				gg.setFrameBuffer(null);
+			}
+			super.paintComponent(drawing);
+			final Graphics2D g2d = (Graphics2D) drawing.create(getOrigin().x, getOrigin().y,
 					(int) Math.round(getDisplayWidth()), (int) Math.round(getDisplayHeight()));
 			try {
 				gg.setGraphics2D(g2d);
-				gg.setUntranslatedGraphics2D((Graphics2D) g);
+				gg.setUntranslatedGraphics2D(drawing);
 				layerManager.drawLayersOn(gg);
 			} finally {
 				g2d.dispose();
 			}
+			if (drawing != target) { target.drawImage(adaptiveFrame, 0, 0, getWidth(), getHeight(), null); }
 			frames++;
 			painted = true;
 		} finally {
+			if (drawing != target) { drawing.dispose(); }
+			gg.setFrameBuffer(null);
 			painting = wasPainting;
 			synchronized (renderLock) {
 				rendered = painted;
@@ -849,6 +873,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 			renderLock.notifyAll();
 		}
 		renderQueue.close();
+		if (adaptiveFrame != null) { adaptiveFrame.flush(); }
+		adaptiveFrame = null;
 		getData().removeListener(this);
 		if (layerManager != null) { layerManager.dispose(); }
 		GAMA.releaseScope(getScope());

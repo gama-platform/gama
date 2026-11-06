@@ -30,6 +30,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.types.color.IColor;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
@@ -141,7 +142,7 @@ import gama.api.annotations.validator;
 						name = IKeyword.BACKGROUND,
 						type = IType.COLOR,
 						optional = true,
-						doc = @doc ("the background color of the overlay displayed inside the view (the bottom overlay remains black)")),
+						doc = @doc ("The background color of the overlay displayed inside the view. Nil by default, so only its contents are drawn (the bottom overlay remains black).")),
 				@facet (
 						name = IKeyword.COLOR,
 						type = { IType.LIST, IType.COLOR },
@@ -160,6 +161,11 @@ public class OverlayStatement extends GraphicLayerStatement {
 	/** The constant colors. */
 	List<int[]> constantColors;
 
+	private final boolean mayUseAdaptiveText;
+
+	/** Omitted foregrounds default to adaptive; dynamic expressions can request it on any redraw. */
+	public boolean mayUseAdaptiveText() { return mayUseAdaptiveText; }
+
 	/**
 	 * Instantiates a new overlay statement.
 	 *
@@ -171,6 +177,15 @@ public class OverlayStatement extends GraphicLayerStatement {
 	public OverlayStatement(final IDescription desc) throws GamaRuntimeException {
 		super(desc);
 		color = getFacet(IKeyword.COLOR);
+		final boolean[] adaptive = { false };
+		desc.visitOwnChildrenRecursively(child -> {
+			if (!child.getKeyword().startsWith("ui_")) return true;
+			final IExpression foreground = child.getFacetExpr(IKeyword.COLOR);
+			adaptive[0] |= foreground == null || !foreground.isConst()
+					|| foreground.getConstValue() == AdaptiveColor.INSTANCE;
+			return true;
+		});
+		mayUseAdaptiveText = adaptive[0];
 
 		if (color != null && color.isConst()) { constantColors = computeColors(null); }
 	}

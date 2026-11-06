@@ -176,7 +176,8 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 		final Control active = current.control();
 		if (active.statement().isSlider()) {
 			final double width = active.bounds().getWidth();
-			final double fraction = Math.clamp((x - active.bounds().getX() - width * .05) / (width * .9), 0, 1);
+			final double inset = UiControlStatement.getSliderTrackInset(width, active.bounds().getHeight());
+			final double fraction = Math.clamp((x - active.bounds().getX() - inset) / (width - 2 * inset), 0, 1);
 			double next = active.min() + fraction * (active.max() - active.min());
 			if (active.step() > 0 && fraction > 0 && fraction < 1) {
 				next -= Math.IEEEremainder(next - active.min(), active.step());

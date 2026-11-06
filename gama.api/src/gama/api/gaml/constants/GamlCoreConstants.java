@@ -18,6 +18,8 @@ import gama.annotations.test;
 import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IConstantCategory;
+import gama.api.types.color.AdaptiveColor;
+import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 
@@ -511,6 +513,14 @@ public interface GamlCoreConstants {
 			concept = { IConcept.DISPLAY },
 			doc = @doc ("Inside an event #mouse_listener block or its called actions, the button associated with the current event: left, middle, right, button_N for other buttons, or none when no button is associated. For a drag, it is the first reported pressed button. A menu event can have no identifiable button. Outside a mouse listener the value is the empty string.")) String mouse_button =
 					"";
+
+	/** The adaptive foreground. */
+	@constant (
+			value = "adaptive",
+			category = IConstantCategory.GRAPHIC,
+			concept = { IConcept.DISPLAY, IConcept.COLOR, IConcept.TEXT },
+			doc = @doc ("The default contextual foreground color for ui_button, ui_switch and ui_slider, also selectable with color: #adaptive. It chooses black or white for each label from the actual scene pixels beneath it, composited with defined overlay and control backgrounds at their rendered opacity. Omitted or nil backgrounds leave the underlying pixels unchanged. It has no fixed RGB components and is not supported for accents, borders, backgrounds or ordinary draw statements."))
+	IColor adaptive = AdaptiveColor.INSTANCE;
 
 	/** The screen. */
 	@constant (
