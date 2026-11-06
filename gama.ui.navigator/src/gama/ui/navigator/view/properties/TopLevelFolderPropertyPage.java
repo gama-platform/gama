@@ -139,9 +139,11 @@ public class TopLevelFolderPropertyPage extends PropertyPage {
 		composite.setLayoutData(data);
 
 		addFirstSection(composite);
-		addSeparator(composite);
-		addSecondSection(composite);
-		addThirdSection(composite);
+		if (getFolder().isWorkspaceFolder()) {
+			addSeparator(composite);
+			addSecondSection(composite);
+			addThirdSection(composite);
+		}
 		setTitle(getFolder().getStatusMessage());
 		setImageDescriptor((getFolder().getImageDescriptor()));
 		getContainer().updateTitle();

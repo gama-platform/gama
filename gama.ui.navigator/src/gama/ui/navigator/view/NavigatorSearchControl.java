@@ -176,7 +176,7 @@ public class NavigatorSearchControl {
 							&& GamlFileExtension.isAny(file.getResource().getName())))
 						return false;
 					if (!appliedBody) {
-						for (final Object child : element.getNavigatorChildren()) {
+						for (final Object child : element.getCachedChildren()) {
 							if (child instanceof VirtualContent<?> content
 									&& content.getType() == VirtualContent.VirtualContentType.FILE
 									&& select(content, false)) return true;
@@ -192,9 +192,9 @@ public class NavigatorSearchControl {
 				case ROOT:
 				case VIRTUAL_FOLDER:
 				default:
-					final Object[] children = element.getNavigatorChildren();
+					final Object[] children = element.getCachedChildren();
 					for (final Object element2 : children) {
-						if (select((VirtualContent<?>) element2, false)) return true;
+						if (element2 instanceof VirtualContent<?> content && select(content, false)) return true;
 					}
 					return false;
 			}
@@ -498,12 +498,18 @@ public class NavigatorSearchControl {
 		scheduleSearch(0);
 	}
 
+	void contentChanged() { filter.reset(); }
+
+	boolean isSearching() { return !appliedPattern.isEmpty(); }
+
 	/**
 	 * Refresh search.
 	 */
 	private void refreshSearch() {
 		if (expandedElementsBeforeSearch == null) { expandedElementsBeforeSearch = treeViewer.getExpandedElements(); }
 		treeViewer.getControl().setRedraw(false);
+		final boolean cachedChildrenOnly = NavigatorContentProvider.CACHED_CHILDREN_ONLY;
+		NavigatorContentProvider.CACHED_CHILDREN_ONLY = true;
 		try {
 			filter.reset();
 			if (!Arrays.asList(treeViewer.getFilters()).contains(filter)) {
@@ -521,6 +527,7 @@ public class NavigatorSearchControl {
 				treeViewer.refresh(false);
 			}
 		} finally {
+			NavigatorContentProvider.CACHED_CHILDREN_ONLY = cachedChildrenOnly;
 			treeViewer.getControl().setRedraw(true);
 		}
 	}

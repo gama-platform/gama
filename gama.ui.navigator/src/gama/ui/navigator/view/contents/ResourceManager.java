@@ -86,6 +86,8 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	/** The delegate. */
 	final IResourceChangeListener delegate;
 
+	private volatile boolean disposed;
+
 	/** The blocked. */
 	volatile static boolean BLOCKED = false;
 
@@ -326,6 +328,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
+		if (disposed) return;
 		if (BLOCKED) {
 			BLOCKED_EVENTS.add(event);
 			return;
@@ -433,7 +436,10 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	public TopLevelFolder chooseFolderForPasting(final IProject project) {
 		if (currentSelection != null && !currentSelection.isEmpty()) {
 			final Object o = currentSelection.getFirstElement();
-			if (o instanceof VirtualContent) return ((VirtualContent<?>) o).getTopLevelFolder();
+			if (o instanceof VirtualContent<?> content) {
+				final TopLevelFolder folder = content.getTopLevelFolder();
+				if (folder != null && folder.isWorkspaceFolder()) return folder;
+			}
 		}
 		return NavigatorRoot.getInstance().getUserFolder();
 	}
@@ -471,7 +477,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 						WorkbenchHelper.runInUI("Refresh added project", 5, monitor -> {
 							final NavigatorRoot navigatorRoot = NavigatorRoot.getInstance();
 							cache.invalidate(project);
-							for (final TopLevelFolder folder : navigatorRoot.getFolders()) {
+							for (final TopLevelFolder folder : navigatorRoot.getWorkspaceFolders()) {
 								folder.initializeChildren();
 							}
 							refreshResource(navigatorRoot);
@@ -738,12 +744,38 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 *            the res
 	 */
 	public void refreshResource(final VirtualContent<?> res) {
+		if (disposed) return;
 		// if (res == null) { return; }
 		// Keep null to refresh all workspace
 		synchronized (toRefresh) {
 			toRefresh.add(res);
 		}
 	}
+
+	/**
+	 * Refreshes a contributed node after publishing its new child snapshot. Unlike the workspace event queue, this
+	 * schedules its own UI update and does not wait for an unrelated resource-change event.
+	 */
+	public void refreshContent(final VirtualContent<?> content) {
+		WorkbenchHelper.runInUI("Refreshing navigator content", 0, monitor -> {
+			if (disposed || viewer.getControl().isDisposed()) return;
+			viewer.refresh(content, true);
+		});
+	}
+
+	/** Unregisters this viewer's workspace and selection listeners. */
+	public void dispose() {
+		disposed = true;
+		GAMA.getWorkspaceManager().getWorkspace().removeResourceChangeListener(this);
+		viewer.removeSelectionChangedListener(this);
+		postEventActions.clear();
+		toRefresh.clear();
+		toUpdate.clear();
+		if (INSTANCE == this) { currentSelection = null; }
+	}
+
+	/** The mapper remains usable for workspace wrapping after its viewer closes, but not for UI updates. */
+	boolean isDisposed() { return disposed; }
 
 	/**
 	 * Invalidate severity cache.
@@ -783,7 +815,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (cached != null) return cached;
 		if (!(resource instanceof IResource r) || !r.exists()) return null;
 		if (r instanceof IProject project) {
-			for (final TopLevelFolder folder : NavigatorRoot.getInstance().getFolders()) {
+			for (final TopLevelFolder folder : NavigatorRoot.getInstance().getWorkspaceFolders()) {
 				for (final WrappedProject candidate : folder.getProjects()) {
 					if (candidate.getResource().equals(project)) return candidate;
 				}

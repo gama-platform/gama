@@ -66,6 +66,7 @@ import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.UserGroups;
+import gama.ui.navigator.view.contents.VirtualContent;
 import gama.workspace.manager.ProjectCategory;
 import gama.workspace.metadata.FileMetaDataProvider;
 
@@ -90,6 +91,8 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 
 	@Override
 	public IStatus validateDrop(final Object target, final int aDropOperation, final TransferData transferType) {
+		if (isContributedContent(target))
+			return WorkbenchNavigatorPlugin.createErrorStatus(0, "This folder is not a workspace destination", null);
 		final IResource resource = ResourceManager.getResource(target);
 		if (!(target instanceof TopLevelFolder || target instanceof UserGroupFolder)) {
 			if (resource == null) return WorkbenchNavigatorPlugin.createStatus(IStatus.INFO, 0,
@@ -200,6 +203,7 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 	@Override
 	public IStatus handleDrop(final CommonDropAdapter aDropAdapter, final DropTargetEvent aDropTargetEvent,
 			final Object t) {
+		if (isContributedContent(t)) return Status.CANCEL_STATUS;
 		IResource[] resources = null;
 		IStatus status = null;
 		final TransferData currentTransfer = aDropAdapter.getCurrentTransfer();
@@ -243,6 +247,11 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 			} catch (final CoreException e) {}
 		}
 		return status;
+	}
+
+	private static boolean isContributedContent(final Object element) {
+		return element instanceof VirtualContent<?> content && content.getTopLevelFolder() != null
+				&& !content.getTopLevelFolder().isWorkspaceFolder();
 	}
 
 	/**

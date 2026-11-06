@@ -45,9 +45,11 @@ import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
 import gama.api.GAMA;
 import gama.ui.navigator.view.GamaNavigator;
+import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.UserGroups;
+import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
@@ -90,6 +92,8 @@ public class RefreshAction extends WorkspaceAction {
 
 	/** The resources. */
 	public List<? extends IResource> resources;
+
+	private List<TopLevelFolder> contributedFolders = List.of();
 
 	/**
 	 * Creates a new action.
@@ -140,10 +144,15 @@ public class RefreshAction extends WorkspaceAction {
 	@Override
 	protected List<? extends IResource> getSelectedResources() {
 		final List<IResource> resources1 = new ArrayList<>();
+		final List<TopLevelFolder> contributions = new ArrayList<>();
 		for (final IResource r : super.getSelectedResources()) { if (r.isAccessible()) { resources1.add(r); } }
 		// A virtual top-level folder stands for the projects it contains
 		for (final Object o : getStructuredSelection()) {
-			if (o instanceof TopLevelFolder folder) {
+			if (o instanceof VirtualContent<?> content && content.getTopLevelFolder() != null
+					&& !content.getTopLevelFolder().isWorkspaceFolder()) {
+				final TopLevelFolder folder = content.getTopLevelFolder();
+				if (!contributions.contains(folder)) { contributions.add(folder); }
+			} else if (o instanceof TopLevelFolder folder) {
 				for (final WrappedProject wp : folder.getProjects()) {
 					resources1.add(wp.getResource());
 				}
@@ -153,7 +162,15 @@ public class RefreshAction extends WorkspaceAction {
 				}
 			}
 		}
-		if (resources1.isEmpty()) { resources1.add(GAMA.getWorkspaceManager().getRoot()); }
+		if (resources1.isEmpty() && contributions.isEmpty()) {
+			resources1.add(GAMA.getWorkspaceManager().getRoot());
+		}
+		if (getStructuredSelection().isEmpty()) {
+			for (final TopLevelFolder folder : NavigatorRoot.getInstance().getFolders()) {
+				if (!folder.isWorkspaceFolder()) { contributions.add(folder); }
+			}
+		}
+		contributedFolders = List.copyOf(contributions);
 		return resources1;
 	}
 
@@ -180,25 +197,44 @@ public class RefreshAction extends WorkspaceAction {
 
 	@Override
 	final protected IRunnableWithProgress createOperation(final IStatus[] errorStatus) {
-		return new WorkspaceModifyOperation() {
-			@Override
-			public void execute(final IProgressMonitor monitor) {
-				final MultiStatus errors = new MultiStatus("gama.ui.navigator", 0,
-						"Some resources could not be refreshed", null);
-				try {
-					for (IResource resource : resources) {
-						try {
-							refreshResource(resource, null);
-						} catch (final CoreException e) {
-							errors.add(e.getStatus());
-						}
-						if (monitor.isCanceled()) throw new OperationCanceledException();
+		final List<? extends IResource> selectedResources = List.copyOf(resources);
+		final List<TopLevelFolder> selectedContributions = contributedFolders;
+		return monitor -> {
+			final MultiStatus errors = new MultiStatus("gama.ui.navigator", 0,
+					"Some navigator content could not be refreshed", null);
+			try {
+				for (final TopLevelFolder folder : selectedContributions) {
+					if (monitor.isCanceled()) throw new OperationCanceledException();
+					try {
+						folder.refresh(monitor);
+					} catch (final OperationCanceledException e) {
+						throw e;
+					} catch (final CoreException e) {
+						errors.add(e.getStatus());
+					} catch (final RuntimeException e) {
+						errors.add(new Status(IStatus.ERROR, "gama.ui.navigator",
+								"Unable to refresh " + folder.getName(), e));
 					}
-				} finally {
-					errorStatus[0] = errors.isOK() ? Status.OK_STATUS : errors;
-					UserGroups.refreshNavigator();
-					monitor.done();
 				}
+				if (!selectedResources.isEmpty()) {
+					new WorkspaceModifyOperation() {
+						@Override
+						protected void execute(final IProgressMonitor workspaceMonitor) {
+							for (final IResource resource : selectedResources) {
+								if (workspaceMonitor.isCanceled()) throw new OperationCanceledException();
+								try {
+									refreshResource(resource, workspaceMonitor);
+								} catch (final CoreException e) {
+									errors.add(e.getStatus());
+								}
+							}
+						}
+					}.run(monitor);
+				}
+			} finally {
+				errorStatus[0] = errors.isOK() ? Status.OK_STATUS : errors;
+				UserGroups.refreshNavigator();
+				monitor.done();
 			}
 		};
 	}

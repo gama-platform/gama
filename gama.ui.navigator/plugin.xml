@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="topLevelFolders" name="Navigator top-level folders" schema="schema/topLevelFolders.exsd"/>
+   <extension point="gama.ui.navigator.topLevelFolders">
+      <folder id="data" name="Data" category="DATA" order="0"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+      <folder id="demos" name="Demos" category="DEMOS" order="10"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+      <folder id="library" name="Library" category="LIBRARY" order="20"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+      <folder id="recipes" name="Recipes" category="RECIPES" order="30"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+      <folder id="tutorials" name="Tutorials" category="TUTORIALS" order="40"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+      <folder id="tests" name="Tests" category="TESTS" order="50"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+      <folder id="user" name="User" category="USER" order="60"
+            class="gama.ui.navigator.view.contents.WorkspaceFolderProvider"/>
+   </extension>
    <extension point="gama.standard.distribution">
    </extension>
    <extension point="org.eclipse.ui.startup">
@@ -111,6 +128,7 @@
             state="true">
          <enablement>
             <or>
+               <objectClass name="gama.ui.navigator.view.contents.VirtualContent"/>
                <objectClass
                      name="gama.ui.navigator.view.contents.LinkedFile">
                </objectClass>
@@ -622,7 +640,7 @@
                      operator="and">
                   <or>
                      <instanceof
-                           value="gama.ui.navigator.view.contents.TopLevelFolder">
+                           value="gama.ui.navigator.view.contents.VirtualContent">
                      </instanceof>
                      <instanceof
                            value="gama.ui.navigator.view.contents.UserGroupFolder">

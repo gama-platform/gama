@@ -12,8 +12,12 @@ package gama.ui.navigator.view;
 
 import static gama.ui.navigator.view.contents.NavigatorRoot.getInstance;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -104,6 +108,13 @@ public class GamaNavigator extends CommonNavigator
 
 	/** Prefix of the serialized user groups, followed by the name of their top level folder, '#', and their path. */
 	private static final String GROUP_PREFIX = "#";
+
+	/** Encoded stable-id paths, separate from legacy workspace paths and folder labels. */
+	private static final String CONTRIBUTION_PREFIX = "!";
+
+	private final Set<String> pendingContributedExpansion = new LinkedHashSet<>();
+
+	private boolean restoringContributedExpansion;
 
 	/** Saves the expanded state shortly after the user has expanded or collapsed elements. */
 	private final UIJob saveExpandedStateJob = new UIJob("Saving navigator state") {
@@ -200,7 +211,7 @@ public class GamaNavigator extends CommonNavigator
 		// Use the top level folder actually displayed, in case the virtual folders have been recreated since
 		if (!ancestors.isEmpty() && ancestors.get(0) instanceof TopLevelFolder top) {
 			for (final TreeItem item : viewer.getTree().getItems()) {
-				if (item.getData() instanceof TopLevelFolder t && t.getName().equals(top.getName())) {
+				if (item.getData() instanceof TopLevelFolder t && t.getId().equals(top.getId())) {
 					ancestors.set(0, t);
 					break;
 				}
@@ -296,6 +307,12 @@ public class GamaNavigator extends CommonNavigator
 
 			@Override
 			public void treeCollapsed(final TreeExpansionEvent event) {
+				if (!restoringContributedExpansion && event.getElement() instanceof VirtualContent<?> content) {
+					final String path = contributedPath(content);
+					if (path != null) {
+						pendingContributedExpansion.removeIf(p -> p.equals(path) || p.startsWith(path + "/"));
+					}
+				}
 				saveExpandedStateJob.schedule(500);
 			}
 		});
@@ -392,7 +409,9 @@ public class GamaNavigator extends CommonNavigator
 		final StringBuilder sb = new StringBuilder();
 		for (final Object o : viewer.getExpandedElements()) {
 			String name = null;
-			if (o instanceof WrappedContainer<?> c) {
+			if (o instanceof VirtualContent<?> content && contributedPath(content) != null) {
+				name = contributedPath(content);
+			} else if (o instanceof WrappedContainer<?> c) {
 				name = c.getResource().getFullPath().toString();
 			} else if (o instanceof TopLevelFolder t) {
 				name = t.getName();
@@ -402,6 +421,7 @@ public class GamaNavigator extends CommonNavigator
 			}
 			if (name != null) { sb.append(name).append(SEPARATOR); }
 		}
+		for (final String path : pendingContributedExpansion) { sb.append(path).append(SEPARATOR); }
 		if (sb.length() > SEPARATOR.length()) { sb.setLength(sb.length() - SEPARATOR.length()); }
 		return sb.toString();
 	}
@@ -442,7 +462,9 @@ public class GamaNavigator extends CommonNavigator
 		final List<VirtualContent<?>> contents = new ArrayList<>();
 		final String[] names = saved.split(SEPARATOR);
 		for (final String s : names) {
-			if (s.startsWith("/")) {
+			if (s.startsWith(CONTRIBUTION_PREFIX)) {
+				pendingContributedExpansion.add(s);
+			} else if (s.startsWith("/")) {
 				final WrappedResource<?, ?> resource = getInstance().getManager().resolveWrappedInstanceOf(
 						GAMA.getWorkspaceManager().getWorkspace().getRoot().findMember(new Path(s)));
 				if (resource != null) { contents.add(resource); }
@@ -465,7 +487,67 @@ public class GamaNavigator extends CommonNavigator
 			// When linking is enabled, the selection is that of the active editor
 			if (!isLinkingEnabled()) { getCommonViewer().setSelection(new StructuredSelection(sel[sel.length - 1])); }
 		}
+		restoreContributedState();
 
+	}
+
+	private static String contributedPath(final VirtualContent<?> content) {
+		final TopLevelFolder folder = content.getTopLevelFolder();
+		if (folder == null || folder.isWorkspaceFolder()) return null;
+		final List<String> segments = new ArrayList<>();
+		for (VirtualContent<?> node = content; node != null && !(node instanceof NavigatorRoot);
+				node = node.getParent()) {
+			segments.add(0, Base64.getUrlEncoder().withoutPadding()
+					.encodeToString(node.getId().getBytes(StandardCharsets.UTF_8)));
+		}
+		return CONTRIBUTION_PREFIX + String.join("/", segments);
+	}
+
+	/**
+	 * Replays unresolved expansion paths as asynchronous contributions publish child snapshots. Resolving a path only
+	 * inspects cached children; expanding a saved ancestor may start the contribution's usual asynchronous load.
+	 */
+	private void restoreContributedState() {
+		if (restoringContributedExpansion || NavigatorContentProvider.CACHED_CHILDREN_ONLY
+				|| findControl != null && findControl.isSearching()
+				|| pendingContributedExpansion.isEmpty()) return;
+		final CommonViewer viewer = getCommonViewer();
+		if (viewer == null || viewer.getControl().isDisposed()) return;
+		restoringContributedExpansion = true;
+		try {
+			pendingContributedExpansion.removeIf(path -> {
+				final String[] ids;
+				try {
+					ids = java.util.Arrays.stream(path.substring(CONTRIBUTION_PREFIX.length()).split("/"))
+							.map(s -> new String(Base64.getUrlDecoder().decode(s), StandardCharsets.UTF_8))
+							.toArray(String[]::new);
+					if (ids.length == 0 || java.util.Arrays.stream(ids).anyMatch(String::isEmpty))
+						throw new IllegalArgumentException("Empty navigator path segment");
+				} catch (final IllegalArgumentException e) {
+					DEBUG.ERR("Invalid contributed navigator expansion path", e);
+					return true;
+				}
+				VirtualContent<?> node = getInstance().getFolderById(ids[0]);
+				if (node == null || node.getTopLevelFolder().isWorkspaceFolder()) return false;
+				for (int i = 0; i < ids.length; i++) {
+					if (i > 0) {
+						VirtualContent<?> child = null;
+						for (final Object candidate : node.getCachedChildren()) {
+							if (candidate instanceof VirtualContent<?> content && content.getId().equals(ids[i])) {
+								child = content;
+								break;
+							}
+						}
+						if (child == null) return false;
+						node = child;
+					}
+					viewer.setExpandedState(node, true);
+				}
+				return true;
+			});
+		} finally {
+			restoringContributedExpansion = false;
+		}
 	}
 
 	@Override
@@ -500,7 +582,12 @@ public class GamaNavigator extends CommonNavigator
 
 	@Override
 	protected CommonViewer createCommonViewerObject(final Composite aParent) {
-		return new NavigatorCommonViewer(getViewSite().getId(), aParent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		final NavigatorCommonViewer viewer =
+				new NavigatorCommonViewer(getViewSite().getId(), aParent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		viewer.setContentRefreshListeners(() -> {
+			if (findControl != null) { findControl.contentChanged(); }
+		}, this::restoreContributedState);
+		return viewer;
 	}
 
 	@Override
@@ -563,7 +650,9 @@ public class GamaNavigator extends CommonNavigator
 
 	@Override
 	public void collapseAll() {
+		pendingContributedExpansion.clear();
 		getCommonViewer().collapseAll();
+		saveExpandedStateJob.schedule(500);
 	}
 
 }

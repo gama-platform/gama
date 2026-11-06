@@ -36,6 +36,11 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 	/** The file children enabled. */
 	public volatile static boolean FILE_CHILDREN_ENABLED = true;
 
+	/** Search/bulk traversal must not cause lazy contributions to fetch uncached children. */
+	static boolean CACHED_CHILDREN_ONLY;
+
+	private ResourceManager mapper;
+
 	@Override
 	public Object getParent(final Object element) {
 		if (element instanceof VirtualContent) return ((VirtualContent) element).getParent();
@@ -44,7 +49,8 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 
 	@Override
 	public Object[] getChildren(final Object p) {
-		if (p instanceof VirtualContent) return ((VirtualContent) p).getNavigatorChildren();
+		if (p instanceof VirtualContent<?> content)
+			return CACHED_CHILDREN_ONLY ? content.getCachedChildren() : content.getNavigatorChildren();
 		return super.getChildren(p);
 	}
 
@@ -56,12 +62,30 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 
 	@Override
 	public void inputChanged(final Viewer v, final Object oldInput, final Object newInput) {
+		if (mapper != null) {
+			mapper.dispose();
+			mapper = null;
+		}
+		if (newInput == null) {
+			super.inputChanged(v, oldInput, null);
+			return;
+		}
 		final CommonViewer viewer = (CommonViewer) v;
-		final ResourceManager mapper = new ResourceManager(this, viewer);
+		mapper = new ResourceManager(this, viewer);
 		getInstance().resetVirtualFolders(mapper);
 		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(mapper,
 				POST_CHANGE | PRE_DELETE | POST_BUILD);
 		super.inputChanged(viewer, oldInput, newInput);
+	}
+
+	@Override
+	public void dispose() {
+		getInstance().disposeContributions();
+		if (mapper != null) {
+			mapper.dispose();
+			mapper = null;
+		}
+		super.dispose();
 	}
 
 	@Override
