@@ -277,4 +277,14 @@ public interface IArtefactFactory {
 	IArtefact.Facet createFacetArtefact(String name, int[] types, int contentType, int keyType, String[] values,
 			boolean optional, boolean internal, boolean isRemote, boolean declaresNewTemp);
 
+	default IArtefact.Facet createFacetArtefact(final String name, final int[] types, final int contentType,
+			final int keyType, final String[] values, final boolean optional, final boolean internal,
+			final boolean isRemote, final boolean declaresNewTemp, final String[] specificTo, final String[] excludes,
+			final String[] requires) {
+		if (specificTo.length != 0 || excludes.length != 0 || requires.length != 0)
+			throw new UnsupportedOperationException("This artefact factory does not support facet constraints");
+		return createFacetArtefact(name, types, contentType, keyType, values, optional, internal, isRemote,
+				declaresNewTemp);
+	}
+
 }

@@ -74,6 +74,8 @@ public class SymbolArtefact extends AbstractArtefact implements IArtefact.Symbol
 	/** The possible facets. */
 	private final Map<String, IArtefact.Facet> possibleFacets;
 
+	private final Map<String, IGamlDocumentation> keywordDocumentation = new HashMap<>();
+
 	/** The mandatory facets. */
 	private final ImmutableList<String> mandatoryFacets;
 
@@ -312,15 +314,21 @@ public class SymbolArtefact extends AbstractArtefact implements IArtefact.Symbol
 	 */
 	@Override
 	public IGamlDocumentation getDocumentation() {
-		if (documentation == null) {
-			documentation = new GamlRegularDocumentation(super.getDocumentation().toString());
-			final List<FacetArtefact> protos = new ArrayList(getPossibleFacets().values());
-			Collections.sort(protos);
-			for (final FacetArtefact f : protos) {
-				if (!f.isInternal()) { documentation.set("Possible facets: ", f.getName(), f.getDocumentation()); }
-			}
+		return getDocumentation(getName());
+	}
+
+	@Override
+	public synchronized IGamlDocumentation getDocumentation(final String keyword) {
+		final IGamlDocumentation cached = keywordDocumentation.get(keyword);
+		if (cached != null) return cached;
+		final IGamlDocumentation result = new GamlRegularDocumentation(super.getDocumentation().toString());
+		final List<IArtefact.Facet> protos = new ArrayList<>(getPossibleFacets(keyword).values());
+		protos.sort((left, right) -> left.getName().compareTo(right.getName()));
+		for (final IArtefact.Facet facet : protos) {
+			if (!facet.isInternal()) result.set("Possible facets: ", facet.getName(), facet.getDocumentation());
 		}
-		return documentation;
+		keywordDocumentation.put(keyword, result);
+		return result;
 	}
 
 	/**

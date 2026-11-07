@@ -83,7 +83,11 @@ public class GamlGlobalDocGuesser {
 	/**
 	 * Wrapper for decontextualized documentation, appending a banner indicating that this is global reference doc.
 	 */
-	public record DecontextualizedDoc(IGamlDescription delegate, String hint) implements IGamlDescription {
+	public record DecontextualizedDoc(IGamlDescription delegate, String hint, String keyword) implements IGamlDescription {
+
+		public DecontextualizedDoc(final IGamlDescription delegate, final String hint) {
+			this(delegate, hint, null);
+		}
 
 		@Override
 		public String getTitle() {
@@ -93,7 +97,8 @@ public class GamlGlobalDocGuesser {
 		@Override
 		public IGamlDocumentation getDocumentation() {
 			if (delegate == null) return new GamlConstantDocumentation("");
-			IGamlDocumentation orig = delegate.getDocumentation();
+			IGamlDocumentation orig = keyword != null && delegate instanceof IArtefact.Symbol symbol
+					? symbol.getDocumentation(keyword) : delegate.getDocumentation();
 			String docStr = orig != null ? orig.toString() : "";
 			String banner = "<div class=\"gaml-hover-banner\">"
 					+ "<i>GAML Reference (uncompiled model) &mdash; " + hint + "</i></div>";
@@ -394,8 +399,8 @@ public class GamlGlobalDocGuesser {
 
 		if (stmtKey != null) {
 			IArtefact.Symbol stmtProto = ArtefactRegistry.getArtefact(stmtKey, null);
-			if (stmtProto != null && stmtProto.getPossibleFacets().containsKey(facetName)) {
-				return new DecontextualizedDoc(stmtProto.getPossibleFacets().get(facetName), "facet of statement " + stmtKey);
+			if (stmtProto != null && stmtProto.getPossibleFacets(stmtKey).containsKey(facetName)) {
+				return new DecontextualizedDoc(stmtProto.getPossibleFacets(stmtKey).get(facetName), "facet of statement " + stmtKey);
 			}
 		}
 
@@ -457,17 +462,17 @@ public class GamlGlobalDocGuesser {
 
 		if (ArtefactRegistry.isStatementArtefact(w)) {
 			IArtefact.Symbol stmt = ArtefactRegistry.getStatementArtefact(w);
-			if (stmt != null) return new DecontextualizedDoc(stmt, "statement");
+			if (stmt != null) return new DecontextualizedDoc(stmt, "statement", w);
 		}
 		if (GAML.isAStatement(w)) {
 			IArtefact.Symbol stmt = ArtefactRegistry.getStatementArtefact(w);
-			if (stmt != null) return new DecontextualizedDoc(stmt, "statement");
+			if (stmt != null) return new DecontextualizedDoc(stmt, "statement", w);
 		}
 		if (o instanceof Statement stmt) {
 			String key = EGaml.getInstance().getKeyOf(stmt);
 			if (key != null && ArtefactRegistry.isStatementArtefact(key)) {
 				IArtefact.Symbol proto = ArtefactRegistry.getStatementArtefact(key);
-				if (proto != null) return new DecontextualizedDoc(proto, "statement");
+				if (proto != null) return new DecontextualizedDoc(proto, "statement", key);
 			}
 		}
 		return null;

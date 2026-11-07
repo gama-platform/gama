@@ -69,11 +69,13 @@ import gama.gaml.statements.LoopStatement.LoopValidator;
 		value = { @facet (
 				name = IKeyword.FROM,
 				type = { IType.INT, IType.FLOAT },
+				requires = IKeyword.TO,
 				optional = true,
 				doc = @doc ("an int or float expression that represents the lower bound of the loop")),
 				@facet (
 						name = IKeyword.TO,
 						type = { IType.INT, IType.FLOAT },
+						requires = IKeyword.FROM,
 						optional = true,
 						doc = @doc ("an int or float expression that represents the higher bound of the loop")),
 				@facet (
@@ -90,16 +92,19 @@ import gama.gaml.statements.LoopStatement.LoopValidator;
 				@facet (
 						name = IKeyword.OVER,
 						type = { IType.CONTAINER, IType.POINT },
+						excludes = { IKeyword.WHILE, IKeyword.FROM, IKeyword.TO },
 						optional = true,
 						doc = @doc ("a list, point, matrix or map expression")),
 				@facet (
 						name = IKeyword.WHILE,
 						type = IType.BOOL,
+						excludes = { IKeyword.FROM, IKeyword.TO },
 						optional = true,
 						doc = @doc ("a boolean expression")),
 				@facet (
 						name = IKeyword.TIMES,
 						type = IType.INT,
+						excludes = { IKeyword.OVER, IKeyword.WHILE, IKeyword.FROM, IKeyword.TO },
 						optional = true,
 						doc = @doc ("an int expression")) },
 		omissible = IKeyword.NAME)
@@ -240,23 +245,19 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final IExpressionDescription times = description.getFacet(TIMES);
 			final IExpressionDescription over = description.getFacet(OVER);
 			final IExpressionDescription from = description.getFacet(FROM);
-			final IExpressionDescription to = description.getFacet(TO);
 			final IExpressionDescription cond = description.getFacet(WHILE);
 			IExpressionDescription name = description.getFacet(NAME);
 			if (name != null && name.isConst() && name.toString().startsWith(IInternalFacets.INTERNAL)) { name = null; }
 			// See Issue #3085
 			if (name != null) { Assert.nameIsValid(description); }
 			if (times != null) {
-				processTimes(description, over, from, to, cond, name);
+				processTimes(description, name);
 			} else if (over != null) {
-				processOver(description, from, to, cond, name);
+				processOver(description, name);
 			} else if (cond != null) {
-				processCond(description, from, to, name);
+				processCond(description, name);
 			} else if (from != null) {
-				processFromTo(description, to, name);
-			} else if (to != null) {
-				description.error("'loop' is missing the 'fromExpression:' facet", IGamlIssue.MISSING_FACET,
-						description.getUnderlyingElement(), FROM, "0");
+				processFromTo(description, name);
 			} else {
 				description.error(
 						"Missing the definition of the kind of loop toExpression perform (times, over, while, fromExpression/toExpression)",
@@ -269,20 +270,13 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 *
 		 * @param description
 		 *            the description
-		 * @param toExpression
-		 *            the toExpression
 		 * @param name
 		 *            the name
 		 */
-		private void processFromTo(final IDescription description, final IExpressionDescription to,
-				final IExpressionDescription name) {
+		private void processFromTo(final IDescription description, final IExpressionDescription name) {
 			if (name == null) {
 				description.error("No variable has been declared", IGamlIssue.MISSING_NAME, NAME);
 				return;
-			}
-			if (to == null) {
-				description.error("'loop' is missing the 'toExpression:' facet", IGamlIssue.MISSING_FACET,
-						description.getUnderlyingElement(), TO, "0");
 			}
 		}
 
@@ -291,23 +285,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 *
 		 * @param description
 		 *            the description
-		 * @param fromExpression
-		 *            the fromExpression
-		 * @param toExpression
-		 *            the toExpression
 		 * @param name
 		 *            the name
 		 */
-		private void processCond(final IDescription description, final IExpressionDescription from,
-				final IExpressionDescription to, final IExpressionDescription name) {
-			if (from != null) {
-				description.error("'while' and 'fromExpression' are not compatible", IGamlIssue.CONFLICTING_FACETS,
-						WHILE, FROM);
-			}
-			if (to != null) {
-				description.error("'while' and 'toExpression' are not compatible", IGamlIssue.CONFLICTING_FACETS, WHILE,
-						TO);
-			}
+		private void processCond(final IDescription description, final IExpressionDescription name) {
 			if (name != null) { description.error("No variable should be declared", IGamlIssue.UNUSED, WHILE, NAME); }
 		}
 
@@ -316,26 +297,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 *
 		 * @param description
 		 *            the description
-		 * @param fromExpression
-		 *            the fromExpression
-		 * @param toExpression
-		 *            the toExpression
-		 * @param cond
-		 *            the cond
 		 * @param name
 		 *            the name
 		 */
-		private void processOver(final IDescription description, final IExpressionDescription from,
-				final IExpressionDescription to, final IExpressionDescription cond, final IExpressionDescription name) {
-			if (cond != null) {
-				description.error("'over' and 'while' are not compatible", IGamlIssue.CONFLICTING_FACETS, OVER, WHILE);
-			} else if (from != null) {
-				description.error("'over' and 'fromExpression' are not compatible", IGamlIssue.CONFLICTING_FACETS, OVER,
-						FROM);
-			} else if (to != null) {
-				description.error("'over' and 'toExpression' are not compatible", IGamlIssue.CONFLICTING_FACETS, OVER,
-						TO);
-			}
+		private void processOver(final IDescription description, final IExpressionDescription name) {
 			if (name == null) { description.error("No variable has been declared", IGamlIssue.MISSING_NAME, OVER); }
 		}
 
@@ -344,33 +309,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 *
 		 * @param description
 		 *            the description
-		 * @param over
-		 *            the over
-		 * @param fromExpression
-		 *            the fromExpression
-		 * @param toExpression
-		 *            the toExpression
-		 * @param cond
-		 *            the cond
 		 * @param name
 		 *            the name
-		 * @return true, if successful
 		 */
-		private void processTimes(final IDescription description, final IExpressionDescription over,
-				final IExpressionDescription from, final IExpressionDescription to, final IExpressionDescription cond,
-				final IExpressionDescription name) {
-			if (over != null) {
-				description.error("'times' and 'over' are not compatible", IGamlIssue.CONFLICTING_FACETS, TIMES, OVER);
-			} else if (cond != null) {
-				description.error("'times' and 'while' are not compatible", IGamlIssue.CONFLICTING_FACETS, TIMES,
-						WHILE);
-			} else if (from != null) {
-				description.error("'times' and 'fromExpression' are not compatible", IGamlIssue.CONFLICTING_FACETS,
-						TIMES, FROM);
-			} else if (to != null) {
-				description.error("'times' and 'toExpression' are not compatible", IGamlIssue.CONFLICTING_FACETS, TIMES,
-						TO);
-			}
+		private void processTimes(final IDescription description, final IExpressionDescription name) {
 			if (name != null) { description.error("No variable should be declared", IGamlIssue.UNUSED, NAME); }
 		}
 

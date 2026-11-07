@@ -23,6 +23,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.ui.editor.contentassist.ConfigurableCompletionProposal;
@@ -36,6 +37,9 @@ import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.gaml.types.Types;
+import gaml.compiler.EGaml;
+import gaml.compiler.gaml.Facet;
+import gaml.compiler.gaml.Statement;
 import gaml.compiler.services.GamlGrammarAccess;
 import gaml.compiler.ui.labeling.GamlLabelProvider;
 
@@ -304,7 +308,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 				final String title = " (Statement)";
 				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);
 				proposals.add(cp);
-				cp.setDoc(s.getDocumentation().toString());
+				cp.setDoc(s instanceof IArtefact.Symbol symbol
+						? symbol.getDocumentation(t).toString() : s.getDocumentation().toString());
 			}
 
 			for (final String t : Types.getTypeNames()) {
@@ -338,6 +343,56 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			}
 		}
 
+	}
+
+	@Override
+	public void completeClassicFacet_Key(final EObject model, final Assignment assignment,
+			final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
+		super.completeClassicFacet_Key(model, assignment, context, acceptor);
+		proposeFacets(model, context, acceptor);
+	}
+
+	@Override
+	public void completeDefinitionFacet_Key(final EObject model, final Assignment assignment,
+			final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
+		super.completeDefinitionFacet_Key(model, assignment, context, acceptor);
+		proposeFacets(model, context, acceptor);
+	}
+
+	private void proposeFacets(final EObject model, final ContentAssistContext context,
+			final ICompletionProposalAcceptor acceptor) {
+		final Statement statement = EGaml.getInstance().getSurroundingStatement(model);
+		if (statement == null) return;
+		String key = EGaml.getInstance().getKeyOf(statement);
+		final Statement parent = EGaml.getInstance().getSurroundingStatement(statement.eContainer());
+		if (parent instanceof gaml.compiler.gaml.S_Display) {
+			if (IKeyword.SPECIES.equals(key)) key = IKeyword.SPECIES_LAYER;
+			else if (IKeyword.GRID.equals(key)) key = IKeyword.GRID_LAYER;
+		}
+		final String keyword = key;
+		final IArtefact.Symbol symbol = ArtefactRegistry.getArtefact(keyword, null);
+		if (symbol == null) return;
+		final Set<String> present = new HashSet<>();
+		for (final Facet facet : statement.getFacets()) {
+			if (facet != model) {
+				String name = EGaml.getInstance().getKeyOf(facet);
+				if ("<-".equals(name)) name = IKeyword.INIT;
+				else if ("->".equals(name)) name = IKeyword.FUNCTION;
+				present.add(name);
+			}
+		}
+		symbol.getPossibleFacets(keyword).forEach((name, facet) -> {
+			if (facet.isInternal() || present.contains(name)
+					|| facet.getExcludes().stream().anyMatch(present::contains)
+					|| present.stream().map(symbol.getPossibleFacets()::get)
+							.anyMatch(peer -> peer != null && peer.getExcludes().contains(name))) return;
+			final ICompletionProposal proposal = createCompletionProposal(name + ": ",
+					new StyledString(name + " (Facet)"), null, 1100, context.getPrefix(), context);
+			if (proposal instanceof ConfigurableCompletionProposal configurable) {
+				configurable.setAdditionalProposalInfo(facet.getDocumentation().toString());
+				acceptor.accept(proposal);
+			}
+		});
 	}
 
 	/**

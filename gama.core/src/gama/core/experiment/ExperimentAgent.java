@@ -23,6 +23,7 @@ import com.google.common.collect.Iterables;
 import gama.annotations.action;
 import gama.annotations.arg;
 import gama.annotations.doc;
+import gama.annotations.example;
 import gama.annotations.experiment;
 import gama.annotations.species;
 import gama.annotations.constants.IKeyword;
@@ -44,6 +45,8 @@ import gama.api.kernel.agent.IPopulationFactory;
 import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExperimentController;
+import gama.api.kernel.simulation.IExperimentController.ExperimentCommandTypes;
 import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -91,7 +94,7 @@ import gama.dev.DEBUG;
  */
 @species (
 		name = IKeyword.EXPERIMENT,
-		doc = @doc ("The species of agents that represent experiments"))
+		doc = @doc ("Agents that manage experiments and their simulations. Use ask experiment { ... } from a model to call play, pause, step_once, step_back, synchronize, desynchronize or reload. Read experiment.status for the same execution status as the server. update_outputs, update_parameters and compact_memory provide maintenance controls; die closes the experiment, not GAMA. Execution commands target this experiment's controller, whereas display synchronization is currently platform-wide."))
 @experiment (
 		value = IKeyword.GUI_)
 @doc ("GUI experiments are experiments used to visualise and interact with simulations through the regular user interface of GAMA. They can declare, parameters, used to populate the Parameters view, outputs like displays or monitors")
@@ -294,6 +297,14 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @see msi.gama.metamodel.agent.MinimalAgent#primDie(msi.gama.runtime.IScope)
 	 */
 	@Override
+	@action (
+			name = "die",
+			doc = @doc (
+					value = "Closes this experiment and disposes its simulations, outputs and controller. Does not quit GAMA; use ask gama { do die; } to quit the platform.",
+					returns = "nil",
+					examples = @example (
+							value = "ask experiment { do die; }",
+							isExecutable = false)))
 	public Object primDie(final IScope scope) throws GamaRuntimeException {
 		if (dying || dead) return null;
 		GAMA.closeExperiment(getSpecies());
@@ -711,6 +722,146 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	}
 
 	/**
+	 * Resolves this agent's controller, never the frontmost experiment's controller.
+	 */
+	private IExperimentController interactiveController(final IScope scope) {
+		final IExperimentController controller = getSpecies().getController();
+		if (dead || dying || controller == null || controller.isDisposing())
+			throw GamaRuntimeException.error("This experiment has no active controller", scope);
+		if (!controller.supportsInteractiveControl()) throw GamaRuntimeException
+				.error("This experiment's controller does not support interactive execution commands", scope);
+		return controller;
+	}
+
+	private void checkControlRequest(final IScope scope, final boolean accepted, final String command) {
+		if (!accepted) throw GamaRuntimeException.error(
+				"Unable to " + command + " the experiment: its controller refused the request or its command queue is full",
+				scope);
+	}
+
+	private Object requestControl(final IScope scope, final ExperimentCommandTypes command) {
+		final IExperimentController controller = interactiveController(scope);
+		// Submit destructive or stepping commands only after the requesting experiment cycle has finished.
+		executeAction(actionScope -> {
+			final boolean accepted = switch (command) {
+				case _STEP -> controller.processStep(1, false);
+				case _BACK -> controller.processBack(1, false);
+				case _RELOAD -> controller.processReload(false);
+				default -> throw new IllegalArgumentException("Unsupported experiment command: " + command);
+			};
+			checkControlRequest(actionScope, accepted, command.name().substring(1).toLowerCase(java.util.Locale.ROOT));
+			return null;
+		});
+		return this;
+	}
+
+	@Override
+	@action (
+			name = "play",
+			doc = @doc (
+					value = "Requests continuous execution of this experiment and its scheduled simulations, like the UI Play control or server play command. Does not toggle pause. Calling it when already running leaves it running.",
+					returns = "This experiment, once the request is accepted; completion is asynchronous. A missing, disposed, unsupported or full controller raises a runtime error.",
+					comment = "Works with interactive GUI and server controllers. Non-interactive command-line/headless controllers are unsupported. An ended server execution may require a new load.",
+					examples = @example (
+							value = "ask experiment { do play; }",
+							isExecutable = false),
+					see = { "pause", "step_once", "status" }))
+	public Object play(final IScope scope) {
+		checkControlRequest(scope, interactiveController(scope).processStart(false), "play");
+		return this;
+	}
+
+	@Override
+	@action (
+			name = "pause",
+			doc = @doc (
+					value = "Pauses this experiment's scheduler and therefore all its scheduled simulations, like UI Pause or server pause. A cycle already executing is allowed to finish; this does not pause only one simulation. Calling it when paused leaves it paused.",
+					returns = "This experiment once the pause request is accepted. A missing, disposed, unsupported or full controller raises a runtime error.",
+					comment = "Normally updates the scheduler state immediately. From a display thread the request is queued to avoid blocking rendering. Use play to continue; model reflexes cannot resume themselves once execution is paused.",
+					examples = @example (
+							value = "ask experiment { do pause; }",
+							isExecutable = false),
+					see = { "play", "status" }))
+	public Object pause(final IScope scope) {
+		checkControlRequest(scope, interactiveController(scope).processPause(true), "pause");
+		return this;
+	}
+
+	@action (
+			name = "step_once",
+			doc = @doc (
+					value = "Requests one experiment step, then leaves its controller paused, like UI Step or server step with nb_steps: 1. Steps the scheduled simulations, not just the current simulation.",
+					returns = "This experiment; the request is submitted after the current experiment cycle, if any, and completes asynchronously.",
+					comment = "A cycle already in progress finishes first. Do not call this every cycle unless deliberately requesting continued stepping. In a batch experiment one experiment step can run an entire exploration. Requires an interactive controller; rejected requests raise runtime errors.",
+					examples = @example (
+							value = "ask experiment { do step_once; }",
+							isExecutable = false),
+					see = { "play", "pause", "step_back" }))
+	public Object stepOnce(final IScope scope) {
+		return requestControl(scope, ExperimentCommandTypes._STEP);
+	}
+
+	@action (
+			name = "step_back",
+			doc = @doc (
+					value = "Requests restoration of the preceding recorded simulation states and leaves the controller paused, like UI Back or server stepBack with nb_steps: 1. Applies to this experiment's simulations that have recorded history.",
+					returns = "This experiment; submission is deferred until the current experiment cycle ends and restoration is asynchronous.",
+					comment = "Requires experiment recording (record: true), an available recorder and an interactive controller. Without a recorder a runtime error is raised. No earlier state means there is nothing to restore. Restores simulation state, not external files, network effects or the experiment clock. Random-seed behavior follows the experiment's keep_seed setting.",
+					examples = @example (
+							value = "ask experiment { do step_back; }",
+							isExecutable = false),
+					see = { "step_once", "pause", "reload" }))
+	public Object stepBack(final IScope scope) {
+		if (recorder == null) throw GamaRuntimeException.error(
+				"step_back requires experiment recording (record: true) and an available simulation recorder", scope);
+		return requestControl(scope, ExperimentCommandTypes._BACK);
+	}
+
+	@action (
+			name = "reload",
+			doc = @doc (
+					value = "Requests reinitialization of this experiment, like UI Reload or server reload. Disposes the current experiment agent and simulations and creates fresh ones using the current experiment definition and parameter values; init runs again.",
+					returns = "The old experiment agent; submission is deferred until the current cycle ends and reload is asynchronous. Do not retain this reference: reacquire experiment and simulation after reload.",
+					comment = "This is not a source recompilation, does not accept new parameters and does not undo external side effects. Running/paused behavior follows the controller: GUI reload normally resumes a previously running experiment and honors autorun. Server behavior follows server reload. Requires an interactive controller; rejected requests raise runtime errors.",
+					examples = @example (
+							value = "ask experiment { do reload; }",
+							isExecutable = false),
+					see = { "play", "pause", "die" }))
+	public Object reload(final IScope scope) {
+		return requestControl(scope, ExperimentCommandTypes._RELOAD);
+	}
+
+	@action (
+			name = "synchronize",
+			doc = @doc (
+					value = "Enables waiting for display rendering before simulation execution advances, like the UI Synchronize control. Does not play or pause the experiment.",
+					returns = "This experiment.",
+					comment = "Currently changes a platform-wide flag shared by all experiments. It does not synchronize simulations with each other, wall-clock time, or server clients. Without displays there is no rendering to wait for.",
+					examples = @example (
+							value = "ask experiment { do synchronize; }",
+							isExecutable = false),
+					see = { "desynchronize", "is_synchronized" }))
+	public Object synchronize(final IScope scope) {
+		GAMA.synchronizeFrontmostExperiment();
+		return this;
+	}
+
+	@action (
+			name = "desynchronize",
+			doc = @doc (
+					value = "Disables waiting for display rendering, like the UI Synchronize control when switched off. Execution and rendering may advance at different rates; does not play or pause the experiment.",
+					returns = "This experiment.",
+					comment = "Currently changes the same platform-wide flag for every experiment. Some rendered frames may be skipped as simulations advance.",
+					examples = @example (
+							value = "ask experiment { do desynchronize; }",
+							isExecutable = false),
+					see = { "synchronize", "is_synchronized" }))
+	public Object desynchronize(final IScope scope) {
+		GAMA.desynchronizeFrontmostExperiment();
+		return this;
+	}
+
+	/**
 	 * Update displays.
 	 *
 	 * @param scope
@@ -720,11 +871,16 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	@action (
 			name = "update_outputs",
-			doc = { @doc ("Forces all outputs to refresh, optionally recomputing their values") },
+			doc = @doc (
+					value = "Refreshes this experiment's outputs and its simulations' outputs, even when paused. With recompute: true runs an output-manager step: refreshable outputs recompute and refresh according to their refresh conditions, and autosave is evaluated. Does not advance simulation agents or their clocks.",
+					returns = "This experiment.",
+					examples = @example (
+							value = "ask experiment { do update_outputs recompute: false; }",
+							isExecutable = false)),
 			args = { @arg (
 					name = "recompute",
 					type = IType.BOOL,
-					doc = { @doc ("Whether or not to force the outputs to make a computation step") }) })
+					doc = @doc ("Required. true runs an output-manager step, respecting output refresh conditions; false only refreshes presentation. Recomputing can have side effects in output expressions and trigger autosave.")) })
 
 	public Object updateDisplays(final IScope scope) {
 		final Boolean force = scope.getBoolArg("recompute");
@@ -746,7 +902,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	@action (
 			name = "update_parameters",
-			doc = { @doc ("Forces the parameters view, in GUI, to refresh, picking up any updated value of the parameters") })
+			doc = @doc (
+					value = "Refreshes the GUI Parameters view from current parameter values. Does not change parameter values, reload simulations or advance execution. Has no visible effect without a GUI Parameters view.",
+					comment = "The Parameters view is a frontmost-experiment GUI facility: this is not an independent parameter view for a background or server experiment.",
+					returns = "This experiment.",
+					examples = @example (
+							value = "ask experiment { do update_parameters; }",
+							isExecutable = false)))
 
 	public Object updateParameters(final IScope scope) {
 		getSpecies().refreshAllParameters();
@@ -763,7 +925,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	@action (
 			name = "compact_memory",
-			doc = { @doc ("Forces a 'garbage collect' of the unused objects in GAMA") })
+			doc = @doc (
+					value = "Requests JVM garbage collection of unreachable objects across GAMA, not just this experiment. The JVM may defer or ignore the request; reachable agents, recorded history and outputs are not removed.",
+					returns = "This experiment.",
+					comment = "May cause a platform-wide execution pause. Prefer normal memory management rather than calling it every cycle.",
+					examples = @example (
+							value = "ask experiment { do compact_memory; }",
+							isExecutable = false)))
 	public Object compactMemory(final IScope scope) {
 		System.gc();
 		return this;

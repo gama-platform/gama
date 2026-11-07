@@ -2,8 +2,9 @@
 * Name: User Pause and Resume
 * Author: Alexis Drogoul
 * Description: Shows how to programmatically pause and resume a GAMA simulation from within the model using
-*   the 'pause' and 'resume' simulation actions. A clickable image button switches between play and stop icons
-*   based on the simulation's 'paused' state, staying synchronized with the toolbar controls. This pattern is useful for
+*   the experiment's 'pause' and 'play' actions. A clickable image button switches between play and stop icons
+*   based on 'experiment.status', staying synchronized with the toolbar controls. The old simulation 'pause'
+*   and 'resume' actions are deprecated aliases: execution control affects the entire experiment. This pattern is useful for
 *   building simulations with user-controlled execution flow, where pausing is tied to a specific game state
 *   or user confirmation rather than just the toolbar button.
 * Tags: simulation, pause, resume, gui, interaction, display, button
@@ -16,10 +17,12 @@ global {
 	image_file stop <- image_file("../images/stop.png");
 
 	action toggle() {
-		if paused {
-			do resume();
-		} else {
-			do pause();
+		ask experiment {
+			if status = "PAUSED" {
+				do play;
+			} else {
+				do pause;
+			}
 		}
 	}
 
@@ -34,7 +37,7 @@ species sign skills: [moving] {
 	point location <- centroid(world);
 
 	aspect default {
-		draw (world.paused ? play : stop) size: {100, 100};
+		draw (experiment.status = "PAUSED" ? play : stop) size: {100, 100};
 	}
 
 	reflex wander {

@@ -15,12 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 import gama.annotations.doc;
+import gama.annotations.example;
 import gama.annotations.getter;
 import gama.annotations.setter;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.IType;
@@ -97,6 +99,39 @@ import gama.api.utils.tests.WithTestSummary;
 				type = IType.BOOL,
 				doc = @doc ("Get whether the experiment is a gui experiment or not")),
 		@variable (
+				name = "status",
+				type = IType.STRING,
+				constant = true,
+				doc = @doc (
+						value = "Read-only execution status of this experiment: 'RUNNING', 'PAUSED' or 'NONE'. Uses the same query as the server simulation_status_request command.",
+						comment = "PAUSED is a scheduler state: a cycle already in progress may still finish. NONE means that no controller is available or it is disposing. NOTREADY is a transient notification, not a value returned by this query. A simulation's user hold does not change this status.",
+						examples = @example (
+								value = "write experiment.status;",
+								isExecutable = false),
+						see = { "is_paused", "pause", "play", "is_on_user_hold" })),
+		@variable (
+				name = "is_paused",
+				type = IType.BOOL,
+				constant = true,
+				doc = @doc (
+						value = "Read-only experiment scheduler pause state, equivalent to status = 'PAUSED'. Change it with pause or play, not assignment.",
+						comment = "Does not include a simulation's user hold. A cycle already executing may still finish. Returns false when no active controller exists (status = 'NONE').",
+						examples = @example (
+								value = "if experiment.is_paused { ask experiment { do play; } }",
+								isExecutable = false),
+						see = { "status", "pause", "play", "is_on_user_hold" })),
+		@variable (
+				name = "is_synchronized",
+				type = IType.BOOL,
+				constant = true,
+				doc = @doc (
+						value = "Whether simulation execution waits for display rendering. Changed with synchronize and desynchronize.",
+						comment = "This is the platform-wide synchronization flag, shared by all experiments, not a per-experiment setting. It does not synchronize agents, simulations or remote clients.",
+						examples = @example (
+								value = "write experiment.is_synchronized;",
+								isExecutable = false),
+						see = { "synchronize", "desynchronize" })),
+		@variable (
 				name = IExperimentAgent.PROJECT_PATH,
 				type = IType.STRING,
 				constant = true,
@@ -119,6 +154,23 @@ public interface IExperimentAgent extends ITopLevelAgent {
 
 	/** The Constant IS_GUI. */
 	String IS_GUI = "is_gui";
+
+	@getter ("status")
+	default String getStatus() { return GAMA.getExperimentState(getSpecies()).name(); }
+
+	@getter ("is_paused")
+	default Boolean getPaused() {
+		return GAMA.getExperimentState(getSpecies()) == IExperimentStateListener.State.PAUSED;
+	}
+
+	@getter ("is_synchronized")
+	default Boolean getSynchronized() { return GAMA.isSynchronized(); }
+
+	/** Requests a pause of this experiment's controller. */
+	Object pause(IScope scope);
+
+	/** Requests continuous execution of this experiment's controller. */
+	Object play(IScope scope);
 
 	/**
 	 * The Interface Batch.

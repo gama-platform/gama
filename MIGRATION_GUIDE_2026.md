@@ -31,6 +31,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
 | **Apache Fory** replaces FST for binary serialization | FST binary saves must be regenerated; no legacy reader is provided |
 | **`IType.NEW_TEMP_ID` removed** | Use `@facet(declares_new_temp = true)` and explicit variable type metadata |
+| Expanded built-in **`gama` platform agent** | Additive GAML actions; no migration is required unless you choose to use them |
 
 ### Binary serialization compatibility
 
@@ -70,6 +71,20 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 ---
 
 # Part 1: What's New and Why It Matters
+
+## Platform-agent operations
+
+The built-in `gama` agent can now act as a small automation and diagnostics interface, including from the interactive
+console when an experiment is active. Its additive actions inspect preferences, change or reset them, open model
+experiments, run test experiments, validate workspace models or GAML snippets, and launch `.gamx` playable packages.
+See the [platform-agent guide](https://github.com/gama-platform/gama/wiki/PlatformAgent) for GAML examples, execution
+requirements, and side effects.
+
+No existing models or Java plug-ins need to change. Preference updates are in-memory by default and restore when the
+active experiment closes; pass `persist: true` only when the preference should remain changed afterwards. Opening an
+experiment confirms replacement of an active experiment by default; `confirm: false` deliberately bypasses that
+confirmation for scripted chaining. Model validation and test execution are synchronous actions and may take time in a
+large workspace or model.
 
 ## Optional Copilot integration and pre-workbench initialization
 
