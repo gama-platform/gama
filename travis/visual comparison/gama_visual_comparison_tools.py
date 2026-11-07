@@ -5,9 +5,10 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from collections import Counter
 from collections.abc import Awaitable, Callable, Iterable, Iterator
+from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
+from html import escape
 from io import BytesIO
 import json
 import math
@@ -195,7 +196,10 @@ class Server:
 
 def server_error(context: str, content: object) -> RuntimeError:
     if isinstance(content, dict) and isinstance(content.get("message"), str):
-        error = RuntimeError(f"{context}: {content['message']}")
+        message = content["message"]
+        if content.get("source") and content.get("line"):
+            message = f"{content['source']}:{content['line']}: {message}"
+        error = RuntimeError(f"{context}: {message}")
         error.add_note(str(content))
         return error
     return RuntimeError(f"{context}: {content}")
@@ -471,28 +475,172 @@ def pixel_delta(left: Image.Image, right: Image.Image, tolerance: int) -> Image.
     return delta.point([0] * (tolerance + 1) + list(range(tolerance + 1, 256)))
 
 
-def save_diff(path: Path, left: Image.Image, right: Image.Image, delta: Image.Image | None) -> None:
-    # Different dimensions are shown side by side at native size.
+DIFF_LOW_COLOR = "#ffa4dc"
+DIFF_HIGH_COLOR = "#6500b8"
+DIFF_BASE_ONLY = "#ff9800"
+DIFF_CANDIDATE_ONLY = "#00bcd4"
+DIFF_LEGEND = ("White and transparent pixels are treated as background. Pink to violet shows the magnitude "
+               "of changes where both captures contain foreground or both show background.")
+
+
+def foreground_mask(image: Image.Image, tolerance: int) -> Image.Image:
+    white = Image.new("RGBA", image.size, "white")
+    on_white = Image.alpha_composite(white, image)
+    return pixel_delta(on_white, white, tolerance).point([0] + [255] * 255)
+
+
+def save_diff(
+    path: Path, left: Image.Image, right: Image.Image, delta: Image.Image | None, tolerance: int
+) -> None:
+    coverage_a = coverage_b = None
     if delta is None:
-        panel = Image.new("RGBA", (left.width + right.width, max(left.height, right.height)), "#808080")
+        # Align different sizes at the top left and mark pixels present on only one side.
+        size = (max(left.width, right.width), max(left.height, right.height))
+        panel = Image.new("RGBA", size)
         panel.paste(left, (0, 0))
-        panel.paste(right, (left.width, 0))
+        candidate = Image.new("RGBA", size)
+        candidate.paste(right, (0, 0))
+        coverage_a = Image.new("L", size)
+        coverage_b = Image.new("L", size)
+        coverage_a.paste(255, (0, 0, *left.size))
+        coverage_b.paste(255, (0, 0, *right.size))
+        delta = ImageChops.lighter(pixel_delta(panel, candidate, tolerance),
+                                  ImageChops.difference(coverage_a, coverage_b))
     else:
-        panel = ImageOps.grayscale(left).convert("RGB")
-        red = ImageOps.colorize(delta, "#800000", "#ff0000")
-        panel.paste(red, mask=delta.point([0] + [255] * 255))
+        panel, candidate = left, right
+
+    foreground_a = foreground_mask(panel, tolerance)
+    foreground_b = foreground_mask(candidate, tolerance)
+    only_a = ImageChops.subtract(foreground_a, foreground_b)
+    only_b = ImageChops.subtract(foreground_b, foreground_a)
+    if coverage_a is not None and coverage_b is not None:
+        only_a = ImageChops.lighter(only_a, ImageChops.subtract(coverage_a, coverage_b))
+        only_b = ImageChops.lighter(only_b, ImageChops.subtract(coverage_b, coverage_a))
+
+    background = panel.convert("L").convert("RGBA")
+    background.putalpha(panel.getchannel("A"))
+    changed = delta.point([0] + [255] * 255)
+    colors = ImageOps.colorize(delta, DIFF_LOW_COLOR, DIFF_HIGH_COLOR)
+    background.paste(colors, mask=changed)
+    bounds = (0, 0, *background.size)
+    background.paste(DIFF_BASE_ONLY, bounds, ImageChops.darker(only_a, changed))
+    background.paste(DIFF_CANDIDATE_ONLY, bounds, ImageChops.darker(only_b, changed))
     path.parent.mkdir(parents=True, exist_ok=True)
-    panel.save(path)
+    background.save(path)
+
+
+def capture_image_location(key: str) -> tuple[str, int] | None:
+    # Captures use model.gaml/experiment/display/step-N.png under images/.
+    parts = key.split("/")
+    model_parts = parts[:-3]
+    step = re.fullmatch(r"step-(\d+)\.png", parts[-1])
+    if not model_parts or not model_parts[-1].lower().endswith(".gaml") or step is None:
+        return None
+    if model_parts[0] == "images" and len(model_parts) > 1:
+        model_parts = model_parts[1:]
+    return "/".join(model_parts), int(step[1])
+
+
+def summarize_missing(
+    paths: Iterable[str], locations: dict[str, tuple[str, int] | None], other_models: set[str]
+) -> tuple[list[dict[str, Any]], set[str], set[str]]:
+    missing_by_model: dict[str, list[str]] = {}
+    ungrouped = set()
+    for path in sorted(paths):
+        location = locations[path]
+        if location is None:
+            ungrouped.add(path)
+        else:
+            model, _ = location
+            missing_by_model.setdefault(model, []).append(path)
+
+    entries = []
+    for model, files in sorted(missing_by_model.items()):
+        entry: dict[str, Any] = {"model": model}
+        if model in other_models:
+            entry["files"] = files
+        entries.append(entry)
+    entries.extend({"file": path} for path in sorted(ungrouped))
+    return entries, set(missing_by_model), ungrouped
+
+
+def write_html_preview(
+    path: Path, overview: str, previews: Iterable[tuple[str, int | str, list[str]]],
+    capture_names: tuple[str, str],
+) -> None:
+    baseline_name, candidate_name = map(escape, capture_names)
+    titles = (baseline_name, candidate_name, "Diff")
+    by_model: dict[str, list[tuple[int | str, list[str]]]] = {}
+    for model, step, urls in previews:
+        by_model.setdefault(model, []).append((step, urls))
+
+    with path.open("w", encoding="utf-8") as stream:
+        def write_table(images: Iterable[tuple[int | str, list[str]]]) -> None:
+            columns = "".join(f"<th>{title}</th>" for title in titles)
+            stream.write(f"<table><thead><tr><th>Step</th>{columns}</tr></thead><tbody>\n")
+            for step, urls in images:
+                stream.write(f"<tr><td>{escape(str(step))}</td>")
+                for title, url in zip(titles, urls):
+                    url = escape(url, quote=True)
+                    stream.write(f'<td><a href="{url}"><img src="{url}" alt="{title}" '
+                                 'loading="lazy" decoding="async"></a></td>')
+                stream.write("</tr>\n")
+            stream.write("</tbody></table>\n")
+
+        stream.write("""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAMA visual comparison</title>
+<style>
+body { font: 1rem system-ui, sans-serif; margin: 1rem; }
+section { margin: 1.5rem 0; }
+h2 { margin-bottom: .25rem; overflow-wrap: anywhere; }
+.model-path { margin: 0 0 .5rem; overflow-wrap: anywhere; }
+details { margin-top: .5rem; }
+summary { cursor: pointer; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+th, td { border: 1px solid #bbb; padding: .35rem; overflow-wrap: anywhere; }
+th { background: #eee; color: #111; }
+th:first-child { width: 4rem; }
+img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
+</style>
+<h1>GAMA visual comparison</h1>
+""")
+        stream.write(f"<p>{escape(overview)} · <a href=\"report.json\">JSON report</a></p>\n")
+        stream.write(f'<p>Grayscale background: {baseline_name}. '
+                     f'<span style="color: {DIFF_BASE_ONLY}" aria-hidden="true">■</span> '
+                     f'Orange: only in {baseline_name}. '
+                     f'<span style="color: {DIFF_CANDIDATE_ONLY}" aria-hidden="true">■</span> '
+                     f'Cyan: only in {candidate_name}.</p>\n')
+        stream.write(f'<p><span aria-hidden="true" style="display: inline-block; width: 3rem; height: .75rem; '
+                     f'background: linear-gradient(90deg, {DIFF_LOW_COLOR}, {DIFF_HIGH_COLOR})"></span> '
+                     f'{DIFF_LEGEND}</p>\n')
+        if not by_model:
+            stream.write("<p>No visual differences to preview.</p>\n")
+        for model, images in sorted(by_model.items()):
+            images.sort(key=lambda image: image[0] if isinstance(image[0], int) else -1)
+            name = Path(model).name
+            stream.write(f"<section><h2>{escape(name)}</h2>\n")
+            if name != model:
+                stream.write(f'<p class="model-path">{escape(model)}</p>\n')
+            write_table(images[:1])
+            if len(images) > 1:
+                stream.write(f"<details><summary>Show {len(images) - 1} more comparisons</summary>\n")
+                write_table(images[1:])
+                stream.write("</details>\n")
+            stream.write("</section>\n")
+        stream.write("</html>\n")
 
 
 def compare(args: argparse.Namespace) -> int:
     base, candidate, output = (path.resolve() for path in (args.baseline, args.candidate, args.output))
+    capture_names = (base.name, candidate.name) if base.name != candidate.name else (str(base), str(candidate))
     for root in (base, candidate):
         if output.is_relative_to(root) or root.is_relative_to(output):
             raise ValueError("The report directory must be separate from both inputs")
     before, after = png_tree(base), png_tree(candidate)
     new_output(output)
-    rows = []
     errors = []
     if not before and not after:
         errors.append("Neither input contains PNGs")
@@ -504,9 +652,8 @@ def compare(args: argparse.Namespace) -> int:
                     errors.append(f"Incomplete {label} capture (see capture.json)")
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 errors.append(f"Invalid {label} capture manifest: {exc}")
-    for key in sorted(before.keys() | after.keys()):
-        row = {"image": key}
-        rows.append(row)
+    def compare_image(key: str) -> dict[str, Any]:
+        row: dict[str, Any] = {"image": key}
         try:
             left = rgba(before[key]) if key in before else None
             right = rgba(after[key]) if key in after else None
@@ -515,17 +662,16 @@ def compare(args: argparse.Namespace) -> int:
             elif right is None:
                 row["status"] = "removed"
             elif left.size != right.size:
-                row.update(status="size_changed", baseline_size=left.size, candidate_size=right.size)
+                row["status"] = "size_changed"
                 delta = None
             else:
                 delta = pixel_delta(left, right, args.channel_tolerance)
                 changed = left.width * left.height - delta.histogram()[0]
                 changed_fraction = changed / (left.width * left.height)
-                row.update(status="changed" if changed_fraction > args.max_changed_fraction else "equal",
-                           changed_pixels=changed, changed_fraction=changed_fraction)
+                row["status"] = "changed" if changed_fraction > args.max_changed_fraction else "equal"
             if row["status"] in {"changed", "size_changed"}:
                 diff = Path("diff") / key
-                save_diff(output / diff, left, right, delta)
+                save_diff(output / diff, left, right, delta, args.channel_tolerance)
                 row["diff"] = diff.as_posix()
         except (OSError, ValueError, Image.DecompressionBombError) as exc:
             row.update(status="error", error=str(exc))
@@ -537,34 +683,90 @@ def compare(args: argparse.Namespace) -> int:
                     destination.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(index[key], destination)
                     row[label] = relative.as_posix()
+        return row
 
-    counts = Counter(row["status"] for row in rows)
-    differences = sum(counts[k] for k in ("added", "removed", "changed", "size_changed"))
-    exit_code = 2 if errors or counts["error"] else int(bool(differences))
-    write_json(output / "report.json", {
-        "counts": dict(counts), "errors": errors, "differences": differences,
-        "channel_tolerance": args.channel_tolerance, "max_changed_fraction": args.max_changed_fraction,
-        "exit_code": exit_code, "images": rows,
-    })
-    lines = ["## GAMA visual comparison", "",
-             f"{len(rows)} PNG(s), {differences} difference(s), {len(errors) + counts['error']} error(s).", ""]
+    keys = sorted(before.keys() | after.keys())
+    if args.threads == 1:
+        rows = [compare_image(key) for key in keys]
+    else:
+        # Each worker writes its own image paths. map keeps the report in sorted order.
+        with ThreadPoolExecutor(max_workers=args.threads) as executor:
+            rows = list(executor.map(compare_image, keys))
+
+    locations = {key: capture_image_location(key) for key in keys}
+    models_a = {locations[key][0] for key in before if locations[key] is not None}
+    models_b = {locations[key][0] for key in after if locations[key] is not None}
+    only_in_a, missing_models_b, missing_files_b = summarize_missing(
+        before.keys() - after.keys(), locations, models_b,
+    )
+    only_in_b, missing_models_a, missing_files_a = summarize_missing(
+        after.keys() - before.keys(), locations, models_a,
+    )
+    first_divergence: dict[str, int] = {}
+    other_differences = []
+    for row in rows:
+        if row["status"] == "error":
+            errors.append(f"{row['image']}: {row['error']}")
+        if row["status"] not in {"changed", "size_changed"}:
+            continue
+        location = locations[row["image"]]
+        if location is None:
+            other_differences.append(row["image"])
+            continue
+        model, number = location
+        first_divergence[model] = min(first_divergence.get(model, number), number)
+
+    different_models = len(first_divergence.keys() | missing_models_a | missing_models_b)
+    different_files = len(missing_files_a | missing_files_b | set(other_differences))
+    exit_code = 2 if errors else int(bool(different_models or different_files))
+    report = {
+        "captures": {"a": capture_names[0], "b": capture_names[1]},
+        "compared_files": len(before.keys() & after.keys()),
+        "different_models": different_models,
+        "only_in_a": only_in_a,
+        "only_in_b": only_in_b,
+        "divergent_models": [{"model": model, "first_step": step}
+                             for model, step in sorted(first_divergence.items())],
+    }
+    if other_differences:
+        report["other_differences"] = other_differences
+    if different_files:
+        report["different_ungrouped_files"] = different_files
+    if errors:
+        report["errors"] = errors
+    write_json(output / "report.json", report)
+    totals = f"{different_models} model(s) with differences"
+    if different_files:
+        totals += f", {different_files} differing PNG(s) outside the capture layout"
+    overview = f"{len(rows)} PNG(s), {totals}, {len(errors)} error(s)."
+    lines = ["## GAMA visual comparison", "", overview, ""]
     # GitHub's job summary stays short. The artifact carries every path and all images.
     lines.extend(f"- {error}" for error in errors)
     github_summary = "\n".join(lines + ["", "See the `gama-visual-report` artifact for the full report.", ""])
-    lines.extend(["", "| Image | Status | Baseline | Candidate | Diff |",
+    baseline_name, candidate_name = (escape(name).replace("|", "&#124;").replace("[", "&#91;")
+                                     .replace("]", "&#93;") for name in capture_names)
+    lines.extend(["", f"Grayscale background: {baseline_name}. Orange: only in {baseline_name}. "
+                  f"Cyan: only in {candidate_name}. {DIFF_LEGEND}", "",
+                  f"| Model | Step | {baseline_name} | {candidate_name} | Diff |",
                   "| --- | --- | --- | --- | --- |"])
+    previews = []
     for row in rows:
-        if row["status"] == "equal":
+        if row["status"] not in {"changed", "size_changed"}:
             continue
-        image = row["image"].replace("|", "&#124;").replace("<", "&lt;").replace("\n", " ")
-        links = [f"[PNG]({quote(row[label])})" if label in row else ""
-                 for label in ("baseline", "candidate", "diff")]
-        lines.append(f"| {image} | {row['status']} | " + " | ".join(links) + " |")
+        location = locations[row["image"]]
+        model, step = location if location is not None else (row["image"], "")
+        name = Path(model).name
+        urls = [quote(row[label]) for label in ("baseline", "candidate", "diff")]
+        previews.append((model, step, urls))
+        markdown_name = name.replace("|", "&#124;").replace("<", "&lt;").replace("\n", " ")
+        links = [f"![{title}]({url})" for title, url in zip((baseline_name, candidate_name, "Diff"), urls)]
+        lines.append(f"| {markdown_name} | {step} | " + " | ".join(links) + " |")
     (output / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_html_preview(output / "summary.html", overview, previews, capture_names)
     if summary := os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(summary, "a", encoding="utf-8") as stream:
             stream.write(github_summary)
-    print(f"{len(rows)} PNG(s), {differences} difference(s). Report: {output / 'report.json'}")
+    print(f"{len(rows)} PNG(s), {totals}. Report: {output / 'summary.html'}")
     return exit_code
 
 
@@ -640,6 +842,8 @@ def main() -> int:
     diff.add_argument("baseline", type=Path)
     diff.add_argument("candidate", type=Path)
     diff.add_argument("output", type=Path)
+    diff.add_argument("--threads", type=positive_int, default=1,
+                      help="maximum number of images compared concurrently (default: 1)")
     diff.add_argument("--channel-tolerance", type=int, choices=range(256), metavar="0..255", default=0)
     diff.add_argument("--max-changed-fraction", type=fraction, default=0)
     args = parser.parse_args()
