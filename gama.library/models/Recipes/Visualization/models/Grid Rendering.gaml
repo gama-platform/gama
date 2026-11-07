@@ -16,7 +16,7 @@ grid lane width: 200 height: 10 {
 experiment "Grid Rendering" type: gui {
 	output {
 		layout #horizontal;
-		display "OpenGL" type: opengl {
+		display "OpenGL" type: opengl map_order: true {
 			grid lane border: #black;
 		}
 	}

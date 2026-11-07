@@ -55,9 +55,12 @@ public class StaticLayerObject extends LayerObject {
 			if (currentList.isEmpty()) { fillWithObjects(currentList); }
 			gl.suspendZTranslation();
 			final boolean previous = gl.setDisplayLighting(false);
-			super.draw(gl);
-			gl.setDisplayLighting(previous);
-			gl.resumeZTranslation();
+			try {
+				super.draw(gl);
+			} finally {
+				gl.setDisplayLighting(previous);
+				gl.resumeZTranslation();
+			}
 
 		}
 

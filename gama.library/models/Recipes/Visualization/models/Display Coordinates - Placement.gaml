@@ -37,7 +37,7 @@ experiment "1 - Viewport placement" type: gui {
                 draw "16-pixel outer margin" at: {12, 54} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }
 
@@ -97,7 +97,7 @@ experiment "3 - Full frames by default" type: gui {
                 draw circle(6#px) at: {-16, -16} color: #red;
             }
         }
-        display "OpenGL full frames" parent: "Full world and screen frames" type: opengl {}
+        display "OpenGL full frames" parent: "Full world and screen frames" type: opengl map_order: true {}
         display "Full chart frame" type: 3d {
             // Charts also default to screen placement and a full viewport-sized frame.
             chart "Cycle" type: series {

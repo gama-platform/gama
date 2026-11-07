@@ -185,7 +185,7 @@ experiment default_experiment type: gui {
 	parameter "Show sheltered prey" var: show_sheltered_preys category: "Appearance";
 	parameter "Show prey perception" var: show_perception category: "Appearance";
 	output {
-		display default_display background: backdrop type: 3d axes: false camera: #from_above {
+		display default_display background: backdrop type: 3d axes: false camera: #from_above map_order: true {
 			species shelter coordinates: #world aspect: default {
 				// Nested species inherit the host's world context; only the historical Z offset is set here.
 				species prey_in_shelter aspect: default position: {0, 0, 0.1};

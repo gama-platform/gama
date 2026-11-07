@@ -41,6 +41,6 @@ experiment "Contextual constants" type: gui {
                 draw circle(10#px) at: {0.9, 120} color: #red;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }

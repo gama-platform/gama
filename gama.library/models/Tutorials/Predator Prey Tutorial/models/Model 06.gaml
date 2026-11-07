@@ -149,7 +149,7 @@ experiment prey_predator type: gui {
 	parameter 'Predator energy reproduce: ' var: predator_energy_reproduce category: 'Predator';
 
 	output {
-		display main_display {
+		display main_display map_order: true {
 			grid vegetation_cell border: #black;
 			species prey aspect: base;
 			species predator aspect: base;

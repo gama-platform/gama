@@ -329,8 +329,11 @@ public class SceneHelper extends AbstractRendererHelper {
 		if (picking.isBeginningPicking()) {
 			// DEBUG.OUT("In SceneHelper.draw, beginning picking");
 			picking.beginPicking();
-			getSceneToRender().draw(gl);
-			picking.endPicking();
+			try {
+				if (picking.shouldRenderPicking()) { getSceneToRender().draw(gl); }
+			} finally {
+				picking.endPicking();
+			}
 		}
 		// we draw the scene on screen
 		getSceneToRender().draw(gl);

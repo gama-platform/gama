@@ -19,6 +19,32 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Improved OpenGL rendering for maps and map-like environments
+
+Both OpenGL backends now support **map ordering**, an opt-in rendering mode for flat maps and
+map-like environments where overlapping backgrounds, grids, roads, polygons, agents and labels
+should follow their existing drawing order. Instead of letting the depth buffer decide which
+coplanar fragments are visible, it composites world layers and drawings in traversal order:
+later fragments cover or blend over earlier ones. This provides a more reliable way to avoid
+z-fighting between overlapping map elements than small depth offsets alone.
+
+Enable it per display with `map_order: true`, or enable **Displays > OpenGL Rendering Properties >
+In OpenGL, draw world layers in map order instead of using 3D depth**. The preference defaults to
+`false`; an explicit display facet overrides it. Java2D is unaffected. Selected library map displays
+have been updated to demonstrate the option.
+
+Map ordering disables world depth testing and writes, including within individual drawings, so it
+is not a general solution for 3D scenes: elevated surfaces, meshes and overlapping faces may no
+longer appear in spatial depth order. Camera clipping still applies, screen layers keep their
+existing ordering, and picking has backend-specific limitations. Legacy orthographic OpenGL also
+now uses the same camera-depth direction as perspective and OpenGL4, so overlapping geometry in
+existing depth-based displays can look different even when map ordering is disabled.
+
+**Migration:** existing displays do not opt in automatically. Add the facet to suitable displays
+or enable the preference; use `map_order: false` to retain depth-based rendering for a particular
+display when the preference is enabled. See [map-order migration](MIGRATION_GUIDE_2026.md#map-order-for-opengl-displays)
+and the [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#map-ordering-in-opengl).
+
 ### Display viewport dimensions and mouse-coordinate aliases
 
 `#display_width` and `#display_height` now always return the visible viewport dimensions in logical pixels,

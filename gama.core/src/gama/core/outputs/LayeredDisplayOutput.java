@@ -144,6 +144,12 @@ import gama.dev.DEBUG;
 						optional = true,
 						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in __PREFS__")),
 
+				@facet (
+						name = "map_order",
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("In OpenGL displays, draw world layers and drawings in traversal order instead of using 3D depth. Intended for flat maps: later drawings cover earlier drawings regardless of elevation. Overrides the OpenGL map-order preference; defaults to that preference, initially false.")),
+
 				/// LIGHT FACETS
 				@facet (
 						name = IKeyword.IS_LIGHT_ON,

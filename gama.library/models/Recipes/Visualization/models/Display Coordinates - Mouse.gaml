@@ -46,6 +46,6 @@ experiment "Mouse in three referentials" type: gui {
                     at: {12, 222} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }

@@ -18,7 +18,7 @@ experiment "Display Coordinates" type: gui {
     text "Purpose: compare a camera-attached world with fixed screen-space information. The blue marker represents the same world location in the main view and the mini-map; the chart plots its X coordinate." category: "What this demonstrates";
     text "Try: run the simulation, resize each display, then zoom and pan independently.<br/>Expected: the main grey world follows the camera. The HUD, mini-map frame and chart stay fixed in the viewport. The mini-map preserves proportions, so unused white space is normal. Compare Java2D and OpenGL. For OpenGL4, open OpenGL Comparison - Coordinates." category: "What this demonstrates";
     output {
-        display "Java2D" type: 3d {
+        display "Java2D" type: 3d map_order: true {
             graphics "World" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
                 draw line([{0, 50}, {100, 50}]) color: #white;
@@ -49,6 +49,6 @@ experiment "Display Coordinates" type: gui {
                 data "X" value: marker.x color: #blue;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }

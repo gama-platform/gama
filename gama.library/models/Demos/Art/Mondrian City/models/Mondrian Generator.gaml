@@ -115,7 +115,7 @@ experiment MondrianGenerator type: gui {
 	parameter "Nb max of columns: " var: nb_max_columns;
 	
 	output {
-		display map type: 3d axes:false{
+		display map type: 3d axes:false map_order: true{
 			species lines ;											
 			species squares ;	
 		}

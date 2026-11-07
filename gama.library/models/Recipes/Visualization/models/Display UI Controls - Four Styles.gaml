@@ -86,7 +86,7 @@ experiment "Four styles together" type: gui {
 		create simulation(name: "Minimalist", seed: 1.0,
 			style_name: "Minimalist", scene_color: #white,
 			panel_color: nil, panel_border: nil, control_color: nil,
-			outline_color: nil, text_color: #black, accent_color: #black,
+			outline_color: #gray, text_color: #black, accent_color: #black,
 			round_controls: false, round_panel: false,
 			panel_font: font("Helvetica", 13), title_font: font("Helvetica", 18));
 		create simulation(name: "Midnight Arcade", seed: 1.0,

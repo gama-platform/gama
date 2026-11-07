@@ -56,6 +56,7 @@ import gama.ui.display.opengl.renderer.caches.ITextureCache;
 import gama.ui.display.opengl.renderer.caches.PolygonTessellationCache;
 import gama.ui.display.opengl.renderer.caches.TextureCache2;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.geometry.GeometryDrawer;
@@ -208,9 +209,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 
 	/** The saved Z translation. */
 	private double currentZIncrement, currentZTranslation, savedZTranslation;
-
-	/** The Z translation suspended. */
-	private volatile boolean ZTranslationSuspended;
 
 	/** The end scene. */
 	// private final boolean useJTSTriangulation = !GamaPreferences.Displays.OPENGL_TRIANGULATOR.getValue();
@@ -477,9 +475,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			gl.glOrtho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
+			gl.glOrtho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, -maxDim * 10, maxDim * 10);
 		} else {
-			gl.glOrtho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
+			gl.glOrtho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, -maxDim * 10, maxDim * 10);
 		}
 
 		// else {
@@ -532,18 +530,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Computes the translation in Z to enable z-fighting, using the current z increment, computed by ModelScene. The
-	 * translations are cumulative
-	 */
-	public void translateByZIncrement() {
-		if (!ZTranslationSuspended) { currentZTranslation += currentZIncrement; }
-	}
-
-	/**
 	 * Suspend Z translation.
 	 */
 	public void suspendZTranslation() {
-		ZTranslationSuspended = true;
 		savedZTranslation = currentZTranslation;
 		currentZTranslation = 0;
 	}
@@ -552,7 +541,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * Resume Z translation.
 	 */
 	public void resumeZTranslation() {
-		ZTranslationSuspended = false;
 		currentZTranslation = savedZTranslation;
 	}
 
@@ -562,6 +550,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @return the current Z translation
 	 */
 	public double getCurrentZTranslation() { return currentZTranslation; }
+
+	@Override
+	public void setCurrentZTranslation(final double translation) { currentZTranslation = translation; }
 
 	/**
 	 * Gets the current Z increment.
@@ -854,7 +845,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (!isWireframe()) {
 			if (computeNormal) { setNormal(yNegatedVertices, clockwise); }
 			final int style = number == 4 ? GL2ES3.GL_QUADS : number == -1 ? GL2.GL_POLYGON : GL.GL_TRIANGLES;
-			drawVertices(style, yNegatedVertices, number, clockwise);
+			try (var offset = PolygonOffset.forOutline(this, border != null)) {
+				drawVertices(style, yNegatedVertices, number, clockwise);
+			}
 		}
 		if (border != null || isWireframe()) {
 			final IColor colorToUse = border != null ? border : getCurrentColor();
@@ -918,14 +911,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Outputs a single vertex to OpenGL, applying the z-translation to it
+	 * Outputs a single vertex to OpenGL.
 	 *
 	 * @param x
 	 * @param y
 	 * @param z
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
-		gl.glVertex3d(x, y, z + currentZTranslation);
+		gl.glVertex3d(x, y, z);
 	}
 
 	/**
@@ -1476,7 +1469,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
 		if (index != null) {
-			drawList(index);
+			try (var offset = PolygonOffset.forOutline(this, border != null && !isWireframe())) {
+				drawList(index);
+			}
 			if (border != null || isWireframe()) {
 				final IColor colorToUse = border != null ? border : getCurrentColor();
 				final IColor old = swapCurrentColor(colorToUse);
@@ -1503,7 +1498,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (geometryCache == null || id == null) return;
 		final BuiltInGeometry object = geometryCache.get(id);
 		if (object == null) return;
-		if (!isWireframe()) { object.draw(this); }
+		if (!isWireframe()) {
+			try (var offset = PolygonOffset.forOutline(this, border != null)) {
+				object.draw(this);
+			}
+		}
 		if (border != null || isWireframe()) {
 			final IColor colorToUse = border != null ? border : getCurrentColor();
 			final IColor old = swapCurrentColor(colorToUse);
@@ -1567,7 +1566,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void endObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		disableTextures();
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		translateByZIncrement();
 		if (object.isFilled() && !object.getAttributes().isSynthetic()) {
 			gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE);
 		}
@@ -1589,8 +1587,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final IColor backgroundColor = getData().getBackgroundColor();
 		gl.glClearColor(backgroundColor.red() / 255.0f, backgroundColor.green() / 255.0f,
 				backgroundColor.blue() / 255.0f, 1.0f);
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
+		gl.glDepthMask(true);
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
 		updatePerspective();
 		resetMatrix(GLMatrixFunc.GL_MODELVIEW);

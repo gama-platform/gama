@@ -33,6 +33,7 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.IOpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
 
 import gama.api.types.color.GamaColorFactory;
@@ -112,6 +113,12 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 
 	/** The basic shader. */
 	private BasicShader basicShader;
+
+	private int currentPickingId = -1;
+
+	public void loadPicking(final BasicShader shader, final float alpha) {
+		shader.loadPicking(renderer.getPickingHelper().isBeginningPicking(), currentPickingId, alpha);
+	}
 
 	/**
 	 * Gets the basic shader. Used by {@link gama.ui.display.opengl4.renderer.helpers.LightHelper} to push
@@ -275,9 +282,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 
 	/** The saved Z translation. */
 	private double currentZIncrement, currentZTranslation, savedZTranslation;
-
-	/** The Z translation suspended. */
-	private volatile boolean ZTranslationSuspended;
 
 	/** The end scene. */
 	// private final boolean useJTSTriangulation = !GamaPreferences.Displays.OPENGL_TRIANGULATOR.getValue();
@@ -556,9 +560,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			// JOML ortho(left, right, bottom, top, zNear, zFar) requires zNear < zFar.
-			// The original glOrtho used (near=maxDim*10, far=-maxDim*10), which flipped Z.
-			// Reproduce that by passing negative near and positive far to JOML.
+			// Match the normal depth direction of the perspective projection and the legacy backend.
 			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, -maxDim * 10,
 					maxDim * 10);
 		} else {
@@ -624,18 +626,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Computes the translation in Z to enable z-fighting, using the current z increment, computed by ModelScene. The
-	 * translations are cumulative
-	 */
-	public void translateByZIncrement() {
-		if (!ZTranslationSuspended) { currentZTranslation += currentZIncrement; }
-	}
-
-	/**
 	 * Suspend Z translation.
 	 */
 	public void suspendZTranslation() {
-		ZTranslationSuspended = true;
 		savedZTranslation = currentZTranslation;
 		currentZTranslation = 0;
 	}
@@ -644,7 +637,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * Resume Z translation.
 	 */
 	public void resumeZTranslation() {
-		ZTranslationSuspended = false;
 		currentZTranslation = savedZTranslation;
 	}
 
@@ -654,6 +646,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @return the current Z translation
 	 */
 	public double getCurrentZTranslation() { return currentZTranslation; }
+
+	@Override
+	public void setCurrentZTranslation(final double translation) { currentZTranslation = translation; }
 
 	/**
 	 * Gets the current Z increment.
@@ -819,6 +814,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The current vertex count. */
 	private int currentVertexCount = 0;
 
+	private boolean currentDrawHasTransparency;
+
 	/** The vao id. */
 	private int vaoId = -1;
 
@@ -854,6 +851,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		currentTexCoords.clear();
 		currentNormals.clear();
 		currentVertexCount = 0;
+		currentDrawHasTransparency = false;
 	}
 
 	/**
@@ -912,6 +910,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
 		basicShader.loadUseTexture(hasTex);
 		basicShader.loadPremultiplyTexture(hasTex);
+		loadPicking(basicShader, 1f);
 
 		// --- lighting uniforms ---
 		basicShader.loadUseLighting(hasNormals);
@@ -919,21 +918,25 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		// TextureCache2 uploads straight-alpha pixels. Like legacy OpenGL, textured draws use GL_ONE so that
 		// object transparency reveals the background without dimming the texture; the shader premultiplies
 		// the texel alpha to avoid fringes.
-		gl.glEnable(GL.GL_BLEND);
+		final boolean pickingPass = renderer.getPickingHelper().isBeginningPicking();
+		if (!pickingPass) { gl.glEnable(GL.GL_BLEND); }
 		gl.glBlendFunc(hasTex ? GL.GL_ONE : GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		// For transparent draws, disable depth-buffer writes so that objects behind a
 		// semi-transparent surface remain visible (depth *testing* is kept on).
-		boolean transparent = currentObjectAlpha < 1.0 || (currentColor != null && currentColor.alpha() < 255);
-		if (transparent) { gl.glDepthMask(false); }
-
-		gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
-
-		if (transparent) { gl.glDepthMask(true); }
-		if (hasTex) { gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); }
-
-		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
-		gl.glBindVertexArray(0);
-		basicShader.stop();
+		final byte[] previousDepthMask = new byte[1];
+		if (currentDrawHasTransparency && !pickingPass) {
+			gl.glGetBooleanv(GL.GL_DEPTH_WRITEMASK, previousDepthMask, 0);
+			gl.glDepthMask(false);
+		}
+		try {
+			gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
+		} finally {
+			if (currentDrawHasTransparency && !pickingPass) { gl.glDepthMask(previousDepthMask[0] != 0); }
+			if (hasTex) { gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); }
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+			gl.glBindVertexArray(0);
+			basicShader.stop();
+		}
 	}
 
 	/**
@@ -1072,7 +1075,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (!isWireframe()) {
 			if (computeNormal) { setNormal(yNegatedVertices, clockwise); }
 			final int style = number == 4 ? GL.GL_TRIANGLE_FAN : number == -1 ? GL.GL_TRIANGLE_FAN : GL.GL_TRIANGLES;
-			drawVertices(style, yNegatedVertices, number, clockwise);
+			try (var offset = PolygonOffset.forOutline(this, border != null)) {
+				drawVertices(style, yNegatedVertices, number, clockwise);
+			}
 		}
 		if (border != null || isWireframe()) {
 			final IColor colorToUse = border != null ? border : getCurrentColor();
@@ -1162,7 +1167,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Outputs a single vertex to OpenGL, applying the z-translation to it
+	 * Outputs a single vertex to OpenGL.
 	 *
 	 * @param x
 	 * @param y
@@ -1172,14 +1177,16 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		ensureCapacity(currentVertices, 3);
 		currentVertices.put((float) x);
 		currentVertices.put((float) y);
-		currentVertices.put((float) (z + currentZTranslation));
+		currentVertices.put((float) z);
 		ensureCapacity(currentColors, 4);
 		currentColors.put((float) (currentColor.red() / 255.0));
 		currentColors.put((float) (currentColor.green() / 255.0));
 		currentColors.put((float) (currentColor.blue() / 255.0));
 		// Multiply the color's own alpha by the current object (layer) alpha so that
 		// both per-color transparency and layer-level transparency are honoured.
-		currentColors.put((float) (currentColor.alpha() / 255.0 * currentObjectAlpha));
+		final float alpha = (float) (currentColor.alpha() / 255.0 * currentObjectAlpha);
+		currentColors.put(alpha);
+		currentDrawHasTransparency |= alpha < 1.0f;
 		// Replicate the current face normal for this vertex
 		ensureCapacity(currentNormals, 3);
 		currentNormals.put((float) currentNormal.getX());
@@ -1684,15 +1691,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Register for selection. Encodes the object index into the current colour using the colour-buffer picking
-	 * convention: red = low byte, green = high byte, blue = 0 (background uses blue = 0xFF). This colour will be
-	 * emitted by subsequent {@link #outputVertex} calls during the picking pass.
+	 * Registers the object index for the colour-buffer picking pass.
 	 *
 	 * @param index
-	 *            the object index (0…65535)
+	 *            the drawing attributes index
 	 */
 	public void registerForSelection(final int index) {
-		setCurrentColor((index & 0xFF) / 255.0, (index >> 8 & 0xFF) / 255.0, 0.0, 1.0);
+		currentPickingId = ((gama.ui.display.opengl4.renderer.helpers.PickingHelper) renderer.getPickingHelper())
+				.idFor(index);
 	}
 
 	// LISTS
@@ -1756,7 +1762,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
 		if (index != null) {
-			drawList(index);
+			try (var offset = PolygonOffset.forOutline(this, border != null && !isWireframe())) {
+				drawList(index);
+			}
 			if (border != null || isWireframe()) {
 				final IColor colorToUse = border != null ? border : getCurrentColor();
 				final IColor old = swapCurrentColor(colorToUse);
@@ -1783,7 +1791,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (geometryCache == null || id == null) return;
 		final BuiltInGeometry object = geometryCache.get(id);
 		if (object == null) return;
-		if (!isWireframe()) { object.draw(this); }
+		if (!isWireframe()) {
+			try (var offset = PolygonOffset.forOutline(this, border != null)) {
+				object.draw(this);
+			}
+		}
 		if (border != null || isWireframe()) {
 			final IColor colorToUse = border != null ? border : getCurrentColor();
 			final IColor old = swapCurrentColor(colorToUse);
@@ -1822,8 +1834,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		IDrawingAttributes att = object.getAttributes();
 		currentTextureSmooth = att.isSmoothTexture();
-		if (isPicking) {
-			// Colour-buffer picking: encode the object index now and do NOT overwrite it below.
+		if (isPicking && renderer.getPickingHelper().isBeginningPicking()) {
 			registerForSelection(att.getIndex());
 		}
 		boolean empty = att.isEmpty();
@@ -1831,16 +1842,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		previousObjectLighting = setObjectLighting(att.isLighting());
 		previousObjectLineWidth = setLineWidth(att.getLineWidth().floatValue());
 		setCurrentTextures(object.getPrimaryTexture(this), object.getAlternateTexture(this));
-		gl.glEnable(GL.GL_BLEND);
+		if (!renderer.getPickingHelper().isBeginningPicking()) { gl.glEnable(GL.GL_BLEND); }
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		// Only set the visual colour when NOT in picking mode; during picking
-		// the colour is the ID-encoded value set by registerForSelection() above.
-		if (!isPicking) {
-			setCurrentColor(att.getColor());
-			if (!empty && !att.isSynthetic()) {
-				// removed glTexEnvi
-			}
-		}
+		setCurrentColor(att.getColor());
 	}
 
 	/**
@@ -1850,9 +1854,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the object
 	 */
 	public void endObject(final AbstractObject<?, ?> object, final boolean isPicking) {
+		currentPickingId = -1;
 		disableTextures();
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		translateByZIncrement();
 		if (object.isFilled() && !object.getAttributes().isSynthetic()) {
 			// removed glTexEnvi
 		}
@@ -1881,13 +1885,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final IColor backgroundColor = getData().getBackgroundColor();
 		gl.glClearColor(backgroundColor.red() / 255.0f, backgroundColor.green() / 255.0f,
 				backgroundColor.blue() / 255.0f, 1.0f);
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
+		// The depth write mask also controls depth clears.
+		gl.glDepthMask(true);
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		// Individual draw calls may override blending and must restore the straight-alpha equation.
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		// Depth mask on by default; transparent draws will temporarily turn it off.
-		gl.glDepthMask(true);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
 		updatePerspective();
 		resetMatrix(GLMatrixFunc.GL_MODELVIEW);

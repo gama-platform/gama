@@ -47,6 +47,6 @@ experiment "Font and anchor semantics" type: gui {
                     font: shared_font color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }

@@ -47,6 +47,7 @@ import com.jogamp.math.util.PMVMatrix4f;
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUtessellator;
 
@@ -62,6 +63,7 @@ import gama.dev.DEBUG;
 import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl.ITesselator;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.text.StringObject;
 
@@ -625,6 +627,14 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	@Override
 	protected void _draw(final StringObject s) {
 		final IDrawingAttributes attributes = s.getAttributes();
+		if (gl.getRenderer().getPickingHelper().isBeginningPicking()) {
+			if (attributes.isPerspective()) {
+				drawOutline(s.getObject(), attributes);
+			} else {
+				drawBillboardForPicking(s.getObject(), attributes);
+			}
+			return;
+		}
 		if (DIAGNOSTICS && diagnosticDraws < 12) {
 			DEBUG.ERR("[GL4-TEXT] dispatch perspective=" + attributes.isPerspective() + " depth="
 					+ attributes.getDepth() + " empty=" + attributes.isEmpty() + " border=" + attributes.getBorder()
@@ -755,8 +765,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		pmv.loadP(projection, 0);
 		pmv.loadMv(modelView, 0);
 		if (overlay) {
-			final Vec3f position = new Vec3f((float) p.getX(), (float) p.getY(),
-					(float) (p.getZ() + gl.getCurrentZTranslation()));
+			final Vec3f position = new Vec3f((float) p.getX(), (float) p.getY(), (float) p.getZ());
 			if (!viewportPosition) {
 				// Billboard text still needs the containing layer and camera to locate its anchor.
 				if (!pmv.mapObjToWin(position, new Recti(0, 0, (int) gl.getViewWidth(),
@@ -772,8 +781,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			pmv.orthoP(0, gl.getViewWidth(), 0, gl.getViewHeight(), -1, 1);
 			pmv.translateMv(position.x(), position.y(), 0);
 		} else {
-			pmv.translateMv((float) p.getX(), (float) p.getY(),
-					(float) (p.getZ() + gl.getCurrentZTranslation()));
+			pmv.translateMv((float) p.getX(), (float) p.getY(), (float) p.getZ());
 		}
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
@@ -884,6 +892,30 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *            the drawing attributes
 	 */
 	private void drawOutline(final String text, final IDrawingAttributes attributes) {
+		drawOutline(text, attributes, false);
+	}
+
+	private void drawBillboardForPicking(final String text, final IDrawingAttributes attributes) {
+		final IPoint p = attributes.getLocation();
+		final double[] position = new double[3];
+		if (!gl.project(p.getX(), p.getY(), p.getZ(), position)) return;
+		gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
+		try {
+			gl.ortho(0, gl.getViewWidth(), 0, gl.getViewHeight(), -1, 1);
+			gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW);
+			try {
+				gl.translateBy(position[0], gl.getViewHeight() - position[1], 0);
+				drawOutline(text, attributes, true);
+			} finally {
+				gl.pop(GLMatrixFunc.GL_MODELVIEW);
+			}
+		} finally {
+			gl.pop(GLMatrixFunc.GL_PROJECTION);
+			gl.matrixMode(GLMatrixFunc.GL_MODELVIEW);
+		}
+	}
+
+	private void drawOutline(final String text, final IDrawingAttributes attributes, final boolean billboard) {
 		final Font awtFont = attributes.getFont().getAwtFont();
 		final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
 		final Rectangle2D bounds = shape.getBounds2D();
@@ -897,7 +929,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		sideQuadsBuffer.clear();
 		currentIndex = -1;
 		process(shape.getPathIterator(AT, attributes.getPrecision()), gl.isWireframe());
-		drawOutlineText(attributes, bounds);
+		drawOutlineText(attributes, bounds, billboard);
 	}
 
 	/**
@@ -908,8 +940,9 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 * @param bounds
 	 *            the AWT outline bounds before the Y-axis flip
 	 */
-	private void drawOutlineText(final IDrawingAttributes attributes, final Rectangle2D bounds) {
-		final IPoint p = attributes.getLocation();
+	private void drawOutlineText(final IDrawingAttributes attributes, final Rectangle2D bounds,
+			final boolean billboard) {
+		final IPoint p = billboard ? GamaPointFactory.create(0, 0, 0) : attributes.getLocation();
 		IColor previous = null;
 		gl.pushMatrix();
 		try {
@@ -918,11 +951,10 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final double locX = rotated ? 0 : p.getX();
 			final double locY = rotated ? 0 : p.getY();
 			final double locZ = rotated ? 0 : p.getZ();
-			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
+			final float scale = billboard ? 1f : 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 			final double x = -bounds.getX() - width * anchor.getX();
 			final double y = bounds.getMaxY() - height * anchor.getY();
-			gl.translateBy(locX + x * scale, locY + y * scale,
-					locZ + gl.getCurrentZTranslation());
+			gl.translateBy(locX + x * scale, locY + y * scale, locZ);
 			gl.scaleBy(scale, scale, scale);
 			if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
 				gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text,
@@ -955,19 +987,21 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 
 	/** @see #drawOutlineText */
 	private IColor drawFacesAndBorder(IColor previous) {
-		drawFace(depth == 0);
-		if (depth > 0) {
-			gl.translateBy(0, 0, depth);
-			drawFace(true);
-			gl.translateBy(0, 0, -depth);
-			drawSide();
+		try (var offset = PolygonOffset.forOutline(gl, border != null)) {
+			drawFace(depth == 0);
+			if (depth > 0) {
+				gl.translateBy(0, 0, depth);
+				drawFace(true);
+				gl.translateBy(0, 0, -depth);
+				drawSide();
+			}
 		}
 		if (border != null) {
 			previous = gl.getCurrentColor();
 			gl.setCurrentColor(border);
-			gl.translateBy(0, 0, depth + 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, depth);
 			drawBorder();
-			gl.translateBy(0, 0, -depth - 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, -depth);
 		}
 		return previous;
 	}

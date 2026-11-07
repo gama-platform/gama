@@ -328,7 +328,7 @@ experiment corridor_xp type: gui {
 	
 	float minimum_cycle_duration <- 0.02;
 	output {
-		display map type: 3d axes: false{
+		display map type: 3d axes: false map_order: true{
 			graphics "east area" {
 				draw east color: #blue;
 			}

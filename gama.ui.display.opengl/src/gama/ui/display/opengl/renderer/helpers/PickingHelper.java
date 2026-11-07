@@ -218,7 +218,14 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 			// 5. gl.glRenderMode() methods return number of hits
 			final int howManyObjects = gl.glRenderMode(GL2.GL_RENDER);
 			// 6. Search the select buffer to find the nearest object
-			if (howManyObjects > 0) {
+			if (howManyObjects > 0 && getData().isMapOrder()) {
+				int offset = 0;
+				for (int i = 0; i < howManyObjects; i++) {
+					final int names = selectBuffer.get(offset);
+					if (names > 0) { selectedIndex = selectBuffer.get(offset + 2 + names); }
+					offset += 3 + names;
+				}
+			} else if (howManyObjects > 0) {
 				// simple searching algorithm
 				selectedIndex = selectBuffer.get(3);
 				int mindistance = Math.abs(selectBuffer.get(1));

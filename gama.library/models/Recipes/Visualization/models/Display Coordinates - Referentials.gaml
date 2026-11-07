@@ -58,7 +58,7 @@ experiment "1 - Placement versus referential" type: gui {
                 draw "overlay: proportional fit, unused space below" at: {16, 354} color: #purple;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }
 
@@ -82,6 +82,6 @@ experiment "2 - A spatial overlay" type: gui {
                     at: {16, 54} color: #purple;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }

@@ -66,7 +66,7 @@ experiment prey_predator type: gui {
 	parameter "Prey max transfer: " var: prey_max_transfer  category: "Prey";
 	parameter "Prey energy consumption: " var: prey_energy_consum  category: "Prey";
 	output {
-		display main_display {
+		display main_display map_order: true {
 			grid vegetation_cell border: #black;
 			species prey aspect: base;
 		}

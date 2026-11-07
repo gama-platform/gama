@@ -170,6 +170,9 @@ public class LayerObject {
 	/** The open GL list index. */
 	protected volatile Integer openGLListIndex;
 
+	private double listStartZTranslation, listZIncrement, drawingStartZTranslation;
+	private long drawingObjectIndex;
+
 	/** The is fading. */
 	protected volatile boolean isFading;
 
@@ -282,11 +285,17 @@ public class LayerObject {
 
 	private void drawInCoordinates(final IOpenGL gl) {
 		final boolean depthTest = gl.getGL().glIsEnabled(GL.GL_DEPTH_TEST);
-		if (hasDepth()) {
+		final boolean mapOrder = hasDepth() && renderer.getData().isMapOrder();
+		final byte[] depthWrite = new byte[1];
+		if (mapOrder) {
+			gl.getGL().glGetBooleanv(GL.GL_DEPTH_WRITEMASK, depthWrite, 0);
+			gl.getGL().glDepthMask(false);
+		}
+		if (hasDepth() && !mapOrder) {
 			gl.getGL().glEnable(GL.GL_DEPTH_TEST);
 		} else {
 			// Addition to fix #2228 and #2222
-			gl.suspendZTranslation();
+			if (!hasDepth()) { gl.suspendZTranslation(); }
 			gl.getGL().glDisable(GL.GL_DEPTH_TEST);
 		}
 		if (isScreenLayer()) {
@@ -308,6 +317,7 @@ public class LayerObject {
 			try {
 				stopDrawing(gl);
 			} finally {
+				if (mapOrder) { gl.getGL().glDepthMask(depthWrite[0] != 0); }
 				if (depthTest) {
 					gl.getGL().glEnable(GL.GL_DEPTH_TEST);
 				} else {
@@ -326,27 +336,39 @@ public class LayerObject {
 	 *            the picking
 	 */
 	protected void doDrawing(final IOpenGL gl) {
+		drawingStartZTranslation = gl.getCurrentZTranslation();
+		drawingObjectIndex = 0;
+		final boolean picking = renderer.getPickingHelper().isPicking() && isPickable();
 		if (isScreenLayer()) {
-			if (renderer.getPickingHelper().isPicking()) {
+			if (picking) {
 				gl.runWithNames(() -> drawAllObjects(gl, true));
 			} else {
 				drawAllObjects(gl, false);
 			}
 			return;
 		}
-		if (renderer.getPickingHelper().isPicking()) {
+		if (picking) {
 			gl.runWithNames(() -> drawAllObjects(gl, true));
 		} else if (isAnimated || hasAdaptiveDraws()) {
 			drawAllObjects(gl, false);
 		} else {
+			final boolean stored = gl.isDrawingStored();
+			if (stored && openGLListIndex != null
+					&& (Double.compare(listStartZTranslation, gl.getCurrentZTranslation()) != 0
+							|| Double.compare(listZIncrement, gl.getCurrentZIncrement()) != 0)) {
+				gl.deleteList(openGLListIndex);
+				openGLListIndex = null;
+			}
 			if (openGLListIndex == null) {
-				if (gl.isDrawingStored()) {
+				if (stored) {
 					for (final AbstractObject object : currentList.asArray()) {
 						if (!object.areTexturesAvailable(gl)) {
 							drawAllObjects(gl, false);
 							return;
 						}
 					}
+					listStartZTranslation = gl.getCurrentZTranslation();
+					listZIncrement = gl.getCurrentZIncrement();
 				}
 				openGLListIndex = gl.compileAsList(() -> drawAllObjects(gl, false));
 			}
@@ -505,6 +527,10 @@ public class LayerObject {
 		gl.setCurrentObjectAlpha(alpha);
 		prepareDrawing(gl, list);
 		for (final AbstractObject object : list.asArray()) {
+			if (layer != null && hasDepth()) {
+				gl.setCurrentZTranslation(drawingStartZTranslation + drawingObjectIndex * gl.getCurrentZIncrement());
+				drawingObjectIndex++;
+			}
 			if (picking && object instanceof StringObject string
 					&& string.getAttributes() instanceof TextDrawingAttributes text
 					&& text.getAdaptiveTextBounds() != null) {
@@ -685,6 +711,11 @@ public class LayerObject {
 	 */
 	public int numberOfActualTraces() {
 		return 1;
+	}
+
+	/** Number of objects that advance the world-space Z translation when this layer is drawn. */
+	public long numberOfZTranslatedObjects() {
+		return layer == null || isScreenLayer() ? 0 : currentList.size();
 	}
 
 	/**

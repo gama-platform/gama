@@ -67,6 +67,7 @@ import gama.dev.DEBUG;
 import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 
 /**
@@ -346,8 +347,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 			final double x = -boundsX - width * anchor.getX();
 			final double y = boundsMaxY - height * anchor.getY();
-			gl.translateBy(locX + x * scale, locY + y * scale,
-					locZ + gl.getCurrentZTranslation());
+			gl.translateBy(locX + x * scale, locY + y * scale, locZ);
 			gl.scaleBy(scale, scale, scale);
 			if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
 				gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text,
@@ -394,20 +394,21 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 * @return the color
 	 */
 	private IColor drawFacesAndBorder(IColor previous) {
-		// Solid case
-		drawFace(depth == 0);
-		if (depth > 0) {
-			gl.translateBy(0, 0, depth);
-			drawFace(true);
-			gl.translateBy(0, 0, -depth);
-			drawSide();
+		try (var offset = PolygonOffset.forOutline(gl, border != null)) {
+			drawFace(depth == 0);
+			if (depth > 0) {
+				gl.translateBy(0, 0, depth);
+				drawFace(true);
+				gl.translateBy(0, 0, -depth);
+				drawSide();
+			}
 		}
 		if (border != null) {
 			previous = gl.getCurrentColor();
 			gl.setCurrentColor(border);
-			gl.translateBy(0, 0, depth + 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, depth);
 			drawBorder();
-			gl.translateBy(0, 0, -depth - 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, -depth);
 		}
 		return previous;
 	}

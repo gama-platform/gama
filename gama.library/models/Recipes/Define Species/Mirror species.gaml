@@ -42,7 +42,7 @@ species B mirrors: A {
 
 experiment mirroExp type: gui {
     output {
-        display superposedView type: 3d{ 
+        display superposedView type: 3d map_order: true{
           species A aspect: base;
           species B aspect: base transparency:0.5;
         }

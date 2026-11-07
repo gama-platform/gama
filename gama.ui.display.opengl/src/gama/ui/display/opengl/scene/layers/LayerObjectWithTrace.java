@@ -126,4 +126,12 @@ public class LayerObjectWithTrace extends LayerObject {
 		return traces.size();
 	}
 
+	@Override
+	public long numberOfZTranslatedObjects() {
+		if (layer == null || isOverlay()) return 0;
+		long count = 0;
+		for (final Trace trace : traces) { count += trace.size(); }
+		return count;
+	}
+
 }

@@ -212,6 +212,88 @@ the projected bounding box of the visible scene: panning and camera rotation
 do not make its dimensions negative. The drawings themselves still follow
 the camera projection.
 
+In orthographic OpenGL displays, depth follows the camera just as it does in
+perspective displays: a surface closer to the camera obscures a more distant
+one. This corrects the reversed depth order previously used by the legacy
+OpenGL backend, so overlapping world geometry may appear in a different order.
+Screen layers remain independent of world depth.
+
+### Map ordering in OpenGL
+
+For essentially flat maps, a display can use painter ordering:
+
+```gaml
+display "Map" type: opengl map_order: true {
+    // Layers and their drawings are composited in their existing traversal order.
+}
+```
+
+`map_order:` is a boolean display facet, evaluated when the display is
+initialized and refreshed if its expression changes. It applies to both
+OpenGL backends, independently of camera or projection. When omitted, the
+display uses the **In OpenGL, draw world layers in map order** rendering
+preference; its factory default is `false`. An explicit `true` or `false`
+overrides that preference for the display. Java2D is unaffected.
+
+In map order, visible world layers, traces and drawings are composited in
+their normal traversal order with world depth testing and writes disabled.
+Later fragments cover or blend over earlier ones, regardless of elevation;
+no artificial world-layer or object Z offsets are applied. Screen layers keep
+their existing ordering. Layer transforms, camera projection and actual model
+coordinates are unchanged. Geometry can still be clipped by the camera.
+This is intended for flat maps, not general 3D: faces and mesh cells within
+one drawing also follow submission order rather than spatial depth.
+
+OpenGL4 picking uses the same traversal order and ignores alpha-cutout pixels.
+Legacy OpenGL picking selects the last hit in its 4-by-4 selection region;
+its selection mode does not test texture alpha, so it can select through a
+transparent texture area.
+
+When the OpenGL anti-z-fighting preference is enabled (the default), the
+renderers in depth-based mode also apply small visual Z offsets. The configured increment factor
+defaults to `0.05`; setting it to zero disables the offsets. World-layer
+offsets follow visible layer order, in model coordinates, and perspective
+drawings receive an additional offset based on their visible world-drawing
+order in the layer's local coordinates. The increment is divided by the larger
+of the visible world-layer and world-drawing counts, bounding the accumulated
+layer offset even when many layers contain no drawings. Orthographic drawings
+have no per-object increment. These are rendering adjustments, not changes to
+agent locations or geometry, and do
+not guarantee correct ordering of all coplanar objects. Screen layers neither
+use these world-depth offsets nor advance the world-layer offset. Moving the
+per-object offset outside individual object transforms also makes it consistent
+for scaled or rotated drawings and cached shapes; existing scenes that relied on
+the former behavior may look different.
+
+OpenGL4 discards fragments whose combined texture and vertex alpha is at or
+below `0.01`, matching the legacy OpenGL alpha-test threshold. This prevents
+nearly invisible texture pixels and mesh colors from obscuring other geometry.
+Partially transparent surfaces remain order-dependent; this cutout rule does
+not provide order-independent transparency.
+
+OpenGL4 also temporarily disables depth writes for translucent mesh layers,
+as it does for other translucent objects. Depth testing remains enabled, and
+the previous depth-write state is restored after the draw.
+
+OpenGL4 uses a separate single-sample color and depth buffer for picking.
+Visible fragments use per-pass IDs rather than their shaded colors, while
+fragments rejected by the alpha threshold remain unpickable. Picking samples
+one framebuffer pixel at the cursor. Text picking uses tessellated AWT outlines,
+which can differ slightly from the displayed graph-font glyphs.
+
+Both OpenGL backends request a 24-bit depth buffer for the display and use a
+24-bit depth attachment when rendering through the keystone framebuffer.
+Depth precision still depends on the projection and clipping range, so this
+does not eliminate all z-fighting.
+
+For perspective displays, `z_near:` and `z_far:` are camera-space clipping
+distances in model units. When omitted, they default to one hundredth and one
+hundred times the largest environment dimension, respectively. To limit loss
+of depth precision, the effective near distance is at least `z_far / 100000`,
+even when a smaller `z_near:` was supplied. Orthographic displays instead use
+the fixed range from minus ten to plus ten times that dimension. These
+clipping planes do not change the world coordinates or layer ordering.
+
 ## Placement versus contents
 
 `coordinates:` describes the layer rectangle. For `graphics` and `overlay`,

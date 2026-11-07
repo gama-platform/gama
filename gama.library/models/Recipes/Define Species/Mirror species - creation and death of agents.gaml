@@ -75,7 +75,7 @@ experiment mirroExp type: gui {
 	parameter "Macimum number of agents" var: nb_agent;
 	
     output {
-        display superposedView type: 3d{ 
+        display superposedView type: 3d map_order: true{
           	species A aspect: base ;
           	species B aspect: base ;
           

@@ -69,7 +69,7 @@ experiment import_graph type: gui {
 	parameter var:type;
 	
 	output {
-		display graph_display type: 3d axes: false{
+		display graph_display type: 3d axes: false map_order: true{
 			graphics "graph " {
 				
 				loop v over: g.vertices {

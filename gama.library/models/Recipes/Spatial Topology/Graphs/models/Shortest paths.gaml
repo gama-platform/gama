@@ -109,7 +109,7 @@ experiment goto_network type: gui {
 	parameter "Number of shortest paths to compute (k)" var: nb_shortest_paths min: 1 max: 3;
 	
 	output {
-		display objects_display {
+		display objects_display map_order: true {
 			species road aspect: default ;
 			graphics "path"{
 				if source != nil {

@@ -1,6 +1,6 @@
 # GAMA 2026 — Migration Guide
 
-> **Who is this for?** Plugin developers and contributors upgrading existing code to GAMA 2026.  
+> **Who is this for?** Model authors, plugin developers and contributors upgrading to GAMA 2026.  
 > **What's covered?** Every breaking change in Java APIs, GAML syntax, and architecture — with before/after examples throughout.
 
 ---
@@ -57,6 +57,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
 | Display dimensions always mean logical viewport pixels | Review former zoom-dependent world-extent calculations; prefer explicit mouse-coordinate aliases |
+| Optional OpenGL map ordering | Add `map_order: true` to suitable flat displays or enable the rendering preference |
 | Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
 | Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
 
@@ -491,6 +492,46 @@ Use `#mouse_location_in_world` instead for comparisons with agent locations or w
 An event block does not inherit a drawing layer's referential, and ordinary point arithmetic does
 not convert between world and viewport coordinates. For layer placement and contents, see the
 [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
+
+---
+
+### Map order for OpenGL displays
+
+Flat maps and map-like environments can avoid depth-buffer conflicts between overlapping
+elements by opting into **map ordering**. Both OpenGL backends then draw world layers,
+traces and drawings in their existing traversal order, with later fragments covering or
+blending over earlier fragments instead of competing for depth.
+
+To enable it for a specific display, add the facet to the display declaration:
+
+```gaml
+display my_map type: opengl map_order: true {
+    species roads;
+    species buildings;
+    species people;
+}
+```
+
+Alternatively, enable **Displays > OpenGL Rendering Properties > In OpenGL, draw world
+layers in map order instead of using 3D depth** in preferences. This applies to OpenGL
+displays without an explicit `map_order:` facet, including existing models without code
+changes. The preference defaults to `false`. An explicit facet takes precedence:
+use `map_order: false` on a 3D display to retain depth-based rendering when the global
+preference is enabled. Java2D displays are unaffected.
+
+**Action needed to use the improvement:** choose the display facet for portable,
+per-model behavior or the preference for a local default. Review drawing order first:
+a later background or polygon can cover an earlier agent, regardless of elevation.
+Map ordering disables depth testing and writes for world drawings, including faces and
+mesh cells within a drawing; it is therefore unsuitable for scenes that depend on
+physical 3D occlusion. It does not change model coordinates or camera projection, and
+camera clipping still applies. Screen layers retain their existing handling. Picking
+follows map order, with backend-specific limitations described in the
+[display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#map-ordering-in-opengl).
+
+Even without map ordering, legacy OpenGL orthographic displays now use the same camera-depth
+direction as perspective and OpenGL4. Existing overlapping geometry may consequently look
+different; review displays that relied on the former depth behavior.
 
 ---
 

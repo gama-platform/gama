@@ -142,7 +142,7 @@ experiment "Run automaton" {
 	parameter "Border strategy" var:border_strategy;
 
 	output synchronized:true {
-		display main type:3d antialias:false axes:false{
+		display main type:3d antialias:false axes:false map_order: true{
 			camera 'default' location: {56.1329,46.7972,129.3529} target: {56.1329,46.7949,0.0};
 			species rule_button;
 			graphics "Rules" {				

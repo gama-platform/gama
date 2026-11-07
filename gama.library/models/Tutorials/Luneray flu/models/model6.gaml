@@ -110,7 +110,7 @@ experiment main type: gui {
 		layout #split ;
 		monitor "Infected people rate" value: infected_rate;
 		
-		display map {
+		display map map_order: true {
 			species road aspect:geom;
 			species building aspect:geom;
 			species people aspect:circle;			

@@ -71,6 +71,12 @@ public interface IOpenGL {
 
 	void setZIncrement(double increment);
 
+	double getCurrentZIncrement();
+
+	double getCurrentZTranslation();
+
+	void setCurrentZTranslation(double translation);
+
 	void suspendZTranslation();
 
 	void resumeZTranslation();

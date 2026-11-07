@@ -101,7 +101,7 @@ experiment goto_network type: gui {
 	float minimum_cycle_duration <- 0.01;
 	
 	output {	
-		display objects_display {
+		display objects_display map_order: true {
 			species road aspect: default ;
 			species people aspect: default ;
 			species goal aspect: default ;

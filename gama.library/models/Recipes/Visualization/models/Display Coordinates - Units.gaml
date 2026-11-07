@@ -40,6 +40,6 @@ experiment "Screen units and boundaries" type: gui {
                 draw "size: {1,1}; drawings are NOT clipped" at: {40, 26} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
     }
 }

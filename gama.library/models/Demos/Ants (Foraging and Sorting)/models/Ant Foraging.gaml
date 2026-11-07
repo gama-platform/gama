@@ -202,7 +202,7 @@ experiment "With Inspector" type: gui parent:base{
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
 	output {
 		layout #split editors: false;
-		display Ants type: opengl axes:false{
+		display Ants type: opengl axes:false map_order: true{
 			// This inset belongs to the world and must keep following the 3D camera.
 			picture terrain coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} refresh: false;
 			agents "agents" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base {
 	
 	output {
 		layout #split parameters: false consoles: false;
-		display Ants antialias: false type: 3d axes: true{
+		display Ants antialias: false type: 3d axes: false map_order: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
@@ -289,7 +289,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
-		display Ants background: color type: 3d toolbar: color axes: false {
+		display Ants background: color type: 3d toolbar: color axes: false map_order: true{
 			picture terrain coordinates: #world refresh: false;
 			agents "agents" coordinates: #world transparency: 0.5 value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant coordinates: #world aspect: icon;

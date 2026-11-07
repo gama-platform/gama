@@ -1198,6 +1198,11 @@ public class GamaPreferences {
 				"Number of slices of circular geometries in OpenGL (the higher the more resources consuming)", 16,
 				IType.INT, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
 
+		/** Default painter ordering for OpenGL world layers; a display facet can override it. */
+		public static final Pref<Boolean> OPENGL_MAP_ORDER = create("pref_opengl_map_order",
+				"In OpenGL, draw world layers in map order instead of using 3D depth", false, IType.BOOL, true)
+						.in(NAME, RENDERING).inPlayer(false);
+
 		/**
 		 * Whether a small z-increment should be added to objects and layers in OpenGL to prevent z-fighting
 		 * (depth-buffer conflicts that produce visual flickering). Activates {@link #OPENGL_Z_FACTOR}.

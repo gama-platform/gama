@@ -82,7 +82,7 @@ experiment main_experiment type: gui {
 	output {
 		monitor "Current hour" value: current_date.hour;
 		monitor "Infected people rate" value: infected_rate;
-		display map {
+		display map map_order: true {
 			species road;
 			species building;
 			species people;
