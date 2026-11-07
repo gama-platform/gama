@@ -238,7 +238,6 @@ experiment "Classic" type: gui parent:base {
 				ui_switch "Use agent icons" var: use_icons at: {12, 112} size: {276, 28} ;
 				ui_switch "Display agent state" var: display_state at: {12, 162} size: {276, 28} ;
 				ui_button "Add food" at: {12, 212} size: {276, 28} { ask simulation {do add_food();}}	
-				ui_button "Image" at:{12, 262} size: {138, 138} toggle: true var: fake image: image(image_file('../images/ant_button.png'))  image_pressed: (image_file('../images/ant_pressed.png')) image_hover: (image_file('../images/ant_hover.png') );
 			} 
 		}
 
