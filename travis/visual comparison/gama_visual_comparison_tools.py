@@ -19,7 +19,7 @@ import shutil
 import struct
 import sys
 from typing import Any, Literal, NotRequired, TypedDict, cast
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from PIL import Image, ImageChops, ImageOps
 
@@ -40,6 +40,15 @@ class CaptureEntry(TypedDict):
     error: NotRequired[str]
     error_kind: NotRequired[Literal["seed_mismatch"]]
     close_error: NotRequired[str]
+
+
+class ComparisonPreview(TypedDict):
+    model: str
+    step: int | str
+    urls: list[str]
+    display: str
+    experiment: str
+    changed_pixels: int | None
 
 
 def new_output(path: Path) -> Path:
@@ -480,7 +489,27 @@ DIFF_HIGH_COLOR = "#6500b8"
 DIFF_BASE_ONLY = "#ff9800"
 DIFF_CANDIDATE_ONLY = "#00bcd4"
 DIFF_LEGEND = ("White and transparent pixels are treated as background. Pink to violet shows the magnitude "
-               "of changes where both captures contain foreground or both show background.")
+               "of changes where both captures contain foreground or both show background. "
+               "Violet edge markers indicate the affected rows and columns.")
+
+
+def add_diff_guides(image: Image.Image, changed: Image.Image) -> Image.Image:
+    border = 4
+    gap = 6
+    inset = border + gap
+    framed = ImageOps.expand(image, border=inset, fill="white")
+    columns, rows = changed.getprojection()
+    column_mask = Image.new("L", (image.width, 1))
+    column_mask.putdata([255 if value else 0 for value in columns])
+    row_mask = Image.new("L", (1, image.height))
+    row_mask.putdata([255 if value else 0 for value in rows])
+    for y in (0, inset + image.height + gap):
+        framed.paste(DIFF_HIGH_COLOR, (inset, y, inset + image.width, y + border),
+                     column_mask.resize((image.width, border), Image.Resampling.NEAREST))
+    for x in (0, inset + image.width + gap):
+        framed.paste(DIFF_HIGH_COLOR, (x, inset, x + border, inset + image.height),
+                     row_mask.resize((border, image.height), Image.Resampling.NEAREST))
+    return framed
 
 
 def foreground_mask(image: Image.Image, tolerance: int) -> Image.Image:
@@ -526,7 +555,7 @@ def save_diff(
     background.paste(DIFF_BASE_ONLY, bounds, ImageChops.darker(only_a, changed))
     background.paste(DIFF_CANDIDATE_ONLY, bounds, ImageChops.darker(only_b, changed))
     path.parent.mkdir(parents=True, exist_ok=True)
-    background.save(path)
+    add_diff_guides(background, changed).save(path)
 
 
 def capture_image_location(key: str) -> tuple[str, int] | None:
@@ -565,25 +594,33 @@ def summarize_missing(
 
 
 def write_html_preview(
-    path: Path, overview: str, previews: Iterable[tuple[str, int | str, list[str]]],
+    path: Path, overview: str, previews: Iterable[ComparisonPreview],
     capture_names: tuple[str, str],
 ) -> None:
     baseline_name, candidate_name = map(escape, capture_names)
     titles = (baseline_name, candidate_name, "Diff")
-    by_model: dict[str, list[tuple[int | str, list[str]]]] = {}
-    for model, step, urls in previews:
-        by_model.setdefault(model, []).append((step, urls))
+    by_model: dict[str, list[ComparisonPreview]] = {}
+    for preview in previews:
+        by_model.setdefault(preview["model"], []).append(preview)
 
     with path.open("w", encoding="utf-8") as stream:
-        def write_table(images: Iterable[tuple[int | str, list[str]]]) -> None:
+        def write_table(images: Iterable[ComparisonPreview]) -> None:
             columns = "".join(f"<th>{title}</th>" for title in titles)
-            stream.write(f"<table><thead><tr><th>Step</th>{columns}</tr></thead><tbody>\n")
-            for step, urls in images:
-                stream.write(f"<tr><td>{escape(str(step))}</td>")
-                for title, url in zip(titles, urls):
+            stream.write(f"<table><thead><tr><th>Step / Display</th>{columns}</tr></thead><tbody>\n")
+            for preview in images:
+                stream.write(f'<tr><td>{escape(str(preview["step"]))}<br>'
+                             f'<strong>{escape(preview["display"])}</strong><br>'
+                             f'<small>{escape(preview["experiment"])}</small></td>')
+                for index, (title, url) in enumerate(zip(titles, preview["urls"])):
+                    # Reserve the exact image ratio before lazy loading to avoid layout shifts while scrolling.
+                    with Image.open(path.parent / unquote(url)) as image:
+                        width, height = image.size
                     url = escape(url, quote=True)
-                    stream.write(f'<td><a href="{url}"><img src="{url}" alt="{title}" '
-                                 'loading="lazy" decoding="async"></a></td>')
+                    stream.write(f'<td><a href="{url}" class="preview"><img src="{url}" alt="{title}" '
+                                 f'width="{width}" height="{height}" loading="lazy" decoding="async"></a>')
+                    if index == 2 and preview["changed_pixels"] is not None:
+                        stream.write(f'<small>{preview["changed_pixels"]} changed pixels · click to zoom</small>')
+                    stream.write("</td>")
                 stream.write("</tr>\n")
             stream.write("</tbody></table>\n")
 
@@ -594,16 +631,24 @@ def write_html_preview(
 <title>GAMA visual comparison</title>
 <style>
 body { font: 1rem system-ui, sans-serif; margin: 1rem; }
-section { margin: 1.5rem 0; }
-h2 { margin-bottom: .25rem; overflow-wrap: anywhere; }
-.model-path { margin: 0 0 .5rem; overflow-wrap: anywhere; }
+section { margin: 1rem 0; }
+h2 { font-size: 1rem; margin: 0; overflow-wrap: anywhere; }
+.model-path { margin: .15rem 0 .35rem; font-size: .75rem; color: #666; overflow-wrap: anywhere; }
 details { margin-top: .5rem; }
 summary { cursor: pointer; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th, td { border: 1px solid #bbb; padding: .35rem; overflow-wrap: anywhere; }
 th { background: #eee; color: #111; }
-th:first-child { width: 4rem; }
-img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
+th:first-child { width: 7rem; }
+.preview img { display: block; width: 100%; height: auto; }
+dialog { width: 95vw; height: 95vh; max-width: 95vw; max-height: 95vh; padding: .75rem; box-sizing: border-box; }
+dialog::backdrop { background: #0009; }
+.zoom-toolbar { display: flex; align-items: center; gap: .5rem; height: 2.5rem; }
+.zoom-viewport { overflow: auto; height: calc(100% - 2.5rem); cursor: grab; touch-action: none; }
+.zoom-viewport:active { cursor: grabbing; }
+.zoom-content { display: flex; min-width: 100%; min-height: 100%; width: max-content; height: max-content; }
+.zoom-image { display: block; flex-shrink: 0; margin: auto; max-width: none; image-rendering: pixelated; }
+button { cursor: pointer; }
 </style>
 <h1>GAMA visual comparison</h1>
 """)
@@ -619,18 +664,100 @@ img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
         if not by_model:
             stream.write("<p>No visual differences to preview.</p>\n")
         for model, images in sorted(by_model.items()):
-            images.sort(key=lambda image: image[0] if isinstance(image[0], int) else -1)
+            images.sort(key=lambda image: image["step"] if isinstance(image["step"], int) else -1)
             name = Path(model).name
             stream.write(f"<section><h2>{escape(name)}</h2>\n")
             if name != model:
-                stream.write(f'<p class="model-path">{escape(model)}</p>\n')
+                stream.write(f'<p class="model-path">{escape(str(Path(model).parent))}</p>\n')
             write_table(images[:1])
             if len(images) > 1:
                 stream.write(f"<details><summary>Show {len(images) - 1} more comparisons</summary>\n")
                 write_table(images[1:])
+                stream.write('<button type="button" class="collapse">Collapse steps</button>\n')
                 stream.write("</details>\n")
             stream.write("</section>\n")
-        stream.write("</html>\n")
+        stream.write("""<dialog id="zoom"><div class="zoom-toolbar">
+<button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+<output id="zoom-level">100%</output>
+<button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+<button type="button" id="zoom-reset">100%</button>
+<button type="button" id="zoom-fit">Fit</button>
+<span>Mouse wheel to zoom · drag to move</span>
+<button type="button" id="close-zoom">Close</button></div>
+<div class="zoom-viewport" id="zoom-viewport">
+<div class="zoom-content"><img class="zoom-image" id="zoom-image" alt="" draggable="false"></div></div></dialog>
+<script>
+const zoom = document.getElementById('zoom');
+const zoomImage = document.getElementById('zoom-image');
+const viewport = document.getElementById('zoom-viewport');
+let scale = 1;
+let drag = null;
+function setScale(value, x = viewport.clientWidth / 2, y = viewport.clientHeight / 2) {
+    const next = Math.max(0.1, Math.min(16, value));
+    const ratio = next / scale;
+    const oldLeft = Math.max(0, (viewport.clientWidth - zoomImage.naturalWidth * scale) / 2);
+    const oldTop = Math.max(0, (viewport.clientHeight - zoomImage.naturalHeight * scale) / 2);
+    const left = (viewport.scrollLeft + x - oldLeft) * ratio - x;
+    const top = (viewport.scrollTop + y - oldTop) * ratio - y;
+    scale = next;
+    zoomImage.style.width = zoomImage.naturalWidth * scale + 'px';
+    zoomImage.style.height = zoomImage.naturalHeight * scale + 'px';
+    document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+    viewport.scrollLeft = left + Math.max(0, (viewport.clientWidth - zoomImage.naturalWidth * scale) / 2);
+    viewport.scrollTop = top + Math.max(0, (viewport.clientHeight - zoomImage.naturalHeight * scale) / 2);
+}
+function centerImage() {
+    setScale(1);
+    viewport.scrollTo((viewport.scrollWidth - viewport.clientWidth) / 2,
+                      (viewport.scrollHeight - viewport.clientHeight) / 2);
+}
+zoomImage.addEventListener('load', centerImage);
+document.getElementById('zoom-in').addEventListener('click', () => setScale(scale * 1.25));
+document.getElementById('zoom-out').addEventListener('click', () => setScale(scale / 1.25));
+document.getElementById('zoom-reset').addEventListener('click', centerImage);
+document.getElementById('zoom-fit').addEventListener('click', () => {
+    setScale(Math.min(viewport.clientWidth / zoomImage.naturalWidth,
+                      viewport.clientHeight / zoomImage.naturalHeight));
+    viewport.scrollTo(0, 0);
+});
+viewport.addEventListener('wheel', event => {
+    event.preventDefault();
+    const rect = viewport.getBoundingClientRect();
+    setScale(scale * Math.exp(-event.deltaY * 0.002), event.clientX - rect.left, event.clientY - rect.top);
+}, {passive: false});
+viewport.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    drag = {x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop};
+    viewport.setPointerCapture(event.pointerId);
+});
+viewport.addEventListener('pointermove', event => {
+    if (!drag) return;
+    viewport.scrollLeft = drag.left - (event.clientX - drag.x);
+    viewport.scrollTop = drag.top - (event.clientY - drag.y);
+});
+viewport.addEventListener('lostpointercapture', () => { drag = null; });
+document.addEventListener('click', event => {
+    const preview = event.target.closest('a.preview');
+    if (preview) {
+        event.preventDefault();
+        zoomImage.src = preview.href;
+        zoomImage.alt = preview.querySelector('img').alt;
+        zoom.showModal();
+        if (zoomImage.complete && zoomImage.naturalWidth) {
+            centerImage();
+        }
+    }
+    const collapse = event.target.closest('button.collapse');
+    if (collapse) {
+        const details = collapse.closest('details');
+        details.open = false;
+        details.querySelector('summary').scrollIntoView({block: 'center'});
+    }
+});
+document.getElementById('close-zoom').addEventListener('click', () => zoom.close());
+</script>
+</html>
+""")
 
 
 def compare(args: argparse.Namespace) -> int:
@@ -642,14 +769,20 @@ def compare(args: argparse.Namespace) -> int:
     before, after = png_tree(base), png_tree(candidate)
     new_output(output)
     errors = []
+    display_names: dict[tuple[str, str, str], tuple[str, str]] = {}
     if not before and not after:
         errors.append("Neither input contains PNGs")
     for label, root in (("baseline", base), ("candidate", candidate)):
         manifest = root / "capture.json"
         if manifest.is_file():
             try:
-                if json.loads(manifest.read_text(encoding="utf-8"))["complete"] is not True:
+                capture_manifest = json.loads(manifest.read_text(encoding="utf-8"))
+                if capture_manifest["complete"] is not True:
                     errors.append(f"Incomplete {label} capture (see capture.json)")
+                for entry in capture_manifest.get("models", []):
+                    for display in entry["displays"]:
+                        key = (entry["model"], experiment_folder(entry["experiment"]), display_folder(display))
+                        display_names.setdefault(key, (entry["experiment"], display))
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 errors.append(f"Invalid {label} capture manifest: {exc}")
     def compare_image(key: str) -> dict[str, Any]:
@@ -668,6 +801,7 @@ def compare(args: argparse.Namespace) -> int:
                 delta = pixel_delta(left, right, args.channel_tolerance)
                 changed = left.width * left.height - delta.histogram()[0]
                 changed_fraction = changed / (left.width * left.height)
+                row["changed_pixels"] = changed
                 row["status"] = "changed" if changed_fraction > args.max_changed_fraction else "equal"
             if row["status"] in {"changed", "size_changed"}:
                 diff = Path("diff") / key
@@ -749,7 +883,7 @@ def compare(args: argparse.Namespace) -> int:
                   f"Cyan: only in {candidate_name}. {DIFF_LEGEND}", "",
                   f"| Model | Step | {baseline_name} | {candidate_name} | Diff |",
                   "| --- | --- | --- | --- | --- |"])
-    previews = []
+    previews: list[ComparisonPreview] = []
     for row in rows:
         if row["status"] not in {"changed", "size_changed"}:
             continue
@@ -757,7 +891,12 @@ def compare(args: argparse.Namespace) -> int:
         model, step = location if location is not None else (row["image"], "")
         name = Path(model).name
         urls = [quote(row[label]) for label in ("baseline", "candidate", "diff")]
-        previews.append((model, step, urls))
+        parts = row["image"].split("/")
+        experiment, display = "", ""
+        if location is not None:
+            experiment, display = display_names.get((model, parts[-3], parts[-2]), (parts[-3], parts[-2]))
+        previews.append({"model": model, "step": step, "urls": urls, "experiment": experiment,
+                         "display": display, "changed_pixels": row.get("changed_pixels")})
         markdown_name = name.replace("|", "&#124;").replace("<", "&lt;").replace("\n", " ")
         links = [f"![{title}]({url})" for title, url in zip((baseline_name, candidate_name, "Diff"), urls)]
         lines.append(f"| {markdown_name} | {step} | " + " | ".join(links) + " |")
