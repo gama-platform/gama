@@ -106,8 +106,14 @@ public final class ServerLoadCommandTest {
 						int var1 <- -100;
 						float amount <- -1.0;
 						int initial;
+						float initial_seed;
 						int completed <- 0;
-						init { initial <- var1; write var1; }
+						init {
+							if (var1 < -100) {
+								float invalid <- 1 / (var1 + 101);
+							}
+							initial <- var1; initial_seed <- seed; write var1;
+						}
 						reflex tick { completed <- completed + 1; }
 					}
 					experiment exp type: gui autorun: false until: (completed >= 7) {
@@ -118,6 +124,7 @@ public final class ServerLoadCommandTest {
 			final Map<String, Object> command = new HashMap<>(Map.of(
 					"type", "load", "model", file.toString(), "experiment", "exp"));
 			final var defaults = ServerLoadRequest.parse(socket, command);
+			check(defaults.seed() == 0d, "Omitting seed must request an engine-generated seed");
 			check(defaults.configuration().hasConsole() && defaults.configuration().hasRuntime()
 					&& !defaults.configuration().hasStatus() && !defaults.configuration().hasDialog(),
 					"Load defaults must match the documented protocol");
@@ -138,6 +145,7 @@ public final class ServerLoadCommandTest {
 			parameters.add(GamaMapFactory.wrap(Map.of("name", "amount", "value", "2.5", "type", "float")));
 			command.put("parameters", parameters);
 			command.put("until", "completed >= 3");
+			command.put("seed", 42);
 			final var response = DefaultServerCommands.LOAD(null, socket, command);
 			if (response.type != MessageType.CommandExecutedSuccessfully)
 				throw new AssertionError("GUI loading failed: " + response.content,
@@ -146,6 +154,7 @@ public final class ServerLoadCommandTest {
 			check(value("var1").equals(42) && value("initial").equals(42),
 					"Parameters by title must be set before global init");
 			check(value("amount").equals(2.5), "Parameters by variable name must support typed numeric strings");
+			check(value("initial_seed").equals(42d), "GUI load must apply the requested seed before init");
 			final var plan = GAMA.getExperiment();
 			check(plan.getAgent().getScope().getServerConfiguration().socket() == socket,
 					"The experiment must retain the requesting socket");
@@ -242,15 +251,20 @@ public final class ServerLoadCommandTest {
 			command.put("type", "reload");
 			command.put("parameters", Map.of("param", 43, "amount", 3.5));
 			command.put("until", "completed >= 2");
+			command.put("seed", "43");
 			final var compactReload = DefaultServerCommands.RELOAD(GAMA.getServer(), socket, command);
 			check(compactReload.type == MessageType.CommandExecutedSuccessfully,
 					"Reload must accept compact parameters: " + compactReload.content);
 			check(value("initial").equals(43) && value("amount").equals(3.5),
 					"Compact reload parameters must be applied before global init");
+			check(value("initial_seed").equals(43d), "GUI reload must apply the requested seed before init");
 			check(plan.getAgent().getScope().getServerConfiguration().socket() == socket,
 					"Reload must retain experiment-specific routing");
 			ended.set(new CountDownLatch(1));
-			check(plan.getController().processReload(true), "Reloading must permit another run");
+			command.remove("seed");
+			check(DefaultServerCommands.RELOAD(GAMA.getServer(), socket, command).type
+					== MessageType.CommandExecutedSuccessfully, "Reloading must permit another run");
+			check(!value("initial_seed").equals(43d), "GUI reload must choose a new seed when none is supplied");
 			check(value("initial").equals(43), "Reload must retain parameter overrides");
 			check(plan.getAgent().getScope().getServerConfiguration().socket() == socket,
 					"Reload must retain experiment-specific routing");
@@ -275,6 +289,8 @@ public final class ServerLoadCommandTest {
 			check(DefaultServerCommands.LOAD(null, socket, command).type == MessageType.CommandExecutedSuccessfully,
 					"A plain GUI load must still work");
 			check(value("initial").equals(-100), "Omitted parameters must use model defaults");
+			check(value("initial_seed") instanceof Double seed && seed > 0d && seed < 1d,
+					"Omitting seed on GUI load must apply a random seed before init");
 			ended.set(new CountDownLatch(1));
 			check(GAMA.getExperiment().getController().processStart(true), "Plain GUI load must be runnable");
 			check(ended.get().await(5, TimeUnit.SECONDS), "The model's declared condition must be retained");
@@ -284,19 +300,41 @@ public final class ServerLoadCommandTest {
 			command.put("type", "load");
 			command.put("parameters", Map.of("param", 44, "amount", 4.5));
 			command.put("socket_id", "load-test");
+			command.put("seed", 44);
 			final var server = (IGamaServer) Proxy.newProxyInstance(IGamaServer.class.getClassLoader(),
 					new Class<?>[] { IGamaServer.class }, (p, method, args) -> {
 						if ("addExperiment".equals(method.getName()) || "execute".equals(method.getName())) return null;
+						if ("retrieveExperimentPlan".equals(method.getName())) return GAMA.getExperiment();
 						throw new AssertionError("Unexpected headless server call: " + method);
 					});
 			final var headless = new HeadlessLoadCommand().execute(server, socket, new ReceivedMessage("", command));
 			check(headless.type == MessageType.CommandExecutedSuccessfully, "Headless loading must still work");
 			check(value("initial").equals(44) && value("amount").equals(4.5),
 					"Headless load must apply compact parameters before init");
+			check(value("initial_seed").equals(44d), "Headless load must apply the requested seed before init");
 			final var simulation = GAMA.getExperiment().getCurrentSimulation();
 			simulation.setDirectVarValue(simulation.getScope(), "completed", 7);
 			check(Boolean.TRUE.equals(GAMA.getExperiment().getAgent().getStopCondition().value(simulation.getScope())),
 					"Headless loading must also preserve a declared condition when until is omitted");
+			command.put("type", "reload");
+			command.put("seed", 45);
+			check(DefaultServerCommands.RELOAD(server, socket, command).type == MessageType.CommandExecutedSuccessfully,
+					"Headless reload must accept an explicit seed");
+			check(value("initial_seed").equals(45d), "Headless reload must apply the requested seed before init");
+			command.remove("seed");
+			check(DefaultServerCommands.RELOAD(server, socket, command).type == MessageType.CommandExecutedSuccessfully,
+					"Headless reload must accept an omitted seed");
+			check(!value("initial_seed").equals(45d), "Headless reload must choose a new seed when none is supplied");
+			GAMA.closeAllExperiments(true, false);
+			command.put("type", "load");
+			command.put("parameters", Map.of("param", -101));
+			final var failed = new HeadlessLoadCommand().execute(server, socket, new ReceivedMessage("", command));
+			check(failed.type == MessageType.RuntimeError, "The failing init must report a runtime error");
+			final var payload = GAMA.getJsonEncoder().valueOf(failed).asObject().get("content").asObject();
+			check(payload.get("source").asString().contains(file.getFileName().toString()),
+					"The runtime error must identify the GAML source");
+			check(Files.readAllLines(file).get(payload.get("line").asInt() - 1).contains("float invalid"),
+					"The runtime error must identify the failing GAML statement");
 		} finally {
 			GAMA.closeAllExperiments(true, false);
 			GAMA.setHeadlessGui(previousGui);

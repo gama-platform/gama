@@ -42,7 +42,7 @@ species edge_agent {
 }
 experiment main type: gui {
 	output {
-		display map {
+		display main {
 			species node_agent;
 			species edge_agent;
 		}

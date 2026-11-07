@@ -411,6 +411,13 @@ public abstract class AbstractExperimentController implements IExperimentControl
 		return andWait ? synchronousOpen() : asynchronousOpen();
 	}
 
+	@Override
+	public boolean processOpen(final boolean andWait, final Double seed) {
+		if (seed == null) return processOpen(andWait);
+		final ExperimentCommand command = new ExperimentCommand(ExperimentCommandTypes._OPEN, 0, seed);
+		return andWait ? processUserCommand(command) : offer(command);
+	}
+
 	/**
 	 * Process pause.
 	 *
@@ -436,6 +443,13 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	@Override
 	public boolean processReload(final boolean andWait) {
 		return andWait ? synchronousReload() : asynchronousReload();
+	}
+
+	@Override
+	public boolean processReload(final boolean andWait, final Double seed) {
+		if (seed == null) return processReload(andWait);
+		final ExperimentCommand command = new ExperimentCommand(ExperimentCommandTypes._RELOAD, 0, seed);
+		return andWait ? processUserCommand(command) : offer(command);
 	}
 
 	/**
