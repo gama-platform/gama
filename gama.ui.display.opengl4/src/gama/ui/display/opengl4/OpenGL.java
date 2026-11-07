@@ -822,6 +822,86 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The vbo ids. Index 0 = positions, 1 = colours, 2 = tex-coords, 3 = normals. */
 	private final int[] vboIds = new int[4];
 
+	/** Immutable vertex data for one OBJ draw, owned by this GL context. */
+	public final class StoredDrawing {
+		private final int[] vao = new int[1];
+		private final int[] buffers;
+		private final int count;
+		private final int style;
+		private final boolean hasTextureCoordinates;
+		private final double normalX, normalY, normalZ;
+
+		private StoredDrawing() {
+			count = currentVertices.position() / 3;
+			style = currentDrawStyle;
+			hasTextureCoordinates = currentTexCoords.position() > 0;
+			normalX = currentNormal.getX();
+			normalY = currentNormal.getY();
+			normalZ = currentNormal.getZ();
+			buffers = new int[hasTextureCoordinates ? 3 : 2];
+			gl.glGenVertexArrays(1, vao, 0);
+			gl.glGenBuffers(buffers.length, buffers, 0);
+			gl.glBindVertexArray(vao[0]);
+			upload(0, 0, 3, currentVertices);
+			upload(1, 3, 3, currentNormals);
+			if (hasTextureCoordinates) { upload(2, 2, 2, currentTexCoords); }
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+			gl.glBindVertexArray(0);
+		}
+
+		private void upload(final int bufferIndex, final int attribute, final int components, final FloatBuffer source) {
+			final FloatBuffer data = source.duplicate();
+			data.flip();
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[bufferIndex]);
+			gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) data.remaining() * Float.BYTES, data, GL.GL_STATIC_DRAW);
+			gl.glVertexAttribPointer(attribute, components, GL.GL_FLOAT, false, 0, 0);
+			gl.glEnableVertexAttribArray(attribute);
+		}
+
+		public void draw() {
+			if (count == 0 || basicShader == null) return;
+			basicShader.start();
+			gl.glBindVertexArray(vao[0]);
+			gl.glDisableVertexAttribArray(1);
+			final float alpha = (float) (currentColor.alpha() / 255.0 * currentObjectAlpha);
+			gl.glVertexAttrib4f(1, currentColor.red() / 255f, currentColor.green() / 255f,
+					currentColor.blue() / 255f, alpha);
+			basicShader.loadModelMatrix(modelViewMatrix.getCurrentMatrix());
+			basicShader.loadViewMatrix(new org.joml.Matrix4f().identity());
+			basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
+			basicShader.loadUseTexture(hasTextureCoordinates);
+			basicShader.loadPremultiplyTexture(hasTextureCoordinates);
+			loadPicking(basicShader, 1f);
+			basicShader.loadUseLighting(getLighting());
+			final boolean pickingPass = renderer.getPickingHelper().isBeginningPicking();
+			if (!pickingPass) { gl.glEnable(GL.GL_BLEND); }
+			gl.glBlendFunc(hasTextureCoordinates ? GL.GL_ONE : GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			final byte[] previousDepthMask = new byte[1];
+			if (alpha < 1f && !pickingPass) {
+				gl.glGetBooleanv(GL.GL_DEPTH_WRITEMASK, previousDepthMask, 0);
+				gl.glDepthMask(false);
+			}
+			try {
+				gl.glDrawArrays(style, 0, count);
+				renderer.getDiagnostics().genericDraw(0);
+			} finally {
+				if (alpha < 1f && !pickingPass) { gl.glDepthMask(previousDepthMask[0] != 0); }
+				if (hasTextureCoordinates) { gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); }
+				gl.glBindVertexArray(0);
+				basicShader.stop();
+				outputNormal(normalX, normalY, normalZ);
+			}
+		}
+
+		public void dispose() {
+			gl.glDeleteBuffers(buffers.length, buffers, 0);
+			gl.glDeleteVertexArrays(1, vao, 0);
+		}
+	}
+
+	/** Retain the vertices accumulated since the last beginDrawing call. */
+	public StoredDrawing storeDrawing() { return new StoredDrawing(); }
+
 	/**
 	 * Ensure capacity.
 	 *
@@ -930,6 +1010,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 		try {
 			gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
+			renderer.getDiagnostics().genericDraw((long) Float.BYTES * (currentVertices.limit() + currentColors.limit()
+					+ (hasTex ? currentTexCoords.limit() : 0) + (hasNormals ? currentNormals.limit() : 0)));
 		} finally {
 			if (currentDrawHasTransparency && !pickingPass) { gl.glDepthMask(previousDepthMask[0] != 0); }
 			if (hasTex) { gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); }

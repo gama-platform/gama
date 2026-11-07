@@ -127,6 +127,8 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 */
 	SceneHelper getSceneHelper();
 
+	RenderDiagnostics getDiagnostics();
+
 	AdaptiveTextHelper getAdaptiveTextHelper();
 
 	/**

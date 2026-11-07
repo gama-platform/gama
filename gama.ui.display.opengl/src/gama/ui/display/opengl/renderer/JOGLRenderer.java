@@ -118,6 +118,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	private final AdaptiveTextHelper adaptiveTextHelper;
 
+	private final RenderDiagnostics diagnostics = new RenderDiagnostics();
+
 	/** The open GL. */
 	// OpenGL back-end
 	protected IOpenGL openGL;
@@ -148,6 +150,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public AdaptiveTextHelper getAdaptiveTextHelper() { return adaptiveTextHelper; }
+
+	@Override
+	public RenderDiagnostics getDiagnostics() { return diagnostics; }
 
 	@Override
 	public void setDisplaySurface(final IDisplaySurface d) {
@@ -263,12 +268,15 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			return;
 		}
 
+		diagnostics.beginFrame();
 		try (Pass c = keystoneHelper.render(); Pass d = openGL.beginScene();) {
 			cameraHelper.update();
 			lightHelper.draw();
 			sceneHelper.draw();
 			schedulePendingInitialVisibleRedraw();
 			if (synchronizer != null) { synchronizer.release(); }
+		} finally {
+			diagnostics.endFrame(getSurface().getOutput().getTitle(), openGL.getClass().getName());
 		}
 		drawable.setAutoSwapBufferMode(true);
 		schedulePendingSceneUpdate();

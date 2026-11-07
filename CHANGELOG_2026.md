@@ -19,6 +19,33 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### OBJ loading and rendering
+
+OBJ bounds are computed from the parsed vertex bounds without first constructing a geometry for
+every face. When an OBJ is used as GAML geometry, its buffer now contains one polygon per face,
+rather than additional incomplete polygons for each intermediate vertex. Repeated buffer access
+reuses the existing contents, and invalidating the file discards its parsed data and bounds.
+Face parsing avoids per-corner tokenizer and character-array allocations and resolves negative
+OBJ indices relative to the vertices, texture coordinates and normals already read.
+
+Both renderers batch consecutive compatible OBJ triangles and quads without changing material or
+face order. The fixed pipeline compiles these batches into display lists. OpenGL4 retains triangle
+and filled-quad batches in GPU buffers, reusing them across instances and frames while keeping
+per-instance transforms, colors, lighting and picking. Wireframe quads and less common polygon or
+mixed-attribute faces retain their individual drawing path. Cached GPU buffers are released on
+cache expiration or display disposal and rebuilt when their source OBJ is invalidated.
+Both backends avoid constructing temporary face coordinates when all normals are supplied, and
+leave cached material textures under the texture cache's ownership.
+
+### Optional OpenGL rendering diagnostics
+
+The **Displays > OpenGL Rendering Properties > Log OpenGL rendering diagnostics** preference
+enables periodic per-display reports in the application process log. It is off by default.
+Both backends report CPU elapsed time for rendering, the visible scene and picking; OpenGL4 also
+reports draw calls and buffer uploads for its generic and mesh paths, while legacy OpenGL reports
+polygon-tessellation cache hits and misses. These are scoped counters, not totals for every GPU
+operation. The measurements do not force GPU completion and are not GPU execution times.
+
 ### Improved OpenGL rendering for maps and map-like environments
 
 Both OpenGL backends now support **map ordering**, an opt-in rendering mode for flat maps and

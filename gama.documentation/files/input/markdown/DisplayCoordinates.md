@@ -249,6 +249,22 @@ Legacy OpenGL picking selects the last hit in its 4-by-4 selection region;
 its selection mode does not test texture alpha, so it can select through a
 transparent texture area.
 
+For performance investigation, enable **Displays > OpenGL Rendering Properties >
+Log OpenGL rendering diagnostics**. The preference is off by default. Roughly every
+five seconds while rendering, each display reports its backend and CPU elapsed
+render, visible-scene and picking times to the application process log (normally
+standard output). Picking time is the total for the interval, with the number
+of passes; render and scene times are averages per frame. Render time includes
+scene and picking work, but excludes viewport reshaping and the subsequent buffer swap. It measures
+CPU elapsed time, not GPU execution time; picking can include GPU readback waits.
+
+OpenGL4 reports draw calls and uploaded buffer bytes per frame for the generic
+and mesh drawing paths, including any picking pass. These are partial counts:
+they exclude other paths such as text, textures and keystone rendering. Legacy
+OpenGL instead reports hits and misses for its polygon tessellation cache; this
+is not a count for all renderer caches. Logging can be disabled globally through
+GAMA's `enable_logging` flag.
+
 When the OpenGL anti-z-fighting preference is enabled (the default), the
 renderers in depth-based mode also apply small visual Z offsets. The configured increment factor
 defaults to `0.05`; setting it to zero disables the offsets. World-layer

@@ -666,6 +666,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		if (upload) {
 			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) vertexBuffer.limit() * Float.BYTES, vertexBuffer,
 					GL.GL_STATIC_DRAW);
+			gl.getRenderer().getDiagnostics().meshUpload((long) vertexBuffer.limit() * Float.BYTES);
 		}
 		ogl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 0, 0);
 		ogl.glEnableVertexAttribArray(0);
@@ -675,6 +676,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		if (upload) {
 			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) normalBuffer.limit() * Float.BYTES, normalBuffer,
 					GL.GL_STATIC_DRAW);
+			gl.getRenderer().getDiagnostics().meshUpload((long) normalBuffer.limit() * Float.BYTES);
 		}
 		ogl.glVertexAttribPointer(3, 3, GL.GL_FLOAT, false, 0, 0);
 		ogl.glEnableVertexAttribArray(3);
@@ -684,6 +686,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			if (upload) {
 				ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) texBuffer.limit() * Float.BYTES, texBuffer,
 						GL.GL_STATIC_DRAW);
+				gl.getRenderer().getDiagnostics().meshUpload((long) texBuffer.limit() * Float.BYTES);
 			}
 			ogl.glVertexAttribPointer(2, 2, GL.GL_FLOAT, false, 0, 0);
 			ogl.glEnableVertexAttribArray(2);
@@ -696,6 +699,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			if (upload) {
 				ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) colorBuffer.limit() * Float.BYTES, colorBuffer,
 						GL.GL_STATIC_DRAW);
+				gl.getRenderer().getDiagnostics().meshUpload((long) colorBuffer.limit() * Float.BYTES);
 			}
 			ogl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0);
 			ogl.glEnableVertexAttribArray(1);
@@ -711,6 +715,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		if (upload) {
 			ogl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.limit() * Integer.BYTES, indexBuffer,
 					GL.GL_STATIC_DRAW);
+			gl.getRenderer().getDiagnostics().meshUpload((long) indexBuffer.limit() * Integer.BYTES);
 		}
 
 		// Push matrices and lighting to the shader
@@ -738,6 +743,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			if (!gl.isWireframe()) {
 				try (var offset = PolygonOffset.forOutline(gl, outputsLines)) {
 					ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
+					gl.getRenderer().getDiagnostics().meshDraw();
 				}
 			}
 			if (outputsLines) {
@@ -748,6 +754,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 					if (upload) {
 						ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) lineColorBuffer.limit() * Float.BYTES,
 								lineColorBuffer, GL.GL_STATIC_DRAW);
+						gl.getRenderer().getDiagnostics().meshUpload((long) lineColorBuffer.limit() * Float.BYTES);
 					}
 					ogl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0);
 					ogl.glEnableVertexAttribArray(1);
@@ -755,6 +762,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 				boolean previous = gl.setObjectWireframe(true);
 				try {
 					ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
+					gl.getRenderer().getDiagnostics().meshDraw();
 				} finally {
 					gl.setObjectWireframe(previous);
 				}

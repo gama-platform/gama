@@ -1203,6 +1203,10 @@ public class GamaPreferences {
 				"In OpenGL, draw world layers in map order instead of using 3D depth", false, IType.BOOL, true)
 						.in(NAME, RENDERING).inPlayer(false);
 
+		/** Periodically report OpenGL rendering diagnostics to the application log. */
+		public static final Pref<Boolean> OPENGL_DIAGNOSTICS = create("pref_opengl_diagnostics",
+				"Log OpenGL rendering diagnostics", false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
+
 		/**
 		 * Whether a small z-increment should be added to objects and layers in OpenGL to prevent z-fighting
 		 * (depth-buffer conflicts that produce visual flickering). Activates {@link #OPENGL_Z_FACTOR}.

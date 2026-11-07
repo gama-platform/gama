@@ -58,6 +58,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
 | Display dimensions always mean logical viewport pixels | Review former zoom-dependent world-extent calculations; prefer explicit mouse-coordinate aliases |
 | Optional OpenGL map ordering | Add `map_order: true` to suitable flat displays or enable the rendering preference |
+| OBJ geometry buffers contain one polygon per face | Review models that relied on the former incomplete intermediate polygons |
 | Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
 | Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
 
@@ -532,6 +533,17 @@ follows map order, with backend-specific limitations described in the
 Even without map ordering, legacy OpenGL orthographic displays now use the same camera-depth
 direction as perspective and OpenGL4. Existing overlapping geometry may consequently look
 different; review displays that relied on the former depth behavior.
+
+---
+
+### OBJ geometry conversion
+
+When an OBJ file is read as GAML geometry, its face buffer now contains **one complete polygon
+per OBJ face**. Previously it also contained incomplete polygons created while collecting each
+face's vertices. Models that relied on the former geometry count or those intermediate polygons
+must be updated; models that only draw the OBJ file directly do not need a syntax change.
+OBJ bounds are now obtained without constructing all face geometries, and invalidating the file
+clears its parsed data so the next access reloads it.
 
 ---
 

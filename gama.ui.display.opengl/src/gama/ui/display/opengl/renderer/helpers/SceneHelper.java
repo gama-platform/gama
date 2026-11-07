@@ -327,16 +327,26 @@ public class SceneHelper extends AbstractRendererHelper {
 		// if picking, we draw a first pass to pick the color
 		final IPickingHelper picking = getRenderer().getPickingHelper();
 		if (picking.isBeginningPicking()) {
+			final long pickingStart = getRenderer().getDiagnostics().startTimer();
 			// DEBUG.OUT("In SceneHelper.draw, beginning picking");
-			picking.beginPicking();
 			try {
-				if (picking.shouldRenderPicking()) { getSceneToRender().draw(gl); }
+				picking.beginPicking();
+				try {
+					if (picking.shouldRenderPicking()) { getSceneToRender().draw(gl); }
+				} finally {
+					picking.endPicking();
+				}
 			} finally {
-				picking.endPicking();
+				getRenderer().getDiagnostics().pickingFinished(pickingStart);
 			}
 		}
 		// we draw the scene on screen
-		getSceneToRender().draw(gl);
+		final long sceneStart = getRenderer().getDiagnostics().startTimer();
+		try {
+			getSceneToRender().draw(gl);
+		} finally {
+			getRenderer().getDiagnostics().sceneFinished(sceneStart);
+		}
 	}
 
 	/**

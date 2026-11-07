@@ -864,7 +864,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param drawer
 	 */
 	public void drawPolygon(final Polygon p, final ICoordinates yNegatedVertices, final boolean clockwise) {
-		polygonTessellations.draw(p, yNegatedVertices, this);
+		polygonTessellations.draw(p, yNegatedVertices, this, renderer.getDiagnostics());
 	}
 
 	/**
