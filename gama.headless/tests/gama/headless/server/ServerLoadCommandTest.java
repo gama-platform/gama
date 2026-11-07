@@ -108,7 +108,12 @@ public final class ServerLoadCommandTest {
 						int initial;
 						float initial_seed;
 						int completed <- 0;
-						init { initial <- var1; initial_seed <- seed; write var1; }
+						init {
+							if (var1 < -100) {
+								float invalid <- 1 / (var1 + 101);
+							}
+							initial <- var1; initial_seed <- seed; write var1;
+						}
 						reflex tick { completed <- completed + 1; }
 					}
 					experiment exp type: gui autorun: false until: (completed >= 7) {
@@ -320,6 +325,16 @@ public final class ServerLoadCommandTest {
 			check(DefaultServerCommands.RELOAD(server, socket, command).type == MessageType.CommandExecutedSuccessfully,
 					"Headless reload must accept an omitted seed");
 			check(!value("initial_seed").equals(45d), "Headless reload must choose a new seed when none is supplied");
+			GAMA.closeAllExperiments(true, false);
+			command.put("type", "load");
+			command.put("parameters", Map.of("param", -101));
+			final var failed = new HeadlessLoadCommand().execute(server, socket, new ReceivedMessage("", command));
+			check(failed.type == MessageType.RuntimeError, "The failing init must report a runtime error");
+			final var payload = GAMA.getJsonEncoder().valueOf(failed).asObject().get("content").asObject();
+			check(payload.get("source").asString().contains(file.getFileName().toString()),
+					"The runtime error must identify the GAML source");
+			check(Files.readAllLines(file).get(payload.get("line").asInt() - 1).contains("float invalid"),
+					"The runtime error must identify the failing GAML statement");
 		} finally {
 			GAMA.closeAllExperiments(true, false);
 			GAMA.setHeadlessGui(previousGui);
