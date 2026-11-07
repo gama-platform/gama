@@ -154,6 +154,9 @@ public interface IDisplayData {
 	 */
 	boolean isWireframe();
 
+	/** Whether OpenGL world layers use painter order rather than spatial depth. */
+	boolean isMapOrder();
+
 	/**
 	 * Sets the wireframe.
 	 *

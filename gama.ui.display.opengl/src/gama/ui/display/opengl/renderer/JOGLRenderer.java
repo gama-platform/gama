@@ -11,6 +11,7 @@
 package gama.ui.display.opengl.renderer;
 
 import java.awt.geom.Rectangle2D;
+import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -34,9 +35,11 @@ import gama.api.ui.displays.IAsset;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
+import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
@@ -53,6 +56,7 @@ import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
 import gama.ui.display.opengl.renderer.helpers.LightHelper;
 import gama.ui.display.opengl.renderer.helpers.PickingHelper;
 import gama.ui.display.opengl.renderer.helpers.SceneHelper;
+import gama.ui.display.opengl.renderer.helpers.AdaptiveTextHelper;
 import gama.ui.display.opengl.scene.ModelScene;
 import gama.ui.display.opengl.view.GamaGLCanvas;
 import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
@@ -71,6 +75,26 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * The Class JOGLRenderer.
  */
 public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRenderer {
+
+	private final ThreadLocal<ILayer> renderingLayer = new ThreadLocal<>();
+
+	@Override
+	public ILayer setRenderingLayer(final ILayer layer) {
+		final ILayer previous = renderingLayer.get();
+		if (layer == null) {
+			renderingLayer.remove();
+		} else {
+			renderingLayer.set(layer);
+		}
+		return previous;
+	}
+
+	private ILayer getScreenWorldLayer() {
+		final ILayer rendered = renderingLayer.get();
+		final ILayer layer = rendered == null ? currentLayer : rendered;
+		return layer != null && layer.getData().getCoordinates() == LayerCoordinates.SCREEN
+				&& layer.getData().getContentCoordinates() == LayerCoordinates.WORLD ? layer : null;
+	}
 
 	static {
 		DEBUG.OFF();
@@ -91,6 +115,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/** The scene helper. */
 	private final SceneHelper sceneHelper;
+
+	private final AdaptiveTextHelper adaptiveTextHelper;
+
+	private final RenderDiagnostics diagnostics = new RenderDiagnostics();
 
 	/** The open GL. */
 	// OpenGL back-end
@@ -117,7 +145,14 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		lightHelper = createLightHelper();
 		cameraHelper = new CameraHelper(this);
 		sceneHelper = new SceneHelper(this);
+		adaptiveTextHelper = new AdaptiveTextHelper(this);
 	}
+
+	@Override
+	public AdaptiveTextHelper getAdaptiveTextHelper() { return adaptiveTextHelper; }
+
+	@Override
+	public RenderDiagnostics getDiagnostics() { return diagnostics; }
 
 	@Override
 	public void setDisplaySurface(final IDisplaySurface d) {
@@ -233,12 +268,15 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			return;
 		}
 
+		diagnostics.beginFrame();
 		try (Pass c = keystoneHelper.render(); Pass d = openGL.beginScene();) {
 			cameraHelper.update();
 			lightHelper.draw();
 			sceneHelper.draw();
 			schedulePendingInitialVisibleRedraw();
 			if (synchronizer != null) { synchronizer.release(); }
+		} finally {
+			diagnostics.endFrame(getSurface().getOutput().getTitle(), openGL.getClass().getName());
 		}
 		drawable.setAutoSwapBufferMode(true);
 		schedulePendingSceneUpdate();
@@ -345,6 +383,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public void dispose(final GLAutoDrawable drawable) {
 		sceneHelper.garbageCollect(openGL);
 		sceneHelper.dispose();
+		adaptiveTextHelper.dispose();
 		openGL.dispose();
 		keystoneHelper.dispose();
 		cameraHelper.dispose();
@@ -438,10 +477,18 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	@Override
+	public double getDevicePixelRatio() {
+		final int[] pixels = getCanvas().getNativeSurface().convertToPixelUnits(new int[] { 1024, 1024 });
+		return Math.max(pixels[0], pixels[1]) / 1024d;
+	}
+
+	@Override
 	public Rectangle2D drawChart(final BufferedImage chart) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
-		scene.addImage(chart, new AssetDrawingAttributes(null, true));
+		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(null, true);
+		attributes.setSmoothTexture(true);
+		scene.addImage(chart, attributes);
 		return rect;
 	}
 
@@ -506,17 +553,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		// Multiline: Issue #780
 		if (string.contains("\n")) {
 			int i = 0;
-			final double shift = attributes.getFont().getSize() / this.getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			for (final String s : string.split("\n")) {
-				// DEBUG.OUT("Attributes Font Size: " + attributes.font.getSize());
-				// DEBUG.OUT("Get Y Ratio: " + getyRatioBetweenPixelsAndModelUnits());
+			final double lineHeight = attributes.getFont().getAwtFont()
+					.getLineMetrics("Ag", new FontRenderContext(null, true, true)).getHeight();
+			final double shift = lineHeight / getAbsoluteRatioBetweenPixelsAndModelsUnits();
+			for (final String s : string.split("\\r?\\n", -1)) {
 				drawString(s, attributes.copyTranslatedBy(GamaPointFactory.create(0, shift * i++)));
 			}
 			return null;
 		}
-		// openGL.cacheFont(attributes.getFont());
-		attributes.getLocation().negateY();
-		scene.addString(string, attributes);
+		final IDrawingAttributes copy = attributes.copyTranslatedBy(GamaPointFactory.create());
+		copy.getLocation().negateY();
+		scene.addString(string, copy);
 		return null;
 	}
 
@@ -543,16 +590,27 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final ILayer layer = getScreenWorldLayer();
+		if (layer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
+		if (layer != null) return layer.getData().getSizeInPixels().getX() / getEnvWidth();
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getX());
 	}
 
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final ILayer layer = getScreenWorldLayer();
+		if (layer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
+		if (layer != null) return layer.getData().getSizeInPixels().getY() / getEnvHeight();
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getY());
 	}
 
 	@Override
 	public double getAbsoluteRatioBetweenPixelsAndModelsUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		if (getScreenWorldLayer() != null)
+			return Math.min(getxRatioBetweenPixelsAndModelUnits(), getyRatioBetweenPixelsAndModelUnits());
 		return Math.min(getViewHeight() / data.getEnvHeight(), getViewWidth() / data.getEnvWidth());
 	}
 
@@ -563,17 +621,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 	@Override
 	public final double getWidth() {
-		// DEBUG.OUT(
-		// "Result of getWidth: "
-		// + PlatformHelper.autoScaleDown(canvas.getSurfaceWidth()) * (float) surface.getZoomLevel(),
-		// false);
-		// DEBUG.OUT(" -- Canvas surface width " + canvas.getSurfaceWidth(), false);
-		// DEBUG.OUT("Canvas size " + canvas.getSize().x, false);
-		// DEBUG.OUT(" -- Width of world in pixels computed by OpenGL " + openGL.getPixelWidthAndHeightOfWorld()[0]);
-		// return canvas.getSize().x * surface.getZoomLevel();
-		return openGL.getPixelWidthAndHeightOfWorld()[0] * (float) surface.getZoomLevel();
-		// return PlatformHelper.autoScaleDown(canvas.getSurfaceWidth()) *
-		// PlatformHelper.autoScaleDown(canvas.getSurfaceWidth()) * (float) surface.getZoomLevel();
+		return getEnvWidth() * getWorldLayoutScale();
+	}
+
+	private double getWorldLayoutScale() {
+		// Layout uses the fitted world rectangle, not a camera-projected point that can cross behind the eye.
+		return Math.min(getViewWidth() / getEnvWidth(), getViewHeight() / getEnvHeight()) * surface.getZoomLevel();
 	}
 
 	/*
@@ -583,8 +636,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 	@Override
 	public final double getHeight() {
-		return openGL.getPixelWidthAndHeightOfWorld()[1] * (float) surface.getZoomLevel();
-		// return canvas.getSurfaceHeight() * surface.getZoomLevel();
+		return getEnvHeight() * getWorldLayoutScale();
 	}
 
 	/*

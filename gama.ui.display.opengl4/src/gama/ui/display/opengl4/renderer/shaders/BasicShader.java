@@ -53,6 +53,8 @@ public class BasicShader extends AbstractShader {
 	/** Uniform location: premultiplyTexture flag. */
 	private int location_premultiplyTexture;
 
+	private int location_picking, location_pickingColor, location_pickingAlpha;
+
 	/** Uniform location: useLighting flag. */
 	private int location_useLighting;
 
@@ -91,6 +93,9 @@ public class BasicShader extends AbstractShader {
 		location_projection    = getUniformLocation("projection");
 		location_useTexture    = getUniformLocation("useTexture");
 		location_premultiplyTexture = getUniformLocation("premultiplyTexture");
+		location_picking = getUniformLocation("picking");
+		location_pickingColor = getUniformLocation("pickingColor");
+		location_pickingAlpha = getUniformLocation("pickingAlpha");
 		location_useLighting   = getUniformLocation("useLighting");
 		location_ambientColor  = getUniformLocation("ambientColor");
 		location_lightCount    = getUniformLocation("lightCount");
@@ -150,6 +155,13 @@ public class BasicShader extends AbstractShader {
 	 */
 	public void loadPremultiplyTexture(final boolean premultiply) {
 		gl.glUniform1i(location_premultiplyTexture, premultiply ? 1 : 0);
+	}
+
+	public void loadPicking(final boolean picking, final int id, final float alpha) {
+		gl.glUniform1i(location_picking, picking ? 1 : 0);
+		gl.glUniform4f(location_pickingColor, (id & 255) / 255f, (id >> 8 & 255) / 255f,
+				(id >> 16 & 255) / 255f, id < 0 ? 0f : 1f);
+		gl.glUniform1f(location_pickingAlpha, alpha);
 	}
 
 	/**

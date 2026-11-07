@@ -81,10 +81,10 @@ experiment AdvancedView type: gui {
 		display graph_plus_bug_layered type: 3d {
 			camera 'default' location: {-9.2599,157.3601,111.6399} target: {52.0223,44.4922,0.0}; 
 			species bug aspect: base;
-			species node_agent aspect: base position: { 0, 0, 0.2 };
-			species edge_agent aspect: base position: { 0, 0, 0.2 };
-			species node_agent aspect: dynamic position: { 0, 0, 0.4 };
-			species edge_agent aspect: dynamic position: { 0, 0, 0.4 };
+			species node_agent coordinates: #world aspect: base position: { 0, 0, 0.2 };
+			species edge_agent coordinates: #world aspect: base position: { 0, 0, 0.2 };
+			species node_agent coordinates: #world aspect: dynamic position: { 0, 0, 0.4 };
+			species edge_agent coordinates: #world aspect: dynamic position: { 0, 0, 0.4 };
 		}
 	}
 }

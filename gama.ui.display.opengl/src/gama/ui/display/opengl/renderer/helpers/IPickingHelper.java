@@ -13,6 +13,11 @@ public interface IPickingHelper {
 
 	void beginPicking();
 
+	default boolean shouldRenderPicking() { return true; }
+
+	/** Reapplies a cursor selection volume after replacing the world projection; colour picking needs none. */
+	default void applyPickTransform() {}
+
 	void endPicking();
 
 	void tryPick(IDrawingAttributes attributes);

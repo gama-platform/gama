@@ -165,7 +165,7 @@ experiment Vectorize type: gui {
 	parameter var:resolution_factor;
 	
 	output {
-		display map_vector type:3d axes:false{
+		display map_vector type:3d axes:false map_order: true{
 			species water;
 			species ground;
 			species beach;

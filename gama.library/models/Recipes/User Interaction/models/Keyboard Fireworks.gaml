@@ -74,11 +74,11 @@ experiment Fireworks type: gui {
 				}
 			}
 
-			overlay position: {0.02, 0.02} size: {0.96, 130#px} background: #white border: #gray {
-				draw "Click this display to focus and choose a launch point" at: {12#px, 26#px} color: #black font: font("SansSerif", 14);
-				draw "0-9: burst size | Other keys: launch | Backspace: clear" at: {12#px, 50#px} color: #black font: font("SansSerif", 14);
-				draw "Last key: " + last_key + "   Burst size: " + burst_size at: {12#px, 78#px} color: #blue font: font("SansSerif", 14);
-				draw "Built-in shortcuts remain active." at: {12#px, 106#px} color: #black font: font("SansSerif", 14);
+			overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 130} background: #white border: #gray {
+				draw "Click this display to focus and choose a launch point" at: {12, 26} color: #black font: font("SansSerif", 14);
+				draw "0-9: burst size | Other keys: launch | Backspace: clear" at: {12, 50} color: #black font: font("SansSerif", 14);
+				draw "Last key: " + last_key + "   Burst size: " + burst_size at: {12, 78} color: #blue font: font("SansSerif", 14);
+				draw "Built-in shortcuts remain active." at: {12, 106} color: #black font: font("SansSerif", 14);
 			}
 		}
 

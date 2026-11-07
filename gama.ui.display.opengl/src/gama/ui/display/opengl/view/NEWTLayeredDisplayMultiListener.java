@@ -59,6 +59,8 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	/** The key listener for mac and linux. */
 	final Consumer<Character> keyListenerForMac;
 
+	final Runnable resetCameraInteraction;
+
 	/**
 	 * Instantiates a new NEWT layered display multi listener.
 	 *
@@ -74,6 +76,11 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 
 		delegate = new LayeredDisplayMultiListener(surface, deco);
 		control = window;
+		resetCameraInteraction = () -> {
+			if (surface instanceof SWTOpenGLDisplaySurface glSurface) {
+				glSurface.renderer.getCameraHelper().cancelInteraction();
+			}
+		};
 
 		ok = () -> {
 			final boolean viewOk = deco.view != null && !deco.view.disposed;
@@ -215,55 +222,65 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 		return e.isAltDown() || e.isAltGraphDown() || e.isControlDown() || e.isMetaDown() || e.isShiftDown();
 	}
 
+	private int[] windowCoordinates(final MouseEvent e) {
+		return control.convertToWindowUnits(new int[] { e.getX(), e.getY() });
+	}
+
 	@Override
 	public void mouseEntered(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_ENTERED, e.getX(), e.getY(), NEWTUserInput.button(e));
-		delegate.mouseEnter(e.getX(), e.getY(), hasModifiers(e), e.getButton());
+		final int[] p = windowCoordinates(e);
+		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_ENTERED, p[0], p[1], NEWTUserInput.button(e));
+		delegate.mouseEnter(p[0], p[1], hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseExited(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_EXITED, e.getX(), e.getY(), NEWTUserInput.button(e));
-		delegate.mouseExit(e.getX(), e.getY(), hasModifiers(e), e.getButton());
+		final int[] p = windowCoordinates(e);
+		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_EXITED, p[0], p[1], NEWTUserInput.button(e));
+		delegate.mouseExit(p[0], p[1], hasModifiers(e), e.getButton());
 	}
 
 	@Override
 	public void mouseMoved(final MouseEvent e) {
 		if (!ok.get()) return;
 		final int button = NEWTUserInput.button(e);
+		final int[] p = windowCoordinates(e);
 		delegate.userMouseEvent(button == 0 ? IEventLayerDelegate.MOUSE_MOVED : IEventLayerDelegate.MOUSE_DRAGGED,
-				e.getX(), e.getY(), button);
-		delegate.mouseMove(e.getX(), e.getY(), hasModifiers(e));
+				p[0], p[1], button);
+		delegate.mouseMove(p[0], p[1], hasModifiers(e));
 	}
 
 	@Override
 	public void mousePressed(final MouseEvent e) {
 		if (!ok.get()) return;
 		WorkbenchHelper.getService(IStatusDisplayer.class).hideStatusPopups();
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DOWN, e.getX(), e.getY(), e.getButton());
+		final int[] p = windowCoordinates(e);
+		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DOWN, p[0], p[1], e.getButton());
 		// DEBUG.OUT("Mouse pressed with button " + e.getButton() + " modifiers " + e.getModifiersString(null));
 		if (e.getButton() == 3 || e.isControlDown()) {
-			delegate.userMouseEvent(IEventLayerDelegate.MOUSE_MENU, e.getX(), e.getY(), e.getButton());
-			delegate.menuDetected(e.getX(), e.getY());
+			delegate.userMouseEvent(IEventLayerDelegate.MOUSE_MENU, p[0], p[1], e.getButton());
+			delegate.menuDetected(p[0], p[1]);
 		} else {
-			delegate.mouseDown(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
+			delegate.mouseDown(p[0], p[1], e.getButton(), hasModifiers(e));
 		}
 	}
 
 	@Override
 	public void mouseReleased(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_UP, e.getX(), e.getY(), e.getButton());
-		delegate.mouseUp(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
+		final int[] p = windowCoordinates(e);
+		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_UP, p[0], p[1], e.getButton());
+		delegate.mouseUp(p[0], p[1], e.getButton(), hasModifiers(e));
 	}
 
 	@Override
 	public void mouseDragged(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DRAGGED, e.getX(), e.getY(), NEWTUserInput.button(e));
-		delegate.dragDetected(e.getX(), e.getY());
+		final int[] p = windowCoordinates(e);
+		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_DRAGGED, p[0], p[1], NEWTUserInput.button(e));
+		delegate.dragDetected(p[0], p[1]);
 	}
 
 	@Override
@@ -287,6 +304,7 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void windowLostFocus(final WindowEvent e) {
 		if (!ok.get()) return;
+		resetCameraInteraction.run();
 		delegate.focusLost();
 
 	}
@@ -297,14 +315,16 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	@Override
 	public void mouseClicked(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_CLICKED, e.getX(), e.getY(), e.getButton());
-		delegate.mouseUp(e.getX(), e.getY(), e.getButton(), hasModifiers(e));
+		final int[] p = windowCoordinates(e);
+		delegate.userMouseEvent(IEventLayerDelegate.MOUSE_CLICKED, p[0], p[1], e.getButton());
+		delegate.mouseUp(p[0], p[1], e.getButton(), hasModifiers(e));
 	}
 
 	@Override
 	public void mouseWheelMoved(final MouseEvent e) {
 		if (!ok.get()) return;
-		delegate.mouseMove(e.getX(), e.getY(), hasModifiers(e));
+		final int[] p = windowCoordinates(e);
+		delegate.mouseMove(p[0], p[1], hasModifiers(e));
 	}
 
 }

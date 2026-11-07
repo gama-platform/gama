@@ -82,7 +82,7 @@ global {
 			checksum <- sum(worker collect each.value);
 			do report(phase: "RESULT");
 			if pause_at_end {
-				do pause();
+				experiment.pause();
 			}
 		}
 	}

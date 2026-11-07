@@ -162,7 +162,7 @@ experiment "Box2D Wheel Car" type: gui {
 			species chassis;
 			species wheel;
 			species load;
-			overlay position: {5, 5} size: {250 #px, 90 #px} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
+			overlay coordinates: #screen position: {5, 5} size: {250, 90} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
 				draw "WHEEL-CAR TEST BENCH" at: {10 #px, 16 #px} color: rgb(112, 111, 103) font: font("SansSerif", 10, #bold);
 				draw "Chassis speed : " + (chassis_speed with_precision 1) + " u/s" at: {10 #px, 34 #px} color: rgb(64, 104, 132);
 				draw "Rope span : " + (rope_length with_precision 1) + " / 12 max" at: {10 #px, 50 #px} color: rgb(112, 111, 103);

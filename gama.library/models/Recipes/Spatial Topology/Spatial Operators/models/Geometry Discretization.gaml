@@ -142,7 +142,7 @@ experiment triangles_voronoi type: gui {
 }	
 experiment to_sub_geometries type: gui {
 	output{
-		display to_sub_geometries_polygon type: 3d{
+		display to_sub_geometries_polygon type: 3d map_order: true{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				//Convert the initial circle into 3 sub-geometries representing respectively 30%, 50% and 20% of the init geom using square of 0.5meters size
@@ -151,7 +151,7 @@ experiment to_sub_geometries type: gui {
 				} 
 			} 
 		}
-		display to_sub_geometries_lines type: 3d{
+		display to_sub_geometries_lines type: 3d map_order: true{
 			graphics "geoms" transparency: 0.5{
 				//Convert the initial line into 3 sub-geometries representing respectively 30%, 50% and 20% of the line
 				loop g over: to_sub_geometries(init_line,[0.3, 0.5, 0.2]) {

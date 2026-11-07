@@ -35,6 +35,7 @@ import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D.Heterogeneous;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 
 /**
@@ -257,10 +258,12 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			gl.setNormal(_vertices, clockwise);
 			final boolean hasHoles = getHolesNumber(p) > 0;
 			final int size = _vertices.size();
-			if (hasHoles || size > 5) {
-				gl.drawPolygon(p, _vertices, clockwise);
-			} else {
-				gl.drawSimpleShape(_vertices, size - 1, /* solid, */clockwise, false, null);
+			try (var offset = PolygonOffset.forOutline(gl, border != null)) {
+				if (hasHoles || size > 5) {
+					gl.drawPolygon(p, _vertices, clockwise);
+				} else {
+					gl.drawSimpleShape(_vertices, size - 1, /* solid, */clockwise, false, null);
+				}
 			}
 		}
 

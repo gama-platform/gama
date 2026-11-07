@@ -139,7 +139,7 @@ global schedules: people_ordered{
 	}
 	
 	reflex end_sim when:  empty(people) or  time > 15000{
-		do pause();
+		experiment.pause();
 	}
 
 }
@@ -533,13 +533,13 @@ experiment main type: gui {
 			species bicycle ;	
 			species pedestrian ;
 			
-			 overlay position: { 5, 5 } size: { 320 #px, 60 #px } background: #gray transparency: 0.1 border: #black rounded: true
+			 overlay coordinates: #screen position: { 5, 5 } size: { 320, 60 } background: #gray transparency: 0.1 border: #black rounded: true
             {
             	draw "Evacuation: " + (init_num_people - length(people))+ "/" + init_num_people + " people" font: font(20) color: #white at: { 10#px, 35#px } ;
 
             }
             
-            graphics "model_description" {
+            graphics "model_description" coordinates: #world {
             	draw (rectangle(800, 300).contour + 2) at: {0, 1000} color: #red;
             	draw model_description_1 font: font(10) color: #white at: {-370, 900};
             	draw model_description_2 font: font(10) color: #white at: {-370, 940};

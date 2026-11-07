@@ -131,7 +131,7 @@ experiment fieldofvision type: gui {
 			species people aspect: perception;
 			species obstacle;
 			species people aspect: body;
-			overlay position: {14#px, 14#px} size: {228#px, 94#px} background: ground rounded: true {
+			overlay coordinates: #screen position: {14, 14} size: {228, 94} background: ground rounded: true {
 				draw "LINE OF SIGHT" at: {14#px, 22#px} color: agent_color font: font("Helvetica", 12, #bold);
 				draw square(9#px) at: {20#px, 44#px} color: visible;
 				draw "Visible area" at: {36#px, 48#px} color: agent_color font: font("Helvetica", 12);

@@ -63,12 +63,6 @@ public class ModelScene {
 	/** The rendered. */
 	private volatile boolean rendered = false;
 
-	/** The object number. */
-	private volatile int objectNumber;
-
-	/** The current layer trace. */
-	private volatile int currentLayerTraceNumber;
-
 	/**
 	 * Instantiates a new model scene.
 	 *
@@ -116,63 +110,51 @@ public class ModelScene {
 		// DEBUG.OUT("Drawing scene " + index);
 		// }
 		double maxZ = renderer.getMaxEnvDim() * 0.005;
-		// maxZ = gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber)
-		final double zIncrement = objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue() ? 0d
-				: maxZ / objectNumber * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue();
-
-		gl.push(GLMatrixFunc.GL_MODELVIEW);
-		gl.setZIncrement(renderer.getData().isOrtho() ? 0D : zIncrement);
-		// AD called here so that it is inside the keystone drawing. See #3285
-		gl.rotateModel();
-		for (LayerObject layer : layers.values()) {
-			// AD Added
+		long objectNumber = 0, worldLayerNumber = 0;
+		for (final LayerObject layer : layers.values()) {
 			if (layer != null && layer.isVisible()) {
-				// See Issue #3857
-				if (GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) { gl.translateBy(0, 0, zIncrement); }
-				// AD added to prevent overlays to rotate
-				if (layer.isOverlay()) { gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW); }
-				try {
-					if (renderer.getPickingHelper().isPicking() && !layer.isPickable()) { continue; }
-					layer.draw(gl);
-				} catch (final RuntimeException r) {
-					DEBUG.ERR("Runtime error " + r.getMessage() + " in OpenGL loop");
-					r.printStackTrace();
-				} finally {
-					if (layer.isOverlay()) { gl.pop(GLMatrixFunc.GL_MODELVIEW); }
-				}
+				objectNumber += layer.numberOfZTranslatedObjects();
+				if (!layer.isOverlay()) { worldLayerNumber++; }
 			}
 		}
+		final double zIncrement = renderer.getData().isMapOrder() || objectNumber < 1
+				|| !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue() ? 0d
+				: maxZ / Math.max(objectNumber, worldLayerNumber) * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue();
 
-		gl.setZIncrement(0);
-		rendered = true;
-		// renderer.getSurface().getOutput().setRendered(true);
-		gl.pop(GLMatrixFunc.GL_MODELVIEW);
-	}
-
-	// /**
-	// * Compute visual Z increment.
-	// *
-	// * @return the double
-	// */
-	// private double computeVisualZIncrement(final IOpenGL gl) {
-	// if (objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) return 0d;
-	// return gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber);
-	//
-	// // The maximum visual z allowance between the object at the bottom and the one at the top
-	//
-	// // The increment is simply
-	// // return maxZ / objectNumber;
-	// }
-
-	/**
-	 * Increment.
-	 *
-	 * @return true, if successful
-	 */
-	private boolean increment() {
-		if (currentLayer == null) return false;
-		objectNumber += currentLayerTraceNumber;
-		return true;
+		final double previousIncrement = gl.getCurrentZIncrement();
+		final double previousTranslation = gl.getCurrentZTranslation();
+		gl.push(GLMatrixFunc.GL_MODELVIEW);
+		try {
+			gl.setZIncrement(renderer.getData().isOrtho() ? 0D : zIncrement);
+			// AD called here so that it is inside the keystone drawing. See #3285
+			gl.rotateModel();
+			long objectIndex = 0;
+			long layerIndex = 0;
+			for (LayerObject layer : layers.values()) {
+				if (layer != null && layer.isVisible()) {
+					final boolean worldLayer = !layer.isOverlay();
+					if (worldLayer) { layerIndex++; }
+					gl.setCurrentZTranslation(objectIndex * gl.getCurrentZIncrement());
+					objectIndex += layer.numberOfZTranslatedObjects();
+					gl.push(GLMatrixFunc.GL_MODELVIEW);
+					try {
+						if (worldLayer) { gl.translateBy(0, 0, layerIndex * zIncrement); }
+						if (renderer.getPickingHelper().isBeginningPicking() && !layer.isPickable()) { continue; }
+						layer.draw(gl);
+					} catch (final RuntimeException r) {
+						DEBUG.ERR("Runtime error " + r.getMessage() + " in OpenGL loop");
+						r.printStackTrace();
+					} finally {
+						gl.pop(GLMatrixFunc.GL_MODELVIEW);
+					}
+				}
+			}
+			rendered = true;
+		} finally {
+			gl.setZIncrement(previousIncrement);
+			gl.setCurrentZTranslation(previousTranslation);
+			gl.pop(GLMatrixFunc.GL_MODELVIEW);
+		}
 	}
 
 	/**
@@ -184,7 +166,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addString(final String string, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addString(string, attributes); }
+		if (currentLayer != null) { currentLayer.addString(string, attributes); }
 	}
 
 	/**
@@ -196,7 +178,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addGeometryFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addFile(file, attributes); }
+		if (currentLayer != null) { currentLayer.addFile(file, attributes); }
 	}
 
 	/**
@@ -208,7 +190,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addImage(final Object img, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addImage(img, attributes); }
+		if (currentLayer != null) { currentLayer.addImage(img, attributes); }
 	}
 
 	/**
@@ -220,7 +202,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addGeometry(geometry, attributes); }
+		if (currentLayer != null) { currentLayer.addGeometry(geometry, attributes); }
 	}
 
 	/**
@@ -232,7 +214,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addField(fieldValues, attributes); }
+		if (currentLayer != null) { currentLayer.addField(fieldValues, attributes); }
 	}
 
 	/**
@@ -247,9 +229,7 @@ public class ModelScene {
 	/**
 	 * Begin drawing layers.
 	 */
-	public void beginDrawingLayers() {
-		currentLayerTraceNumber = 0;
-	}
+	public void beginDrawingLayers() {}
 
 	/**
 	 * End drawing layers.
@@ -297,7 +277,6 @@ public class ModelScene {
 		}
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys after creation = " + layers.keySet());
 		currentLayer.setAlpha(alpha);
-		currentLayerTraceNumber = currentLayer.numberOfActualTraces();
 	}
 
 	/**

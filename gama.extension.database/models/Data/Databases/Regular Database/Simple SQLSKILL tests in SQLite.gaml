@@ -19,7 +19,7 @@ global {
 		// Test of the connection to the database
 		if (!first(DB_Accessor).testConnection(PARAMS)) {
 			write "Connection impossible";
-			do pause();
+			experiment.pause();
 		}
 
 		ask (DB_Accessor) {

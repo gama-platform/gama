@@ -20,6 +20,7 @@ import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.dev.DEBUG;
 
 /**
@@ -67,6 +68,11 @@ public abstract class AbstractLayer implements ILayer {
 	@Override
 	public ILayerData getData() { return data; }
 
+	@Override
+	public boolean isProvidingWorldCoordinates() {
+		return data.getContentCoordinates() != LayerCoordinates.SCREEN;
+	}
+
 	/**
 	 * Creates the data.
 	 *
@@ -113,8 +119,11 @@ public abstract class AbstractLayer implements ILayer {
 			return;
 		g.setAlpha(1 - data.getTransparency(scope));
 		g.beginDrawingLayer(this);
-		privateDraw(scope, g);
-		g.endDrawingLayer(this);
+		try {
+			privateDraw(scope, g);
+		} finally {
+			g.endDrawingLayer(this);
+		}
 		// Necessary to handle Issue #3392
 		if (!hasBeenDrawnOnce) {
 			hasBeenDrawnOnce = true;

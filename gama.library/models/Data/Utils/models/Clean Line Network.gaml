@@ -75,11 +75,12 @@ experiment clean_network type: gui {
 	}
 	output {
 		layout #split;
-		display network type: 3d {
+		display network type: 3d map_order: true {
 	
-			 overlay position: { 10#px, 10#px } size: { 10 #px, 10 #px } background: # white transparency: 0.1  rounded: true
+			 // Text intentionally extends beyond this small screen frame.
+			 overlay coordinates: #screen position: {10, 10} size: {10, 10} background: # white transparency: 0.1  rounded: true
             {
-				draw legend color: #black font: font("SansSerif", 18, #bold) at: {40#px, 40#px, 1 };
+				draw legend color: #black font: font("SansSerif", 18, #bold) at: {40, 40};
 			}
 			species road ;
 			graphics "connected components" {

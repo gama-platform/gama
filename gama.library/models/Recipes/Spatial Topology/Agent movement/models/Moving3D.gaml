@@ -189,12 +189,12 @@ experiment Complete  type: gui parent:base{
 			
 		display GotoOnNetworkAgent type:3d background:rgb(10,40,55) {
 			camera 'default' location: {-51.3023,242.3741,147.6937} target: {153.2868,19.1041,0.0};
-			species movingAgent position:{0,0,0} trace:trace;
-			species wanderAgent position:{envSize,0,0} trace:trace;
-			species gotoAgent position:{envSize*2,0,0} trace:trace;
-			species gotoAgentOnNetwork position:{envSize*3,0,0} trace:trace;
-			species cell aspect:myPoint position:{envSize*3,0,0};
-			species edge_agent aspect: base position:{envSize*3,0,0};
+			species movingAgent coordinates: #world position:{0,0,0} trace:trace;
+			species wanderAgent coordinates: #world position:{envSize,0,0} trace:trace;
+			species gotoAgent coordinates: #world position:{envSize*2,0,0} trace:trace;
+			species gotoAgentOnNetwork coordinates: #world position:{envSize*3,0,0} trace:trace;
+			species cell coordinates: #world aspect:myPoint position:{envSize*3,0,0};
+			species edge_agent coordinates: #world aspect: base position:{envSize*3,0,0};
 		}
 	}
 }

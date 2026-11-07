@@ -78,19 +78,19 @@ experiment clustering type: gui {
 	
 	output {
 		layout #split;
-		display general_graph type: 3d axes: false{
+		display general_graph type: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent ;
 		}
-		display cluster_girvan_newman type: 3d axes: false{
+		display cluster_girvan_newman type: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent aspect: color_cluster_gn ;
 		}
-		display cluster_k_spanning_tree type: 3d axes: false{
+		display cluster_k_spanning_tree type: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent aspect: color_cluster_stc ;
 		}
-		display cluster_label_propagation type: 3d axes: false{
+		display cluster_label_propagation type: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent aspect: color_cluster_lpc ;
 		}

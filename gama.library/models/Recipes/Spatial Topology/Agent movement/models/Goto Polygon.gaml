@@ -96,7 +96,7 @@ experiment goto_polygon type: gui {
 	float minimum_cycle_duration <- 0.1;
 	
 	output {
-		display objects_display {
+		display objects_display map_order: true {
 			species objects aspect: default ;
 			species triangle_obj aspect: default ;
 			species skeleton aspect: default ;

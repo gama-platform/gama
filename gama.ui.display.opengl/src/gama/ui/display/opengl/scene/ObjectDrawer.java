@@ -49,8 +49,17 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOp
 	@SuppressWarnings ("unchecked")
 	public final void draw(final AbstractObject<?, ?> object, final boolean isPicking) {
 		gl.beginObject(object, isPicking);
-		_draw((T) object);
-		gl.endObject(object, isPicking);
+		try {
+			gl.pushMatrix();
+			try {
+				gl.translateBy(0, 0, gl.getCurrentZTranslation());
+				_draw((T) object);
+			} finally {
+				gl.popMatrix();
+			}
+		} finally {
+			gl.endObject(object, isPicking);
+		}
 	}
 
 	/**

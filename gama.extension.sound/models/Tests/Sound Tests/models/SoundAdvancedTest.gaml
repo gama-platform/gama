@@ -26,7 +26,7 @@ experiment SoundAdvancedTest type: test autorun: true {
 
 		bool failed <- false;
 		try {
-			ask p { do play_missing_file; }
+			ask p { do play_missing_file(); }
 		} catch {
 			failed <- true;
 		}
@@ -39,7 +39,7 @@ experiment SoundAdvancedTest type: test autorun: true {
 
 		bool failed <- false;
 		try {
-			ask p { do play_unsupported_format; }
+			ask p { do play_unsupported_format(); }
 		} catch {
 			failed <- true;
 		}

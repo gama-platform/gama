@@ -15,8 +15,10 @@ import com.jogamp.opengl.GLEventListener;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayer;
 import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
+import gama.ui.display.opengl.renderer.helpers.AdaptiveTextHelper;
 import gama.ui.display.opengl.renderer.helpers.IKeystoneHelper;
 import gama.ui.display.opengl.renderer.helpers.ILightHelper;
 import gama.ui.display.opengl.renderer.helpers.IPickingHelper;
@@ -28,6 +30,9 @@ import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
  * The Interface IOpenGLRenderer.
  */
 public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
+
+	/** Sets the layer being rendered on the GL thread and returns the previous render context. */
+	ILayer setRenderingLayer(ILayer layer);
 
 	/**
 	 * Sets the canvas.
@@ -121,6 +126,10 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 * @return the scene helper
 	 */
 	SceneHelper getSceneHelper();
+
+	RenderDiagnostics getDiagnostics();
+
+	AdaptiveTextHelper getAdaptiveTextHelper();
 
 	/**
 	 * Gets the data.

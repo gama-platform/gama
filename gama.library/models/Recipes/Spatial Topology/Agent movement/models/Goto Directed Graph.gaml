@@ -77,7 +77,7 @@ species people skills: [moving] {
 experiment simplemodel type: gui {
 	float minimum_cycle_duration <- 0.01;
 	output {
-		display map {
+		display map map_order: true {
 			species road aspect: geom;
 			species people aspect: circle;
 		}

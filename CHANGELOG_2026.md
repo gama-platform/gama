@@ -19,6 +19,84 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### OBJ loading and rendering
+
+OBJ bounds are computed from the parsed vertex bounds without first constructing a geometry for
+every face. When an OBJ is used as GAML geometry, its buffer now contains one polygon per face,
+rather than additional incomplete polygons for each intermediate vertex. Repeated buffer access
+reuses the existing contents, and invalidating the file discards its parsed data and bounds.
+Face parsing avoids per-corner tokenizer and character-array allocations and resolves negative
+OBJ indices relative to the vertices, texture coordinates and normals already read.
+
+Both renderers batch consecutive compatible OBJ triangles and quads without changing material or
+face order. The fixed pipeline compiles these batches into display lists. OpenGL4 retains triangle
+and filled-quad batches in GPU buffers, reusing them across instances and frames while keeping
+per-instance transforms, colors, lighting and picking. Wireframe quads and less common polygon or
+mixed-attribute faces retain their individual drawing path. Cached GPU buffers are released on
+cache expiration or display disposal and rebuilt when their source OBJ is invalidated.
+Both backends avoid constructing temporary face coordinates when all normals are supplied, and
+leave cached material textures under the texture cache's ownership.
+
+### Optional OpenGL rendering diagnostics
+
+The **Displays > OpenGL Rendering Properties > Log OpenGL rendering diagnostics** preference
+enables periodic per-display reports in the application process log. It is off by default.
+Both backends report CPU elapsed time for rendering, the visible scene and picking; OpenGL4 also
+reports draw calls and buffer uploads for its generic and mesh paths, while legacy OpenGL reports
+polygon-tessellation cache hits and misses. These are scoped counters, not totals for every GPU
+operation. The measurements do not force GPU completion and are not GPU execution times.
+
+### Improved OpenGL rendering for maps and map-like environments
+
+Both OpenGL backends now support **map ordering**, an opt-in rendering mode for flat maps and
+map-like environments where overlapping backgrounds, grids, roads, polygons, agents and labels
+should follow their existing drawing order. Instead of letting the depth buffer decide which
+coplanar fragments are visible, it composites world layers and drawings in traversal order:
+later fragments cover or blend over earlier ones. This provides a more reliable way to avoid
+z-fighting between overlapping map elements than small depth offsets alone.
+
+Enable it per display with `map_order: true`, or enable **Displays > OpenGL Rendering Properties >
+In OpenGL, draw world layers in map order instead of using 3D depth**. The preference defaults to
+`false`; an explicit display facet overrides it. Java2D is unaffected. Selected library map displays
+have been updated to demonstrate the option.
+
+Map ordering disables world depth testing and writes, including within individual drawings, so it
+is not a general solution for 3D scenes: elevated surfaces, meshes and overlapping faces may no
+longer appear in spatial depth order. Camera clipping still applies, screen layers keep their
+existing ordering, and picking has backend-specific limitations. Legacy orthographic OpenGL also
+now uses the same camera-depth direction as perspective and OpenGL4, so overlapping geometry in
+existing depth-based displays can look different even when map ordering is disabled.
+
+**Migration:** existing displays do not opt in automatically. Add the facet to suitable displays
+or enable the preference; use `map_order: false` to retain depth-based rendering for a particular
+display when the preference is enabled. See [map-order migration](MIGRATION_GUIDE_2026.md#map-order-for-opengl-displays)
+and the [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#map-ordering-in-opengl).
+
+### Display viewport dimensions and mouse-coordinate aliases
+
+`#display_width` and `#display_height` now always return the visible viewport dimensions in logical pixels,
+independent of zoom and layer referential. In graphical scopes, including `event` callbacks, they use the
+originating display; outside graphics they use the frontmost display, or return `0` if none exists.
+They no longer return the zoomed world's pixel extent in world contexts and never denote overlay-local size.
+`#px` remains contextual: one logical pixel in screen contexts, a pixel-to-model-unit conversion in world contexts.
+
+`#mouse_location_in_world` joins `#user_location` and `#user_location_in_world` as a world-coordinate synonym.
+`#mouse_location_in_display` is a synonym of `#user_location_in_display`, measured from the viewport's top-left
+in logical pixels. The old `#mouse_world_location` and `#mouse_screen_location` names remain compatibility aliases.
+All aliases retain the originating mouse-event snapshot behavior.
+Both OpenGL backends convert native mouse-event pixels to logical viewport pixels using the actual native
+surface scale, fixing undersized overlay hit areas on HiDPI displays. Camera picking retains physical pixels.
+World-layer layout uses non-negative fitted viewport dimensions scaled by zoom instead of a camera-projected
+point, preventing valid layer sizes from becoming negative during camera movement. Camera-matrix reads used
+for projected world coordinates are synchronized with updates in both OpenGL backends.
+
+**Migration:** review dimension expressions that relied on zoom-dependent world extents. Use viewport mouse
+coordinates with viewport dimensions, and world mouse coordinates with world geometry; point arithmetic does
+not convert between referentials. Multiplying viewport dimensions by `#zoom` is not a general replacement for
+the former extent because aspect-ratio fitting and projection also affect it.
+See the [migration reference](MIGRATION_GUIDE_2026.md#display-dimensions-and-mouse-coordinates)
+and [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
+
 ### Experiment execution controls and pause-state migration
 
 Experiment agents expose `play`, `pause`, `step_once`, `step_back`, `synchronize`, `desynchronize` and `reload`.

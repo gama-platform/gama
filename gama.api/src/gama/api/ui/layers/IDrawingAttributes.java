@@ -136,6 +136,16 @@ public interface IDrawingAttributes {
 	void setTexture(Object o);
 
 	/**
+	 * Sets whether this object's texture should use smooth filtering when scaled.
+	 */
+	default void setSmoothTexture(final boolean smooth) {}
+
+	/**
+	 * Returns whether this object's texture should use smooth filtering when scaled.
+	 */
+	default boolean isSmoothTexture() { return false; }
+
+	/**
 	 * Mark selected.
 	 *
 	 * @param pickedIndex

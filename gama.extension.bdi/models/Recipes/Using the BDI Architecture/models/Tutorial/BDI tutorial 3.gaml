@@ -66,7 +66,7 @@ global {
 	}
 	
 	reflex end_simulation when: sum(gold_mine collect each.quantity) = 0 and empty(miner where each.has_belief(has_gold)){
-		do pause();
+		experiment.pause();
 		ask miner {
 			write name + " : " +gold_sold;
 		}

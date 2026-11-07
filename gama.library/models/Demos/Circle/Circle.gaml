@@ -101,7 +101,7 @@ experiment main type: gui {
 		} else if (number_of_agents < length(cell)) {
 			ask (length(cell) - number_of_agents) among cell { do die(); }
 		}
-		do measure_formation();
+		ask simulation {do measure_formation();}
 	}
 	parameter "Radius of Circle" var: radius_of_circle unit: "m" category: "Formation";
 	parameter "Attraction to Ring" var: attraction_strength category: "Dynamics";
@@ -126,7 +126,7 @@ experiment main type: gui {
 				}
 			}
 			species cell;
-			overlay position: {16#px, 16#px} size: {278#px, 96#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {16, 16} size: {278, 96} background: backdrop rounded: true {
 				draw "CIRCULAR FORMATION" at: {14#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal: on ring / Amber: approaching" at: {14#px, 48#px}
 					color: lettering font: font("Helvetica", 11);

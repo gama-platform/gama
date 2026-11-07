@@ -27,6 +27,7 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.AttributeHolder;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.Rotation3D;
@@ -111,6 +112,11 @@ public class DrawingData extends AttributeHolder {
 		// this.material = create(IKeyword.MATERIAL, Types.MATERIAL, null);
 		this.perspective = create(IKeyword.PERSPECTIVE, Types.BOOL, true);
 		this.lineWidth = create(IKeyword.WIDTH, Types.FLOAT, GamaPreferences.Displays.CORE_LINE_WIDTH.getValue());
+	}
+
+	/** Uses the geometry's lighting default unless the draw statement explicitly supplies lighted:. */
+	public boolean getLighting(final boolean defaultValue) {
+		return symbol.hasFacet(IKeyword.LIGHTED) ? lighting.get() : defaultValue;
 	}
 
 	/**
@@ -220,12 +226,32 @@ public class DrawingData extends AttributeHolder {
 		return null;
 	}
 
-	/**
-	 * Gets the location.
-	 *
-	 * @return the location
-	 */
-	public IPoint getLocation() { return location.get() == null ? null : location.get(); }
+	private IPoint resolvedLocation, resolvedSize;
+
+	@Override
+	public void refresh(final IScope scope) {
+		super.refresh(scope);
+		resolvedLocation = location.get();
+		resolvedSize = size.get();
+		final IGraphics graphics = scope.getGraphics();
+		if (graphics == null || graphics.getCoordinateSystem() != LayerCoordinates.SCREEN) return;
+		if (resolvedLocation != null) {
+			resolvedLocation = GamaPointFactory.create(
+					LayerCoordinates.screenPosition(resolvedLocation.getX(), graphics.getContentWidth()),
+					LayerCoordinates.screenPosition(resolvedLocation.getY(), graphics.getContentHeight()),
+					resolvedLocation.getZ());
+		}
+		if (resolvedSize != null) {
+			resolvedSize = GamaPointFactory.create(
+					LayerCoordinates.screenLength(resolvedSize.getX(), graphics.getContentWidth()),
+					LayerCoordinates.screenLength(resolvedSize.getY(), graphics.getContentHeight()),
+					resolvedSize.getZ());
+		}
+	}
+
+	public IPoint getLocation() { return resolvedLocation; }
+
+	public IPoint getSize() { return resolvedSize; }
 
 	/**
 	 * Gets the anchor.

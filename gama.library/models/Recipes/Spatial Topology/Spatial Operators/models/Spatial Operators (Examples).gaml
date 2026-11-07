@@ -33,7 +33,7 @@ global {
 	
 
 	reflex stop when: empty ( objects ) {
-		do pause();
+		experiment.pause();
   	} 
 
 }

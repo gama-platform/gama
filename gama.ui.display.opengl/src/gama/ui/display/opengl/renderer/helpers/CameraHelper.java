@@ -102,6 +102,9 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	/** The ctrl pressed. */
 	protected boolean ctrlPressed = false;
 
+	private boolean mouseLeftPressed;
+	private volatile boolean controlGesture;
+
 	/** The shift pressed. */
 	protected boolean shiftPressed = false;
 
@@ -394,7 +397,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param value
 	 *            the new ctrl pressed
 	 */
-	final void setCtrlPressed(final boolean value) { ctrlPressed = value; }
+	final void setCtrlPressed(final boolean value) {
+		ctrlPressed = value;
+		drawRotationHelper();
+	}
 
 	/**
 	 * Sets the mouse left pressed.
@@ -402,7 +408,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param b
 	 *            the new mouse left pressed
 	 */
-	protected void setMouseLeftPressed(final boolean b) {}
+	protected void setMouseLeftPressed(final boolean b) {
+		mouseLeftPressed = b;
+		drawRotationHelper();
+	}
 
 	/**
 	 * Invoke on GL thread.
@@ -436,6 +445,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseMoved(final com.jogamp.newt.event.MouseEvent e) {
+		if (controlGesture) return;
 		invokeOnGLThread(drawable -> {
 			internalMouseMove(e.getX(), e.getY(), e.getButton(), e.getButton() > 0, isControlDown(e), e.isShiftDown());
 			return false;
@@ -572,6 +582,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseClicked(final com.jogamp.newt.event.MouseEvent e) {
+		if (renderer.getSurface().isOverDisplayControl(e.getX(), e.getY())) return;
 		if (e.getClickCount() == 2) {
 			if (keystoneMode) {
 				final int x = e.getX();
@@ -589,6 +600,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mousePressed(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getButton() == 1 && renderer.getSurface().isOverDisplayControl(e.getX(), e.getY())) {
+			controlGesture = true;
+			return;
+		}
 		// DEBUG.OUT("Mouse pressed from NEWT");
 		invokeOnGLThread(drawable -> {
 			final int x = e.getX();
@@ -681,7 +696,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseReleased(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getButton() == 1 && controlGesture) {
+			controlGesture = false;
+			return;
+		}
 		invokeOnGLThread(drawable -> {
+			setCtrlPressed(isControlDown(e));
+			setShiftPressed(e.isShiftDown());
 			internalMouseUp(e.getButton(), e.isShiftDown());
 			return false;
 		});
@@ -697,7 +718,30 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		firsttimeMouseDown = true;
 		if (isViewInXYPlan() && isShift) { finishROISelection(); }
 		if (button == 1) { setMouseLeftPressed(false); }
+	}
 
+	@Override
+	public final void mouseExited(final com.jogamp.newt.event.MouseEvent e) {
+		cancelInteraction();
+	}
+
+	public void cancelInteraction() {
+		controlGesture = false;
+		invokeOnGLThread(drawable -> {
+			resetInteraction();
+			return true;
+		});
+	}
+
+	/** Cancels input whose release may have happened outside the native canvas. */
+	private void resetInteraction() {
+		setCtrlPressed(false);
+		setShiftPressed(false);
+		setMouseLeftPressed(false);
+		firsttimeMouseDown = true;
+		goesForward = goesBackward = strafeLeft = strafeRight = false;
+		ROICurrentlyDrawn = false;
+		cancelROI();
 	}
 
 	/**
@@ -1030,7 +1074,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			if (!keystoneMode) {
 				if (e.getKeyChar() == 0) {
 					setCtrlPressed(!isCameraModifierKey(e.getKeySymbol()) && isControlDown(e));
-					if (shiftPressed) { setShiftPressed(!e.isShiftDown()); }
+					setShiftPressed(e.isShiftDown());
 					return true;
 				}
 				boolean cameraInteraction = !data.isCameraLocked();
@@ -1127,7 +1171,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * Draw rotation helper.
 	 */
 	protected void drawRotationHelper() {
-		renderer.getOpenGLHelper().setRotationMode(ctrlPressed && !data.isCameraLocked());
+		renderer.getOpenGLHelper().setRotationMode(ctrlPressed && mouseLeftPressed && !data.isCameraLocked());
 	}
 
 	/**

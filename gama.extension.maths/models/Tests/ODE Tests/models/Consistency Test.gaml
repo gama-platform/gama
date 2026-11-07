@@ -71,7 +71,7 @@ global{
 	reflex endSim when:  (cycle >= final_cycle) {
 		write "Maximum difference between solutions (including Euler) after 20 cycles: " + diff1;
 		write "Maximum difference between solutions (excluding Euler) after 20 cycles: " + diff2;
-		do pause();
+		experiment.pause();
 	}	
 	
 }

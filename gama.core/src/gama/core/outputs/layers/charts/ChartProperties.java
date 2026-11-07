@@ -784,14 +784,16 @@ public class ChartProperties {
 
 	/** The tick font spec. */
 	// Component Objects initialized from GamaPreferences.Displays
-	private final FontSpec tickFontSpec = new FontSpec(Font.SANS_SERIF, 9, Font.PLAIN);
+	private final FontSpec tickFontSpec = new FontSpec(GamaPreferences.Displays.CHART_LABEL_FONT.getValue(),
+			GamaPreferences.Displays.CHART_LABEL_FONT_SIZE.getValue(), Font.PLAIN);
 
 	/** The label font spec. */
 	private final FontSpec labelFontSpec = new FontSpec(GamaPreferences.Displays.CHART_LABEL_FONT.getValue(),
 			GamaPreferences.Displays.CHART_LABEL_FONT_SIZE.getValue(), Font.PLAIN);
 
 	/** The legend font spec. */
-	private final FontSpec legendFontSpec = new FontSpec(Font.SANS_SERIF, 10, Font.PLAIN);
+	private final FontSpec legendFontSpec = new FontSpec(GamaPreferences.Displays.CHART_LABEL_FONT.getValue(),
+			GamaPreferences.Displays.CHART_LABEL_FONT_SIZE.getValue(), Font.PLAIN);
 
 	/** The title font spec. */
 	private final FontSpec titleFontSpec = new FontSpec(GamaPreferences.Displays.CHART_TITLE_FONT.getValue(),

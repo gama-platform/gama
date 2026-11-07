@@ -40,7 +40,7 @@ grid vegetation_cell width: 50 height: 50 neighbors: 4 {
 experiment prey_predator type: gui {
 	parameter "Initial number of preys: " var: nb_preys_init min: 1 max: 1000 category: "Prey";
 	output {
-		display main_display {
+		display main_display map_order: true {
 			grid vegetation_cell border: #black;
 			species prey aspect: base;
 		}

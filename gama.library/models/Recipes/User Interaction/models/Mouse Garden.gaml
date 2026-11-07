@@ -68,12 +68,12 @@ experiment Garden type: gui {
 				ask simulation { do react_to_key(); }
 			}
 
-			overlay position: {0.02, 0.02} size: {0.96, 150#px} background: #white border: #gray {
-				draw "Click or drag: left = pink, middle = gold, right = blue" at: {12#px, 26#px} color: #black font: font("SansSerif", 14);
-				draw "0-9: brush size | Space: clear | Right-click may open a menu" at: {12#px, 50#px} color: #black font: font("SansSerif", 14);
-				draw "Mouse: " + last_action + " / " + last_button + " at " + last_pointer at: {12#px, 78#px} color: #blue font: font("SansSerif", 14);
-				draw "Key: " + last_key + "   Brush size: " + brush_size at: {12#px, 106#px} color: #black font: font("SansSerif", 14);
-				draw "Click a display before typing; each display observes its own input." at: {12#px, 132#px} color: #black font: font("SansSerif", 14);
+			overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 150} background: #white border: #gray {
+				draw "Click or drag: left = pink, middle = gold, right = blue" at: {12, 26} color: #black font: font("SansSerif", 14);
+				draw "0-9: brush size | Space: clear | Right-click may open a menu" at: {12, 50} color: #black font: font("SansSerif", 14);
+				draw "Mouse: " + last_action + " / " + last_button + " at " + last_pointer at: {12, 78} color: #blue font: font("SansSerif", 14);
+				draw "Key: " + last_key + "   Brush size: " + brush_size at: {12, 106} color: #black font: font("SansSerif", 14);
+				draw "Click a display before typing; each display observes its own input." at: {12, 132} color: #black font: font("SansSerif", 14);
 			}
 		}
 

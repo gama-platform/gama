@@ -995,16 +995,16 @@ public class GamaPreferences {
 				"Keep chart values in memory (to save them as CSV) or not (to lower memory usage)", true, IType.BOOL,
 				true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
 
-		/**
-		 * The graphical resolution of charts rendered in OpenGL displays, from {@code 0.1} (fast/low quality) to
-		 * {@code 1.0} (slow/best quality).
-		 */
-		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
-				"Graphical resolution of the charts in OpenGL (from 0, small and fast, to 1, best but consuming lots of resources)",
-				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false).between(0.1, 1.0);
-
 		/** Group name for chart preferences. */
 		public static final String CHARTS_GROUP = "Default Chart Properties";
+
+		/**
+		 * Raster scale relative to native device resolution: {@code 1.0} is native resolution,
+		 * values above it supersample, and values below it trade quality for speed.
+		 */
+		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
+				"Chart raster scale (1 = native resolution, 2 = supersampling; higher uses more resources)",
+				1.5, IType.FLOAT, true).in(NAME, CHARTS_GROUP).inPlayer(true).between(0.1, 2.0);
 
 		/** Chart default title font face. */
 		public static final Pref<String> CHART_TITLE_FONT =
@@ -1197,6 +1197,15 @@ public class GamaPreferences {
 		public static final Pref<Integer> DISPLAY_SLICE_NUMBER = create("pref_display_slice_number",
 				"Number of slices of circular geometries in OpenGL (the higher the more resources consuming)", 16,
 				IType.INT, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+
+		/** Default painter ordering for OpenGL world layers; a display facet can override it. */
+		public static final Pref<Boolean> OPENGL_MAP_ORDER = create("pref_opengl_map_order",
+				"In OpenGL, draw world layers in map order instead of using 3D depth", false, IType.BOOL, true)
+						.in(NAME, RENDERING).inPlayer(false);
+
+		/** Periodically report OpenGL rendering diagnostics to the application log. */
+		public static final Pref<Boolean> OPENGL_DIAGNOSTICS = create("pref_opengl_diagnostics",
+				"Log OpenGL rendering diagnostics", false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
 
 		/**
 		 * Whether a small z-increment should be added to objects and layers in OpenGL to prevent z-fighting

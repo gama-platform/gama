@@ -39,7 +39,7 @@ global {
 		write "Reloaded bugs.csv : " + reloaded.rows + " rows, columns: " + reloaded.keys;
 		write "First bug name : " + cell(reloaded, 0, "name");
 
-		do pause();
+		experiment.pause();
 	}
 }
 

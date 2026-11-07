@@ -44,7 +44,7 @@ experiment "Simplify this ! " {
 	
 	output {
 		layout #split consoles: false tray: false tabs: false controls: false editors: false toolbars: false navigator: false;
-		display my_display type:3d axes: false { 
+		display my_display type:3d axes: false map_order: true {
 			species shapes {
 				draw shape color: #red;
 			}

@@ -395,9 +395,9 @@ experiment "Simple" type: gui parent:base{
 	output {
 		display RealBoids type: 3d {
 			picture file_path_to_ocean refresh: false;
-			species boids aspect: dynamicColor position: {0, 0, 0.1} trace: 30;
-			species boids_goal transparency: 0.2 position: {0, 0, 0.1};
-			species obstacle position: {0, 0, 0.1};
+			species boids coordinates: #world aspect: dynamicColor position: {0, 0, 0.1} trace: 30;
+			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.1};
+			species obstacle coordinates: #world position: {0, 0, 0.1};
 		}
 
 	}
@@ -410,9 +410,9 @@ experiment "Trajectory Analysis" type: gui parent:base{
 		layout #split;
 		display RealBoids type: 3d {
 			picture file_path_to_ocean refresh: false;
-			species boids aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
-			species boids_goal transparency: 0.2 position: {0, 0, 0.1};
-			species obstacle position: {0, 0, 0.1};
+			species boids coordinates: #world aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
+			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.1};
+			species obstacle coordinates: #world position: {0, 0, 0.1};
 		}
 
 		display AggregatedBoidsTrajectory type: 3d {
@@ -431,9 +431,9 @@ experiment "Space & Time Cube" type: gui parent:base{
 		layout #split;
 		display RealBoids type: 3d {
 			picture file_path_to_ocean refresh: false;
-			species boids aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
-			species boids_goal transparency: 0.2 position: {0, 0, 0.1};
-			species obstacle position: {0, 0, 0.1};
+			species boids coordinates: #world aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
+			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.1};
+			species obstacle coordinates: #world position: {0, 0, 0.1};
 		}
 
 		display SpaceTimeCubeAll type: 3d camera: #from_up_front {
@@ -471,18 +471,20 @@ experiment "Multiple views" type: gui parent:base{
 		layout #split;
 		display RealBoids type: 2d antialias: false {
 			picture file_path_to_ocean refresh: false;
-			species boids aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
-			species boids_goal transparency: 0.2 position: {0, 0, 0.25};
+			species boids coordinates: #world aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
+			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.25};
 			species obstacle;
-			species boids aspect: dynamicColor transparency: 0.2 position: {0, 0, 0.24};
+			species boids coordinates: #world aspect: dynamicColor transparency: 0.2 position: {0, 0, 0.24};
 		}
 
 		display ThirdPerson type: 3d antialias: false {
 			camera "default" dynamic: true location: {int(first(boids).location.x), int(first(boids).location.y), 500} target:
 			{int(first(boids).location.x), int(first(boids).location.y), 0};
-			overlay position: {5, 5} size: {width_and_height_of_environment/3,width_and_height_of_environment/3} transparency: 0.2 rounded: false {
+			// A plan-view mini-map: the frame performs the reduction, not agent locations.
+			overlay coordinates: #screen referential: #world position: {5, 5} size: {1.0/3, 1.0/3} transparency: 0.2 rounded: false {
 			 	ask boids {
-					draw triangle(20) size: 15 rotate: 90 + heading color: int(self)=0 ? #red: #gray depth: 5 at: location/3;
+					// Tripling the symbol size preserves the former full-view 15-unit glyph.
+					draw triangle(20) size: 45 rotate: 90 + heading color: int(self)=0 ? #red: #gray at: {location.x, location.y};
 			 	}
 			}
 			picture file_path_to_ocean;
@@ -498,9 +500,9 @@ experiment "Multiple views" type: gui parent:base{
 			species obstacle;
 			species boids aspect: dynamicColor transparency: 0.2;
 			species boids_goal transparency: 0.2;
-			overlay position: {5, 5} size: {width_and_height_of_environment/3,width_and_height_of_environment/3} transparency: 0.2 rounded: false {
+			overlay coordinates: #screen referential: #world position: {5, 5} size: {1.0/3, 1.0/3} transparency: 0.2 rounded: false {
 			 	ask boids {
-					draw triangle(20) size: 15 rotate: 90 + heading color: int(self)=0 ? #red: #gray depth: 5 at: location/3;
+					draw triangle(20) size: 45 rotate: 90 + heading color: int(self)=0 ? #red: #gray at: {location.x, location.y};
 			 	}
 			}
 

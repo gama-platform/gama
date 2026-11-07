@@ -27,6 +27,7 @@ import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
+import gama.api.annotations.validator;
 import gama.dev.COUNTER;
 import gama.gaml.statements.AspectStatement;
 
@@ -42,10 +43,16 @@ import gama.gaml.statements.AspectStatement;
 		symbols = IKeyword.DISPLAY)
 @facets (
 		value = { @facet (
+				name = LayerData.COORDINATES, type = IType.STRING,
+				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
+				@facet (
+						name = LayerData.REFERENTIAL, type = IType.STRING,
+						optional = true, doc = @doc (LayerData.REFERENTIAL_DOC)),
+				@facet (
 				name = IKeyword.POSITION,
 				type = IType.POINT,
 				optional = true,
-				doc = @doc ("position of the upper-left corner of the layer. Note that if coordinates are in [0,1[, the position is relative to the size of the environment (e.g. {0.5,0.5} refers to the middle of the display) whereas it is absolute when coordinates are greater than 1 for x and y. The z-ordinate can only be defined between 0 and 1. The position can only be a 3D point {0.5, 0.5, 0.5}, the last coordinate specifying the elevation of the layer. In case of negative value OpenGl will position the layer out of the environment.")),
+				doc = @doc (LayerData.POSITION_DOC)),
 				@facet (
 						name = IKeyword.BACKGROUND,
 						type = IType.COLOR,
@@ -76,7 +83,7 @@ import gama.gaml.statements.AspectStatement;
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("extent of the layer in the screen from its position. Coordinates in [0,1[ are treated as percentages of the total surface, while coordinates > 1 are treated as absolute sizes in model units (i.e. considering the model occupies the entire view). Like in 'position', an elevation can be provided with the z coordinate, allowing to scale the layer in the 3 directions ")),
+						doc = @doc (LayerData.SIZE_DOC)),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,
@@ -99,7 +106,7 @@ import gama.gaml.statements.AspectStatement;
 						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, usefull in case of agents that do not move)")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "`graphics` allows the modeler to freely draw shapes/geometries/texts without having to define a species. It works exactly like a species [Aspect161 aspect]: the draw statement can be used in the same way.",
+		value = "`graphics` is a free drawing layer, conceptually the aspect of the world: it draws geometry, images and text without requiring a species. Like a species [Aspect161 aspect], it contains draw statements. Its default coordinates: #world is appropriate for the world's appearance and spatial annotations: positions and lengths use model units and drawings follow the camera. For viewer information such as a title, legend or status panel, explicitly use coordinates: #screen: the layer stays attached to the viewport and its contents use screen coordinates by default, like an overlay. A graphics layer is not inherently an overlay; choose its coordinate mode according to whether the drawings belong to the world or the display. Several named screen graphics layers can organize separate information panels. The optional referential: facet selects the drawing contents independently of the layer frame.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
@@ -122,6 +129,7 @@ import gama.gaml.statements.AspectStatement;
 								isExecutable = false) }) },
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.CHART, IKeyword.EVENT, "graphics", IKeyword.GRID_LAYER,
 				IKeyword.IMAGE_LAYER, IKeyword.OVERLAY, IKeyword.SPECIES_LAYER })
+@validator (AbstractLayerStatement.CoordinatesValidator.class)
 public class GraphicLayerStatement extends AbstractLayerStatement {
 
 	/** The aspect. */

@@ -33,7 +33,7 @@ experiment "Show heatmap" type: gui {
 			camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			event #mouse_down {ask simulation {do resume();}} 
+			event #mouse_down {do resume();} 
 			species building aspect: base refresh: false;
 			species road aspect: base refresh: false; 
 			species people refresh: true;
@@ -44,7 +44,7 @@ experiment "Show heatmap" type: gui {
 		}
 		display "History heatmap with gradient" type: 3d axes: false background: #black camera: #from_up_front {
 			// The field is displayed a little bit above the other layers, with a slight 3D rendering, and a smoothness of 1 (meaning one pass of box blur is being done to "spread" the values). The colors are provided by a gradient with three stops
-			mesh history_heatmap scale: 0.01 color: gradient([#black::0, #cyan::0.5, #red::1]) transparency: 0.2 position: {0, 0, 0.001} smooth:1 ;
+			mesh history_heatmap coordinates: #world scale: 0.01 color: gradient([#black::0, #cyan::0.5, #red::1]) transparency: 0.2 position: {0, 0, 0.001} smooth:1 ;
 		 }
 		
 

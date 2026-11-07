@@ -38,7 +38,7 @@ experiment "CoModel" type: gui {
 			agents "weather" value: weather_simu.plotWeather ;
 		}
 		
-		display data  type: 2d {
+		display data  type: 3d {
 			chart "rain" type: series {
 				data "rainfall" value: sum(weather_simu.plotWeather accumulate (each.rain));
 			}

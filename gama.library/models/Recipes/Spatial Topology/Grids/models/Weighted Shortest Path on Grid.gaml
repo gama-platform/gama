@@ -66,7 +66,7 @@ experiment goto_grid type: gui {
 	float minimum_cycle_duration <- 300 #msec;
 	
 	output synchronized: true { // synchronized to make sure that we do not run into issue #3737
-		display objects_display type: 3d antialias:false background:#lightgrey axes:false{ 
+		display objects_display type: 3d antialias:false background:#lightgrey axes:false map_order: true{
 			camera 'default' location: {24.6963,59.7992,64.0919} target: {25.0,25.0,0.0};
 			grid cell border: #black elevation:grid_value*height_factor triangulation:true;
 			graphics "elements" {

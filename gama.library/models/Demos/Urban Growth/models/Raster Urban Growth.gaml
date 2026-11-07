@@ -176,7 +176,7 @@ experiment raster type: gui {
 			grid plot;
 			species roads visible: show_roads;
 			species city_center visible: show_centers;
-			overlay position: {12#px, 12#px} size: {295#px, 222#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {295, 222} background: backdrop rounded: true {
 				draw "URBAN GROWTH / CAN THO" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Initial urban plots: " + initial_built_plots at: {12#px, 48#px}
 					color: existing_color font: font("Helvetica", 11);

@@ -109,9 +109,9 @@ species people {
 
 	// When a line is drawn, it could be interesting to also draw an arrow at one of the extremities of the line
 	aspect arrows {
-	// begin_arrow: and end_arrow: facets are used to define the size of the drawn line.
-	// width: facet can be used to increase the width of a line 
-	// (the use of width with other geometry will provide unexpected result, as it increase each line of the geometry)
+	// begin_arrow: and end_arrow: set the arrowhead widths in world units.
+	// width: sets the line thickness in screen pixels, independently of zoom.
+	// Flat lines and their arrowheads are unlit by default in OpenGL, preserving color: as in Java2D.
 		draw line([self.location, people(8).location]) color: #orange end_arrow: 1 begin_arrow: 2.2 width: 3.0;
 	}
 
@@ -152,7 +152,8 @@ experiment Aspects type: gui {
 	float minimum_cycle_duration <- 0.01;
 	output {
 		layout #split;
-		display displ_openGL type: 3d {
+		
+		display abstract_display virtual: true {
 			species people aspect: big_circle_with_transparency;
 			//		
 			agents "layer simple" value: [people(1)] aspect: simple;
@@ -171,26 +172,10 @@ experiment Aspects type: gui {
 			// If no such an aspect exists, it draws the shape of the agent with a color defined in the preferences.				
 			species people;
 		}
+		
+		display displ_openGL type: 3d parent: abstract_display {}
 
-		display displ_2D type: 2d {
-			species people aspect: big_circle_with_transparency;
-			//		
-			agents "layer simple" value: [people(1)] aspect: simple;
-			agents "Text" value: [people(2)] aspect: simple_text;
-			agents "locate geom" value: [people(3)] aspect: locate_geometry;			
-			agents "image" value: [people(4)] aspect: icon;
-			//
-			agents "3D" value: [people(5)] aspect: col3D;	
-			agents "Textured" value: [people(6)] aspect: textured;			
-			//
-			agents "Arrows" value: [people(7)] aspect: arrows;
-			//
-			agents "simple with transparency" value: [people(8)] aspect: big_square_for_transparency transparency: 0.5;					
-			//
-			// when no aspect: facet is specified, GAMA tries to use the aspect named default. 
-			// If no such an aspect exists, it draws the shape of the agent with a color defined in the preferences.				
-			species people;					
-		}		
+		display displ_2D type: 2d parent: abstract_display {}		
 	}
 
 }

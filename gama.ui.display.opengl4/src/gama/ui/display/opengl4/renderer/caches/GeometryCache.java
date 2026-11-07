@@ -25,6 +25,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import java.nio.DoubleBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -225,6 +226,9 @@ public class GeometryCache {
 	 */
 	private final Map<String, GamaGeometryFile> geometriesToProcess = new ConcurrentHashMap<>();
 
+	private final Map<Integer, ObjFileDrawer> objDrawers = new ConcurrentHashMap<>();
+	private final ConcurrentLinkedQueue<Integer> expiredFileLists = new ConcurrentLinkedQueue<>();
+
 	/** Cache of bounding envelopes for geometry files, keyed by path. Expires after 2 minutes of inactivity. */
 	private final Cache<String, IEnvelope> envelopes;
 
@@ -255,9 +259,7 @@ public class GeometryCache {
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
-			if (renderer.isDisposed()) return;
-			// Release the Runnable stored in OpenGL's list cache when a file entry expires.
-			renderer.getOpenGLHelper().deleteList((Integer) notif.getValue());
+			expiredFileLists.add((Integer) notif.getValue());
 		}).build(new CacheLoader<String, Integer>() {
 			@Override
 			public Integer load(final String file) {
@@ -296,18 +298,20 @@ public class GeometryCache {
 	Integer buildList(final OpenGL gl, final String name) {
 		DEBUG.OUT("Building OpenGL list for " + name);
 		final GamaGeometryFile file = fileMap.get(name);
+		if (file instanceof GamaObjFile f) {
+			f.loadObject(scope, true);
+			final ObjFileDrawer objDrawer = new ObjFileDrawer(f, gl, scope);
+			final int id = gl.compileAsList(objDrawer);
+			objDrawers.put(id, objDrawer);
+			return id;
+		}
 		return gl.compileAsList(() -> {
-			if (file instanceof GamaObjFile f) {
-				f.loadObject(scope, true);
-				ObjFileDrawer.drawToOpenGL(f, gl);
-			} else {
-				final IShape shape = file.getGeometry(scope);
-				if (shape == null) return;
-				try {
-					drawSimpleGeometry(gl, shape.getInnerGeometry());
-				} catch (final ExecutionException e) {
-					e.printStackTrace();
-				}
+			final IShape shape = file.getGeometry(scope);
+			if (shape == null) return;
+			try {
+				drawSimpleGeometry(gl, shape.getInnerGeometry());
+			} catch (final ExecutionException e) {
+				e.printStackTrace();
 			}
 		});
 	}
@@ -328,6 +332,8 @@ public class GeometryCache {
 	 * from the {@link OpenGL} list cache to prevent memory leaks.
 	 */
 	public void dispose() {
+		fileCache.invalidateAll();
+		releaseExpiredFileLists();
 		// Release all built-in geometry Runnables from the OpenGL list cache.
 		if (!renderer.isDisposed()) {
 			builtInCache.asMap().values().forEach(bg -> {
@@ -344,8 +350,18 @@ public class GeometryCache {
 	 * {@link #process(GamaGeometryFile)}.
 	 */
 	public void processUnloaded() {
+		releaseExpiredFileLists();
 		for (final GamaGeometryFile object : geometriesToProcess.values()) { get(object); }
 		geometriesToProcess.clear();
+	}
+
+	private void releaseExpiredFileLists() {
+		Integer id;
+		while ((id = expiredFileLists.poll()) != null) {
+			final ObjFileDrawer drawer = objDrawers.remove(id);
+			if (drawer != null) { drawer.dispose(); }
+			openGL.deleteList(id);
+		}
 	}
 
 	/**

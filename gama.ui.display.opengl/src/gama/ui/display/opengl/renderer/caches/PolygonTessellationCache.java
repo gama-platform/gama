@@ -26,6 +26,7 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.ITesselator;
+import gama.ui.display.opengl.renderer.RenderDiagnostics;
 
 /**
  * Renderer-local CPU tessellations. Keys snapshot every contour, including Z, rather than retaining mutable JTS
@@ -94,9 +95,11 @@ public final class PolygonTessellationCache implements ITesselator {
 		GLU.gluTessProperty(tessellator, GLU.GLU_TESS_TOLERANCE, 0.1);
 	}
 
-	public void draw(final Polygon polygon, final ICoordinates exterior, final ITesselator target) {
+	public void draw(final Polygon polygon, final ICoordinates exterior, final ITesselator target,
+			final RenderDiagnostics diagnostics) {
 		final Contours key = new Contours(polygon, exterior);
 		Mesh mesh = meshes.getIfPresent(key);
+		diagnostics.polygonCacheLookup(mesh != null);
 		if (mesh == null) {
 			primitives.clear();
 			failed = false;
