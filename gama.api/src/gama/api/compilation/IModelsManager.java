@@ -102,6 +102,28 @@ public interface IModelsManager {
 	default void runModel(final Object object, final String exp) {}
 
 	/**
+	 * Opens a model experiment, optionally bypassing the confirmation shown before replacing an active experiment.
+	 *
+	 * @param object the model object to run. Can be a file path, URI, or model object
+	 * @param exp the name of the experiment to run
+	 * @param confirm whether to ask before closing an active experiment
+	 * @return whether the experiment was opened
+	 */
+	default boolean openModel(final Object object, final String exp, final boolean confirm) {
+		throw new UnsupportedOperationException("Confirmed model opening is not supported by this models manager");
+	}
+
+	/**
+	 * Compiles every model discoverable in the current workspace and returns one human-readable result per model.
+	 * Implementations that cannot inspect a workspace should report that limitation.
+	 *
+	 * @return validation results, in workspace discovery order
+	 */
+	default List<String> validateWorkspace() {
+		throw new UnsupportedOperationException("Workspace validation is not supported by this models manager");
+	}
+
+	/**
 	 * Runs a single {@code test} declaration of the specified model, using a test experiment of this model that runs
 	 * it (the user is asked to choose when several do).
 	 *

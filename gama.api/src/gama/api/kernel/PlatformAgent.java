@@ -11,8 +11,10 @@ package gama.api.kernel;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -27,9 +29,12 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.IModelsManager;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
@@ -69,11 +74,13 @@ import gama.api.ui.IOutputManager;
 import gama.api.utils.MemoryUtils;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
+import gama.api.utils.prefs.IGamaPreferenceStore;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.server.GamaServerMessage;
 import gama.api.utils.server.MessageType;
+import gama.api.utils.tests.TestExperimentSummary;
 import gama.dev.DEBUG;
 import one.util.streamex.StreamEx;
 
@@ -113,6 +120,12 @@ import one.util.streamex.StreamEx;
  *
  * <ul>
  * <li><b>send(message):</b> Send a message through the server (client-server mode)</li>
+ * <li><b>preferences:</b> Inspect preferences, or change one temporarily or persistently</li>
+ * <li><b>open(model, experiment, confirm):</b> Open a model experiment</li>
+ * <li><b>run_tests(model):</b> Run a model's test experiments headlessly</li>
+ * <li><b>validate_workspace:</b> Compile and validate models in the workspace</li>
+ * <li><b>validate_code(code):</b> Validate a GAML snippet, including in an interactive console</li>
+ * <li><b>play_package(path):</b> Open a playable {@code .gamx} archive in its isolated player</li>
  * <li><b>die:</b> Shut down the entire GAMA platform</li>
  * </ul>
  *
@@ -503,6 +516,231 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	 */
 	@getter (PlatformAgent.MACHINE_TIME)
 	public Double getMachineTime() { return (double) System.currentTimeMillis(); }
+
+	/**
+	 * Lists GAML-accessible preferences with their current values and constraints, or returns one matching preference.
+	 */
+	@action (
+			name = "preferences",
+			args = @arg (
+					name = "name",
+					type = IType.STRING,
+					optional = true,
+					doc = @doc ("The preference key to inspect; omit to list all GAML-accessible preferences")))
+	public IList<IMap<String, Object>> preferences(final IScope scope) {
+		final IGamaPreferenceStore store = GAMA.getPreferenceStore();
+		final IList<IMap<String, Object>> result = GamaListFactory.create(Types.MAP);
+		final String name = scope.getTypedArgIfExists("name", IType.STRING);
+		if (name != null) {
+			result.add(preferenceDetails(requirePreference(store, name)));
+		} else {
+			for (final Pref<?> pref : store.getPreferences()) {
+				if (pref.inGaml()) { result.add(preferenceDetails(pref)); }
+			}
+		}
+		return result;
+	}
+
+	/** Changes an exposed preference in memory by default; set {@code persist: true} to save it permanently. */
+	@action (
+			name = "set_preference",
+			args = { @arg (
+					name = "name",
+					type = IType.STRING,
+					doc = @doc ("The GAML-accessible preference key")),
+					@arg (
+							name = "value",
+							type = IType.NONE,
+							doc = @doc ("The value to assign")),
+					@arg (
+							name = "persist",
+							type = IType.BOOL,
+							optional = true,
+							doc = @doc ("Whether to persist the change beyond this session; defaults to false")) })
+	public IMap<String, Object> setPreference(final IScope scope) {
+		final String name = scope.getTypedArgIfExists("name", IType.STRING);
+		final Object rawValue = scope.getArg("value", IType.NONE);
+		final boolean persist = scope.getTypedArgIfExists("persist", IType.BOOL, false);
+		return updatePreference(scope, requirePreference(GAMA.getPreferenceStore(), name), rawValue, persist);
+	}
+
+	/** Restores a preference's compiled-in default, in memory unless {@code persist: true} is supplied. */
+	@action (
+			name = "reset_preference",
+			args = { @arg (
+					name = "name",
+					type = IType.STRING,
+					doc = @doc ("The GAML-accessible preference key")),
+					@arg (
+							name = "persist",
+							type = IType.BOOL,
+							optional = true,
+							doc = @doc ("Whether to persist the reset; defaults to false")) })
+	public IMap<String, Object> resetPreference(final IScope scope) {
+		final String name = scope.getTypedArgIfExists("name", IType.STRING);
+		final boolean persist = scope.getTypedArgIfExists("persist", IType.BOOL, false);
+		final Pref<?> pref = requirePreference(GAMA.getPreferenceStore(), name);
+		return updatePreference(scope, pref, pref.getDefaultValue(), persist);
+	}
+
+	/** Opens an experiment; confirmation before replacing an active experiment defaults to true. */
+	@action (
+			name = "open",
+			args = { @arg (
+					name = "model",
+					type = IType.STRING,
+					doc = @doc ("A model file path or workspace-relative model path")),
+					@arg (
+							name = "experiment",
+							type = IType.STRING,
+							doc = @doc ("The experiment name to open")),
+					@arg (
+							name = "confirm",
+							type = IType.BOOL,
+							optional = true,
+							doc = @doc ("Whether to confirm closing an active experiment; defaults to true")) })
+	public boolean openModel(final IScope scope) {
+		if (GAMA.isInHeadLessMode())
+			throw GamaRuntimeException.error("Opening GUI experiments is unavailable in headless mode", scope);
+		final String model = scope.getTypedArgIfExists("model", IType.STRING);
+		final String experiment = scope.getTypedArgIfExists("experiment", IType.STRING);
+		final boolean confirm = scope.getTypedArgIfExists("confirm", IType.BOOL, true);
+		return modelsManager(scope).openModel(model, experiment, confirm);
+	}
+
+	/** Runs the test experiments of a model synchronously and returns one summary string per experiment. */
+	@action (
+			name = "run_tests",
+			args = @arg (
+					name = "model",
+					type = IType.STRING,
+					doc = @doc ("A model file path or workspace-relative model path")))
+	public IList<String> runTests(final IScope scope) {
+		final String model = scope.getTypedArgIfExists("model", IType.STRING);
+		final java.util.List<TestExperimentSummary> summaries = modelsManager(scope).runHeadlessTests(model);
+		final IList<String> result = GamaListFactory.create(Types.STRING);
+		if (summaries == null || summaries.isEmpty()) {
+			result.add("No test experiments were found or could be run for " + model);
+		} else {
+			for (final TestExperimentSummary summary : summaries) {
+				result.add(summary.getExperimentName() + ": " + summary.getStringSummary());
+			}
+		}
+		return result;
+	}
+
+	/** Compiles and validates every GAML model discoverable in the current workspace. */
+	@action (name = "validate_workspace")
+	public IList<String> validateWorkspace(final IScope scope) {
+		final IList<String> result = GamaListFactory.create(Types.STRING);
+		result.addAll(modelsManager(scope).validateWorkspace());
+		return result;
+	}
+
+	/** Validates a GAML expression, statement, species, or model source string. */
+	@action (
+			name = "validate_code",
+			args = { @arg (
+					name = "code",
+					type = IType.STRING,
+					doc = @doc ("The GAML source to validate")),
+					@arg (
+							name = "syntax_only",
+							type = IType.BOOL,
+							optional = true,
+							doc = @doc ("Whether to perform syntax-only validation; defaults to false")) })
+	public IList<String> validateCode(final IScope scope) {
+		final String code = scope.getTypedArgIfExists("code", IType.STRING);
+		final boolean syntaxOnly = scope.getTypedArgIfExists("syntax_only", IType.BOOL, false);
+		final IList<String> result = GamaListFactory.create(Types.STRING);
+		final java.util.List<GamlCompilationError> errors = GAML.validate(code, syntaxOnly);
+		if (errors.isEmpty()) {
+			result.add("Valid");
+		} else {
+			for (final GamlCompilationError error : errors) { result.add(error.toString()); }
+		}
+		return result;
+	}
+
+	/** Starts a playable .gamx package in the separate GAMA player process. */
+	@action (
+			name = "play_package",
+			args = @arg (
+					name = "path",
+					type = IType.STRING,
+					doc = @doc ("Absolute path to a playable .gamx archive")))
+	public boolean playPackage(final IScope scope) {
+		if (GAMA.isInHeadLessMode())
+			throw GamaRuntimeException.error("Playable packages require the GAMA workbench", scope);
+		final String path = scope.getTypedArgIfExists("path", IType.STRING);
+		if (!path.toLowerCase(java.util.Locale.ROOT).endsWith(".gamx"))
+			throw GamaRuntimeException.error("Expected a .gamx playable package: " + path, scope);
+		return GAMA.getGui().openSimulationPackage(path);
+	}
+
+	private IModelsManager modelsManager(final IScope scope) {
+		final IModelsManager manager = GAMA.getGui().getModelsManager();
+		if (manager == null) throw GamaRuntimeException.error("Model management is unavailable", scope);
+		return manager;
+	}
+
+	private static Pref<?> requirePreference(final IGamaPreferenceStore store, final String name) {
+		final Pref<?> pref = store.get(name);
+		if (pref == null || !pref.inGaml())
+			throw new IllegalArgumentException("Unknown or non-GAML preference: " + name);
+		return pref;
+	}
+
+	private static IMap<String, Object> preferenceDetails(final Pref<?> pref) {
+		final IMap<String, Object> result = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
+		result.put("name", pref.getName());
+		result.put("value", pref.getValue());
+		result.put("type", pref.getType().toString());
+		result.put("description", pref.getTitle());
+		result.put("restart_required", pref.isRestartRequired());
+		result.put("default_value", pref.getDefaultValue());
+		result.put("min", pref.getMinValue(null));
+		result.put("max", pref.getMaxValue(null));
+		result.put("among", pref.getAmongValue(null));
+		return result;
+	}
+
+	private IMap<String, Object> updatePreference(final IScope scope, final Pref<?> pref, final Object rawValue,
+			final boolean persist) {
+		final Object converted = pref.getType().cast(scope, rawValue, null, false);
+		final java.util.List<?> among = pref.getAmongValue(scope);
+		if (among != null && !among.contains(converted))
+			throw GamaRuntimeException.error("Value is not among the allowed values for " + pref.getName(), scope);
+		if (converted instanceof Number number) {
+			if (!Double.isFinite(number.doubleValue()))
+				throw GamaRuntimeException.error("Preference values must be finite numbers", scope);
+			final Comparable<?> min = pref.getMinValue(scope);
+			final Comparable<?> max = pref.getMaxValue(scope);
+			if (min instanceof Number lower && number.doubleValue() < lower.doubleValue()
+					|| max instanceof Number upper && number.doubleValue() > upper.doubleValue())
+				throw GamaRuntimeException.error("Value is outside the allowed range for " + pref.getName(), scope);
+		}
+		final IGamaPreferenceStore store = GAMA.getPreferenceStore();
+		final AtomicReference<RuntimeException> failure = new AtomicReference<>();
+		GAMA.getGui().run("Updating platform preference", () -> {
+			try {
+				synchronized (store) {
+					final Object previous = pref.getValue();
+					if (GAMA.getExperimentAgent() != null) { savePrefToRestore(pref.getName(), previous); }
+					pref.setValue(scope, converted);
+					if (!Objects.equals(pref.getValue(), converted))
+						throw GamaRuntimeException.error("Preference change rejected: " + pref.getName(), scope);
+					if (persist) { store.writeAndFlush(pref); }
+				}
+			} catch (final RuntimeException e) {
+				failure.set(e);
+			}
+		}, false);
+		if (failure.get() != null) throw failure.get();
+		final IMap<String, Object> result = preferenceDetails(pref);
+		result.put("persisted", persist);
+		return result;
+	}
 
 	/**
 	 * Gets the title.

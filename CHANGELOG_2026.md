@@ -19,6 +19,46 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Experiment execution controls and pause-state migration
+
+Experiment agents expose `play`, `pause`, `step_once`, `step_back`, `synchronize`, `desynchronize` and `reload`.
+Execution commands target the receiving experiment's controller and all its scheduled simulations, using the
+existing GUI/server execution paths. Stepping, rewinding and reload requests are deferred to the current
+experiment-cycle boundary and processed asynchronously. Rewinding requires recording (`record: true`) and an
+available recorder. Reload replaces the experiment and simulation agents; reacquire references afterwards.
+`die` remains the experiment-close action; it does not quit GAMA. Non-interactive headless controllers reject
+unsupported execution controls with a runtime error. Display synchronization remains platform-wide.
+
+Read-only `experiment.status` uses the server status query (`RUNNING`, `PAUSED`, `NONE`).
+`experiment.is_paused` is equivalent to `status = "PAUSED"`; `experiment.is_synchronized` reports the shared
+rendering synchronization flag. Read-only `simulation.is_on_user_hold` reports only the simulation's
+user-interaction hold, independently of the controller pause state. A held user panel can coexist with
+`RUNNING`; `play` does not release that hold.
+
+**Migration:** simulation/model-species `pause` and `resume` are deprecated delegates, retaining their `nil`
+return. Replace them with `ask experiment { do pause(); }` and `ask experiment { do play(); }`.
+Simulation `paused` is deprecated and now read-only; its combined getter remains available. Read
+`experiment.is_paused` for scheduler pause, `simulation.is_on_user_hold` for user hold, or their logical OR
+for the combined state with an active controller. The former `paused` setter did nothing; assignments now fail
+validation. Replace assignments intended to pause/resume execution with experiment actions, not assignments
+to the new read-only flags. See the [experiment-agent guide](https://github.com/gama-platform/gama/wiki/ExperimentAgent)
+for all controls, existing maintenance actions, limitations and examples.
+
+### Platform-agent operations
+
+The unique `gama` platform agent now offers GAML actions to inspect exposed preferences, update or reset them in memory
+or persistently, open a model experiment, run a model's test experiments, validate models in the workspace, validate
+GAML source snippets, and launch a playable `.gamx` package in its isolated player. Opening an experiment asks before
+replacing an active one by default; `confirm: false` is available for intentional scripted chains. Preference changes
+are temporary by default and restore on experiment close; `persist: true` keeps the updated value in the preference
+store. Model and test operations accept file paths or workspace-relative paths; GUI experiment opening and `.gamx`
+playback require the workbench. See the [platform-agent guide](https://github.com/gama-platform/gama/wiki/PlatformAgent)
+for examples and limitations.
+
+**Migration:** no existing GAML syntax or Java API needs to change. These are additive `gama` actions. Scripts that
+use `confirm: false` can close the active experiment without prompting, and `persist: true` changes a user-wide
+preference beyond the current experiment.
+
 ### Automatic spatial-index synchronization
 
 Spatial-index synchronization is now decided automatically for each simulation before its indices are created.

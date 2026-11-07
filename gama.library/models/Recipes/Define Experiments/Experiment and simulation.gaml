@@ -40,6 +40,12 @@ species people {}
 // The basic GUI experiment behavior is:
 // - create a single simulation (initialization of the model)
 // - (at each step) call the behavior of the model (e.g. the reflexes in the global).
+// From the model, ask experiment { do pause; } pauses all its scheduled simulations.
+// Use play to continue, step_once to advance once, and step_back to restore recorded states.
+// step_once, step_back and reload are asynchronous and wait for the requesting cycle to finish.
+// Recording (record: true) is required for step_back. die closes the experiment, not GAMA.
+// experiment.status is "PAUSED", "RUNNING" or "NONE", matching the server status query.
+// synchronize/desynchronize control a platform-wide display-rendering flag, not agent scheduling.
 experiment basic_exp type: gui { }
 
 // The GUI experiment can be configured to add a behavior at the initialization of the experiment and before each step.
