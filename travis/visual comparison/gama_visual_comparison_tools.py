@@ -599,18 +599,17 @@ def write_html_preview(
 ) -> None:
     baseline_name, candidate_name = map(escape, capture_names)
     titles = (baseline_name, candidate_name, "Diff")
-    by_model: dict[str, list[ComparisonPreview]] = {}
+    groups: dict[tuple[str, str, str], list[ComparisonPreview]] = {}
     for preview in previews:
-        by_model.setdefault(preview["model"], []).append(preview)
+        key = (preview["model"], preview["display"], preview["experiment"])
+        groups.setdefault(key, []).append(preview)
 
     with path.open("w", encoding="utf-8") as stream:
         def write_table(images: Iterable[ComparisonPreview]) -> None:
             columns = "".join(f"<th>{title}</th>" for title in titles)
-            stream.write(f"<table><thead><tr><th>Step / Display</th>{columns}</tr></thead><tbody>\n")
+            stream.write(f"<table><thead><tr><th>Step</th>{columns}</tr></thead><tbody>\n")
             for preview in images:
-                stream.write(f'<tr><td>{escape(str(preview["step"]))}<br>'
-                             f'<strong>{escape(preview["display"])}</strong><br>'
-                             f'<small>{escape(preview["experiment"])}</small></td>')
+                stream.write(f'<tr><td>{escape(str(preview["step"]))}</td>')
                 for index, (title, url) in enumerate(zip(titles, preview["urls"])):
                     # Reserve the exact image ratio before lazy loading to avoid layout shifts while scrolling.
                     with Image.open(path.parent / unquote(url)) as image:
@@ -639,7 +638,7 @@ summary { cursor: pointer; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th, td { border: 1px solid #bbb; padding: .35rem; overflow-wrap: anywhere; }
 th { background: #eee; color: #111; }
-th:first-child { width: 7rem; }
+th:first-child { width: 4rem; }
 .preview img { display: block; width: 100%; height: auto; }
 dialog { width: 95vw; height: 95vh; max-width: 95vw; max-height: 95vh; padding: .75rem; box-sizing: border-box; }
 dialog::backdrop { background: #0009; }
@@ -661,14 +660,15 @@ button { cursor: pointer; }
         stream.write(f'<p><span aria-hidden="true" style="display: inline-block; width: 3rem; height: .75rem; '
                      f'background: linear-gradient(90deg, {DIFF_LOW_COLOR}, {DIFF_HIGH_COLOR})"></span> '
                      f'{DIFF_LEGEND}</p>\n')
-        if not by_model:
+        if not groups:
             stream.write("<p>No visual differences to preview.</p>\n")
-        for model, images in sorted(by_model.items()):
+        for (model, display, experiment), images in sorted(groups.items()):
             images.sort(key=lambda image: image["step"] if isinstance(image["step"], int) else -1)
             name = Path(model).name
-            stream.write(f"<section><h2>{escape(name)}</h2>\n")
-            if name != model:
-                stream.write(f'<p class="model-path">{escape(str(Path(model).parent))}</p>\n')
+            title = f"{name} — {display}" if display else name
+            stream.write(f"<section><h2>{escape(title)}</h2>\n")
+            subtitle = f"{experiment} · {Path(model).parent}" if experiment else str(Path(model).parent)
+            stream.write(f'<p class="model-path">{escape(subtitle)}</p>\n')
             write_table(images[:1])
             if len(images) > 1:
                 stream.write(f"<details><summary>Show {len(images) - 1} more comparisons</summary>\n")
