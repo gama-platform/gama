@@ -159,7 +159,7 @@ experiment main_experiment type: gui {
 			species building transparency: 0.5;
 		}
 
-		display chart refresh: every(10 #cycles)  type: 2d {
+		display chart refresh: every(10 #cycles)  type: 3d {
 			chart "Disease spreading" type: series {
 				data "susceptible" value: nb_people_not_infected color: #green marker: false;
 				data "infected" value: nb_people_infected color: #red marker: false;

@@ -65,6 +65,11 @@ import gama.core.outputs.layers.LayerData;
 		symbols = IKeyword.DISPLAY)
 @facets (
 		value = { @facet (
+				name = ChartLayerStatement.QUALITY,
+				type = { IType.FLOAT, IType.INT },
+				optional = true,
+				doc = @doc ("Raster scale for this chart only, between 0.1 and 2.0 inclusive: 1 is native device resolution, 2 supersamples, and values below 1 reduce resolution for speed. Evaluated at initialization. If omitted, uses the Chart raster scale preference. Applies to Java2D, OpenGL and OpenGL4; fonts and logical layout are unchanged. Raster memory limits still apply.")),
+				@facet (
 				name = LayerData.COORDINATES, type = IType.STRING,
 				optional = true,
 				doc = @doc (LayerData.COORDINATES_DOC)),
@@ -379,6 +384,8 @@ import gama.core.outputs.layers.LayerData;
 @validator (AbstractLayerStatement.CoordinatesValidator.class)
 public class ChartLayerStatement extends AbstractLayerStatement {
 
+	public static final String QUALITY = "quality";
+
 	/** The Constant XRANGE. */
 	public static final String XRANGE = "x_range";
 
@@ -504,6 +511,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The chartoutput. */
 	private ChartOutput chartOutput = null;
 
+	private Double quality;
+
+	public double getQuality() {
+		return quality == null ? GamaPreferences.Displays.CHART_QUALITY.getValue() : quality;
+	}
+
 	/** Whether the initial step done by the output manager must be skipped (include_init: false). */
 	private boolean skipInitialStep;
 
@@ -558,6 +571,16 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	public boolean _init(final IScope scope) throws GamaRuntimeException {
 		setName(getChartName(scope));
 		lastValues.clear();
+
+		final IExpression qualityExpression = getFacet(QUALITY);
+		quality = null;
+		if (qualityExpression != null) {
+			final double value = Cast.asFloat(scope, qualityExpression.value(scope));
+			if (!Double.isFinite(value) || value < 0.1 || value > 2.0) {
+				throw GamaRuntimeException.error("Chart quality must be finite and between 0.1 and 2.0", scope);
+			}
+			quality = value;
+		}
 
 		IExpression expression = getFacet(IKeyword.TYPE);
 

@@ -277,7 +277,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 
 	permanent {
-		display Comparison background: #white type:2d{
+		display Comparison background: #white type:3d{
 			chart "Food Gathered" type: series {
 			loop s over: simulations {
 				if (!dead(s)) {

@@ -240,8 +240,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The last bound texture ID for optimization. */
 	private int lastBoundTexture = NO_TEXTURE;
 
-	/** The last anti-aliasing setting for optimization. */
-	private boolean lastAntiAliasSetting = false;
+	/** The last texture minification filter. */
+	private int lastTextureMinFilter = GL.GL_NEAREST;
 
 	private boolean currentTextureSmooth;
 
@@ -1161,11 +1161,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 		final boolean isAntiAlias = getData().isAntialias() || currentTextureSmooth;
-		if (texture == lastBoundTexture && isAntiAlias == lastAntiAliasSetting) return;
+		final int minFilter = currentTextureSmooth ? GL.GL_LINEAR_MIPMAP_LINEAR
+				: isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST;
+		if (texture == lastBoundTexture && minFilter == lastTextureMinFilter) return;
 
 		lastBoundTexture = texture;
-		lastAntiAliasSetting = isAntiAlias;
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
+		lastTextureMinFilter = minFilter;
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, minFilter);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, isAntiAlias ? ANISOTROPIC_LEVEL : 0);
 	}

@@ -85,7 +85,7 @@ experiment schelling type: gui parent:base_exp{
 					at: {12#px, 72#px} color: happy_color font: font("Helvetica", 11);
 			}
 		}	
-		display Charts type: 2d background: backdrop {
+		display Charts type: 3d background: backdrop {
 			chart "Resident satisfaction" coordinates: #screen type: pie background: backdrop color: lettering
 				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {#display_width,0.5} {
 				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;

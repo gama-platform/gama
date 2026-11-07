@@ -129,6 +129,10 @@ public class TextureCache2 implements ITextureCache {
 	 */
 	@Override
 	public Texture getTexture(final BufferedImage img) {
+		return getTexture(img, false);
+	}
+
+	public Texture getTexture(final BufferedImage img, final boolean mipmap) {
 		// BufferedImage objects are reused across simulation steps (same object identity /
 		// hashCode) while their pixel data is updated in-place each step via System.arraycopy.
 		// Caching by identity hash would return a stale GPU texture after the first step.
@@ -137,7 +141,7 @@ public class TextureCache2 implements ITextureCache {
 		String id = String.valueOf(img.hashCode());
 		Texture old = volatileTextures.remove(id);
 		if (old != null) { old.destroy(gl.getGL()); }
-		Texture texture = this.buildTexture(gl.getGL(), img);
+		Texture texture = this.buildTexture(gl.getGL(), img, mipmap);
 		if (texture != null) { volatileTextures.put(id, texture); }
 		gl.invalidateTextureCache();
 		return texture;
@@ -201,6 +205,10 @@ public class TextureCache2 implements ITextureCache {
 	 * @return the texture
 	 */
 	Texture buildTexture(final GL gl, final BufferedImage im) {
+		return buildTexture(gl, im, false);
+	}
+
+	private Texture buildTexture(final GL gl, final BufferedImage im, final boolean mipmap) {
 		if (im == null) return null;
 		try {
 			// Ensure the image is in TYPE_INT_ARGB so we can reliably read ARGB pixels
@@ -236,7 +244,7 @@ public class TextureCache2 implements ITextureCache {
 			final TextureData data = new TextureData(profile, GL.GL_RGBA,
 					w, h, 0,
 					GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
-					false, false, true,
+					mipmap, false, true,
 					buffer, null);
 			final Texture texture = new Texture(gl, data);
 			data.flush();

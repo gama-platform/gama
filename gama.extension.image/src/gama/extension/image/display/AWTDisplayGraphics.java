@@ -759,9 +759,25 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	boolean drawChart = true;
 
 	@Override
+	public double getDevicePixelRatio() {
+		final AffineTransform transform = currentRenderer.getTransform();
+		return Math.max(Math.hypot(transform.getScaleX(), transform.getShearY()),
+				Math.hypot(transform.getScaleY(), transform.getShearX()));
+	}
+
+	@Override
 	public Rectangle2D drawChart(final BufferedImage chart) {
 		if (!drawChart) return chartRect;
-		drawChart = currentRenderer.drawImage(chart, (int) getXOffsetInPixels(), (int) getYOffsetInPixels(), this);
+		final int x = (int) getXOffsetInPixels(), y = (int) getYOffsetInPixels();
+		final int width = getLayerWidth(), height = getLayerHeight();
+		final Graphics2D renderer = (Graphics2D) currentRenderer.create();
+		try {
+			renderer.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BICUBIC);
+			drawChart = renderer.drawImage(chart, x, y, width, height, this);
+		} finally {
+			renderer.dispose();
+		}
+		chartRect.setRect(x, y, width, height);
 		return chartRect;
 	}
 

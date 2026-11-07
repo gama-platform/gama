@@ -114,7 +114,7 @@ experiment SIR_gui type: gui {
         display "Population" type: java2D {
             species person aspect: base;
         }
-        display "SIR Chart" type: java2D {
+        display "SIR Chart" type: 3d {
             chart "SIR dynamics" type: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
@@ -167,7 +167,7 @@ experiment SIR_Stochanalyse type: batch
     // which gives immediate visual intuition of stochastic spread.
     permanent {
 
-        display "Stochastic spread" type: java2D {
+        display "Stochastic spread" type: 3d {
             chart "nb_recovered distribution across all runs" type: histogram
                   background: #white {
                 data "nb_recovered"

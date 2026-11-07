@@ -995,16 +995,16 @@ public class GamaPreferences {
 				"Keep chart values in memory (to save them as CSV) or not (to lower memory usage)", true, IType.BOOL,
 				true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
 
-		/**
-		 * The graphical resolution of charts rendered in OpenGL displays, from {@code 0.1} (fast/low quality) to
-		 * {@code 1.0} (slow/best quality).
-		 */
-		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
-				"Graphical resolution of the charts in OpenGL (from 0, small and fast, to 1, best but consuming lots of resources)",
-				1.0, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(true).between(0.1, 1.0);
-
 		/** Group name for chart preferences. */
 		public static final String CHARTS_GROUP = "Default Chart Properties";
+
+		/**
+		 * Raster scale relative to native device resolution: {@code 1.0} is native resolution,
+		 * values above it supersample, and values below it trade quality for speed.
+		 */
+		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
+				"Chart raster scale (1 = native resolution, 2 = supersampling; higher uses more resources)",
+				1.5, IType.FLOAT, true).in(NAME, CHARTS_GROUP).inPlayer(true).between(0.1, 2.0);
 
 		/** Chart default title font face. */
 		public static final Pref<String> CHART_TITLE_FONT =

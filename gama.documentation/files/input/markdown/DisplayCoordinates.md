@@ -75,6 +75,13 @@ fixed-pixel panels intentionally do not shrink to fit a smaller viewport.
 The rendering comparison separates its fixed text panel from world-space
 extrusion so that the panel does not hide the objects being inspected.
 
+Chart-bearing library displays now explicitly use `type: 3d` rather than
+Java2D, including mixed chart/image/mesh panels and the full-chart-frame
+example. Existing OpenGL and OpenGL4 displays retain their backends.
+Historical display names such as `"Java2D"` are kept so `parent:` references
+remain valid; for chart-bearing examples, these names no longer identify the
+backend. Examples without charts retain their Java2D/OpenGL comparisons.
+
 | Model | Experiments and questions to explore |
 |---|---|
 | [Display Coordinates](https://github.com/gama-platform/gama/blob/main/gama.library/models/Recipes/Visualization/models/Display%20Coordinates.gaml) | Overview: one moving blue marker in the world and mini-map, a fixed screen HUD and a chart of the marker's world X |
@@ -241,6 +248,57 @@ World placement with screen contents is not supported. Neither are
 nonzero rotations of screen layers; rotate individual drawings instead.
 Nested species layers inherit the host layer's context and cannot specify an
 independent placement mode.
+
+### Chart resolution and typography
+
+Charts default to `coordinates: #screen`. Their layout uses the layer's
+logical-pixel width and height, preserving rectangular aspect ratios. For
+Java2D, OpenGL and OpenGL4, the chart bitmap is rendered at the current drawing
+target's native pixel density, including HiDPI/Retina scaling. Java2D uses the
+actual graphics transform, including offscreen/export targets; OpenGL uses the
+native framebuffer scale. Font sizes, line widths, layer
+placement and chart axes do not change when raster resolution changes.
+
+The **Chart raster scale** preference in **Displays / Default Chart Properties**
+controls resolution relative to that native density for all three backends: `1` means native
+resolution, `1.5` (the default for new preferences) and `2` supersample, and
+values down to `0.1` reduce resolution for speed. Existing saved values are
+retained, but now scale a rectangular, device-aware raster rather than a
+square based on the smaller layer dimension. Each raster is limited to 4096
+pixels per dimension and 8,388,608 pixels in total; larger charts reduce their
+raster scale uniformly without changing their logical layout. Two RGBA raster
+buffers use at most 64 MiB per chart, excluding GPU textures and chart data.
+
+Use the chart facet `quality:` to override this preference for one chart:
+
+```gaml
+chart "Population" type: series quality: 2 {
+    data "Population" value: length(my_species);
+}
+```
+
+`quality:` accepts a finite integer or float from `0.1` to `2.0` inclusive,
+with the same native-resolution scale as the preference, in Java2D, OpenGL and
+OpenGL4. Its expression is evaluated once at chart initialization. Omitting
+it keeps the chart linked to the preference; an explicit value does not alter
+the preference or other charts. Invalid values raise an error, rather than
+being clamped. Device density and the raster memory limits still apply.
+
+Chart rasterization always uses antialiasing, independently of display/scene
+antialiasing. Java2D scales the bitmap into the logical chart frame with
+bicubic interpolation; its other drawings retain the display's existing
+antialiasing and interpolation settings. OpenGL chart textures use trilinear mipmap filtering to retain the
+benefits of supersampling when reduced on screen, without changing filtering
+for ordinary image textures. World-placed charts still follow the camera; their
+raster size uses the layer's existing logical-pixel bookkeeping rectangle, not an adaptive
+perspective-projected bound. For fixed dashboard charts, keep screen placement.
+
+Default tick and legend fonts now follow the **Default chart label font**
+preferences (11 logical pixels by default), alongside axis labels. Titles
+remain bold with their separate font preferences. Chart padding and legend
+spacing separate text from the plot; existing palette, grid, background and
+line-thickness preferences remain in effect. Explicit `tick_font`,
+`legend_font`, `label_font` and `title_font` facets override these defaults.
 
 ### Worked example: one world, two mini-maps
 

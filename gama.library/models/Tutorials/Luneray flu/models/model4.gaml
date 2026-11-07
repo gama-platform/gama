@@ -96,7 +96,7 @@ experiment main type: gui {
 			species people aspect:circle;			
 		}
 		
-		display chart_display refresh: every(10 #cycles)  type: 2d {
+		display chart_display refresh: every(10 #cycles)  type: 3d {
 			chart "Disease spreading" type: series {
 				data "susceptible" value: nb_people_not_infected color: #green;
 				data "infected" value: nb_people_infected color: #red;

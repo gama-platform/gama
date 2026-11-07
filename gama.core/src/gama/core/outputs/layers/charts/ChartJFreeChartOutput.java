@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -43,6 +44,7 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.HorizontalAlignment;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.Dataset;
@@ -55,7 +57,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.displays.IDisplaySurface;
-import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.gaml.operators.Colors;
 
 /**
@@ -158,6 +159,12 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 	@Override
 	public BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias) {
+		return getImage(sizeX, sizeY, sizeX, sizeY, antiAlias);
+	}
+
+	@Override
+	public BufferedImage getImage(final int sizeX, final int sizeY, final int rasterWidth, final int rasterHeight,
+			final boolean antiAlias) {
 		synchronized (renderLock) {
 			final JFreeChart renderingChart;
 			final long revision;
@@ -166,20 +173,30 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				revision = chartRevision.get();
 				if (supportsRenderingSnapshot() && frontImage != null && renderedRevision == revision
 						&& (int) area.getWidth() == sizeX && (int) area.getHeight() == sizeY
+						&& frontImage.getWidth() == rasterWidth && frontImage.getHeight() == rasterHeight
 						&& oldAntiAlias == antiAlias) return frontImage;
 				renderingChart = supportsRenderingSnapshot() ? createRenderingSnapshot() : chart;
 				renderedRevision = -1;
-				if (renderingChart == chart) { adjustImage(sizeX, sizeY, antiAlias, renderingChart); }
+				if (renderingChart == chart) {
+					adjustImage(sizeX, sizeY, rasterWidth, rasterHeight, antiAlias, renderingChart);
+				}
 			}
-			if (renderingChart != chart) { adjustImage(sizeX, sizeY, antiAlias, renderingChart); }
+			if (renderingChart != chart) {
+				adjustImage(sizeX, sizeY, rasterWidth, rasterHeight, antiAlias, renderingChart);
+			}
 
 			final Graphics2D g2D = backImage.createGraphics();
 			try {
+				g2D.setComposite(AlphaComposite.Clear);
+				g2D.fillRect(0, 0, rasterWidth, rasterHeight);
+				g2D.setComposite(AlphaComposite.SrcOver);
+				g2D.scale((double) rasterWidth / sizeX, (double) rasterHeight / sizeY);
 				if (antiAlias) {
 					g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 					g2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 					g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+					g2D.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 				}
 				if (renderingChart == chart) {
 					synchronized (lock) {
@@ -232,17 +249,17 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	 * @param antiAlias
 	 *            the anti alias
 	 */
-	private void adjustImage(final int sizeX, final int sizeY, final boolean antiAlias,
-			final JFreeChart renderingChart) {
+	private void adjustImage(final int sizeX, final int sizeY, final int rasterWidth, final int rasterHeight,
+			final boolean antiAlias, final JFreeChart renderingChart) {
 		if (antiAlias != oldAntiAlias || renderingChart != chart) {
 			oldAntiAlias = antiAlias;
 			renderingChart.setAntiAlias(antiAlias);
 			renderingChart.setTextAntiAlias(antiAlias);
 		}
-		if ((int) area.getWidth() != sizeX || (int) area.getHeight() != sizeY) {
-			area.setRect(0, 0, sizeX, sizeY);
-			frontImage = AbstractDisplayGraphics.createCompatibleImage(sizeX, sizeY);
-			backImage = AbstractDisplayGraphics.createCompatibleImage(sizeX, sizeY);
+		area.setRect(0, 0, sizeX, sizeY);
+		if (frontImage == null || frontImage.getWidth() != rasterWidth || frontImage.getHeight() != rasterHeight) {
+			frontImage = new BufferedImage(rasterWidth, rasterHeight, BufferedImage.TYPE_INT_ARGB_PRE);
+			backImage = new BufferedImage(rasterWidth, rasterHeight, BufferedImage.TYPE_INT_ARGB_PRE);
 		}
 	}
 
@@ -296,6 +313,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		if (chart.getTitle() != null) {
 			chart.getTitle().setVisible(properties.isTitleVisible());
 			chart.getTitle().setFont(properties.getTitleFont());
+			chart.getTitle().setMargin(0, 0, 4, 0);
 			if (properties.getTextColor() != null) {
 				chart.getTitle().setPaint(IColor.toAWTColor(properties.getTextColor()));
 			}
@@ -332,6 +350,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		LegendTitle legend = chart.getLegend();
 		legend.setItemFont(properties.getLegendFont());
 		legend.setFrame(BlockBorder.NONE);
+		legend.setPadding(4, 4, 4, 4);
 		legend.setPosition(RectangleEdge.BOTTOM);
 
 		configureLegendPosition(legend, chart.getPlot(), scope);
@@ -349,6 +368,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		chart.addProgressListener(this);
 		chart.addChangeListener(event -> chartRevision.incrementAndGet());
 		chart.setBorderVisible(false);
+		chart.setPadding(new RectangleInsets(8, 8, 8, 8));
 		chart.getPlot().setOutlineVisible(false);
 
 		configureChartTitle();

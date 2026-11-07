@@ -50,7 +50,7 @@ experiment "1 - Spatial layers" type: gui {
 experiment "2 - Image mesh and chart" type: gui {
     text "Purpose: apply screen placement to image, mesh and chart layers, not just graphics and overlays.<br/>Try: run to populate the chart, then resize and zoom each display.<br/>Expected: the image and flat mesh keep 200-by-140-pixel frames. The chart keeps a 180-pixel height but follows 90 percent of the viewport width. Camera movement should not move these frames." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" type: 3d {
             image "../images/Gama.jpg" coordinates: #screen position: {16, 60} size: {200, 140};
             mesh heights coordinates: #screen position: {240, 60} size: {200, 140}
                 scale: 0 color: palette([#blue, #cyan, #yellow, #red]);

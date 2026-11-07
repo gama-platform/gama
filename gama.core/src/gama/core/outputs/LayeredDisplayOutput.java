@@ -327,11 +327,6 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 				d.setFacet(TYPE, GAML.getExpressionFactory().createConst(cand, Types.STRING));
 			}
 
-			// Addressing problems with charts in OpenGL
-			if (IKeyword._3D.equals(type.getExpression().literalValue()) && !Iterables.isEmpty(d.getOwnChildren())
-					&& d.visitOwnChildren(c -> (CHART.equals(c.getKeyword()) || EVENT.equals(c.getKeyword())))) {
-				d.warning("Consider switching to a 2d display if you only display charts", CONFLICTING_FACETS, TYPE);
-			}
 		}
 
 		/**

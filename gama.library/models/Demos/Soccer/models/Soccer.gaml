@@ -534,7 +534,7 @@ experiment "Match" type:gui {
 				}
 			}
 		}
-		display "match_stats"  type: 2d {
+		display "match_stats"  type: 3d {
 			// display some statistics about the game
 			chart "ball_possession" coordinates: #screen type:pie position:{0,0} size:{0.5,0.5} {
 				data "Red possession" value:red_possession color:#red;

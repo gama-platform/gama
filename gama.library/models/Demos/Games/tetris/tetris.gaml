@@ -455,7 +455,7 @@ experiment main {
 			graphics scoreboard coordinates: #world position:{0,0} size:{20,10} background:#black border:#cyan{
 				draw shape color:#black border:#cyan;
 				draw "Score" at:{14.5,7} font:font("Arial", 30, #bold+#italic) color:#white;
-				draw get_score(score) at: {14,12} font:font("Arial", 30, #bold+#italic) color:#white;
+				draw world.get_score(score) at: {14,12} font:font("Arial", 30, #bold+#italic) color:#white;
 				draw "Next" at: {10,25} font:font("Arial", 30, #bold+#italic) color:#white;
 				draw rectangle({14,18}, {19,29}) wireframe:true color: #white width:0.5 ;
 				draw world.select_shape({16.5, 23.9},next_te)*{0.9,2.7} color:tet_colors[next_te];
@@ -479,7 +479,7 @@ experiment main {
 						att <- att+{0,-0.3};
 					}
 					draw world.select_shape(att,i)*{1,3/4} color:tet_colors[i];
-					draw get_stat(stats[i]) at:{10, 10 + 3*i} font:font("Arial", 20, #bold+#italic)color:#white;
+					draw world.get_stat(stats[i]) at:{10, 10 + 3*i} font:font("Arial", 20, #bold+#italic)color:#white;
 				}
 				
 				//draw "Statistics"

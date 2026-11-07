@@ -175,6 +175,9 @@ public interface IGraphics {
 	 */
 	Rectangle2D drawChart(BufferedImage chart);
 
+	/** Physical device pixels per logical display pixel for the current drawing target. */
+	default double getDevicePixelRatio() { return 1d; }
+
 	/**
 	 * Draw string.
 	 *

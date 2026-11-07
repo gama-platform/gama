@@ -163,11 +163,11 @@ experiment "Experiment" type: gui {
 	output {
 	     layout horizontal([vertical([0::6721,1::3279])::2403,vertical([2::3668,horizontal([3::5175,4::4825])::6332])::7597])  editors: false consoles: false parameters: false background: #white tabs: false;
 		
-		display Ants type: 2d antialias:false toolbar: false{
+		display Ants type: 3d antialias:false toolbar: false{
 			grid ant_grid ;
 			species ant  ;
 		}
-		display ProportionCarryFood  type: 2d toolbar: false {
+		display ProportionCarryFood  type: 3d toolbar: false {
 			chart "Proportions carrying: Pie" coordinates: #screen size: {0.5,0.5} position: {0, 0} type:pie  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			{
 				data "empty_ants" value:(ant count (!each.hasFood)) color:colors[0];
@@ -193,7 +193,7 @@ experiment "Experiment" type: gui {
 			}
 		}
 
-		display CentroidPosition  type: 2d toolbar: false {
+		display CentroidPosition  type: 3d toolbar: false {
 			chart "Positions and History of centroid and size by state" type:scatter title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
 			{
 				datalist legend: ["avg-carry","avg-empty"] 
@@ -212,7 +212,7 @@ experiment "Experiment" type: gui {
 
 			}
 		}	
-		display Distribution2dPosition  type: 2d toolbar: false {
+		display Distribution2dPosition  type: 3d toolbar: false {
 			chart "Distribution of the X positions" coordinates: #screen size: {0.65,0.3} position: {0.05, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			x_tick_line_visible: false y_tick_line_visible: false flat: false
 			{
@@ -237,7 +237,7 @@ experiment "Experiment" type: gui {
 			}
 		}
 		
-		display DistributionPosition  type: 2d toolbar: false{
+		display DistributionPosition  type: 3d toolbar: false{
 			chart "Distribution of the X positions" coordinates: #screen size: {0.92,0.3} position: {0, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			
 			{

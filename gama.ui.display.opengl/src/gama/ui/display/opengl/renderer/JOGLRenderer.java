@@ -469,6 +469,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	@Override
+	public double getDevicePixelRatio() {
+		final int[] pixels = getCanvas().getNativeSurface().convertToPixelUnits(new int[] { 1024, 1024 });
+		return Math.max(pixels[0], pixels[1]) / 1024d;
+	}
+
+	@Override
 	public Rectangle2D drawChart(final BufferedImage chart) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;

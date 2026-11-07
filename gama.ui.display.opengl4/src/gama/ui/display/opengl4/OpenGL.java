@@ -56,7 +56,6 @@ import gama.gaml.operators.Maths;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl4.renderer.caches.GeometryCache;
 import gama.ui.display.opengl4.renderer.caches.GeometryCache.BuiltInGeometry;
-import gama.ui.display.opengl.renderer.caches.ITextureCache;
 import gama.ui.display.opengl4.renderer.caches.TextureCache2;
 import gama.ui.display.opengl4.renderer.helpers.AbstractRendererHelper;
 import gama.ui.display.opengl4.renderer.shaders.BasicShader;
@@ -190,7 +189,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 
 	/** The texture cache. */
 	// Textures
-	private final ITextureCache textureCache = new TextureCache2(this);
+	private final TextureCache2 textureCache = new TextureCache2(this);
 
 	/** The texture envelope. */
 	private final IEnvelope textureEnvelope = GamaEnvelopeFactory.create();
@@ -310,8 +309,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The last bound texture ID for optimization. */
 	private int lastBoundTexture = NO_TEXTURE;
 
-	/** The last anti-aliasing setting for optimization. */
-	private boolean lastAntiAliasSetting = false;
+	/** The last texture minification filter. */
+	private int lastTextureMinFilter = GL.GL_NEAREST;
 
 	private boolean currentTextureSmooth;
 
@@ -1447,11 +1446,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 		final boolean isAntiAlias = getData().isAntialias() || currentTextureSmooth;
-		if (texture == lastBoundTexture && isAntiAlias == lastAntiAliasSetting) return;
+		final int minFilter = currentTextureSmooth ? GL.GL_LINEAR_MIPMAP_LINEAR
+				: isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST;
+		if (texture == lastBoundTexture && minFilter == lastTextureMinFilter) return;
 
 		lastBoundTexture = texture;
-		lastAntiAliasSetting = isAntiAlias;
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
+		lastTextureMinFilter = minFilter;
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, minFilter);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, isAntiAlias ? ANISOTROPIC_LEVEL : 0);
 	}
@@ -1530,7 +1531,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @return the texture id
 	 */
 	public int getTextureId(final BufferedImage img) {
-		final Texture r = textureCache.getTexture(img);
+		final Texture r = textureCache.getTexture(img, currentTextureSmooth);
 		if (r == null) return NO_TEXTURE;
 		return r.getTextureObject();
 	}

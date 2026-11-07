@@ -585,7 +585,7 @@ experiment main {
 				draw polyline({0,0}, {17,0}) color:#yellow;
 				
 				draw "Score" at:{15, 8.5} font:font("Arial", 20);
-				draw get_score(score) at: {14.8,14} font:font("Arial", 20, #bold);
+				draw world.get_score(score) at: {14.8,14} font:font("Arial", 20, #bold);
 		
 				draw "Level " at: {2,8.5} font:font("Arial", 20);
 				draw string(level+1) at: {2.5,14} font:font("Arial", 20, #bold);
