@@ -62,6 +62,9 @@ public interface IOpenGL {
 
 	void unproject(double x, double y, double depth, double[] result);
 
+	/** Projects through the current layer/object matrices to logical viewport pixels, with Y increasing downwards. */
+	boolean project(double x, double y, double z, double[] result);
+
 	double[] getPixelWidthAndHeightOfWorld();
 
 	IPoint getRatios();

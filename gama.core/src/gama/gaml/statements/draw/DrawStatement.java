@@ -53,6 +53,7 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.ui.displays.DrawingData;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
@@ -112,7 +113,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						name = COLOR,
 						type = { IType.COLOR, IType.CONTAINER },
 						optional = true,
-						doc = @doc ("the color to use to display the object. In case of images, will try to colorize it. You can also pass a list of colors : in that case, each color will be matched to its corresponding vertex.")),
+						doc = @doc ("The color used to display the object. Text accepts #adaptive to choose black or white from the rendered pixels beneath it; this is opt-in, not the default, and adds a scene readback in OpenGL. In case of images, will try to colorize it. You can also pass a list of colors: each color will be matched to its corresponding vertex.")),
 				@facet (
 						name = ROTATE,
 						type = { IType.FLOAT, IType.INT, IType.PAIR },
@@ -377,6 +378,12 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 				cachedData0 = d;
 			}
 			d.refresh(scope);
+			if (d.color.get() == AdaptiveColor.INSTANCE && !(delegate instanceof TextDrawer)) {
+				throw GamaRuntimeException.error("#adaptive is only supported when draw renders text", scope);
+			}
+			if (d.border.get() == AdaptiveColor.INSTANCE) {
+				throw GamaRuntimeException.error("#adaptive is a text foreground, not a border color", scope);
+			}
 			final IExpression item = getFacet(IKeyword.GEOMETRY);
 			final Rectangle2D result = delegate.executeOn(scope, d, item, getFacet(BEGIN_ARROW), getFacet(END_ARROW));
 			if (result != null) { g.accumulateTemporaryEnvelope(result); }

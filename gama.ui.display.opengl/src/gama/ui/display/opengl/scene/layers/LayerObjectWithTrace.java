@@ -44,6 +44,12 @@ public class LayerObjectWithTrace extends LayerObject {
 		traces.add(currentList);
 	}
 
+	@Override
+	protected boolean hasAdaptiveDraws() {
+		for (final Trace trace : traces) { if (hasAdaptiveDraws(trace)) return true; }
+		return false;
+	}
+
 	/**
 	 * Draw all objects.
 	 *

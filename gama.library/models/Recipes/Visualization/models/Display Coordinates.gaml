@@ -33,7 +33,7 @@ experiment "Display Coordinates" type: gui {
                     font: font("Helvetica", 18) color: #black;
                 draw ("Viewport (px): " + #display_width + " x " + #display_height)
                     at: {12, 52} anchor: #left_center color: #black;
-                draw ("Mouse (pixels): " + #mouse_screen_location)
+                draw ("Mouse (pixels): " + #mouse_location_in_display)
                     at: {12, 74} anchor: #left_center color: #black;
                 draw "Zoom/pan: only the main world should move"
                     at: {12, 96} anchor: #left_center color: #black;

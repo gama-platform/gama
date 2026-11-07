@@ -272,8 +272,9 @@ See the `Display UI Controls.gaml` recipe and these additional recipes in
   one panel definition, with Liquid Glass-inspired, GAMA FlatButton, minimalist
   and Midnight Arcade styles supplied as simulation attributes. The glass style
   uses transparency, not native backdrop blur.
-* `Display UI Controls - Simulation Toolbar.gaml`: native experiment operations
-  with recreated toolbar icons and a real minimum-cycle-duration slider.
+* `Display UI Controls - Simulation Toolbar.gaml`: experiment actions for
+  play/pause, step, synchronization, reload and stop, with recreated toolbar
+  icons and a real minimum-cycle-duration slider.
 
 ```gaml
 overlay position: {16, 16} size: {240, 160} {
@@ -290,7 +291,7 @@ overlay position: {16, 16} size: {240, 160} {
 not a temporary drawing variable.
 The binding is assigned before an optional handler runs. `value:` instead
 reads an expression and requires a change handler; no assignment is automatic.
-These facets are mutually exclusive. A momentary button needs `action:`, `command:` or a final block;
+These facets are mutually exclusive. A momentary button needs `action:` or a final block;
 switches, toggle buttons and sliders accept `on_change:` or a final block, not both.
 Handler facets accept an argument-free action or an inline block.
 Inline handlers execute in the experiment context, like `event` blocks.
@@ -349,8 +350,31 @@ existing rendering path without a scene capture when no other control needs
 adaptive text. Java2D also prepares a scene capture
 for dynamic control text colours, so they can switch to `#adaptive` without
 evaluating the expression twice. `#adaptive` has no fixed RGB components: it
-is currently supported only for control text, not `accent:`, `border:`,
-`background:` or ordinary `draw` statements.
+is supported for control text and `draw` text, not `accent:`, `border:`,
+`background:` or non-text drawings.
+
+Ordinary text can explicitly request the same black/white contrast selection:
+
+```gaml
+draw "A readable label" at: {20, 40} color: #adaptive;
+```
+
+This works in world and screen coordinates, in Java2D, OpenGL and OpenGL4.
+It samples the pixels already rendered beneath the text at that point in the
+layer/drawing order, including frame backgrounds and earlier drawings. Camera,
+layer and text transforms determine the sampling area. Adaptive foregrounds
+are unlit; an explicit ordinary border color remains unchanged.
+
+**Ordinary text does not default to `#adaptive`.** The contrast calculation
+samples at most 24 by 24 pixels, but OpenGL must resolve and read back scene
+pixels for each adaptive draw string (each line for multiline text). Readbacks
+can stall the GPU, especially for large populations with many labels. Sampled
+images are bounded to 256 pixels on their longest side, but this does not
+eliminate synchronization cost. Static layers containing adaptive text must
+also redraw their text colors when the scene changes. Use an explicit color
+for high-volume labels. Java2D samples its image-backed frame without a GPU
+readback; dynamic draw colors prepare that frame so they can switch to
+`#adaptive` without reevaluating the color expression.
 
 ```gaml
 ui_button "Reset" action: reset_controls;
@@ -403,23 +427,25 @@ ui_button "Running" toggle: true value: running on_change: {
 and update their binding on release inside the button, before invoking the handler.
 The accent-coloured border indicates the hovered, pressed or checked state.
 
-Momentary buttons can invoke the native experiment toolbar with a constant string
-`command:` instead of `action:` or a final block:
+Inline button handlers run on the display's experiment, so they can use its
+actions directly rather than targeting whichever experiment is frontmost:
 
 ```gaml
-ui_button "Play / Pause" command: "play_pause";
-ui_button "Step" command: "step";
-ui_button "Sync / async" command: "sync";
-ui_button "Reload" command: "reload";
-ui_button "Stop" command: "stop";
+ui_button "Play / Pause" {
+    if status = "PAUSED" { do play; } else { do pause; }
+}
+ui_button "Step" { do step_once; }
+ui_button "Sync / async" {
+    if is_synchronized { do desynchronize; } else { do synchronize; }
+}
+ui_button "Reload" { do reload; }
+ui_button "Stop" { do die; }
 ```
 
-These use the same frontmost-experiment operations as the native toolbar, not
-simulation-local movement flags. `step` requests one cycle. `sync` toggles waiting
-for outputs. `reload` recreates the run, and `stop` closes the experiments and their
-views, returning to modeling. Play/Pause and Step have the toolbar's experiment-wide
-scope, affecting all simulations it controls. Commands cannot be combined with
-toggle mode, bindings, handlers or final blocks. Image facets remain supported.
+`step_once` requests one cycle; synchronization controls whether execution waits
+for outputs. `reload` recreates the current run, and `die` closes this experiment
+and its views, returning to modeling. Play/Pause and Step affect all simulations
+controlled by this experiment. Image facets remain supported.
 The example uses a combined Play/Pause icon and a fixed Sync/async icon; these
 icons do not mirror the native toolbar's checked or running-state appearance.
 For duration, bind a slider to the experiment's `minimum_cycle_duration`
@@ -436,7 +462,11 @@ Its own transparency is preserved. The full declared rectangle remains clickable
 `active:`, toggle bindings and handlers continue to work normally.
 While active, a supplied pressed image has priority over hover, then checked,
 then the default image. An omitted checked image falls back to `image_pressed:`,
-then `image:`. Inactive buttons use only their checked/default appearance.
+then `image:`. If `image_hover:` is omitted or evaluates to `nil`, hovering
+multiplies the checked/default fallback image by `#lightgray`, preserving alpha
+and leaving the original image untouched. An explicit pressed image still takes
+priority. To keep the original hover appearance, supply that image explicitly
+as `image_hover:`. Inactive buttons use only their checked/default appearance.
 If no image resolves for the current state, the button is invisible but retains
 its declared interaction bounds.
 
@@ -482,20 +512,29 @@ native accessible application controls.
 
 ## Contextual constants
 
-In a screen evaluation context:
+`#display_width` and `#display_height` always return the visible viewport
+dimensions in logical pixels, independent of zoom, layer placement and contents.
+In graphical scopes, including `event` blocks, they refer to that scope's
+display. Outside graphics they refer to the frontmost display, or return `0`
+when none exists. They never describe an overlay's local size.
 
-* `#px` is `1`.
-* `#display_width` and `#display_height` are the visible viewport dimensions.
+This replaces the historical world-context interpretation as the zoomed world's
+pixel extent. Multiplying by `#zoom` scales a viewport length; it does not
+necessarily recover that historical extent because aspect-ratio fitting,
+letterboxing and camera projection also affect the world.
+
+`#px` remains contextual: it is `1` in a screen evaluation context and converts
+a logical pixel to model units in a world context.
 
 For placement facets, the context is the layer's `coordinates:`. For drawing
 contents, it is the content mode. Thus a screen-placed world-content mini-map
-uses screen constants in its frame facets but historical world constants in
-its drawings.
+uses `#px = 1` in its frame facets but a pixel-to-world conversion in
+its drawings. Its display dimensions remain viewport dimensions in both.
 
-Outside a screen context, these constants retain their historical values:
-`#px` converts a logical pixel to model units, and display dimensions refer to
-the pixel extent of the displayed world, which can differ from the viewport
-under zoom.
+An `event` block does not inherit a drawing layer's referential. Pair viewport
+dimensions with `#mouse_location_in_display` for viewport calculations, and
+use `#mouse_location_in_world` for world calculations. Point arithmetic does
+not automatically convert one coordinate system to the other.
 
 Constants are contextual **when expressions are evaluated**. A value computed
 earlier in a global variable is an ordinary stored number or point; moving it
@@ -537,8 +576,14 @@ The new names make their fixed meanings explicit:
 
 | Constant | Meaning | Existing equivalent |
 |---|---|---|
-| `#mouse_world_location` | World/model location | `#user_location`, `#user_location_in_world` |
-| `#mouse_screen_location` | Display-viewport pixel location | `#user_location_in_display` |
+| `#mouse_location_in_world` | World/model location | `#user_location`, `#user_location_in_world` |
+| `#mouse_location_in_display` | Display-viewport pixel location, from the top-left | `#user_location_in_display` |
+
+The old `#mouse_world_location` and `#mouse_screen_location` names remain aliases
+for compatibility; new models should use the consistent `*_location_in_*` names.
+Both OpenGL backends normalize native mouse events to logical viewport pixels
+using the native surface scale, so mouse positions and overlay hit areas agree
+on HiDPI displays. Camera picking still uses physical framebuffer pixels internally.
 
 These constants do not change meaning with `coordinates:`. A screen mouse
 location is relative to the viewport, not automatically to an overlay origin.

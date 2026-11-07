@@ -377,24 +377,22 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				return new CustomExpression<>(unit, Types.FLOAT, 0d, doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getDisplayWidth();
+						if (surface != null) return (double) surface.getWidth();
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 0d : (double) (g.getCoordinateSystem() == LayerCoordinates.SCREEN
-							? g.getViewWidth() : g.getDisplayWidth());
+					return g == null ? 0d : (double) g.getViewWidth();
 				});
 			case "display_height":
 				// Height of the current display
 				return new CustomExpression<>(unit, Types.FLOAT, 0d, doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getDisplayHeight();
+						if (surface != null) return (double) surface.getHeight();
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 0d : (double) (g.getCoordinateSystem() == LayerCoordinates.SCREEN
-							? g.getViewHeight() : g.getDisplayHeight());
+					return g == null ? 0d : (double) g.getViewHeight();
 				});
 			case "now":
 				// Current simulation time
@@ -471,6 +469,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				return new CustomExpression<>(unit, Types.STRING, "", doc, UserInputEvent::mouseButton);
 			case "user_location":
 			case "user_location_in_world":
+			case "mouse_location_in_world":
 			case "mouse_world_location":
 				// Mouse cursor location in world coordinates
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
@@ -482,6 +481,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 							? graphics.getSurface().getModelCoordinates() : sc.getGui().getMouseLocationInModel();
 				});
 			case "user_location_in_display":
+			case "mouse_location_in_display":
 			case "mouse_screen_location":
 				// Mouse cursor location in display coordinates
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {

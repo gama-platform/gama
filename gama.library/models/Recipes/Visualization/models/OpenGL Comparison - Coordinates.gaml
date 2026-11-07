@@ -59,7 +59,7 @@ experiment "1 - World HUD minimap and chart" type: gui {
                     font: font("Helvetica", 18) color: #black;
                 draw ("Viewport: " + #display_width + " x " + #display_height)
                     at: {12, 52} anchor: #left_center color: #black;
-                draw ("Mouse pixels: " + #mouse_screen_location)
+                draw ("Mouse pixels: " + #mouse_location_in_display)
                     at: {12, 74} anchor: #left_center color: #black;
                 draw "Only the main world follows the camera" at: {12, 96}
                     anchor: #left_center color: #black;
@@ -224,8 +224,8 @@ experiment "6 - Text anchors and pointer events" type: gui {
             event #mouse_listener {
                 if #mouse_action = #mouse_down and #mouse_button = "left" {
                     ask simulation {
-                        clicked_world <- #mouse_world_location;
-                        clicked_screen <- #mouse_screen_location;
+                        clicked_world <- #mouse_location_in_world;
+                        clicked_screen <- #mouse_location_in_display;
                         clicks <- clicks + 1;
                     }
                 }
@@ -241,9 +241,9 @@ experiment "6 - Text anchors and pointer events" type: gui {
                 }
             }
             overlay position: {16, 320} size: {570, 160} background: #white border: #gray {
-                draw ("Live viewport: " + #mouse_screen_location + "; world: " + #mouse_world_location)
+                draw ("Live viewport: " + #mouse_location_in_display + "; world: " + #mouse_location_in_world)
                     at: {12, 26} color: #black;
-                draw ("Local: " + (#mouse_screen_location - {16, 320})) at: {12, 56} color: #purple;
+                draw ("Local: " + (#mouse_location_in_display - {16, 320})) at: {12, 56} color: #purple;
                 draw ("Click world: " + clicked_world) at: {12, 86} color: #red;
                 draw ("Same click pixels: " + clicked_screen + "; count: " + clicks)
                     at: {12, 116} color: #red;

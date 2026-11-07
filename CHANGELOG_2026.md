@@ -19,6 +19,28 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Display viewport dimensions and mouse-coordinate aliases
+
+`#display_width` and `#display_height` now always return the visible viewport dimensions in logical pixels,
+independent of zoom and layer referential. In graphical scopes, including `event` callbacks, they use the
+originating display; outside graphics they use the frontmost display, or return `0` if none exists.
+They no longer return the zoomed world's pixel extent in world contexts and never denote overlay-local size.
+`#px` remains contextual: one logical pixel in screen contexts, a pixel-to-model-unit conversion in world contexts.
+
+`#mouse_location_in_world` joins `#user_location` and `#user_location_in_world` as a world-coordinate synonym.
+`#mouse_location_in_display` is a synonym of `#user_location_in_display`, measured from the viewport's top-left
+in logical pixels. The old `#mouse_world_location` and `#mouse_screen_location` names remain compatibility aliases.
+All aliases retain the originating mouse-event snapshot behavior.
+Both OpenGL backends convert native mouse-event pixels to logical viewport pixels using the actual native
+surface scale, fixing undersized overlay hit areas on HiDPI displays. Camera picking retains physical pixels.
+
+**Migration:** review dimension expressions that relied on zoom-dependent world extents. Use viewport mouse
+coordinates with viewport dimensions, and world mouse coordinates with world geometry; point arithmetic does
+not convert between referentials. Multiplying viewport dimensions by `#zoom` is not a general replacement for
+the former extent because aspect-ratio fitting and projection also affect it.
+See the [migration reference](MIGRATION_GUIDE_2026.md#display-dimensions-and-mouse-coordinates)
+and [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
+
 ### Experiment execution controls and pause-state migration
 
 Experiment agents expose `play`, `pause`, `step_once`, `step_back`, `synchronize`, `desynchronize` and `reload`.

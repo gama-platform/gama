@@ -336,7 +336,7 @@ public class LayerObject {
 		}
 		if (renderer.getPickingHelper().isPicking()) {
 			gl.runWithNames(() -> drawAllObjects(gl, true));
-		} else if (isAnimated) {
+		} else if (isAnimated || hasAdaptiveDraws()) {
 			drawAllObjects(gl, false);
 		} else {
 			if (openGLListIndex == null) {
@@ -352,6 +352,15 @@ public class LayerObject {
 			}
 			gl.drawList(openGLListIndex);
 		}
+	}
+
+	protected boolean hasAdaptiveDraws() { return hasAdaptiveDraws(currentList); }
+
+	protected final boolean hasAdaptiveDraws(final Trace list) {
+		for (final AbstractObject object : list.asArray()) {
+			if (object.getAttributes() instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) return true;
+		}
+		return false;
 	}
 
 	/**

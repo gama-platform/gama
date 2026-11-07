@@ -327,6 +327,17 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	@Override
+	public boolean project(final double x, final double y, final double z, final double[] result) {
+		final double[] model = new double[16], projection = new double[16];
+		final int[] view = { 0, 0, getViewWidth(), getViewHeight() };
+		gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, model, 0);
+		gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projection, 0);
+		if (!glu.gluProject(x, y, z, model, 0, projection, 0, view, 0, result, 0)) return false;
+		result[1] = getViewHeight() - result[1];
+		return Double.isFinite(result[0]) && Double.isFinite(result[1]) && result[2] >= 0 && result[2] <= 1;
+	}
+
+	@Override
 	public void ortho(final double left, final double right, final double bottom, final double top,
 			final double near, final double far) {
 		gl.glOrtho(left, right, bottom, top, near, far);

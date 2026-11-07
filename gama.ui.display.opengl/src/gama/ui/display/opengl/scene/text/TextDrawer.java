@@ -64,6 +64,7 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -253,6 +254,17 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		gl.pushMatrix();
 		final IPoint p = attributes.getLocation();
 		final boolean rotated = applyRotation(attributes, p);
+		if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+			final double[] position = new double[3];
+			final Rectangle2D bounds = new Rectangle2D.Double();
+			if (gl.project(rotated ? 0 : p.getX(), rotated ? 0 : p.getY(), rotated ? 0 : p.getZ(), position)) {
+				final int fontHeight = fontToUse == GLUT.BITMAP_HELVETICA_10 ? 10
+						: fontToUse == GLUT.BITMAP_HELVETICA_12 ? 12 : 18;
+				bounds.setRect(position[0], position[1] - fontHeight,
+						gl.getGlut().glutBitmapLength(fontToUse, object), fontHeight + 4);
+			}
+			gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text, bounds);
+		}
 		gl.rasterText(object, fontToUse, rotated ? 0 : p.getX(), rotated ? 0 : p.getY(), rotated ? 0 : p.getZ());
 		gl.popMatrix();
 	}
@@ -337,6 +349,10 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			gl.translateBy(locX + x * scale, locY + y * scale,
 					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
+			if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+				gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text,
+						new Rectangle2D.Double(boundsX, -boundsMaxY, width, height), depth);
+			}
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
 			} else {

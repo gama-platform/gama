@@ -158,6 +158,18 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 */
 	public org.joml.Matrix4f getProjectionMatrix() { return projectionMatrix.getCurrentMatrix(); }
 
+	@Override
+	public boolean project(final double x, final double y, final double z, final double[] result) {
+		final var point = new org.joml.Vector4f((float) x, (float) y, (float) z, 1);
+		getModelViewMatrix().transform(point);
+		getProjectionMatrix().transform(point);
+		if (point.w <= 0) return false;
+		result[0] = (point.x / point.w + 1) * getViewWidth() / 2d;
+		result[1] = (1 - point.y / point.w) * getViewHeight() / 2d;
+		result[2] = (point.z / point.w + 1) / 2d;
+		return Double.isFinite(result[0]) && Double.isFinite(result[1]) && result[2] >= 0 && result[2] <= 1;
+	}
+
 	/**
 	 * The glu. Used for GLU tessellator callbacks ({@code gluTessCallback} etc.) and for {@code gluProject} in
 	 * {@link #reshape} and {@link #getPixelWidthAndHeightOfWorld}. Not used for any fixed-function rendering.

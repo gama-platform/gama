@@ -133,6 +133,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/** The current mouse location converted to a world position */
 	private IPoint world_position;
 
+	private volatile IPoint window_position = GamaPointFactory.create();
+
 	/**
 	 * Instantiates a new SWT open GL display surface.
 	 *
@@ -375,9 +377,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public int getWidth() {
-		final GamaGLCanvas canvas = renderer.getCanvas();
-		return canvas == null ? 0 : canvas.getSurfaceWidth();
-		// return size.x;
+		return renderer.getViewWidth();
 	}
 
 	/**
@@ -387,9 +387,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public int getHeight() {
-		final GamaGLCanvas canvas = renderer.getCanvas();
-		return canvas == null ? 0 : canvas.getSurfaceHeight();
-		// return size.y;
+		return renderer.getViewHeight();
 	}
 
 	/**
@@ -455,7 +453,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	public IPoint getModelCoordinates() { return world_position; }
 
 	@Override
-	public IPoint getWindowCoordinates() { return renderer.getCameraHelper().getMousePosition(); }
+	public IPoint getWindowCoordinates() { return window_position; }
 
 	@Override
 	public void getModelCoordinatesInfo(final StringBuilder sb) {
@@ -488,8 +486,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 			int xc = -origin.x;
 			int yc = -origin.y;
 			e.expandToInclude(currentLayer.getModelCoordinatesFrom(xc, yc, this));
-			xc = xc + canvas.getSurfaceWidth();
-			yc = yc + canvas.getSurfaceHeight();
+			xc = xc + getWidth();
+			yc = yc + getHeight();
 			e.expandToInclude(currentLayer.getModelCoordinatesFrom(xc, yc, this));
 			currentLayer.getData().setVisibleRegion(e);
 		}
@@ -504,7 +502,9 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
 			final Point positionInPixels) {
-		final IPoint mp = GamaPointFactory.create(xOnScreen, yOnScreen);
+		final int[] pixels = renderer.getCanvas().getNativeSurface()
+				.convertToPixelUnits(new int[] { xOnScreen, yOnScreen });
+		final IPoint mp = GamaPointFactory.create(pixels[0], pixels[1]);
 		final IPoint p = renderer.getRealWorldPointFromWindowPoint(mp);
 		return p.yNegated();
 	}
@@ -605,7 +605,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 			updateDisplay(true);
 		};
 		// DEBUG.OUT("Building and displaying the menu");
-		IPoint location = renderer.getCameraHelper().getMousePosition();
+		IPoint location = getWindowCoordinates();
 		if (withHighlight) {
 			menuManager.buildMenu((int) location.getX(), (int) location.getY(), ag, cleanup,
 					AgentsMenu.getHighlightActionFor(ag));
@@ -623,8 +623,9 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	public void selectionIn(final IEnvelope env) {
 		final IEnvelope region = GamaEnvelopeFactory.of(env);
 		final IEnvelope envInWorld = GamaEnvelopeFactory.withYNegated(region);
-		final int x = (int) renderer.getCameraHelper().getMousePosition().getX();
-		final int y = (int) renderer.getCameraHelper().getMousePosition().getY();
+		final IPoint location = getWindowCoordinates();
+		final int x = (int) location.getX();
+		final int y = (int) location.getY();
 		WorkbenchHelper.asyncRun(() -> {
 			if (disposed || renderer == null || menuManager == null) return;
 			final Collection<IAgent> agents = scope.getTopology().getSpatialIndex().allInEnvelope(scope,
@@ -816,8 +817,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public void setMousePosition(final int x, final int y) {
 		// Callable from non OpenGL context
-		world_position = renderer.getCameraHelper()
-				.getWorldPositionFrom(GamaPointFactory.create(x, y), GamaPointFactory.create()).yNegated();
+		window_position = GamaPointFactory.create(x, y);
+		world_position = getModelCoordinatesFrom(x, y, null, null);
 	}
 
 	@Override

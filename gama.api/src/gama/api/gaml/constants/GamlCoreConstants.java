@@ -519,7 +519,7 @@ public interface GamlCoreConstants {
 			value = "adaptive",
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY, IConcept.COLOR, IConcept.TEXT },
-			doc = @doc ("The default contextual foreground color for ui_button, ui_switch and ui_slider, also selectable with color: #adaptive. It chooses black or white for each label from the actual scene pixels beneath it, composited with defined overlay and control backgrounds at their rendered opacity. Omitted or nil backgrounds leave the underlying pixels unchanged. It has no fixed RGB components and is not supported for accents, borders, backgrounds or ordinary draw statements."))
+			doc = @doc ("A contextual text foreground, selectable with color: #adaptive in draw statements rendering text, and the default foreground for ui_button, ui_switch, ui_radio and ui_slider. It chooses black or white from the actual rendered pixels beneath the text. UI labels also account for overlay and control backgrounds at their rendered opacity. Ordinary draw text keeps its existing default color: adaptive text is opt-in because it adds a scene readback in OpenGL. It has no fixed RGB components and is not supported for accents, borders, backgrounds or non-text drawings."))
 	IColor adaptive = AdaptiveColor.INSTANCE;
 
 	/** The screen. */
@@ -541,19 +541,19 @@ public interface GamlCoreConstants {
 	/** The user location. */
 	@constant (
 			value = "user_location",
-			altNames = { "user_location_in_world", "mouse_world_location" },
+			altNames = { "user_location_in_world", "mouse_location_in_world", "mouse_world_location" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("The mouse location in world coordinates, independently of the layer coordinate mode. During a mouse event callback this is a snapshot from the display that received the event; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position."))
+			doc = @doc ("The mouse location in world coordinates, independently of the layer coordinate mode. #user_location_in_world and #mouse_location_in_world are synonyms; #mouse_world_location remains a compatibility alias. During a mouse event callback this is a snapshot from the display that received the event; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position."))
 	@tests ({ @test ("#user_location is point") }) IPoint user_location = GamaPointFactory.create();
 
 	/** The user location in display. */
 	@constant (
 			value = "user_location_in_display",
-			altNames = { "mouse_screen_location" },
+			altNames = { "mouse_location_in_display", "mouse_screen_location" },
 			category = IConstantCategory.GRAPHIC,
 			concept = { IConcept.DISPLAY },
-			doc = @doc ("The mouse location in viewport pixels, not overlay-local coordinates, independently of the layer coordinate mode. During a mouse event callback this is a snapshot from the display that received the event; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position.")) IPoint user_location_in_display =
+			doc = @doc ("The mouse location in logical viewport pixels from the top-left, not overlay-local coordinates, independently of the layer coordinate mode. #mouse_location_in_display is a synonym; #mouse_screen_location remains a compatibility alias. During a mouse event callback this is a snapshot from the display that received the event; otherwise a graphical scope reads its own display surface, or a scope without graphics uses the GUI's last tracked position.")) IPoint user_location_in_display =
 					GamaPointFactory.create();
 
 	/** The camera location. */
@@ -712,7 +712,7 @@ public interface GamlCoreConstants {
 			value = "display_width",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT },
-			doc = @doc ("In an explicit screen context, the visible display width in logical pixels, independent of zoom. Otherwise the historical width of the displayed world in pixels. It never denotes the current overlay width.")) double display_width =
+			doc = @doc ("The visible display viewport width in logical pixels, independent of zoom and the layer coordinate mode. In graphical scopes, including event callbacks, uses that scope's display; outside graphics uses the frontmost display, or 0 if none exists. It never denotes the current overlay width or the zoomed world's pixel extent.")) double display_width =
 					1;
 
 	/** The display height. */
@@ -720,7 +720,7 @@ public interface GamlCoreConstants {
 			value = "display_height",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT },
-			doc = @doc ("In an explicit screen context, the visible display height in logical pixels, independent of zoom. Otherwise the historical height of the displayed world in pixels. It never denotes the current overlay height.")) double display_height =
+			doc = @doc ("The visible display viewport height in logical pixels, independent of zoom and the layer coordinate mode. In graphical scopes, including event callbacks, uses that scope's display; outside graphics uses the frontmost display, or 0 if none exists. It never denotes the current overlay height or the zoomed world's pixel extent.")) double display_height =
 					1;
 
 	/** The now. */

@@ -17,7 +17,7 @@ global {
 
 experiment "Mouse in three referentials" type: gui {
     text "Purpose: compare viewport pixels, world coordinates and coordinates local to a screen overlay.<br/>Try: run, move the pointer and left-click inside any display, then zoom and pan.<br/>Expected: each click records world and screen positions from the same event and places a red world marker. The marker follows the world; the saved screen position remains the recorded pixel value." category: "What this demonstrates";
-    text "The live overlay-local value simply subtracts its {16,16}-pixel origin from #mouse_screen_location. It is not a new mouse unit. Each display supplies its own live pointer values; the last-click values and click count are shared simulation state." category: "What this demonstrates";
+    text "The live overlay-local value simply subtracts its {16,16}-pixel origin from #mouse_location_in_display. It is not a new mouse unit. Each display supplies its own live pointer values; the last-click values and click count are shared simulation state." category: "What this demonstrates";
     output {
         display "Java2D" type: java2D {
             graphics "World" coordinates: #world {
@@ -27,17 +27,17 @@ experiment "Mouse in three referentials" type: gui {
             event #mouse_listener {
                 if #mouse_action = #mouse_down and #mouse_button = "left" {
                     ask simulation {
-                        clicked_world <- #mouse_world_location;
-                        clicked_screen <- #mouse_screen_location;
+                        clicked_world <- #mouse_location_in_world;
+                        clicked_screen <- #mouse_location_in_display;
                         clicks <- clicks + 1;
                     }
                 }
             }
             overlay coordinates: #screen position: {16, 16} size: {0.92, 250}
                 background: #white border: #gray {
-                draw ("Live viewport: " + #mouse_screen_location) at: {12, 26} color: #blue;
-                draw ("Live world: " + #mouse_world_location) at: {12, 56} color: #green;
-                draw ("Local to this overlay: " + (#mouse_screen_location - {16, 16}))
+                draw ("Live viewport: " + #mouse_location_in_display) at: {12, 26} color: #blue;
+                draw ("Live world: " + #mouse_location_in_world) at: {12, 56} color: #green;
+                draw ("Local to this overlay: " + (#mouse_location_in_display - {16, 16}))
                     at: {12, 86} color: #purple;
                 draw ("Last click world: " + clicked_world) at: {12, 126} color: #red;
                 draw ("Same click viewport: " + clicked_screen) at: {12, 156} color: #red;

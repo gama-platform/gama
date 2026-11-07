@@ -21,9 +21,10 @@ import com.jogamp.opengl.GL2GL3;
 
 import gama.api.types.color.AdaptiveColor;
 import gama.gaml.statements.draw.TextDrawingAttributes;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
-/** Captures the rendered scene once per adaptive overlay, shared by both OpenGL backends. */
+/** Captures rendered pixels for adaptive text, shared by both OpenGL backends. */
 public final class AdaptiveTextHelper {
 	private static final int MAX_SAMPLE_SIZE = 256;
 	private final IOpenGLRenderer renderer;
@@ -34,6 +35,40 @@ public final class AdaptiveTextHelper {
 
 	public AdaptiveTextHelper(final IOpenGLRenderer renderer) {
 		this.renderer = renderer;
+	}
+
+	public void resolveDraw(final TextDrawingAttributes text, final Rectangle2D glyphs, final double depth) {
+		if (!text.isAdaptiveDraw() || renderer.getPickingHelper().isPicking()) return;
+		final IOpenGL gl = renderer.getOpenGLHelper();
+		final Rectangle2D bounds = new Rectangle2D.Double();
+		final double[] point = new double[3];
+		boolean first = true;
+		for (int corner = 0; corner < (depth == 0 ? 4 : 8); corner++) {
+			final double x = (corner & 1) == 0 ? glyphs.getMinX() : glyphs.getMaxX();
+			final double y = (corner & 2) == 0 ? glyphs.getMinY() : glyphs.getMaxY();
+			if (!gl.project(x, y, (corner >> 2) * depth, point)) continue;
+			if (first) {
+				bounds.setRect(point[0], point[1], 0, 0);
+				first = false;
+			} else {
+				bounds.add(point[0], point[1]);
+			}
+		}
+		resolveDraw(text, bounds);
+	}
+
+	public void resolveDraw(final TextDrawingAttributes text, final Rectangle2D bounds) {
+		if (!text.isAdaptiveDraw() || renderer.getPickingHelper().isPicking()) return;
+		final IOpenGL gl = renderer.getOpenGLHelper();
+		final Rectangle2D view = new Rectangle2D.Double(0, 0, gl.getViewWidth(), gl.getViewHeight());
+		final Rectangle2D visible = bounds.createIntersection(view);
+		if (visible.isEmpty()) {
+			text.resolveAdaptiveDraw(null, view, bounds);
+		} else {
+			final Rectangle2D captured = capture(visible);
+			text.resolveAdaptiveDraw(scene, captured, bounds);
+		}
+		gl.setCurrentColor(text.getColor());
 	}
 
 	public void resolve(final List<TextDrawingAttributes> texts, final double offsetX, final double offsetY,

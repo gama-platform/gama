@@ -54,6 +54,7 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.Puntal;
 
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.AdaptiveColor;
 import gama.api.types.color.GamaColorFactory;
@@ -99,10 +100,24 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	private BufferedImage frameBuffer, sceneBeforeOverlay;
 	private boolean adaptiveOverlay;
 	private AdaptiveColor.Background adaptiveOverlayBackground;
+	private Boolean adaptiveDraws;
 
 	public void setFrameBuffer(final BufferedImage image) { frameBuffer = image; }
 
 	public boolean needsAdaptiveText() {
+		if (adaptiveDraws == null) {
+			final boolean[] found = { false };
+			getSurface().getScope().getModel().getDescription().visitOwnChildrenRecursively(child -> {
+				if (!"draw".equals(child.getKeyword())) return true;
+				final var item = child.getFacetExpr("geometry");
+				if (item == null || !item.getGamlType().isAssignableFrom(Types.STRING)) return true;
+				final var color = child.getFacetExpr("color");
+				found[0] |= color != null && (!color.isConst() || color.getConstValue() == AdaptiveColor.INSTANCE);
+				return true;
+			});
+			adaptiveDraws = found[0];
+		}
+		if (adaptiveDraws) return true;
 		return getSurface().getManager().getItems().stream()
 				.anyMatch(layer -> layer.getDefinition() instanceof OverlayStatement overlay && overlay.mayUseAdaptiveText());
 	}
@@ -402,6 +417,34 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final String[] lines = string.split("\\r?\\n", -1);
 		final double lineHeight = currentRenderer.getFont().getLineMetrics("Ag",
 				currentRenderer.getFontRenderContext()).getHeight();
+		if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+			if (frameBuffer == null) {
+				throw new IllegalStateException("Adaptive text requires an image-backed Java2D renderer");
+			}
+			Rectangle2D textBounds = null;
+			final var location = attributes.getLocation();
+			final double atX = location == null ? getXOffsetInPixels() : xFromModelUnitsToPixels(location.getX());
+			final double atY = location == null ? getYOffsetInPixels() : yFromModelUnitsToPixels(location.getY());
+			for (int i = 0; i < lines.length; i++) {
+				if (lines[i].isEmpty()) continue;
+				final Rectangle2D bounds = new TextLayout(lines[i], currentRenderer.getFont(),
+						currentRenderer.getFontRenderContext()).getBounds();
+				final double x = atX - bounds.getWidth() * attributes.getAnchor().getX();
+				final double y = atY + lineHeight * i - bounds.getHeight() * (1 - attributes.getAnchor().getY());
+				bounds.setRect(x, y, bounds.getWidth(), bounds.getHeight());
+				if (attributes.getAngle() != null && attributes.getAngle() != 0d) {
+					final var rotation = AffineTransform.getRotateInstance(Maths.toRad * attributes.getAngle(),
+							atX, atY + lineHeight * i);
+					final var rotated = rotation.createTransformedShape(bounds).getBounds2D();
+					bounds.setRect(rotated);
+				}
+				final Rectangle2D pixels = currentRenderer.getTransform().createTransformedShape(bounds).getBounds2D();
+				if (textBounds == null) textBounds = pixels; else textBounds.add(pixels);
+			}
+			text.resolveAdaptiveDraw(frameBuffer, new Rectangle2D.Double(
+					0, 0, frameBuffer.getWidth(), frameBuffer.getHeight()),
+					textBounds == null ? new Rectangle2D.Double() : textBounds);
+		}
 		Rectangle2D result = null;
 		for (int i = 0; i < lines.length; i++) {
 			final Rectangle2D r = drawTextLine(lines[i], attributes, lineHeight * i);

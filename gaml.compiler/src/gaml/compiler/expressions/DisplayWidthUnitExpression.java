@@ -36,13 +36,13 @@ public class DisplayWidthUnitExpression extends UnitConstantExpression {
 	public Double _value(final IScope sc) {
 		if (sc == null || !sc.isGraphics()) {
 			IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-			if (surface != null) return surface.getDisplayWidth();
+			if (surface != null) return (double) surface.getWidth();
 			return 0d;
 		}
 		IGraphicsScope scope = (IGraphicsScope) sc;
 		final IGraphics g = scope.getGraphics();
 		if (g == null) return 0d;
-		return (double) g.getDisplayWidth();
+		return (double) g.getViewWidth();
 	}
 
 	@Override

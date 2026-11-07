@@ -26,7 +26,7 @@ public final class AdaptiveColor implements IColor {
 
 	@Override
 	public Color getAWTColor() {
-		throw new UnsupportedOperationException("#adaptive is only supported as the color: of overlay controls");
+		throw new UnsupportedOperationException("#adaptive is only supported as the color: of text and overlay controls");
 	}
 
 	@Override

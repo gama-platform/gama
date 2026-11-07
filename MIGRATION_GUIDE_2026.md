@@ -56,6 +56,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | `image` layer renamed to `picture` | Update display blocks |
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
+| Display dimensions always mean logical viewport pixels | Review former zoom-dependent world-extent calculations; prefer explicit mouse-coordinate aliases |
 | Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
 | Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
 
@@ -446,6 +447,50 @@ overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white {
 ```
 
 > **Action needed:** none for overlays whose contents are drawn with `#px`. Models that draw the contents with model units in an overlay smaller than the view (e.g. `at: location / 3`) may need to express these coordinates in pixels.
+
+---
+
+### Display dimensions and mouse coordinates
+
+`#display_width` and `#display_height` always describe the **visible viewport in logical pixels**,
+independent of zoom, layer coordinate mode and overlay size. In graphical scopes, including `event`
+callbacks, they use the originating display. Outside graphics they use the frontmost display, or
+return `0` when none exists. Dimensions are read when the expression is evaluated; unlike mouse
+positions, they are not captured in the event snapshot.
+
+**Breaking behavior change:** in world contexts these constants previously described the displayed
+world's pixel extent. Review calculations that relied on that extent or its variation with zoom.
+Viewport dimensions multiplied by `#zoom` are not generally equivalent to the old values:
+aspect-ratio fitting, letterboxing and camera projection also affect the world.
+`#px` still depends on the evaluation context: it is `1` in screen contexts and converts a
+logical pixel to model units in world contexts. Stored numbers do not retain coordinate metadata.
+
+Prefer these explicit mouse names in new or migrated models:
+
+| Referential | Preferred name | Other supported names |
+|---|---|---|
+| World/model units | `#mouse_location_in_world` | `#user_location`, `#user_location_in_world`, legacy `#mouse_world_location` |
+| Viewport logical pixels, from the top-left | `#mouse_location_in_display` | `#user_location_in_display`, legacy `#mouse_screen_location` |
+
+The legacy mouse names remain aliases; replacing their spelling is optional and does not change
+behavior. Mouse-event callbacks read the originating event's captured position with every alias.
+Viewport mouse positions are not overlay-local positions.
+
+For example, normalize a mouse position within the viewport using matching units:
+
+```gaml
+event #mouse_move {
+    point mouse = #mouse_location_in_display;
+    if (#display_width > 0 and #display_height > 0) {
+        write {mouse.x / #display_width, mouse.y / #display_height};
+    }
+}
+```
+
+Use `#mouse_location_in_world` instead for comparisons with agent locations or world geometry.
+An event block does not inherit a drawing layer's referential, and ordinary point arithmetic does
+not convert between world and viewport coordinates. For layer placement and contents, see the
+[display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
 
 ---
 

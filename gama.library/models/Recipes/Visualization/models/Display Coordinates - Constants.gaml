@@ -13,20 +13,20 @@ global {
 }
 
 experiment "Contextual constants" type: gui {
-    text "Purpose: show that #px and display dimensions depend on the context in which an expression is evaluated.<br/>Try: zoom the world and resize both displays independently.<br/>Expected: screen #px stays 1 and screen dimensions match each viewport; world readings use the world-to-pixel conversion. The red circle keeps its pixel radius." category: "What this demonstrates";
+    text "Purpose: show that #px depends on the drawing context, but display dimensions always describe the viewport.<br/>Try: zoom the world and resize both displays independently.<br/>Expected: screen #px stays 1; world #px uses the world-to-pixel conversion. Both dimension readings match their display's viewport and do not change with zoom. The red circle keeps its pixel radius." category: "What this demonstrates";
     text "The displayed global 20#px value was evaluated before drawing. It is an ordinary stored number: moving it into a screen overlay does not reevaluate its original expression or preserve unit metadata." category: "What this demonstrates";
     output {
         display "Java2D" type: java2D {
             graphics "World readings" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
                 draw ("World #px = " + #px) at: {4, 55} color: #blue;
-                draw ("World dimensions = " + #display_width + " x " + #display_height)
+                draw ("Viewport from world context = " + #display_width + " x " + #display_height)
                     at: {4, 65} color: #blue;
                 draw circle(10#px) at: {50, 80} color: #blue;
             }
             graphics "Viewport" coordinates: #screen
                 size: {#display_width, #display_height} border: #red {
-                draw "Explicit full viewport: size uses contextual display dimensions"
+                draw "Explicit full viewport: dimensions are independent of referential"
                     at: {16, -16} color: #red;
             }
             overlay coordinates: #screen position: {16, 16} size: {0.9, 148}

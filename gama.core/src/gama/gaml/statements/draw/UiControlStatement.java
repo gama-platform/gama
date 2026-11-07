@@ -12,6 +12,8 @@ package gama.gaml.statements.draw;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.util.Locale;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -24,7 +26,6 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.support.ISymbolKind;
-import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
@@ -62,8 +63,8 @@ import gama.core.outputs.layers.OverlayLayer;
 @inside(symbols = "overlay")
 @facets(value = {
 		@facet(name = "label", type = IType.STRING, optional = true, doc = @doc("Text shown on the control.")),
-		@facet(name = "var", type = IType.NONE, optional = true, doc = @doc("Writable variable bound to this control.")),
-		@facet(name = "group", type = IType.STRING, optional = true, doc = @doc("Required for ui_radio: a non-empty group name. Selection clears the other radio bindings in the same overlay and group, including inactive radios.")),
+		@facet(name = "var", type = IType.NONE, optional = true, excludes = "value", doc = @doc("Writable variable bound to this control.")),
+		@facet(name = "group", type = IType.STRING, optional = true, requires = "var", doc = @doc("Required for ui_radio: a non-empty group name. Selection clears the other radio bindings in the same overlay and group, including inactive radios.")),
 		@facet(name = "value", type = IType.NONE, optional = true, doc = @doc("Read expression; ui_value is available in the change handler.")),
 		@facet(name = "min", type = IType.FLOAT, optional = true, doc = @doc("Slider minimum, default 0.")),
 		@facet(name = "max", type = IType.FLOAT, optional = true, doc = @doc("Slider maximum, default 100.")),
@@ -81,10 +82,9 @@ import gama.core.outputs.layers.OverlayLayer;
 		@facet(name = "toggle", type = IType.BOOL, optional = true, doc = @doc("Constant button mode: true binds a persistent boolean checked state.")),
 		@facet(name = "image", type = IType.NONE, optional = true, doc = @doc("Button image: an image provider, image file or path. Declaring any image facet makes the button image-only: no text, background or border. Images are centered and scaled proportionally to fit size:.")),
 		@facet(name = "image_pressed", type = IType.NONE, optional = true, doc = @doc("Button image while pressed inside its bounds; otherwise falls back to hover, checked or default image.")),
-		@facet(name = "image_hover", type = IType.NONE, optional = true, doc = @doc("Button image while hovered; otherwise falls back to checked or default image.")),
+		@facet(name = "image_hover", type = IType.NONE, optional = true, doc = @doc("Button image while hovered; if omitted or nil, the checked or default fallback image is multiplied by #lightgray, preserving transparency.")),
 		@facet(name = "image_checked", type = IType.NONE, optional = true, doc = @doc("Toggle button image while checked; defaults to image_pressed, then image.")),
-		@facet(name = "action", type = IType.ACTION, optional = true, doc = @doc("Momentary button handler, as an action or block.")),
-		@facet(name = "command", type = IType.STRING, optional = true, doc = @doc("Native experiment toolbar command for a momentary button: play_pause, step, sync, reload or stop. Uses the same frontmost-experiment operations as the toolbar; replaces action: and final blocks.")),
+		@facet(name = "action", type = IType.ACTION, optional = true, excludes = { "var", "value", "on_change" }, doc = @doc("Momentary button handler, as an action or block.")),
 		@facet(name = "on_change", type = IType.ACTION, optional = true, doc = @doc("Switch, radio, toggle button or slider change handler, as an action or block. Radio group bindings are updated before handlers run; ui_value is false for deselected radios and true for the selected radio.")),
 }, omissible = "label")
 @validator(UiControlStatement.ControlValidator.class)
@@ -133,9 +133,6 @@ public class UiControlStatement extends AbstractStatementSequence {
 			final boolean radio = "ui_radio".equals(d.getKeyword());
 			if (radio) {
 				if (!d.hasFacet("group")) d.error("ui_radio requires group:.");
-				if (!d.hasFacet("var") || d.hasFacet("value")) {
-					d.error("ui_radio requires a writable boolean var: binding, not value:.");
-				}
 				final IExpression group = d.getFacetExpr("group");
 				if (group != null && group.isConst()
 						&& (!(group.getConstValue() instanceof String name) || name.isBlank())) {
@@ -147,11 +144,6 @@ public class UiControlStatement extends AbstractStatementSequence {
 			final IExpression toggleMode = d.getFacetExpr("toggle");
 			final boolean toggle = buttonKind && toggleMode != null && Boolean.TRUE.equals(toggleMode.getConstValue());
 			final boolean button = buttonKind && !toggle;
-			final IExpression command = d.getFacetExpr("command");
-			if (d.hasFacet("command") && (!button || command == null || !command.isConst()
-					|| !isNativeCommand(command.getConstValue()))) {
-				d.error("command: requires a momentary button and a constant string: play_pause, step, sync, reload or stop.");
-			}
 			if (toggleMode != null && (!buttonKind || !toggleMode.isConst())) {
 				d.error("toggle: is a constant boolean facet for ui_button only.");
 			}
@@ -159,8 +151,8 @@ public class UiControlStatement extends AbstractStatementSequence {
 				if (d.hasFacet(image) && !buttonKind) d.error(image + ": is a button facet.");
 			}
 			if (d.hasFacet("image_checked") && !toggle) d.error("image_checked: requires toggle: true.");
-			if (d.hasFacet("var") && d.hasFacet("value")) d.error("Use either var: or value:, not both.");
-			if (button && (d.hasFacet("var") || d.hasFacet("value") || d.hasFacet("on_change"))) {
+			if (button && !d.hasFacet("action")
+					&& (d.hasFacet("var") || d.hasFacet("value") || d.hasFacet("on_change"))) {
 				d.error("A momentary button accepts action: or a final block; use toggle: true for a boolean binding.");
 			}
 			if (!button && d.hasFacet("action")) d.error("Use on_change: or a final block for value controls.");
@@ -176,11 +168,8 @@ public class UiControlStatement extends AbstractStatementSequence {
 			final var blockFeature = source == null ? null : source.eClass().getEStructuralFeature("block");
 			final boolean block = d.getOwnChildren().iterator().hasNext()
 					|| blockFeature != null && source.eIsSet(blockFeature);
-			if (button && !block && !d.hasFacet("action") && !d.hasFacet("command")) {
-				d.error("A button needs action:, command: or a final block.");
-			}
-			if (d.hasFacet("command") && (block || d.hasFacet("action"))) {
-				d.error("Use command: alone, not together with action: or a final block.");
+			if (button && !block && !d.hasFacet("action")) {
+				d.error("A button needs action: or a final block.");
 			}
 			if (block && d.hasFacet(button ? "action" : "on_change")) {
 				d.error("Use either a handler facet or a final block, not both.");
@@ -262,7 +251,7 @@ public class UiControlStatement extends AbstractStatementSequence {
 		final Object shown = overlay.registerControl(this, bounds, current, enabled, min, max, step, group);
 		if ("ui_button".equals(kind) && (hasFacet("image") || hasFacet("image_pressed")
 				|| hasFacet("image_hover") || hasFacet("image_checked"))) {
-			final IImageProvider image = buttonImage(scope, overlay, enabled, toggle && Cast.asBool(scope, shown));
+			final ButtonImage image = buttonImage(scope, overlay, enabled, toggle && Cast.asBool(scope, shown));
 			if (image != null) drawImage(scope, g, x, y, w, h, image);
 			return null;
 		}
@@ -441,8 +430,11 @@ public class UiControlStatement extends AbstractStatementSequence {
 		return attributes;
 	}
 
+	private record ButtonImage(IImageProvider provider, boolean tinted) {}
+
 	private static void drawImage(final IScope scope, final IGraphics g, final double x, final double y, final double w,
-			final double h, final IImageProvider image) {
+			final double h, final ButtonImage selected) {
+		final IImageProvider image = selected.provider();
 		final int width = image.getCols(scope), height = image.getRows(scope);
 		if (width <= 0 || height <= 0) {
 			throw GamaRuntimeException.error("Button images must have positive dimensions", scope);
@@ -454,15 +446,37 @@ public class UiControlStatement extends AbstractStatementSequence {
 				: GamaPointFactory.create(x + w / 2, y + h / 2);
 		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(
 				Scaling3D.of(imageWidth, imageHeight, 0), null, location,
-				GamaColorFactory.WHITE, null, null, null, true, false);
-		g.drawAsset(image, attributes);
+				selected.tinted() && !g.is2D() ? GamaColorFactory.LIGHT_GRAY : GamaColorFactory.WHITE,
+				null, null, null, true, false);
+		if (selected.tinted() && g.is2D()) {
+			// Java2D image drawing does not multiply pixels by the drawing colour.
+			final BufferedImage source = image.getImage(scope, true);
+			if (source == null) throw GamaRuntimeException.error("Button image could not be loaded", scope);
+			final BufferedImage tinted = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			final var graphics = tinted.createGraphics();
+			try {
+				graphics.drawImage(source, 0, 0, null);
+			} finally {
+				graphics.dispose();
+			}
+			final IColor tint = GamaColorFactory.LIGHT_GRAY;
+			new RescaleOp(new float[] { tint.red() / 255f, tint.green() / 255f, tint.blue() / 255f, 1f },
+					new float[4], null).filter(tinted, tinted);
+			g.drawImage(tinted, attributes);
+		} else {
+			g.drawAsset(image, attributes);
+		}
 	}
 
-	private IImageProvider buttonImage(final IScope scope, final OverlayLayer overlay, final boolean active,
+	private ButtonImage buttonImage(final IScope scope, final OverlayLayer overlay, final boolean active,
 			final boolean checked) {
 		Object image = null;
 		if (active && overlay.isControlPressed(this)) image = evaluate(scope, "image_pressed", null);
-		if (image == null && active && overlay.isControlHovered(this)) image = evaluate(scope, "image_hover", null);
+		boolean tinted = false;
+		if (image == null && active && overlay.isControlHovered(this)) {
+			image = evaluate(scope, "image_hover", null);
+			tinted = image == null;
+		}
 		if (image == null && checked) {
 			image = evaluate(scope, "image_checked", null);
 			if (image == null) image = evaluate(scope, "image_pressed", null);
@@ -477,7 +491,7 @@ public class UiControlStatement extends AbstractStatementSequence {
 		if (!(image instanceof IImageProvider provider)) {
 			throw GamaRuntimeException.error("Button images must be image providers, image files or image paths", scope);
 		}
-		return provider;
+		return new ButtonImage(provider, tinted);
 	}
 
 	public boolean isSlider() { return "ui_slider".equals(kind); }
@@ -498,36 +512,8 @@ public class UiControlStatement extends AbstractStatementSequence {
 	}
 
 	public void activate(final IScope scope, final Object newValue) {
-		if (hasFacet("command")) {
-			final Object command = evaluate(scope, "command", null);
-			final boolean accepted = switch (String.valueOf(command)) {
-				case "play_pause" -> GAMA.startPauseFrontmostExperiment(false);
-				case "step" -> GAMA.stepFrontmostExperiment(false);
-				case "reload" -> GAMA.reloadFrontmostExperiment(false);
-				case "sync" -> {
-					if (GAMA.isSynchronized()) GAMA.desynchronizeFrontmostExperiment();
-					else GAMA.synchronizeFrontmostExperiment();
-					yield true;
-				}
-				case "stop" -> {
-					Thread.ofVirtual().name("overlay stop experiment")
-							.start(() -> GAMA.closeAllExperiments(true, false));
-					yield true;
-				}
-				default -> throw GamaRuntimeException.error("Unknown native UI command: " + command, scope);
-			};
-			if (!accepted) throw GamaRuntimeException.error("Native UI command was not accepted: " + command, scope);
-			return;
-		}
 		setBoundValue(scope, newValue);
 		notifyChange(scope, newValue);
-	}
-
-	private static boolean isNativeCommand(final Object command) {
-		return command instanceof String name && switch (name) {
-			case "play_pause", "step", "sync", "reload", "stop" -> true;
-			default -> false;
-		};
 	}
 
 	public void notifyChange(final IScope scope, final Object newValue) {

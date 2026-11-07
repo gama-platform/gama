@@ -41,6 +41,23 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	private Rectangle2D adaptiveTextBounds;
 	private AdaptiveColor.Contrast adaptiveTextContrast;
 	private AdaptiveColor.Background adaptiveControlBackground;
+	private boolean adaptiveDraw;
+
+	public void setAdaptiveDraw() {
+		adaptiveDraw = true;
+		adaptiveTextContrast = new AdaptiveColor.Contrast();
+		setFill(GamaColorFactory.BLACK);
+		setLighting(false);
+	}
+
+	public boolean isAdaptiveDraw() { return adaptiveDraw; }
+
+	public void resolveAdaptiveDraw(final BufferedImage scene, final Rectangle2D sceneBounds,
+			final Rectangle2D textBounds) {
+		setFill(textBounds.intersects(sceneBounds)
+				? adaptiveTextContrast.resolve(scene, sceneBounds, textBounds)
+				: GamaColorFactory.get("transparent"));
+	}
 
 	public void setAdaptiveText(final Rectangle2D bounds, final AdaptiveColor.Contrast contrast,
 			final AdaptiveColor.Background background) {

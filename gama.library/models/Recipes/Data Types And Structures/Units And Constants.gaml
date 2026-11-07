@@ -213,7 +213,7 @@ experiment exp {
 				draw "Screen pixel unit:  " + string(#px) at:{10,140} color: #black font: my_font_plain;
 			}
 					
-			// #mouse_world_location (also #user_location) keeps world meaning in every referential.
+			// #mouse_location_in_world (also #user_location) keeps world meaning in every referential.
 			graphics circle_mouse coordinates: #world {
 				// We can also access the #zoom level: we can thus display a visual element depending on the zoom level, to keep visible some 
 				// elements even when we zoom out.

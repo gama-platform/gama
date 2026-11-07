@@ -59,6 +59,7 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -733,11 +734,6 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			return;
 		}
 
-		final IColor c = gl.getCurrentColor();
-		if (diagnose) { DEBUG.ERR("[GL4-TEXT] preparing color=" + c); }
-		final Vec4f color = new Vec4f((float) (c.red() / 255.0), (float) (c.green() / 255.0),
-				(float) (c.blue() / 255.0), (float) (c.alpha() / 255.0 * gl.getCurrentObjectAlpha()));
-
 		final GL2ES2 gl2es2 = gl4.getGL2ES2();
 		final IPoint p = attributes.getLocation();
 		final IPoint anchor = attributes.getAnchor();
@@ -790,6 +786,28 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		if (diagnose) { DEBUG.ERR("[GL4-TEXT] glyph bounds ready; applying anchor=" + anchor); }
 		pmv.translateMv(-bounds.getMinX() - bounds.getWidth() * (float) anchor.getX(),
 				-bounds.getMinY() - bounds.getHeight() * (float) anchor.getY(), 0);
+		if (attributes instanceof TextDrawingAttributes adaptive && adaptive.isAdaptiveDraw()) {
+			final Rectangle2D screenBounds = new Rectangle2D.Double();
+			final Vec3f position = new Vec3f();
+			final Recti view = new Recti(0, 0, gl.getViewWidth(), gl.getViewHeight());
+			boolean first = true;
+			for (int corner = 0; corner < 4; corner++) {
+				final Vec3f point = new Vec3f((corner & 1) == 0 ? bounds.getMinX() : bounds.getMaxX(),
+						(corner & 2) == 0 ? bounds.getMinY() : bounds.getMaxY(), 0);
+				if (!pmv.mapObjToWin(point, view, position) || position.z() < 0 || position.z() > 1) continue;
+				final double x = position.x(), y = gl.getViewHeight() - position.y();
+				if (first) {
+					screenBounds.setRect(x, y, 0, 0);
+					first = false;
+				} else {
+					screenBounds.add(x, y);
+				}
+			}
+			gl.getRenderer().getAdaptiveTextHelper().resolveDraw(adaptive, screenBounds);
+		}
+		final IColor c = gl.getCurrentColor();
+		final Vec4f color = new Vec4f((float) (c.red() / 255.0), (float) (c.green() / 255.0),
+				(float) (c.blue() / 255.0), (float) (c.alpha() / 255.0 * gl.getCurrentObjectAlpha()));
 		if (diagnose) {
 			DEBUG.ERR("[GL4-TEXT] awtFont=" + awtFont + " joglFont=" + joglFont + " pixelSize=" + pixelSize
 					+ " color=" + color + " bounds=" + bounds + " zTranslation=" + gl.getCurrentZTranslation()
@@ -906,6 +924,10 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			gl.translateBy(locX + x * scale, locY + y * scale,
 					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
+			if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+				gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text,
+						new Rectangle2D.Double(bounds.getX(), -bounds.getMaxY(), width, height), depth);
+			}
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
 			} else {
