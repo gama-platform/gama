@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import asyncio
 from collections.abc import Awaitable, Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
@@ -18,8 +19,9 @@ import re
 import shutil
 import struct
 import sys
+import traceback
 from typing import Any, Literal, NotRequired, TypedDict, cast
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlsplit
 
 from PIL import Image, ImageChops, ImageOps
 
@@ -40,6 +42,8 @@ class CaptureEntry(TypedDict):
     error: NotRequired[str]
     error_kind: NotRequired[Literal["seed_mismatch"]]
     close_error: NotRequired[str]
+    error_details: NotRequired[dict[str, Any]]
+    close_error_details: NotRequired[dict[str, Any]]
 
 
 class ComparisonPreview(TypedDict):
@@ -203,15 +207,34 @@ class Server:
         return response.get("content")
 
 
+class ServerRuntimeError(RuntimeError):
+    def __init__(self, message: str, details: dict[str, Any]) -> None:
+        super().__init__(message)
+        self.details = details
+        self.add_note(str(details))
+
+
 def server_error(context: str, content: object) -> RuntimeError:
     if isinstance(content, dict) and isinstance(content.get("message"), str):
         message = content["message"]
         if content.get("source") and content.get("line"):
-            message = f"{content['source']}:{content['line']}: {message}"
-        error = RuntimeError(f"{context}: {message}")
-        error.add_note(str(content))
-        return error
+            source = unquote(urlsplit(str(content["source"])).path).replace("\\", "/")
+            filename = source.rsplit("/", 1)[-1]
+            message = f"{filename}:{content['line']}: {message}"
+        return ServerRuntimeError(f"{context}: {message}", content)
     return RuntimeError(f"{context}: {content}")
+
+
+def exception_details(error: BaseException) -> dict[str, Any]:
+    details = {"exception": type(error).__name__, "message": str(error),
+               "client_stack": traceback.format_exception(error)}
+    cause = error
+    while cause is not None:
+        if isinstance(cause, ServerRuntimeError):
+            details.update(cause.details)
+            break
+        cause = cause.__cause__
+    return details
 
 
 def inline_png(value: object, size: ImageSize) -> bytes:
@@ -364,8 +387,8 @@ def print_capture_summary(entries: list[CaptureEntry], tested: Iterable[CaptureE
             print("  None")
         for entry in failures:
             detail = entry.get("error") or entry.get("close_error") or ""
-            message = detail.partition("\n")[0]
-            print(f"  - {entry['model']} [{entry['experiment']}]" + (f" — {message}" if message else ""))
+            message = " ".join(detail.partition("\n")[0].split())
+            print(f"  - {entry['model']} [{entry['experiment']}]" + (f" - {message}" if message else ""))
 
     tested_models = {entry["model"] for entry in tested}
     validated_models = {entry["model"] for entry in entries} - tested_models
@@ -437,6 +460,7 @@ async def capture(args: argparse.Namespace) -> int:
         except Exception as exc:
             details = "\n".join([str(exc), *getattr(exc, "__notes__", [])])
             entry.update(status="error", error=f"{type(exc).__name__}: {details}")
+            entry["error_details"] = exception_details(exc)
             if isinstance(exc, SeedMismatchError):
                 entry["error_kind"] = "seed_mismatch"
         finally:
@@ -446,6 +470,7 @@ async def capture(args: argparse.Namespace) -> int:
                 except Exception as exc:
                     entry["status"] = "error"
                     entry["close_error"] = str(exc)
+                    entry["close_error_details"] = exception_details(exc)
         if entry["status"] == "pending":
             entry["status"] = "ok"
         # No await between updating the entry and writing the shared manifest.
@@ -668,7 +693,7 @@ button { cursor: pointer; }
         for (model, display, experiment), images in sorted(groups.items()):
             images.sort(key=lambda image: image["step"] if isinstance(image["step"], int) else -1)
             name = Path(model).name
-            title = f"{name} — {display}" if display else name
+            title = f"{name} - {display}" if display else name
             stream.write(f"<section><h2>{escape(title)}</h2>\n")
             subtitle = f"{experiment} · {Path(model).parent}" if experiment else str(Path(model).parent)
             stream.write(f'<p class="model-path">{escape(subtitle)}</p>\n')
@@ -806,6 +831,47 @@ document.getElementById('close-zoom').addEventListener('click', () => zoom.close
 """)
 
 
+def capture_report_errors(
+    manifest: dict[str, Any], side: str, capture_name: str
+) -> list[dict[str, Any]]:
+    errors = []
+    for entry in manifest.get("models", []):
+        if entry.get("status") == "ok":
+            continue
+        detail = entry.get("error") or entry.get("close_error") or f"Capture status: {entry.get('status', 'unknown')}"
+        error = {"side": side, "capture": capture_name, "stage": "capture",
+                 "model": entry["model"], "experiment": entry["experiment"],
+                 "status": entry.get("status"), "message": detail.split("\n", 1)[0], "details": detail}
+        payload = entry.get("error_details") or entry.get("close_error_details")
+        if payload is None:
+            # Older capture manifests stored the server payload as a Python dictionary in an exception note.
+            for note in detail.splitlines():
+                start = note.find("{")
+                if start < 0:
+                    continue
+                try:
+                    candidate = ast.literal_eval(note[start:])
+                except (ValueError, SyntaxError):
+                    continue
+                if isinstance(candidate, dict) and "message" in candidate:
+                    payload = candidate
+                    break
+        if payload is not None:
+            error["details"] = payload
+            error["client_error"] = detail
+        if entry.get("close_error"):
+            error["close_error"] = entry["close_error"]
+        if entry.get("close_error_details"):
+            error["close_error_details"] = entry["close_error_details"]
+        if entry.get("error_kind"):
+            error["error_kind"] = entry["error_kind"]
+        errors.append(error)
+    if manifest["complete"] is not True and not errors:
+        errors.append({"side": side, "capture": capture_name, "stage": "capture",
+                       "message": "Incomplete capture manifest"})
+    return errors
+
+
 def compare(args: argparse.Namespace) -> int:
     base, candidate, output = (path.resolve() for path in (args.baseline, args.candidate, args.output))
     capture_names = (base.name, candidate.name) if base.name != candidate.name else (str(base), str(candidate))
@@ -814,29 +880,38 @@ def compare(args: argparse.Namespace) -> int:
             raise ValueError("The report directory must be separate from both inputs")
     before, after = png_tree(base), png_tree(candidate)
     new_output(output)
-    errors = []
+    errors: list[dict[str, Any]] = []
     display_names: dict[tuple[str, str, str], tuple[str, str]] = {}
     if not before and not after:
-        errors.append("Neither input contains PNGs")
-    for label, root in (("baseline", base), ("candidate", candidate)):
+        errors.append({"side": "comparison", "stage": "comparison", "message": "Neither input contains PNGs"})
+    for side, capture_name, root in (("a", capture_names[0], base), ("b", capture_names[1], candidate)):
         manifest = root / "capture.json"
         if manifest.is_file():
             try:
                 capture_manifest = json.loads(manifest.read_text(encoding="utf-8"))
-                if capture_manifest["complete"] is not True:
-                    errors.append(f"Incomplete {label} capture (see capture.json)")
+                errors.extend(capture_report_errors(capture_manifest, side, capture_name))
                 for entry in capture_manifest.get("models", []):
                     for display in entry["displays"]:
                         key = (entry["model"], experiment_folder(entry["experiment"]), display_folder(display))
                         display_names.setdefault(key, (entry["experiment"], display))
             except (OSError, ValueError, KeyError, TypeError) as exc:
-                errors.append(f"Invalid {label} capture manifest: {exc}")
+                errors.append({"side": side, "capture": capture_name, "stage": "manifest",
+                               "file": str(manifest), "message": str(exc)})
     def compare_image(key: str) -> dict[str, Any]:
-        row: dict[str, Any] = {"image": key}
+        row: dict[str, Any] = {"image": key, "errors": []}
+        images = []
+        for side, capture_name, index in (("a", capture_names[0], before), ("b", capture_names[1], after)):
+            try:
+                images.append(rgba(index[key]) if key in index else None)
+            except (OSError, ValueError, Image.DecompressionBombError) as exc:
+                images.append(None)
+                row["errors"].append({"side": side, "capture": capture_name, "stage": "read_image",
+                                      "file": key, "message": str(exc), "exception": type(exc).__name__})
+        left, right = images
         try:
-            left = rgba(before[key]) if key in before else None
-            right = rgba(after[key]) if key in after else None
-            if left is None:
+            if row["errors"]:
+                row["status"] = "error"
+            elif left is None:
                 row["status"] = "added"
             elif right is None:
                 row["status"] = "removed"
@@ -854,15 +929,23 @@ def compare(args: argparse.Namespace) -> int:
                 save_diff(output / diff, left, right, delta, args.channel_tolerance)
                 row["diff"] = diff.as_posix()
         except (OSError, ValueError, Image.DecompressionBombError) as exc:
-            row.update(status="error", error=str(exc))
+            row["status"] = "error"
+            row["errors"].append({"side": "comparison", "stage": "compare_image", "file": key,
+                                  "message": str(exc), "exception": type(exc).__name__})
         if row["status"] != "equal":
             for label, index in (("baseline", before), ("candidate", after)):
                 if key in index:
                     relative = Path(label) / key
                     destination = output / relative
                     destination.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(index[key], destination)
-                    row[label] = relative.as_posix()
+                    try:
+                        shutil.copyfile(index[key], destination)
+                        row[label] = relative.as_posix()
+                    except OSError as exc:
+                        side = "a" if label == "baseline" else "b"
+                        row["status"] = "error"
+                        row["errors"].append({"side": side, "capture": capture_names[0 if side == "a" else 1],
+                                              "stage": "copy_image", "file": key, "message": str(exc)})
         return row
 
     keys = sorted(before.keys() | after.keys())
@@ -886,7 +969,7 @@ def compare(args: argparse.Namespace) -> int:
     other_differences = []
     for row in rows:
         if row["status"] == "error":
-            errors.append(f"{row['image']}: {row['error']}")
+            errors.extend(row["errors"])
         if row["status"] not in {"changed", "size_changed"}:
             continue
         location = locations[row["image"]]
@@ -921,7 +1004,9 @@ def compare(args: argparse.Namespace) -> int:
     overview = f"{len(rows)} PNG(s), {totals}, {len(errors)} error(s)."
     lines = ["## GAMA visual comparison", "", overview, ""]
     # GitHub's job summary stays short. The artifact carries every path and all images.
-    lines.extend(f"- {error}" for error in errors)
+    lines.extend(f"- {error.get('capture', 'comparison')} · "
+                 f"{error.get('model', error.get('file', error['stage']))} · {error['message']}"
+                 for error in errors)
     github_summary = "\n".join(lines + ["", "See the `gama-visual-report` artifact for the full report.", ""])
     baseline_name, candidate_name = (escape(name).replace("|", "&#124;").replace("[", "&#91;")
                                      .replace("]", "&#93;") for name in capture_names)
