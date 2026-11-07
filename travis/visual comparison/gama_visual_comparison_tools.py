@@ -639,11 +639,14 @@ table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th, td { border: 1px solid #bbb; padding: .35rem; overflow-wrap: anywhere; }
 th { background: #eee; color: #111; }
 th:first-child { width: 4rem; }
+td:first-child { text-align: center; vertical-align: middle; }
 .preview img { display: block; width: 100%; height: auto; }
 dialog { width: 95vw; height: 95vh; max-width: 95vw; max-height: 95vh; padding: .75rem; box-sizing: border-box; }
+dialog[open] { display: flex; flex-direction: column; }
 dialog::backdrop { background: #0009; }
-.zoom-toolbar { display: flex; align-items: center; gap: .5rem; height: 2.5rem; }
-.zoom-viewport { overflow: auto; height: calc(100% - 2.5rem); cursor: grab; touch-action: none; }
+.zoom-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.zoom-caption { flex-basis: 100%; font-size: .85rem; overflow-wrap: anywhere; }
+.zoom-viewport { overflow: auto; flex: 1; min-height: 0; cursor: grab; touch-action: none; }
 .zoom-viewport:active { cursor: grabbing; }
 .zoom-content { display: flex; min-width: 100%; min-height: 100%; width: max-content; height: max-content; }
 .zoom-image { display: block; flex-shrink: 0; margin: auto; max-width: none; image-rendering: pixelated; }
@@ -682,8 +685,13 @@ button { cursor: pointer; }
 <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
 <button type="button" id="zoom-reset">100%</button>
 <button type="button" id="zoom-fit">Fit</button>
+<button type="button" id="image-left" aria-label="Previous capture or diff">←</button>
+<button type="button" id="image-right" aria-label="Next capture or diff">→</button>
+<button type="button" id="step-up" aria-label="Previous step">↑</button>
+<button type="button" id="step-down" aria-label="Next step">↓</button>
 <span>Mouse wheel to zoom · drag to move</span>
-<button type="button" id="close-zoom">Close</button></div>
+<button type="button" id="close-zoom">Close</button>
+<output class="zoom-caption" id="zoom-caption"></output></div>
 <div class="zoom-viewport" id="zoom-viewport">
 <div class="zoom-content"><img class="zoom-image" id="zoom-image" alt="" draggable="false"></div></div></dialog>
 <script>
@@ -692,6 +700,10 @@ const zoomImage = document.getElementById('zoom-image');
 const viewport = document.getElementById('zoom-viewport');
 let scale = 1;
 let drag = null;
+let previewRows = [];
+let previewRow = 0;
+let previewColumn = 0;
+let imageScale = 1;
 function setScale(value, x = viewport.clientWidth / 2, y = viewport.clientHeight / 2) {
     const next = Math.max(0.1, Math.min(16, value));
     const ratio = next / scale;
@@ -706,15 +718,15 @@ function setScale(value, x = viewport.clientWidth / 2, y = viewport.clientHeight
     viewport.scrollLeft = left + Math.max(0, (viewport.clientWidth - zoomImage.naturalWidth * scale) / 2);
     viewport.scrollTop = top + Math.max(0, (viewport.clientHeight - zoomImage.naturalHeight * scale) / 2);
 }
-function centerImage() {
-    setScale(1);
+function centerImage(value = 1) {
+    setScale(value);
     viewport.scrollTo((viewport.scrollWidth - viewport.clientWidth) / 2,
                       (viewport.scrollHeight - viewport.clientHeight) / 2);
 }
-zoomImage.addEventListener('load', centerImage);
+zoomImage.addEventListener('load', () => centerImage(imageScale));
 document.getElementById('zoom-in').addEventListener('click', () => setScale(scale * 1.25));
 document.getElementById('zoom-out').addEventListener('click', () => setScale(scale / 1.25));
-document.getElementById('zoom-reset').addEventListener('click', centerImage);
+document.getElementById('zoom-reset').addEventListener('click', () => centerImage());
 document.getElementById('zoom-fit').addEventListener('click', () => {
     setScale(Math.min(viewport.clientWidth / zoomImage.naturalWidth,
                       viewport.clientHeight / zoomImage.naturalHeight));
@@ -736,16 +748,50 @@ viewport.addEventListener('pointermove', event => {
     viewport.scrollTop = drag.top - (event.clientY - drag.y);
 });
 viewport.addEventListener('lostpointercapture', () => { drag = null; });
+function showPreview() {
+    const preview = previewRows[previewRow][previewColumn];
+    const row = preview.closest('tr');
+    const title = preview.closest('section').querySelector('h2').textContent;
+    zoomImage.src = preview.href;
+    zoomImage.alt = preview.querySelector('img').alt;
+    document.getElementById('zoom-caption').textContent =
+        title + ' · Step ' + row.cells[0].textContent.trim() + ' · ' + zoomImage.alt;
+    document.getElementById('image-left').disabled = previewColumn === 0;
+    document.getElementById('image-right').disabled = previewColumn === 2;
+    document.getElementById('step-up').disabled = previewRow === 0;
+    document.getElementById('step-down').disabled = previewRow === previewRows.length - 1;
+    if (zoomImage.complete && zoomImage.naturalWidth) centerImage(imageScale);
+}
+function movePreview(rows, columns) {
+    previewRow = Math.max(0, Math.min(previewRows.length - 1, previewRow + rows));
+    previewColumn = Math.max(0, Math.min(2, previewColumn + columns));
+    imageScale = scale;
+    showPreview();
+}
+document.getElementById('image-left').addEventListener('click', () => movePreview(0, -1));
+document.getElementById('image-right').addEventListener('click', () => movePreview(0, 1));
+document.getElementById('step-up').addEventListener('click', () => movePreview(-1, 0));
+document.getElementById('step-down').addEventListener('click', () => movePreview(1, 0));
+document.addEventListener('keydown', event => {
+    if (!zoom.open || event.ctrlKey || event.altKey || event.metaKey) return;
+    const moves = {ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0]};
+    const move = moves[event.key];
+    if (move) {
+        event.preventDefault();
+        movePreview(...move);
+    }
+});
 document.addEventListener('click', event => {
     const preview = event.target.closest('a.preview');
     if (preview) {
         event.preventDefault();
-        zoomImage.src = preview.href;
-        zoomImage.alt = preview.querySelector('img').alt;
+        previewRows = Array.from(preview.closest('section').querySelectorAll('tbody tr'),
+                                 row => Array.from(row.querySelectorAll('a.preview')));
+        previewRow = previewRows.findIndex(row => row.includes(preview));
+        previewColumn = previewRows[previewRow].indexOf(preview);
+        imageScale = 1;
         zoom.showModal();
-        if (zoomImage.complete && zoomImage.naturalWidth) {
-            centerImage();
-        }
+        showPreview();
     }
     const collapse = event.target.closest('button.collapse');
     if (collapse) {
