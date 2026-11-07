@@ -17,18 +17,31 @@ global {
 species particle skills: [moving] {
 	reflex move { do wander(speed: 2.0, amplitude: 90.0); }
 	aspect default {
-		draw circle(0.8) color: #teal border: nil;
+		draw circle(0.8) color: #teal border: false;
 	}
 }
 
 experiment "Simulation toolbar in the display" type: gui {
 	float minimum_cycle_duration <- 0.1;
-	image play_pause_icon <- image(svg_file("../images/ui-toolbar/play-pause.svg"));
-	image step_icon <- image(svg_file("../images/ui-toolbar/step.svg"));
-	image duration_icon <- image(svg_file("../images/ui-toolbar/duration.svg"));
-	image sync_icon <- image(svg_file("../images/ui-toolbar/sync.svg"));
-	image reload_icon <- image(svg_file("../images/ui-toolbar/reload.svg"));
-	image stop_icon <- image(svg_file("../images/ui-toolbar/stop.svg"));
+
+	image pause_icon <- image(svg_file("../images/ui-toolbar/experiment.pause.svg"), 32,32);
+	image pause_icon_hover <- pause_icon * #lightgray;
+
+	image reload_icon <- image(svg_file("../images/ui-toolbar/experiment.reload.svg"), 32,32);
+	image reload_icon_hover <- reload_icon * #lightgray;
+
+	image run_icon <- image(svg_file("../images/ui-toolbar/experiment.run.svg"), 32,32);
+	image run_icon_hover <- run_icon * #lightgray;
+
+	image step_icon <- image(svg_file("../images/ui-toolbar/experiment.step.svg"), 32,32);
+	image step_icon_hover <- step_icon * #lightgray;
+
+	image stop_icon <- image(svg_file("../images/ui-toolbar/experiment.stop.svg"), 32,32);
+	image stop_icon_hover <- stop_icon * #lightgray;
+
+	image sync_icon <- image(svg_file("../images/ui-toolbar/experiment.sync.svg"), 32,32);
+	image sync_icon_hover <- sync_icon * #lightgray;
+
 	output {
 		display "Native experiment controls" type: java2D background: #white {
 			species particle;
@@ -37,19 +50,19 @@ experiment "Simulation toolbar in the display" type: gui {
 				draw "Experiment toolbar" at: {16, 12} anchor: #top_left
 					color: #black font: font("Helvetica", 18, #bold);
 				// Image-only buttons: no automatic text, background or border.
-				ui_button "Play / Pause" command: "play_pause"
-					at: {16, 48} size: {64, 32} image: play_pause_icon;
+				ui_button "Play / Pause" value: !paused
+					at: {16, 48} size: {32, 32} toggle: true image: run_icon image_hover: run_icon_hover image_pressed: pause_icon {paused <- false;}
 				ui_button "Step" command: "step"
-					at: {104, 48} size: {32, 32} image: step_icon;
+					at: {104, 48} size: {32, 32} image: step_icon image_hover: step_icon_hover;
 				ui_button "Sync / async" command: "sync"
-					at: {176, 48} size: {32, 32} image: sync_icon;
+					at: {176, 48} size: {32, 32} image: sync_icon image_hover: sync_icon_hover;
 				ui_button "Reload" command: "reload"
-					at: {260, 48} size: {32, 32} image: reload_icon;
+					at: {260, 48} size: {32, 32} image: reload_icon image_hover: reload_icon_hover;
 				ui_button "Stop" command: "stop"
-					at: {348, 48} size: {32, 32} image: stop_icon;
+					at: {348, 48} size: {32, 32} image: stop_icon image_hover: stop_icon_hover;
 				draw "Play/Pause        Step       Sync/async      Reload          Stop"
 					at: {16, 86} anchor: #top_left color: #black font: font("Helvetica", 11);
-				draw duration_icon at: {16, 115} size: {28, 28};
+				//draw duration_icon at: {16, 115} size: {28, 28};
 				ui_slider "Minimum cycle duration (s)" var: minimum_cycle_duration
 					min: 0.0 max: 1.0 step: 0.05 at: {56, 108} size: {348, 44}
 					accent: #teal font: font("Helvetica", 12);

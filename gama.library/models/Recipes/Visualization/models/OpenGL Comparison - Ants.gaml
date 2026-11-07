@@ -7,7 +7,8 @@
 */
 model opengl_ants_comparison
 
-import "../../../../Demos/Ants (Foraging and Sorting)/models/Ant Foraging.gaml"
+import "../../Ants (Foraging and Sorting)/models/Ant Foraging.gaml"
+
 
 experiment "1 - Classic comparison" type: gui parent: Classic {
     text "Purpose: compare the original Ant Foraging scene with exactly the same agents in OpenGL4.<br/>Try: run, enable icons and state labels, then compare equal-sized views at the same zoom.<br/>Expected: terrain, signal patches, ant locations and icon sizes agree. Each camera remains independent; displayed FPS is not a fair benchmark with both renderers active." category: "What to compare";
