@@ -593,7 +593,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the pixel width and height of world
 	 */
-	public double[] getPixelWidthAndHeightOfWorld() {
+	public synchronized double[] getPixelWidthAndHeightOfWorld() {
 		final double[] coord = new double[4];
 		glu.gluProject(getWorldWidth(), 0, 0, mvmatrix, 0, projmatrix, 0, viewport, 0, coord, 0);
 		return coord;

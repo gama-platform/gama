@@ -607,17 +607,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 	@Override
 	public final double getWidth() {
-		// DEBUG.OUT(
-		// "Result of getWidth: "
-		// + PlatformHelper.autoScaleDown(canvas.getSurfaceWidth()) * (float) surface.getZoomLevel(),
-		// false);
-		// DEBUG.OUT(" -- Canvas surface width " + canvas.getSurfaceWidth(), false);
-		// DEBUG.OUT("Canvas size " + canvas.getSize().x, false);
-		// DEBUG.OUT(" -- Width of world in pixels computed by OpenGL " + openGL.getPixelWidthAndHeightOfWorld()[0]);
-		// return canvas.getSize().x * surface.getZoomLevel();
-		return openGL.getPixelWidthAndHeightOfWorld()[0] * (float) surface.getZoomLevel();
-		// return PlatformHelper.autoScaleDown(canvas.getSurfaceWidth()) *
-		// PlatformHelper.autoScaleDown(canvas.getSurfaceWidth()) * (float) surface.getZoomLevel();
+		return getEnvWidth() * getWorldLayoutScale();
+	}
+
+	private double getWorldLayoutScale() {
+		// Layout uses the fitted world rectangle, not a camera-projected point that can cross behind the eye.
+		return Math.min(getViewWidth() / getEnvWidth(), getViewHeight() / getEnvHeight()) * surface.getZoomLevel();
 	}
 
 	/*
@@ -627,8 +622,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 	@Override
 	public final double getHeight() {
-		return openGL.getPixelWidthAndHeightOfWorld()[1] * (float) surface.getZoomLevel();
-		// return canvas.getSurfaceHeight() * surface.getZoomLevel();
+		return getEnvHeight() * getWorldLayoutScale();
 	}
 
 	/*

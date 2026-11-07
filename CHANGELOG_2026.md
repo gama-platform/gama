@@ -33,6 +33,9 @@ in logical pixels. The old `#mouse_world_location` and `#mouse_screen_location` 
 All aliases retain the originating mouse-event snapshot behavior.
 Both OpenGL backends convert native mouse-event pixels to logical viewport pixels using the actual native
 surface scale, fixing undersized overlay hit areas on HiDPI displays. Camera picking retains physical pixels.
+World-layer layout uses non-negative fitted viewport dimensions scaled by zoom instead of a camera-projected
+point, preventing valid layer sizes from becoming negative during camera movement. Camera-matrix reads used
+for projected world coordinates are synchronized with updates in both OpenGL backends.
 
 **Migration:** review dimension expressions that relied on zoom-dependent world extents. Use viewport mouse
 coordinates with viewport dimensions, and world mouse coordinates with world geometry; point arithmetic does

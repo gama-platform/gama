@@ -199,6 +199,11 @@ An omitted size covers the environment's world extent. Spatial contents retain
 their normal model coordinates, camera transforms and renderer-specific 3D
 behavior. An explicitly world-positioned overlay is a spatial graphics layer:
 unlike a traditional overlay, it follows the world camera.
+For both OpenGL backends, the bookkeeping pixel rectangle uses the world's
+aspect-ratio fit within the logical viewport, multiplied by `#zoom`. It is not
+the projected bounding box of the visible scene: panning and camera rotation
+do not make its dimensions negative. The drawings themselves still follow
+the camera projection.
 
 ## Placement versus contents
 
