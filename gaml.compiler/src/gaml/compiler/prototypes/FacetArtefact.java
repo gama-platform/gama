@@ -58,6 +58,8 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	/** The values. */
 	private final Set<String> values;
 
+	private final Set<String> specificTo, excludes, requires;
+
 	/** The owner. */
 	private String owner;
 
@@ -89,7 +91,17 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	 */
 	public FacetArtefact(final String name, final int[] types, final int ct, final int kt, final String[] values,
 			final boolean optional, final boolean internal, final boolean isRemote, final boolean declaresNewTemp) {
+		this(name, types, ct, kt, values, optional, internal, isRemote, declaresNewTemp,
+				new String[0], new String[0], new String[0]);
+	}
+
+	public FacetArtefact(final String name, final int[] types, final int ct, final int kt, final String[] values,
+			final boolean optional, final boolean internal, final boolean isRemote, final boolean declaresNewTemp,
+			final String[] specificTo, final String[] excludes, final String[] requires) {
 		this.name = name;
+		this.specificTo = ImmutableSet.copyOf(specificTo);
+		this.excludes = ImmutableSet.copyOf(excludes);
+		this.requires = ImmutableSet.copyOf(requires);
 		this.typesDescribers = types;
 		isNewTemp = declaresNewTemp;
 		this.types = new IType[types.length];
@@ -105,6 +117,15 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 		isId = isLabel && types[0] != IType.LABEL;
 		this.values = values.length == 0 ? null : ImmutableSet.copyOf(values);
 	}
+
+	@Override
+	public Set<String> getSpecificTo() { return specificTo; }
+
+	@Override
+	public Set<String> getExcludes() { return excludes; }
+
+	@Override
+	public Set<String> getRequires() { return requires; }
 
 	/**
 	 * Checks if is label.
@@ -194,6 +215,9 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 		if (values != null && values.size() > 0) {
 			sb.append(", takes values in ").append(values.toString()).append(". ");
 		}
+		if (!specificTo.isEmpty()) sb.append("; applies to ").append(String.join(", ", specificTo));
+		if (!excludes.isEmpty()) sb.append("; excludes ").append(String.join(", ", excludes));
+		if (!requires.isEmpty()) sb.append("; requires ").append(String.join(", ", requires));
 		if (getMainDoc() != null && getMainDoc().length() > 0) { sb.append(" - ").append(getMainDoc()); }
 		if (getDeprecated() != null) {
 			sb.append(" <b>[");

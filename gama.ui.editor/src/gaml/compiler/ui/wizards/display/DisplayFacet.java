@@ -73,7 +73,7 @@ public record DisplayFacet(String name, String type, boolean flag, boolean requi
 		var registered = ArtefactRegistry.getStatementArtefact(keyword);
 		List<DisplayFacet> result = new ArrayList<>();
 		if (registered != null) {
-			registered.getPossibleFacets().forEach((name, facet) -> {
+			registered.getPossibleFacets(keyword).forEach((name, facet) -> {
 				if (!facet.isInternal()) {
 					var types = facet.getTypes();
 					result.add(new DisplayFacet(name, String.join(" or ",
@@ -85,7 +85,8 @@ public record DisplayFacet(String name, String type, boolean flag, boolean requi
 		} else {
 			Class<?> declaration = DECLARATIONS.get(keyword);
 			if (declaration == null) return List.of();
-			for (var facet : declaration.getAnnotation(facets.class).value()) if (!facet.internal())
+			for (var facet : declaration.getAnnotation(facets.class).value()) if (!facet.internal()
+					&& (facet.specific_to().length == 0 || Arrays.asList(facet.specific_to()).contains(keyword)))
 				result.add(new DisplayFacet(facet.name(),
 						String.join(" or ", Arrays.stream(facet.type()).mapToObj(DisplayFacet::typeName).toList()),
 						facet.type().length == 1 && facet.type()[0] == IType.BOOL, !facet.optional(),

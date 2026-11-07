@@ -137,6 +137,7 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 		}
 
 		final facets facets = e.getAnnotation(facets.class);
+		if (facets != null) { validateConstraints(e, symbol, facets); }
 		final String omissible = processFacets(sb, e, facets, constants);
 
 		sb.append(',').append(toJavaString(omissible)).append(',').append("(x)->new ").append(clazz).append("(x)");
@@ -145,6 +146,38 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 		if (constants.length() > 0) {
 			constants.setLength(constants.length() - 1);
 			sb.append(ln).append("_constants(").append(constants).append(");");
+		}
+	}
+
+	private void validateConstraints(final Element e, final symbol symbol, final facets facets) {
+		final Set<String> keywords = new HashSet<>(java.util.Arrays.asList(symbol.name()));
+		final java.util.Map<String, facet> byName = new java.util.HashMap<>();
+		for (final facet f : facets.value()) { byName.put(f.name(), f); }
+		for (final facet f : facets.value()) {
+			for (final String keyword : f.specific_to()) {
+				if (!keywords.contains(keyword))
+					context.emitError("Unknown specific_to keyword '" + keyword + "' for facet '" + f.name() + "'", e);
+			}
+			for (final String other : f.excludes()) {
+				if (!byName.containsKey(other) || other.equals(f.name()))
+					context.emitError("Invalid excluded facet '" + other + "' for facet '" + f.name() + "'", e);
+			}
+			for (final String other : f.requires()) {
+				final facet required = byName.get(other);
+				if (required == null || other.equals(f.name())) {
+					context.emitError("Invalid required facet '" + other + "' for facet '" + f.name() + "'", e);
+				} else {
+					if (java.util.Arrays.asList(f.excludes()).contains(other)
+							|| java.util.Arrays.asList(required.excludes()).contains(f.name()))
+						context.emitError("Facet '" + f.name() + "' both requires and excludes '" + other + "'", e);
+					for (final String keyword : keywords) {
+						if ((f.specific_to().length == 0 || java.util.Arrays.asList(f.specific_to()).contains(keyword))
+								&& required.specific_to().length != 0
+								&& !java.util.Arrays.asList(required.specific_to()).contains(keyword))
+							context.emitError("Required facet '" + other + "' is unavailable on '" + keyword + "'", e);
+					}
+				}
+			}
 		}
 	}
 
@@ -200,7 +233,7 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 
 			if (i > 0) { sb.append(','); }
 
-			processFacet(sb, e, child, constants);
+			processFacet(sb, e, child, facets, constants);
 		}
 		sb.append(')');
 		return omissible;
@@ -230,7 +263,7 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 	 * @param constants
 	 *            the StringBuilder for collecting constant definitions from facet values
 	 */
-	private void processFacet(final StringBuilder sb, final Element e, final facet child,
+	private void processFacet(final StringBuilder sb, final Element e, final facet child, final facets owner,
 			final StringBuilder constants) {
 		final String fName = child.name();
 		if (child.declares_new_temp()) {
@@ -254,7 +287,14 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 
 		toArrayOfStrings(values, sb).append(',').append(toBoolean(child.optional())).append(',')
 				.append(toBoolean(child.internal())).append(',').append(toBoolean(child.remote_context())).append(',')
-				.append(toBoolean(child.declares_new_temp()));
+				.append(toBoolean(child.declares_new_temp())).append(',');
+		toArrayOfStrings(child.specific_to(), sb).append(',');
+		final Set<String> exclusions = new java.util.LinkedHashSet<>(java.util.Arrays.asList(child.excludes()));
+		for (final facet peer : owner.value()) {
+			if (java.util.Arrays.asList(peer.excludes()).contains(fName)) exclusions.add(peer.name());
+		}
+		toArrayOfStrings(exclusions.toArray(new String[0]), sb).append(',');
+		toArrayOfStrings(child.requires(), sb);
 
 		verifyDoc(e, "facet " + child.name(), child);
 		sb.append(')');

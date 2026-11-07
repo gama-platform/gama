@@ -145,9 +145,10 @@ import gama.api.types.geometry.IPoint;
 						doc = @doc ("An expression that will be evaluated each cycle to compute a new value for the attribute")),
 				@facet (
 						name = IKeyword.FUNCTION,
+						excludes = { IKeyword.INIT, IKeyword.UPDATE, IKeyword.ON_CHANGE },
 						type = { IType.INT, IType.FLOAT, IType.POINT, IType.DATE },
 						optional = true,
-						doc = @doc ("Used to specify an expression that will be evaluated each time the attribute is accessed. Equivalent to '->'. This facet is incompatible with both 'init:' and 'update:'")),
+						doc = @doc ("Used to specify an expression that will be evaluated each time the attribute is accessed. Equivalent to '->'. This facet is incompatible with 'init:', 'update:' and 'on_change:'")),
 				@facet (
 						name = "->",
 						internal = true,

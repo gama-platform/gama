@@ -9,6 +9,16 @@ import java.lang.annotation.RetentionPolicy;
 /**
  *
  * The class facet. Describes a facet in a list of facets
+ * <p>
+ * Structural constraints operate on normalized facet names: assignment shorthands such as {@code <-} and {@code ->}
+ * are checked as {@code init} and {@code function}. A restriction applies to the actual keyword, not the first alias
+ * declared by the symbol. Built-in descriptions are exempt from structural diagnostics. Value-, type- and
+ * enclosing-context-dependent rules remain the responsibility of custom validators.
+ * </p>
+ * <pre>{@code
+ * @facet(name = "cell_width", type = IType.FLOAT, optional = true,
+ *        specific_to = "grid", excludes = "width", requires = "cell_height")
+ * }</pre>
  *
  * @see facets
  * @author drogoul
@@ -86,6 +96,24 @@ public @interface facet {
 	 * @return whether this facet is for internal use only.
 	 */
 	boolean internal() default false;
+
+	/**
+	 * Statement keywords on which this facet applies. Empty means all keywords of the declaring symbol.
+	 * Inapplicable facets are omitted from reference documentation and produce a validation warning.
+	 */
+	String[] specific_to() default {};
+
+	/**
+	 * Facets that cannot be supplied together with this facet. Exclusions are symmetric and report errors.
+	 * Presence, including an explicit false or nil value, triggers the constraint.
+	 */
+	String[] excludes() default {};
+
+	/**
+	 * Facets that must all be supplied when this facet is supplied. Requirements are directional and report errors.
+	 * Declare reciprocal requirements for facets that must occur together.
+	 */
+	String[] requires() default {};
 
 	/**
 	 * Doc.

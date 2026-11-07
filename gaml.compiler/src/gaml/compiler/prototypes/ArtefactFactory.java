@@ -129,4 +129,12 @@ public class ArtefactFactory implements IArtefactFactory {
 		return new FacetArtefact(name, types, ct, kt, values, optional, internal, isRemote, declaresNewTemp);
 	}
 
+	@Override
+	public IArtefact.Facet createFacetArtefact(final String name, final int[] types, final int ct, final int kt,
+			final String[] values, final boolean optional, final boolean internal, final boolean isRemote,
+			final boolean declaresNewTemp, final String[] specificTo, final String[] excludes, final String[] requires) {
+		return new FacetArtefact(name, types, ct, kt, values, optional, internal, isRemote, declaresNewTemp,
+				specificTo, excludes, requires);
+	}
+
 }

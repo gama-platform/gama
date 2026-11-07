@@ -502,6 +502,13 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 				declaresNewTemp);
 	}
 
+	protected IArtefact.Facet _facet(final String name, final int[] types, final int ct, final int kt,
+			final String[] values, final boolean optional, final boolean internal, final boolean isRemote,
+			final boolean declaresNewTemp, final String[] specificTo, final String[] excludes, final String[] requires) {
+		return GAML.getArtefactFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal, isRemote,
+				declaresNewTemp, specificTo, excludes, requires);
+	}
+
 	/**
 	 * Field.
 	 *

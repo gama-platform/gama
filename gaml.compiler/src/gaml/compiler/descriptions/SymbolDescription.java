@@ -1113,7 +1113,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 * @return the documentation object
 	 */
 	@Override
-	public IGamlDocumentation getDocumentation() { return getArtefact().getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return getArtefact().getDocumentation(getKeyword()); }
 
 	/**
 	 * Gets the plugin that defined this symbol.
@@ -1258,9 +1258,11 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 		// Special case for "do", which can accept (at parsing time) any facet
 		final boolean isDo = isInvocation();
 		final boolean isBuiltIn = isBuiltIn();
+		if (!isBuiltIn && !validateFacetConstraints()) return false;
 		final List<String> mandatory = artefact.getMandatoryFacets();
 		if (mandatory != null) {
 			for (final String facet : mandatory) {
+				if (!isBuiltIn && !artefact.getFacet(facet).appliesTo(getKeyword())) continue;
 				if (!hasFacets() || !facets.containsKey(facet)) {
 					error("Missing facet " + facet, IGamlIssue.MISSING_FACET, getUnderlyingElement(), facet, "nil");
 					return false;
@@ -1301,6 +1303,38 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 			return true;
 		});
 
+	}
+
+	private boolean validateFacetConstraints() {
+		final Set<String> conflicts = new java.util.HashSet<>();
+		final boolean[] valid = { true };
+		visitFacets((name, expr) -> {
+			final IArtefact.Facet facet = artefact.getFacet(name);
+			if (facet == null || facet.isInternal()) return true;
+			if (!facet.appliesTo(getKeyword())) {
+				warning("Facet '" + name + "' only applies to " + String.join(", ", facet.getSpecificTo()),
+						IGamlIssue.WRONG_CONTEXT, name);
+			}
+			for (final String other : facet.getExcludes()) {
+				final IArtefact.Facet peer = artefact.getFacet(other);
+				if (!hasFacet(other) || peer == null) continue;
+				final String pair = name.compareTo(other) < 0 ? name + ":" + other : other + ":" + name;
+				if (conflicts.add(pair)) {
+					error("Facets '" + name + "' and '" + other + "' cannot be defined together",
+							IGamlIssue.CONFLICTING_FACETS, name, other);
+					valid[0] = false;
+				}
+			}
+			for (final String required : facet.getRequires()) {
+				if (!hasFacet(required)) {
+					error("Facet '" + name + "' requires facet '" + required + "'", IGamlIssue.MISSING_FACET,
+							name, required, "nil");
+					valid[0] = false;
+				}
+			}
+			return true;
+		});
+		return valid[0];
 	}
 
 	/**
