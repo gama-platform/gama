@@ -82,7 +82,7 @@ global {
 			do report(phase: "RESULT");
 			if load_level = last_level {
 				finished <- true;
-				do pause();
+				experiment.pause();
 			} else {
 				load_level <- load_level + 1;
 				stage_started_cycle <- cycle;

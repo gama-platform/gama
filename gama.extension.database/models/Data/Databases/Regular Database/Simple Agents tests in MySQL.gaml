@@ -31,7 +31,7 @@ global {
 				do close();
 			}
 
-			do pause();
+			experiment.pause();
 		} else {
 			write "  with parameters: " + first(DB_Accessor).getParameter();
 			write "";		

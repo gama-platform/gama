@@ -19,9 +19,9 @@ global {
 	action toggle() {
 		ask experiment {
 			if status = "PAUSED" {
-				do play;
+				do play();
 			} else {
-				do pause;
+				do pause();
 			}
 		}
 	}

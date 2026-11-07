@@ -79,7 +79,7 @@ global {
 		}
 	}
 	reflex end_sim when: (cycle > 300) and empty(pedestrian) {
-		do pause();
+		experiment.pause();
 	}
 }
 

@@ -51,7 +51,7 @@ global {
 	}
 	
 	reflex stop_simulation when: ((nb_preys = 0) or (nb_predators = 0)) and !is_batch {
-		do pause();
+		experiment.pause();
 	} 
 }
 

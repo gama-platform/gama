@@ -65,7 +65,7 @@ global
 	}
 	
 	reflex pauseAtConvergence when: converged { 
-		do pause();
+		experiment.pause();
 	}
 	
 	reflex assign_points_to_centroid when: even(cycle)

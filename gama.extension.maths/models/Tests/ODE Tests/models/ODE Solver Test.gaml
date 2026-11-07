@@ -103,7 +103,7 @@ global{
 		write "Error from RK4 solver with different step size: " + rk4_stepsize_err;
 		write "Error from DP solver: " + dp_err;
 		write "Error from split system solver: " + split_err;
-		do pause();
+		experiment.pause();
 	}		
 }
 

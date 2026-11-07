@@ -44,7 +44,7 @@ global {
 //		}
 //
 //		write "DROP the table = " + res_DB;
-		do pause(); 
+		experiment.pause(); 
 	}
 
 }
@@ -82,7 +82,7 @@ species DB_accessor skills: [sql] {
 		if (!testConnection(PARAMS)) {
 			write "Connection impossible";
 			ask (world) {
-				do pause();
+				experiment.pause();
 			}
 
 		} else {

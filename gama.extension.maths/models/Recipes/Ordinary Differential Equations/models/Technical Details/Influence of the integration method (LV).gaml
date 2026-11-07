@@ -61,7 +61,7 @@ species LVEuler {
 	
 	
 	reflex end_simulation when: cycle > 126{
-		ask world{do pause();}
+		ask world{experiment.pause();}
 	}
 
 }

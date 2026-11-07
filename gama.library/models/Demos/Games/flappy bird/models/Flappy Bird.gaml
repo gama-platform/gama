@@ -217,12 +217,9 @@ experiment main {
 			
 			event " " {
 				if not has_started {
-					ask simulation {
-						do resume();
-						myself.has_started <- true;
-						}
-				
-					}
+					do resume();
+					has_started <- true;
+				}
 				ask bird {impulsion <- true;
 					
 				}

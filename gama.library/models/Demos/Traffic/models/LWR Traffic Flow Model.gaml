@@ -126,7 +126,7 @@ global {
 	// When there is less than one car left on the road, the simulation stops.
 	
 	reflex stop_simulation when: sum(section collect each.current_concentration) < 1.0 {
-		do pause();
+		experiment.pause();
 	}
 }
 

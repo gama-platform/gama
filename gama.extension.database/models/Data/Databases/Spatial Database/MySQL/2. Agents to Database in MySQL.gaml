@@ -43,7 +43,7 @@ global {
 				data: dataframe_with(["name", "type", "geom"], buildings collect [each.name, each.type, each.shape]));
 		}
 		write "" + length(bounds) + " bound(s) and " + length(buildings) + " building(s) saved to the database.";
-		do pause();
+		experiment.pause();
 	}
 }
 

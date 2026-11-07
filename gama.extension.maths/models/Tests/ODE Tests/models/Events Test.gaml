@@ -101,7 +101,7 @@ global{
 	
 	reflex endSim when:  (cycle >= final_cycle) {
 		write "Distance between the split system\nand the regular system: "+error;		
-		do pause();
+		experiment.pause();
 	}		
 }
 

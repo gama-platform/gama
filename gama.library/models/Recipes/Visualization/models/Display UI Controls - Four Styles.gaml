@@ -64,7 +64,7 @@ species particle skills: [moving] {
 		if show_trails and length(trail) > 1 {
 			draw polyline(trail) color: accent_color with_alpha 0.3;
 		}
-		draw circle(0.7) color: accent_color border: nil;
+		draw circle(0.7) color: accent_color;
 	}
 }
 

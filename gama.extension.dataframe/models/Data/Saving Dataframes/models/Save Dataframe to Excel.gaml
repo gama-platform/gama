@@ -34,7 +34,7 @@ global {
 		// A map of dataframes is saved as a multi-sheet workbook (keys become sheet names)
 		save map("Bugs"::bugs, "Stats"::stats) to: stats_path format: "xlsx";
 		write "Saving all bugs and their stats in one xlsx file (" + stats_path + ")";
-		do pause();
+		experiment.pause();
 	}
 }
 

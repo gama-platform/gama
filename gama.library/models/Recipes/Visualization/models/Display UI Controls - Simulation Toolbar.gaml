@@ -61,7 +61,7 @@ experiment "Simulation toolbar in the display" type: gui {
 				// Image-only buttons: no automatic text, background or border.
 				ui_button "Play / Pause" at: {16, y_of_controls} size: {32, 32} toggle: true value: !is_paused
 					image: run_icon image_pressed: pause_icon {
-					if is_paused { do play(); } else { do pause(); }
+					if is_paused { do play(); } else { experiment.pause(); }
 				}
 				draw is_paused ? "Play" : "Pause" at: {32, y_of_texts} anchor: #top_center color: #adaptive;
 				

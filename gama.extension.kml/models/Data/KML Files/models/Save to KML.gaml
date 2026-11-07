@@ -46,7 +46,7 @@ global {
 		
 		// export the kml to a kmz/kml file
 		save kml_export to:"../results/result.kmz";
-		do pause();
+		experiment.pause();
 	}
 }
 species bug skills: [moving]{

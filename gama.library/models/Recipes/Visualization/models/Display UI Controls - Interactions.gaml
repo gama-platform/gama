@@ -50,7 +50,7 @@ species particle skills: [moving] {
 		do wander(speed: motion_speed, amplitude: 90.0);
 	}
 	aspect default {
-		draw circle(0.7) color: button_accent border: nil;
+		draw circle(0.7) color: button_accent;
 	}
 }
 

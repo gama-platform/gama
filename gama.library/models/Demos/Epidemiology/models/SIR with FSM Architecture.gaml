@@ -28,7 +28,7 @@ global {
 	}
 	
 	reflex should_stop when: people count (each.state = 'I') = 0 {
-		do pause();
+		experiment.pause();
 	}
 }
 

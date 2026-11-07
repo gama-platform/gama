@@ -26,7 +26,7 @@ global {
 	}
 	
 	reflex stop when:length(gold)=0{
-		do pause();
+		experiment.pause();
 	}
 }
 

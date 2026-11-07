@@ -139,7 +139,7 @@ global schedules: people_ordered{
 	}
 	
 	reflex end_sim when:  empty(people) or  time > 15000{
-		do pause();
+		experiment.pause();
 	}
 
 }

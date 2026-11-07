@@ -36,7 +36,7 @@ global{
 	}
 	
 	reflex pausing when: cycle=history_size-2{
-		do pause();
+		experiment.pause();
 	}
 	
 	reflex run_automaton {

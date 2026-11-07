@@ -14,7 +14,7 @@ global {
     font shared_font <- font("SansSerif", 16);
     field heights <- field(matrix([[0, 1, 2, 1, 0], [1, 4, 6, 4, 1],
         [2, 6, 10, 6, 2], [1, 4, 6, 4, 1], [0, 1, 2, 1, 0]]));
-    float signal <- 50 update: 50 + 30 * sin(cycle * 3);
+    float signal <- 50.0 update: 50 + 30 * sin(cycle * 3);
 
     init {
         create marker number: 12;
