@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base {
 	
 	output {
 		layout #split parameters: false consoles: false;
-		display Ants antialias: false type: opengl4 axes: false map_order: true{
+		display Ants antialias: false type: opengl axes: false map_order: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;

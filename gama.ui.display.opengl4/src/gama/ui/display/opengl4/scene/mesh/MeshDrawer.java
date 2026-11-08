@@ -621,9 +621,14 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 	}
 
 	private void drawFieldFallbackPass(final boolean outline) {
+		final int batchVertices = 4096 * 3;
 		gl.beginDrawing(GL.GL_TRIANGLES);
 		try {
 			for (var index = 0; index < indexBuffer.limit(); index++) {
+				if (index > 0 && index % batchVertices == 0) {
+					gl.endDrawing();
+					gl.beginDrawing(GL.GL_TRIANGLES);
+				}
 				var i = indexBuffer.get(index);
 				int one = i * 3, two = one + 1, three = one + 2;
 				if (outline) {

@@ -36,6 +36,11 @@ it remains cached between those transitions. See the
 [display-layer guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#static-layers-and-visibility)
 for an example and details.
 
+Both OpenGL backends now wait for a visible, initialized viewport before building
+the first scene, rather than rebuilding all static layers immediately afterward.
+Random expressions in static aspects are therefore not re-evaluated by that
+startup redraw.
+
 ### OpenGL FPS overlay shutdown
 
 Both OpenGL renderers read FPS through the canvas using a single animator-reference
@@ -49,6 +54,14 @@ while a synchronized simulation waits for its first frame. Disposed native peers
 cannot be restarted.
 
 ### OpenGL4 geometry reuse
+
+OpenGL4 keystone compositing now uses a core-profile vertex array and restores
+rendering state. Large meshes in its fallback path are streamed in bounded
+triangle batches, and general drawing buffers grow when necessary.
+
+Large dynamic layers stream the untextured, unbordered sides of each extruded
+polygon in ordered triangle batches instead of submitting each face separately.
+Textured, outlined and wireframe geometry keeps its existing rendering path.
 
 OpenGL4 now retains sphere, cylinder, cone-side and disk geometry in renderer-local GPU buffers.
 Repeated instances and frames reuse positions, normals and texture coordinates instead of

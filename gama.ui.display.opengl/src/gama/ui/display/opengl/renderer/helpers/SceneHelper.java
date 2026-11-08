@@ -199,19 +199,6 @@ public class SceneHelper extends AbstractRendererHelper {
 	}
 
 	/**
-	 * Forces layers to be redrawn without allowing the invalidation to discard an in-progress scene update.
-	 */
-	public boolean forceRedrawingLayers() {
-		if (!sceneUpdateLock.tryLock()) return false;
-		try {
-			getSurface().getManager().forceRedrawingLayers();
-			return true;
-		} finally {
-			sceneUpdateLock.unlock();
-		}
-	}
-
-	/**
 	 * Checks for structurally changed.
 	 *
 	 * @return true, if successful

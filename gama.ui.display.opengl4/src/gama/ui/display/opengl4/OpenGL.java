@@ -836,16 +836,16 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	private static final int INITIAL_BUFFER_SIZE = 1024 * 64; // 64k floats
 
 	/** The current vertices. */
-	private final FloatBuffer currentVertices = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+	private FloatBuffer currentVertices = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 
 	/** The current colors. */
-	private final FloatBuffer currentColors = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+	private FloatBuffer currentColors = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 
 	/** The current tex coords. */
-	private final FloatBuffer currentTexCoords = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+	private FloatBuffer currentTexCoords = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 
 	/** The current normals (one vec3 per vertex, replicated from the face normal set by {@link #outputNormal}). */
-	private final FloatBuffer currentNormals = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+	private FloatBuffer currentNormals = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 
 	/** The current draw style. */
 	private int currentDrawStyle = GL4.GL_TRIANGLES;
@@ -1187,12 +1187,15 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param elementsToAdd
 	 *            the elements to add
 	 */
-	private void ensureCapacity(final FloatBuffer buffer, final int elementsToAdd) {
-		if (buffer.position() + elementsToAdd > buffer.capacity()) {
-			// Actually we shouldn't dynamically reallocate NIO buffers trivially in the middle of drawing.
-			// Let's implement a simple resize logic just in case:
-			// But for now, since we track via currentVertexCount, let's just make them big enough.
-		}
+	private FloatBuffer ensureCapacity(final FloatBuffer buffer, final int elementsToAdd) {
+		if (buffer.remaining() >= elementsToAdd) return buffer;
+		final int required = Math.addExact(buffer.position(), elementsToAdd);
+		final int capacity = (int) Math.min(Integer.MAX_VALUE,
+				Math.max((long) required, (long) buffer.capacity() * 2));
+		final FloatBuffer expanded = Buffers.newDirectFloatBuffer(capacity);
+		buffer.flip();
+		expanded.put(buffer);
+		return expanded;
 	}
 
 	/**
@@ -1210,6 +1213,17 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		currentVertexCount = 0;
 		currentDrawHasTransparency = false;
 		currentDrawUsesColorBuffer = false;
+	}
+
+	/** Stream transient triangle batches without admitting them to the retained geometry cache. */
+	public void streamTriangles(final Runnable drawing) {
+		final boolean previous = coordinateStreaming;
+		coordinateStreaming = true;
+		try {
+			drawing.run();
+		} finally {
+			coordinateStreaming = previous;
+		}
 	}
 
 	private boolean hasUniformColor() {
@@ -1610,7 +1624,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
 		if (objectCapture != null && !objectCapture.normalDefined) { objectCapture.inheritedNormal = true; }
-		ensureCapacity(currentVertices, 3);
+		currentVertices = ensureCapacity(currentVertices, 3);
 		currentVertices.put((float) x);
 		currentVertices.put((float) y);
 		currentVertices.put((float) z);
@@ -1630,11 +1644,12 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			currentDrawUsesColorBuffer = true;
 		}
 		if (currentDrawUsesColorBuffer) {
+			currentColors = ensureCapacity(currentColors, 4);
 			currentColors.put(red).put(green).put(blue).put(alpha);
 		}
 		currentDrawHasTransparency |= alpha < 1.0f;
 		// Replicate the current face normal for this vertex
-		ensureCapacity(currentNormals, 3);
+		currentNormals = ensureCapacity(currentNormals, 3);
 		currentNormals.put((float) currentNormal.getX());
 		currentNormals.put((float) currentNormal.getY());
 		currentNormals.put((float) currentNormal.getZ());
@@ -1642,6 +1657,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	private void materializeDrawColors(final int count) {
+		currentColors = ensureCapacity(currentColors, Math.multiplyExact(count, 4));
 		for (int i = 0; i < count; i++) {
 			currentColors.put(drawRed).put(drawGreen).put(drawBlue).put(drawAlpha);
 		}
@@ -1656,7 +1672,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the v
 	 */
 	public void outputTexCoord(final double u, final double v) {
-		ensureCapacity(currentTexCoords, 2);
+		currentTexCoords = ensureCapacity(currentTexCoords, 2);
 		currentTexCoords.put((float) u);
 		currentTexCoords.put((float) v);
 	}

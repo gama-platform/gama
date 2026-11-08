@@ -14,12 +14,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.nio.IntBuffer;
-import java.util.IdentityHashMap;
-import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -36,8 +36,8 @@ import com.jogamp.opengl.util.texture.TextureData;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl.renderer.caches.ITextureCache;
+import gama.ui.display.opengl4.OpenGL;
 
 /**
  * The Class TextureCache2.
@@ -45,12 +45,16 @@ import gama.ui.display.opengl.renderer.caches.ITextureCache;
 public class TextureCache2 implements ITextureCache {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The volatile textures. */
 	private final Map<String, Texture> volatileTextures = new ConcurrentHashMap<>();
+
+	/** The image textures. */
 	private final Map<BufferedImage, Map<Boolean, Texture>> imageTextures = new IdentityHashMap<>();
+
+	/** The mipmapped textures. */
 	private final Set<Integer> mipmappedTextures = new HashSet<>();
 
 	/** Generate missing levels for the texture currently bound to GL_TEXTURE_2D. */
@@ -60,15 +64,23 @@ public class TextureCache2 implements ITextureCache {
 		mipmappedTextures.add(texture);
 	}
 
+	/** The pixel buffer. */
 	private IntBuffer pixelBuffer;
+
+	/** The pixel array. */
 	private int[] pixelArray;
+
+	/** The reusable textures. */
 	private final Deque<Texture> reusableTextures = new ArrayDeque<>();
+
+	/** The reusable texture bytes. */
 	private long reusableTextureBytes;
+
+	/** The Constant MAX_REUSABLE_TEXTURE_BYTES. */
 	private static final long MAX_REUSABLE_TEXTURE_BYTES = 64L * 1024 * 1024;
 
 	/** Scene objects retain bare texture IDs, so static textures live until this context is disposed. */
-	private final Cache<String, Texture> staticTextures =
-			CacheBuilder.newBuilder().build();
+	private final Cache<String, Texture> staticTextures = CacheBuilder.newBuilder().build();
 
 	/** The textures to process. */
 	final Map<String, IImageProvider> texturesToProcess = new ConcurrentHashMap<>();
@@ -145,7 +157,7 @@ public class TextureCache2 implements ITextureCache {
 	public void processs(final IImageProvider file) {
 
 		if (!texturesToProcess.containsKey(file.getId())) {
-			DEBUG.OUT("Adding image to process " + file.getId());
+			// DEBUG.OUT("Adding image to process " + file.getId());
 			texturesToProcess.put(file.getId(), file);
 		}
 	}
@@ -157,9 +169,8 @@ public class TextureCache2 implements ITextureCache {
 	 */
 	@Override
 	public void processUnloaded() {
-		texturesToProcess.forEach((n, i) -> {
-			if (getTexture(i, false, true) != null) { texturesToProcess.remove(n, i); }
-		});
+		texturesToProcess
+				.forEach((n, i) -> { if (getTexture(i, false, true) != null) { texturesToProcess.remove(n, i); } });
 	}
 
 	/*
@@ -172,6 +183,15 @@ public class TextureCache2 implements ITextureCache {
 		return getTexture(img, false);
 	}
 
+	/**
+	 * Gets the texture.
+	 *
+	 * @param img
+	 *            the img
+	 * @param mipmap
+	 *            the mipmap
+	 * @return the texture
+	 */
 	public Texture getTexture(final BufferedImage img, final boolean mipmap) {
 		if (img == null) return null;
 		// ModelScene.wipe invalidates these textures each simulation update, including in-place pixel changes.
@@ -246,6 +266,17 @@ public class TextureCache2 implements ITextureCache {
 		return buildTexture(gl, im, false);
 	}
 
+	/**
+	 * Builds the texture.
+	 *
+	 * @param gl
+	 *            the gl
+	 * @param im
+	 *            the im
+	 * @param mipmap
+	 *            the mipmap
+	 * @return the texture
+	 */
 	private Texture buildTexture(final GL gl, final BufferedImage im, final boolean mipmap) {
 		if (im == null) return null;
 		Texture texture = null;
@@ -276,10 +307,23 @@ public class TextureCache2 implements ITextureCache {
 		}
 	}
 
+	/**
+	 * Texture bytes.
+	 *
+	 * @param texture
+	 *            the texture
+	 * @return the long
+	 */
 	private static long textureBytes(final Texture texture) {
 		return (long) texture.getWidth() * texture.getHeight() * Integer.BYTES;
 	}
 
+	/**
+	 * Recycle texture.
+	 *
+	 * @param texture
+	 *            the texture
+	 */
 	private void recycleTexture(final Texture texture) {
 		mipmappedTextures.remove(texture.getTextureObject());
 		final long bytes = textureBytes(texture);
@@ -296,12 +340,21 @@ public class TextureCache2 implements ITextureCache {
 		}
 	}
 
+	/**
+	 * Take reusable texture.
+	 *
+	 * @param width
+	 *            the width
+	 * @param height
+	 *            the height
+	 * @return the texture
+	 */
 	private Texture takeReusableTexture(final int width, final int height) {
 		final var iterator = reusableTextures.iterator();
 		while (iterator.hasNext()) {
 			final Texture texture = iterator.next();
-			if (texture.getWidth() == width && texture.getHeight() == height
-					&& texture.getImageWidth() == width && texture.getImageHeight() == height) {
+			if (texture.getWidth() == width && texture.getHeight() == height && texture.getImageWidth() == width
+					&& texture.getImageHeight() == height) {
 				iterator.remove();
 				reusableTextureBytes -= textureBytes(texture);
 				return texture;
@@ -310,11 +363,20 @@ public class TextureCache2 implements ITextureCache {
 		return null;
 	}
 
+	/**
+	 * Creates the texture data.
+	 *
+	 * @param profile
+	 *            the profile
+	 * @param image
+	 *            the image
+	 * @param mipmap
+	 *            the mipmap
+	 * @return the texture data
+	 */
 	private TextureData createTextureData(final GLProfile profile, final BufferedImage image, final boolean mipmap) {
 		final int w = image.getWidth(), h = image.getHeight(), size = Math.multiplyExact(w, h);
-		if (pixelBuffer == null || pixelBuffer.capacity() < size) {
-			pixelBuffer = Buffers.newDirectIntBuffer(size);
-		}
+		if (pixelBuffer == null || pixelBuffer.capacity() < size) { pixelBuffer = Buffers.newDirectIntBuffer(size); }
 		pixelBuffer.clear();
 		final var raster = image.getRaster();
 		if (image.getType() == BufferedImage.TYPE_INT_ARGB && !image.isAlphaPremultiplied()
@@ -330,8 +392,8 @@ public class TextureCache2 implements ITextureCache {
 			pixelBuffer.put(pixelArray, 0, size);
 		}
 		pixelBuffer.flip();
-		return new TextureData(profile, GL.GL_RGBA, w, h, 0, GL.GL_BGRA, GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV,
-				mipmap, false, true, pixelBuffer, null);
+		return new TextureData(profile, GL.GL_RGBA, w, h, 0, GL.GL_BGRA, GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV, mipmap,
+				false, true, pixelBuffer, null);
 	}
 
 }

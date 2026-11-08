@@ -21,6 +21,7 @@ import java.util.List;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
+import com.jogamp.opengl.GL;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
@@ -61,6 +62,8 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 
 	/** The Constant DEFAULT_BORDER. */
 	private static final IColor DEFAULT_BORDER = GamaColorFactory.BLACK;
+
+	private static final int[] QUAD_TRIANGLES = { 0, 1, 2, 0, 2, 3 };
 
 	/** The normal. */
 	final IPoint _normal = GamaPointFactory.create();
@@ -264,6 +267,10 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 	}
 
 	private void drawPolyhedronSides(final boolean isCCW, final IColor border) {
+		if (!gl.canRetainDynamicGeometry() && border == null && !gl.isWireframe() && !gl.isTextured()) {
+			gl.streamTriangles(() -> drawStreamedPolyhedronSides(isCCW));
+			return;
+		}
 		_vertices.visit((pj, pk) -> {
 			_quadvertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX() + _normal.getX(), pk.getY() + _normal.getY(),
 					pk.getZ() + _normal.getZ(), pj.getX() + _normal.getX(), pj.getY() + _normal.getY(),
@@ -271,6 +278,30 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			if (!isCCW) { _quadvertices.reverse(); }
 			gl.drawSimpleShape(_quadvertices, 4, true, true, border);
 		});
+	}
+
+	private void drawStreamedPolyhedronSides(final boolean isCCW) {
+		final int[] faces = { 0 };
+		gl.beginDrawing(GL.GL_TRIANGLES);
+		_vertices.visit((pj, pk) -> {
+			if (faces[0] == 2048) {
+				gl.endDrawing();
+				gl.beginDrawing(GL.GL_TRIANGLES);
+				faces[0] = 0;
+			}
+			_quadvertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX() + _normal.getX(),
+					pk.getY() + _normal.getY(), pk.getZ() + _normal.getZ(), pj.getX() + _normal.getX(),
+					pj.getY() + _normal.getY(), pj.getZ() + _normal.getZ(), pj.getX(), pj.getY(), pj.getZ(),
+					pk.getX(), pk.getY(), pk.getZ());
+			if (!isCCW) { _quadvertices.reverse(); }
+			gl.setNormal(_quadvertices, true);
+			for (final int index : QUAD_TRIANGLES) {
+				final IPoint point = _quadvertices.at(index);
+				gl.outputVertex(point.getX(), point.getY(), point.getZ());
+			}
+			faces[0]++;
+		});
+		gl.endDrawing();
 	}
 
 	private boolean drawRetainedSides(final double x, final double y, final double z, final boolean reverse,
