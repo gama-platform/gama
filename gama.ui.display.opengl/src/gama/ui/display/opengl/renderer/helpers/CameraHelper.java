@@ -682,6 +682,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		}
 
 		lastMousePressedPosition.setLocation(x, y, 0);
+		setCtrlPressed(isCtrl);
+		setShiftPressed(isShift);
+		mousePosition.setLocation(x, y, 0);
+		computeMouseLocationInTheWorld(x, y);
 		// Activate Picking when press and right click
 		if (button == 3 && !keystoneMode) {
 			if (mouseInROI(lastMousePressedPosition)) {
@@ -693,12 +697,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		} else if (button == 2 && !data.isCameraLocked()) { // mouse wheel
 			resetPivot();
 		} else if (isShift && isViewInXYPlan()) { startROI(); }
-		mousePosition.setLocation(x, y, 0);
-		computeMouseLocationInTheWorld(x, y);
-
 		setMouseLeftPressed(button == 1);
-		setCtrlPressed(isCtrl);
-		setShiftPressed(isShift);
 	}
 
 	@Override
@@ -776,54 +775,81 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	FloatBuffer pixelDepth = Buffers.newDirectFloatBuffer(1);
 
 	/**
-	 * Gets the world position from the mouse position. Less computationally intensive and more accurate for planar
-	 * surfaces. Requires however to be done in the GL context
+	 * Updates mouse coordinates using the z=0 ground plane for non-world layers, keystone editing and region
+	 * selection. Other 3D interactions retain depth-derived coordinates and require a current GL context.
 	 *
-	 * @param mouse
-	 *            the mouse
-	 * @return the world position from
+	 * @param mouse_x
+	 *            horizontal surface coordinate in pixels
+	 * @param mouse_y
+	 *            vertical surface coordinate in pixels, measured from the top
 	 */
 	public void computeMouseLocationInTheWorld(final int mouse_x, final int mouse_y) {
 
 		IOpenGL gl = renderer.getOpenGLHelper();
-		final double[] wcoord = new double[4];
 		final int[] viewport = gl.getViewport();
+		if (viewport[2] <= 0 || viewport[3] <= 0) {
+			DEBUG.ERR("Cannot compute mouse coordinates before the OpenGL viewport is initialized");
+			return;
+		}
+		final IPoint mouse = GamaPointFactory.create(mouse_x, mouse_y);
 		final int x = mouse_x;
-		final int y = viewport[3] - mouse_y;
+		final int y = viewport[1] + viewport[3] - 1 - mouse_y;
+		if (!renderer.getSurface().getManager().isProvidingWorldCoordinates() || keystoneMode
+				|| (shiftPressed && isViewInXYPlan()) || mouseInROI(mouse)
+				|| x < viewport[0] || x >= viewport[0] + viewport[2]
+				|| y < viewport[1] || y >= viewport[1] + viewport[3]) {
+			getWorldPositionFrom(mouse, positionInTheWorld);
+			return;
+		}
 		pixelDepth.rewind();
 		gl.getGL().glReadPixels(x, y, 1, 1, GL2ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);
 
 		if (z == 1d || z == 0d) {
-			getWorldPositionFrom(GamaPointFactory.create(mouse_x, mouse_y), positionInTheWorld);
+			getWorldPositionFrom(mouse, positionInTheWorld);
 		} else {
+			final double[] wcoord = new double[4];
 			gl.unproject(x, y, z, wcoord);
 			positionInTheWorld.setLocation(wcoord[0], wcoord[1], 0);
 		}
 	}
 
 	/**
-	 * Different method from above, as it might be used in non openGL contexts
+	 * Intersects the unprojected mouse ray with the z=0 ground plane, in renderer coordinates (Y negated relative
+	 * to model coordinates). Uses cached matrices without GPU readback, including for orthographic cameras.
 	 *
 	 * @param mouse
-	 * @return
+	 *            surface coordinates in pixels, measured from the top left
+	 * @param result
+	 *            point to update; left unchanged if no finite ground-plane intersection exists
+	 * @return the updated point
 	 */
 	public IPoint getWorldPositionFrom(final IPoint mouse, final IPoint result) {
-		final IPoint camLoc = getPosition();
 		IOpenGL gl = renderer.getOpenGLHelper();
-		if (gl == null) return GamaPointFactory.create();
-		final double[] wcoord = new double[4];
-		synchronized (gl) {
-			final double x = (int) mouse.getX(), y = gl.getViewport()[3] - (int) mouse.getY();
-			gl.unproject(x, y, 0.1, wcoord);
-			result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
-			gl.unproject(x, y, 0.9, wcoord);
-			result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ())
-					.normalize();
+		if (gl == null) {
+			DEBUG.ERR("Cannot compute ground-plane coordinates without an OpenGL helper");
+			return result;
 		}
-		final double distance = camLoc.getZ() / -result.getZ();
-		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
-				0);
+		final double[] near = new double[4];
+		final double[] far = new double[4];
+		synchronized (gl) {
+			final int[] viewport = gl.getViewport();
+			if (viewport[2] <= 0 || viewport[3] <= 0) {
+				DEBUG.ERR("Cannot compute ground-plane coordinates before the OpenGL viewport is initialized");
+				return result;
+			}
+			final double x = mouse.getX(), y = viewport[1] + viewport[3] - 1 - mouse.getY();
+			gl.unproject(x, y, 0.1, near);
+			gl.unproject(x, y, 0.9, far);
+		}
+		final double distance = -near[2] / (far[2] - near[2]);
+		final double x = near[0] + distance * (far[0] - near[0]);
+		final double y = near[1] + distance * (far[1] - near[1]);
+		if (!Double.isFinite(x) || !Double.isFinite(y)) {
+			DEBUG.ERR("Mouse ray has no finite intersection with the ground plane");
+			return result;
+		}
+		return result.setLocation(x, y, 0);
 	}
 
 	/**
