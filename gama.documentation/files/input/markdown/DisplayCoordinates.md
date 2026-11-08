@@ -332,9 +332,28 @@ bordered, extruded, textured and picking paths fall back to ordinary traversal.
 Diagnostics report map multi-draw calls and the number of constituent drawings
 per frame separately. These batches reduce submission overhead but do not
 establish FPS parity with the fixed pipeline.
-Native OpenGL4 line widths are limited by the driver. Requests outside its supported
-range use the nearest supported width and produce one warning per display; macOS
-forward-compatible contexts may support only one-pixel lines.
+Eligible refreshed map layers over 256 objects, and animated maps, instead stream
+ordered batches through renderer-owned buffers bounded to 12,288 emitted vertices
+and 1,024 drawing ranges per submission. They reuse the CPU/GPU buffer allocations,
+not the previous frame's geometry. Polygon tessellation remains cached; changes to
+geometry, colors, lighting and object transforms are applied on every traversal.
+Unsupported draws submit pending batches before using the ordinary path, preserving
+order. This path requires at least two objects and the same opaque, untextured,
+flat, unbordered map geometry as the retained path.
+
+In these eligible map layers, line widths greater than one use triangle ribbons
+expanded in screen space. Width is in **framebuffer pixels**, as for native OpenGL
+line widths, not world units or logical UI pixels; camera zoom does not scale it.
+Segments have butt ends, without added miter or round joins. Such maps use streaming
+even when static; static maps with native-width lines keep whole-layer retention.
+Sphere/point instancing remains separate and unchanged.
+Segments crossing the camera's eye plane use the ordinary path rather than expand
+an undefined screen-space direction.
+
+Outside eligible map batches, including picking, native OpenGL4 line widths remain
+limited by the driver. Requests outside its supported range use the nearest supported
+width and produce one warning per display; macOS forward-compatible contexts may
+support only one-pixel lines. No model facet or rendering preference is added.
 Both backends report hits and misses for their polygon tessellation cache; this
 is not a count for all renderer caches. Logging can be disabled globally through
 GAMA's `enable_logging` flag.

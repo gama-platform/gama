@@ -623,7 +623,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 			// DEBUG.OUT("Cleaning the menu by stopping picking, redrawing the layers and updating the display");
 			renderer.getPickingHelper().setPicking(false);
 			// Necessary to avoid situations like issue #3232. The result is however a bit of flickering
-			getManager().forceRedrawingLayers();
+			renderer.getSceneHelper().forceRedrawingLayers();
 			updateDisplay(true);
 		};
 		// DEBUG.OUT("Building and displaying the menu");

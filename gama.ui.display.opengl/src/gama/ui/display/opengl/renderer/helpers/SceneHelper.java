@@ -67,6 +67,7 @@ public class SceneHelper extends AbstractRendererHelper {
 
 	/** Updates skipped while a scene is being built or awaiting its first render. */
 	private final AtomicBoolean pendingUpdate = new AtomicBoolean();
+	private final AtomicBoolean pendingLayerRedraw = new AtomicBoolean();
 
 	/**
 	 * Instantiates a new scene helper.
@@ -124,6 +125,7 @@ public class SceneHelper extends AbstractRendererHelper {
 				return false;
 			}
 			pendingUpdate.set(false);
+			if (pendingLayerRedraw.getAndSet(false)) { getSurface().getManager().forceRedrawingLayers(); }
 			backScene = createSceneFrom(staticScene);
 			// We prepare it for drawing
 			backScene.beginDrawingLayers();
@@ -196,6 +198,12 @@ public class SceneHelper extends AbstractRendererHelper {
 		} finally {
 			sceneUpdateLock.unlock();
 		}
+	}
+
+	/** Apply forced invalidation only when a new scene can be built, never midway through an update. */
+	public void forceRedrawingLayers() {
+		pendingLayerRedraw.set(true);
+		requestUpdate();
 	}
 
 	/**

@@ -54,6 +54,7 @@ public class BasicShader extends AbstractShader {
 	/** Uniform location: projection matrix. */
 	private int location_projection;
 	private int location_normalMatrix;
+	private int location_mapBatch, location_framebufferSize;
 	private final Matrix4f modelMatrix = new Matrix4f(), viewMatrix = new Matrix4f(), modelView = new Matrix4f();
 	private final Matrix3f normalMatrix = new Matrix3f();
 	private final float[] normalValues = new float[9];
@@ -152,6 +153,8 @@ public class BasicShader extends AbstractShader {
 		location_view          = getUniformLocation("view");
 		location_projection    = getUniformLocation("projection");
 		location_normalMatrix  = getUniformLocation("normalMatrix");
+		location_mapBatch = getUniformLocation("mapBatch");
+		location_framebufferSize = getUniformLocation("framebufferSize");
 		location_useTexture    = getUniformLocation("useTexture");
 		location_premultiplyTexture = getUniformLocation("premultiplyTexture");
 		location_picking = getUniformLocation("picking");
@@ -259,6 +262,11 @@ public class BasicShader extends AbstractShader {
 			gl.glUniform1i(location_instanced, enabled ? 1 : 0);
 			instancingEnabled = enabled;
 		}
+	}
+
+	public void loadMapBatch(final boolean enabled, final int width, final int height) {
+		gl.glUniform1i(location_mapBatch, enabled ? 1 : 0);
+		if (enabled) { gl.glUniform2f(location_framebufferSize, width, height); }
 	}
 
 	/**

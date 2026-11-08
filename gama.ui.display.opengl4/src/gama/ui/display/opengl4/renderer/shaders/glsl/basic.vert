@@ -6,6 +6,9 @@ layout (location = 2) in vec2 aTexCoord;
 layout (location = 3) in vec3 aNormal;
 layout (location = 4) in mat4 instanceModelView;
 layout (location = 8) in vec4 instanceColor;
+layout (location = 9) in vec3 lineEnd;
+layout (location = 10) in float ribbonWidth;
+layout (location = 11) in float vertexLighting;
 
 out vec4 vertexColor;
 out vec2 TexCoord;
@@ -19,6 +22,8 @@ uniform mat3 normalMatrix;
 uniform bool useLighting;
 uniform bool picking;
 uniform bool instanced;
+uniform bool mapBatch;
+uniform vec2 framebufferSize;
 uniform vec3 ambientColor;
 uniform int lightCount;
 
@@ -41,11 +46,23 @@ void main()
     vec4 color = instanced ? instanceColor : aColor;
     vec4 eyePos = modelView * vec4(aPos, 1.0);
     gl_Position = projection * eyePos;
+    if (mapBatch && ribbonWidth != 0.0) {
+        vec4 endClip = projection * modelView * vec4(lineEnd, 1.0);
+        // Do not expand a segment across the eye plane; clipping still handles the original positions.
+        if (gl_Position.w > 0.0 && endClip.w > 0.0) {
+            vec2 direction = (endClip.xy / endClip.w - gl_Position.xy / gl_Position.w) * framebufferSize;
+            float lengthSquared = dot(direction, direction);
+            if (lengthSquared > 0.0) {
+                vec2 perpendicular = vec2(-direction.y, direction.x) * inversesqrt(lengthSquared);
+                gl_Position.xy += perpendicular * ribbonWidth / framebufferSize * gl_Position.w;
+            }
+        }
+    }
     vertexColor = color;
     TexCoord = aTexCoord;
     frontMaterialColor = color.rgb;
     backMaterialColor = color.rgb;
-    if (useLighting && !picking) {
+    if (useLighting && !picking && (!mapBatch || vertexLighting > 0.5)) {
         vec3 norm = normalize((instanced ? transpose(inverse(mat3(modelView))) : normalMatrix) * aNormal);
         vec3 frontIllumination = ambientColor;
         vec3 backIllumination = ambientColor;

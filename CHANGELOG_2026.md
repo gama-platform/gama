@@ -111,6 +111,23 @@ Color, lighting, line-width and depth-offset changes invalidate the batches. Tra
 textured, bordered or extruded layers, picking and unsupported geometry keep their existing paths.
 Diagnostics distinguish native multi-draw calls from the constituent drawings.
 
+Eligible refreshed map layers over 256 objects and animated maps now stream ordered
+multi-draw batches through bounded, reusable CPU and GPU buffers, without retaining
+per-object geometry. Opaque, untextured lines and flat unbordered fills keep their
+colors, lighting, transforms and drawing-depth offsets live; unsupported draws
+flush pending batches before using the ordinary path. Static maps with native-width
+lines retain the existing whole-layer cache.
+
+Eligible map lines wider than one pixel use screen-space triangle ribbons instead
+of driver-limited native wide lines. These maps also use the streaming path, even
+when static. Widths are measured in framebuffer pixels, like native OpenGL widths;
+segments have butt ends and no added miter or round joins. Picking, transparency,
+textures, outlines and extrusions retain their ordinary paths and native-width
+limits. Map shader attributes are separate from sphere/point instancing attributes.
+
+Forced layer redraws requested after picking now wait for the next scene update
+under its lock instead of invalidating an in-progress scene.
+
 Mesh fills and outlines now keep separate VAO layouts: unchanged meshes no longer redefine
 attribute pointers or toggle attribute arrays every frame. Streaming uniform-color geometry
 uses one constant color attribute rather than uploading an RGBA array; mixed-color geometry
