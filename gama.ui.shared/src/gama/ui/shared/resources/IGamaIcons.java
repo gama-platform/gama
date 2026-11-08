@@ -97,6 +97,9 @@ public interface IGamaIcons {
 	/** The camera lock. */
 	String CAMERA_LOCK = "display/camera.lock";
 
+	/** The display scale lock. */
+	String DISPLAY_SCALE_LOCK = "display/scale.lock";
+
 	/** The chart parameters. */
 	String CHART_PARAMETERS = "layer/chart.parameters";
 

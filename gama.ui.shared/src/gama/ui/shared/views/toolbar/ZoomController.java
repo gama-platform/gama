@@ -50,6 +50,8 @@ public class ZoomController {
 	/** The camera locked. */
 	ToolItem cameraLocked;
 
+	private ToolItem scaleLocked;
+
 	/**
 	 * @param view
 	 */
@@ -108,6 +110,9 @@ public class ZoomController {
 					// If the camera is dynamic, we disable the control (see #350)
 					cameraLocked.setEnabled(!dynamic);
 				}
+				if (scaleLocked != null && view instanceof ScaleLockable scaleLockable) {
+					tb.setSelection(scaleLocked, scaleLockable.isScaleLocked());
+				}
 				tb.removeControlListener(this);
 			}
 
@@ -156,6 +161,10 @@ public class ZoomController {
 			}, SWT.RIGHT);
 			cameraLocked = tb.check(IGamaIcons.CAMERA_LOCK, "Lock/unlock", "Lock/unlock view",
 					e -> { view.toggleLock(); }, SWT.RIGHT);
+		}
+		if (view instanceof ScaleLockable scaleLockable) {
+			scaleLocked = tb.check(IGamaIcons.DISPLAY_SCALE_LOCK, "Lock scale",
+					"Keep the display scale when resizing the view", e -> scaleLockable.toggleScaleLock(), SWT.RIGHT);
 		}
 
 	}

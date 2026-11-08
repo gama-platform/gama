@@ -103,6 +103,9 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/** The zoom fit. */
 	protected boolean zoomFit = true;
 
+	private boolean scaleLocked;
+	private int scaleLockReferenceDimension;
+
 	/** The listeners. */
 	Set<IEventLayerListener> listeners = new CopyOnWriteArraySet<>();
 
@@ -330,6 +333,25 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public void toggleLock() {
 		renderer.getCameraHelper().toggleCameraLock();
+	}
+
+	public synchronized boolean isScaleLocked() { return scaleLocked; }
+
+	public synchronized void toggleScaleLock() {
+		scaleLocked = !scaleLocked;
+		scaleLockReferenceDimension =
+				scaleLocked ? Math.min(renderer.getViewWidth(), renderer.getViewHeight()) : 0;
+	}
+
+	public synchronized double getResizeScaleFactor(final int width, final int height) {
+		if (!scaleLocked) return 1d;
+		int referenceDimension = scaleLockReferenceDimension;
+		if (referenceDimension <= 0) {
+			referenceDimension = Math.min(width, height);
+			if (referenceDimension <= 0) return 1d;
+			scaleLockReferenceDimension = referenceDimension;
+		}
+		return (double) Math.min(width, height) / referenceDimension;
 	}
 
 	/**

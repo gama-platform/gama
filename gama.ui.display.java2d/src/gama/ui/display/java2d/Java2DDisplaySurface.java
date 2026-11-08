@@ -128,6 +128,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	/** The zoom fit. */
 	protected boolean zoomFit = true;
 
+	private boolean scaleLocked;
+
 	/** The disposed. */
 	protected volatile boolean disposed;
 
@@ -183,7 +185,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 				// DEBUG.OUT("[componentResized] " + output.getName() + " → new size=" + getWidth() + "x" + getHeight()
 				// + " iGraphics=" + (iGraphics != null ? "non-null" : "null")
 				// + " thread=" + Thread.currentThread().getName());
-				if (zoomFit) {
+				if (zoomFit && !scaleLocked) {
 					zoomFit();
 				} else {
 					if (isFullImageInPanel()) {
@@ -191,8 +193,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 					} else if (isImageEdgeInPanel()) { scaleOrigin(); }
 					updateDisplay(true);
 				}
-				final double newZoom = Math.min(getWidth() / getDisplayWidth(), getHeight() / getDisplayHeight());
-				newZoomLevel(1 / newZoom);
+				if (!scaleLocked) {
+					final double newZoom =
+							Math.min(getWidth() / getDisplayWidth(), getHeight() / getDisplayHeight());
+					newZoomLevel(1 / newZoom);
+				}
 				previousPanelSize = getSize();
 			}
 		});
@@ -537,6 +542,18 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void toggleLock() {
 		isLocked = !isLocked;
+	}
+
+	public boolean isScaleLocked() { return scaleLocked; }
+
+	public void toggleScaleLock() {
+		scaleLocked = !scaleLocked;
+		if (scaleLocked) {
+			zoomFit = false;
+		} else {
+			zoomFit = true;
+			zoomFit();
+		}
 	}
 
 	/**

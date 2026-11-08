@@ -444,6 +444,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final double height = getViewHeight();
 		final double aspect = getViewWidth() / (height == 0d ? 1d : height);
 		final double maxDim = getMaxEnvDim();
+		final double resizeScaleFactor =
+				renderer.getSurface().getResizeScaleFactor(getViewWidth(), getViewHeight());
 		double zNear = getZNear();
 		if (zNear < 0.0) {
 			zNear = maxDim / 100d;
@@ -470,14 +472,19 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 					fH = fW / aspect;
 				}
 
+				fW *= resizeScaleFactor;
+				fH *= resizeScaleFactor;
 				gl.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 			} catch (final BufferOverflowException e) {
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			gl.glOrtho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, -maxDim * 10, maxDim * 10);
+			gl.glOrtho(-maxDim * aspect * resizeScaleFactor, maxDim * aspect * resizeScaleFactor,
+					-maxDim * resizeScaleFactor, maxDim * resizeScaleFactor, -maxDim * 10, maxDim * 10);
 		} else {
-			gl.glOrtho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, -maxDim * 10, maxDim * 10);
+			gl.glOrtho(-maxDim * resizeScaleFactor, maxDim * resizeScaleFactor,
+					-maxDim / aspect * resizeScaleFactor, maxDim / aspect * resizeScaleFactor, -maxDim * 10,
+					maxDim * 10);
 		}
 
 		// else {
