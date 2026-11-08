@@ -15,6 +15,12 @@ import static gama.api.utils.geometry.GeometryUtils.getHolesNumber;
 import static gama.api.utils.geometry.GeometryUtils.getTypeOf;
 import static gama.api.utils.geometry.GeometryUtils.getYNegatedCoordinates;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalNotification;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
@@ -32,6 +38,7 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.api.utils.geometry.Scaling3D.Heterogeneous;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -75,6 +82,35 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 
 	/** The vertices. */
 	final UnboundedCoordinateSequence _vertices = new UnboundedCoordinateSequence();
+
+	private static final class SideKey {
+		final double[] coordinates;
+		final int hash;
+
+		SideKey(final double[] coordinates) {
+			this.coordinates = coordinates;
+			hash = Arrays.hashCode(coordinates);
+		}
+
+		int weight() { return 128 + coordinates.length * Double.BYTES; }
+
+		@Override
+		public int hashCode() { return hash; }
+
+		@Override
+		public boolean equals(final Object other) {
+			return other instanceof SideKey key && Arrays.equals(coordinates, key.coordinates);
+		}
+	}
+
+	private final Cache<SideKey, List<OpenGL.StoredDrawing>> sides = CacheBuilder.newBuilder()
+			.maximumWeight(32 * 1024 * 1024)
+			.weigher((SideKey key, List<OpenGL.StoredDrawing> value) -> key.weight() * 16)
+			.removalListener((RemovalNotification<SideKey, List<OpenGL.StoredDrawing>> notification) ->
+					notification.getValue().forEach(OpenGL.StoredDrawing::dispose)).build();
+	private final Cache<SideKey, Boolean> sideCandidates = CacheBuilder.newBuilder()
+			.maximumWeight(2 * 1024 * 1024)
+			.weigher((SideKey key, Boolean value) -> key.weight()).build();
 
 	/**
 	 * Instantiates a new geometry drawer.
@@ -220,6 +256,14 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 		gl.enableAlternateTexture();
 		// Draw faces
 		final boolean isCCW = _vertices.isClockwise();
+		final Runnable producer = () -> drawPolyhedronSides(isCCW, border);
+		if (border != null || gl.isWireframe()
+				|| !drawRetainedSides(_normal.getX(), _normal.getY(), _normal.getZ(), !isCCW, producer)) {
+			producer.run();
+		}
+	}
+
+	private void drawPolyhedronSides(final boolean isCCW, final IColor border) {
 		_vertices.visit((pj, pk) -> {
 			_quadvertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX() + _normal.getX(), pk.getY() + _normal.getY(),
 					pk.getZ() + _normal.getZ(), pj.getX() + _normal.getX(), pj.getY() + _normal.getY(),
@@ -227,7 +271,39 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			if (!isCCW) { _quadvertices.reverse(); }
 			gl.drawSimpleShape(_quadvertices, 4, true, true, border);
 		});
+	}
 
+	private boolean drawRetainedSides(final double x, final double y, final double z, final boolean reverse,
+			final Runnable producer) {
+		// Bound both snapshot size and the expanded side mesh before allocating GPU resources.
+		if (!gl.canRetainDynamicGeometry() || _vertices.size() == 0 || _vertices.size() > 16384) return false;
+		final double[] coordinates = new double[_vertices.size() * 3 + 6];
+		for (int i = 0; i < _vertices.size(); i++) {
+			final IPoint point = _vertices.at(i);
+			coordinates[i * 3] = point.getX();
+			coordinates[i * 3 + 1] = point.getY();
+			coordinates[i * 3 + 2] = point.getZ();
+		}
+		final int offset = coordinates.length - 6;
+		coordinates[offset] = x;
+		coordinates[offset + 1] = y;
+		coordinates[offset + 2] = z;
+		coordinates[offset + 3] = reverse ? 1 : 0;
+		coordinates[offset + 4] = gl.isTextured() ? 1 : 0;
+		coordinates[offset + 5] = GamaPreferences.Displays.OPENGL_TEXTURE_ORIENTATION.getValue() ? 1 : 0;
+		final SideKey key = new SideKey(coordinates);
+		List<OpenGL.StoredDrawing> drawings = sides.getIfPresent(key);
+		if (drawings == null && sideCandidates.getIfPresent(key) != null) {
+			sideCandidates.invalidate(key);
+			drawings = gl.captureDrawing(producer);
+			sides.put(key, drawings);
+		}
+		if (drawings == null) {
+			sideCandidates.put(key, Boolean.TRUE);
+			return false;
+		}
+		for (final OpenGL.StoredDrawing drawing : drawings) { drawing.draw(); }
+		return true;
 	}
 
 	/**
@@ -246,13 +322,13 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			final boolean computeVertices) {
 		if (computeVertices) { _vertices.setToYNegated(GamaCoordinateSequenceFactory.pointsOf(p)); }
 		if (!gl.isWireframe()) {
-			gl.setNormal(_vertices, clockwise);
 			final boolean hasHoles = getHolesNumber(p) > 0;
 			final int size = _vertices.size();
 			try (var offset = PolygonOffset.forOutline(gl, border != null)) {
 				if (hasHoles || size > 5) {
 					gl.drawPolygon(p, _vertices, clockwise);
 				} else {
+					gl.setNormal(_vertices, clockwise);
 					gl.drawSimpleShape(_vertices, size - 1, /* solid, */clockwise, false, null);
 				}
 			}
@@ -278,15 +354,22 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 	private void drawPlan(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
 		_vertices.setToYNegated(GamaCoordinateSequenceFactory.pointsOf(p));
 		if (height != 0) {
-			_vertices.visit((pj, pk) -> {
-				_quadvertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX(), pk.getY(), pk.getZ() + height,
-						pj.getX(), pj.getY(), pj.getZ() + height, pj.getX(), pj.getY(), pj.getZ(), pk.getX(), pk.getY(),
-						pk.getZ());
-				gl.drawSimpleShape(_quadvertices, 4, true, true, border);
-			});
+			final Runnable producer = () -> drawPlanSides(height, border);
+			if (border != null || gl.isWireframe() || !drawRetainedSides(0, 0, height, false, producer)) {
+				producer.run();
+			}
 		} else {
 			gl.drawLine(_vertices, -1);
 		}
+	}
+
+	private void drawPlanSides(final double height, final IColor border) {
+		_vertices.visit((pj, pk) -> {
+			_quadvertices.setTo(pk.getX(), pk.getY(), pk.getZ(), pk.getX(), pk.getY(), pk.getZ() + height,
+					pj.getX(), pj.getY(), pj.getZ() + height, pj.getX(), pj.getY(), pj.getZ(), pk.getX(), pk.getY(),
+					pk.getZ());
+			gl.drawSimpleShape(_quadvertices, 4, true, true, border);
+		});
 	}
 
 	/**
@@ -573,6 +656,9 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 	}
 
 	@Override
-	public void dispose() {}
+	public void dispose() {
+		sides.invalidateAll();
+		sideCandidates.invalidateAll();
+	}
 
 }

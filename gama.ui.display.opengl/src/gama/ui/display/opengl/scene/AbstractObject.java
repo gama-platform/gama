@@ -106,6 +106,12 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	 */
 	private int getTexture(final IOpenGL gl, final int order) {
 		if (textures == null || order < 0 || order > textures.length - 1) return IOpenGL.NO_TEXTURE;
+		final var sources = getAttributes().getTextures();
+		if (sources != null && order < sources.size() && sources.get(order) instanceof BufferedImage image) {
+			// Image textures are refreshed per scene update; never reuse a stale or recycled GPU ID.
+			textures[order] = gl.getTextureId(image);
+			return textures[order];
+		}
 		if (isAnimated() || textures[order] == IOpenGL.NO_TEXTURE) {
 			Object obj = null;
 			try {

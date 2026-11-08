@@ -30,6 +30,7 @@ import gama.dev.DEBUG;
 import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.ModelScene;
+import gama.ui.display.opengl.scene.layers.LayerObject;
 
 /**
  * Class SceneHelper. Manages the interactions between the updating and the rendering tasks by keeping hold of three
@@ -58,6 +59,8 @@ public class SceneHelper extends AbstractRendererHelper {
 
 	/** The garbage. */
 	private final Queue<ModelScene> garbage = new ConcurrentLinkedQueue<>();
+
+	private final Queue<LayerObject> retiredLayers = new ConcurrentLinkedQueue<>();
 
 	/** Serializes scene updates with invalidation and forced redraws. */
 	private final ReentrantLock sceneUpdateLock = new ReentrantLock();
@@ -89,7 +92,10 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void beginDrawingLayer(final ILayer layer, final Double currentLayerAlpha) {
 		final ModelScene scene = getSceneToUpdate();
-		if (scene != null) { scene.beginDrawingLayer(layer, currentLayerAlpha); }
+		if (scene != null) {
+			final LayerObject replaced = scene.beginDrawingLayer(layer, currentLayerAlpha);
+			if (replaced != null) { retiredLayers.add(replaced); }
+		}
 	}
 
 	/**
@@ -165,14 +171,12 @@ public class SceneHelper extends AbstractRendererHelper {
 			if (backScene == null) return;
 			// We ask the backScene to stop updating
 			backScene.endDrawingLayers();
-			// We create the static scene from it if it does not exist yet or if it
-			// has been discarded
+			// Newly visible static layers can be added after the first scene was created.
 			if (hasStructurallyChanged()) { discardStaticScene(); }
-			if (staticScene == null) {
-				// DEBUG.LOG("Creating static scene from scene " +
-				// backScene.getId());
-				staticScene = createSceneFrom(backScene);
-			}
+			backScene.orderLayers();
+			final ModelScene previousStaticScene = staticScene;
+			staticScene = createSceneFrom(backScene);
+			if (previousStaticScene != null) { previousStaticScene.dispose(); }
 			// If there is another frontScene, we discard it (will be disposed of
 			// later)
 			if (frontScene != null) {
@@ -255,13 +259,33 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void garbageCollect(final IOpenGL gl) {
 		int size = garbage.size();
-		if (size == 0) return;
-		final ModelScene[] scenes = garbage.toArray(new ModelScene[size]);
-		garbage.clear();
-		for (final ModelScene scene : scenes) {
+		for (int i = 0; i < size; i++) {
+			final ModelScene scene = garbage.poll();
+			if (scene == null) break;
 			scene.wipe(gl);
 			scene.dispose();
 		}
+		// A replaced layer can still be in the front scene until it has been rendered.
+		if (!sceneUpdateLock.tryLock()) return;
+		try {
+			size = retiredLayers.size();
+			for (int i = 0; i < size; i++) {
+				final LayerObject layer = retiredLayers.poll();
+				if (layer == null) break;
+				if (containsLayer(frontScene, layer) || containsLayer(backScene, layer)
+						|| containsLayer(staticScene, layer)) {
+					retiredLayers.add(layer);
+				} else {
+					layer.clear(gl);
+				}
+			}
+		} finally {
+			sceneUpdateLock.unlock();
+		}
+	}
+
+	private boolean containsLayer(final ModelScene scene, final LayerObject layer) {
+		return scene != null && scene.containsLayerObject(layer);
 	}
 
 	/**

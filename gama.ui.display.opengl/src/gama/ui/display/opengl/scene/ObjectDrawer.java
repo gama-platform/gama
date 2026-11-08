@@ -53,7 +53,11 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOp
 			gl.pushMatrix();
 			try {
 				gl.translateBy(0, 0, gl.getCurrentZTranslation());
-				_draw((T) object);
+				if (gl.canRetainObjectGeometry(object)) {
+					gl.drawObjectGeometry(object, () -> _draw((T) object));
+				} else {
+					_draw((T) object);
+				}
 			} finally {
 				gl.popMatrix();
 			}

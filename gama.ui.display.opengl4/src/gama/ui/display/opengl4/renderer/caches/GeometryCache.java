@@ -23,6 +23,7 @@ import static gama.api.utils.geometry.GeometryUtils.getTypeOf;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.nio.DoubleBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -35,6 +36,7 @@ import org.locationtech.jts.geom.GeometryFilter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalNotification;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2GL3;
@@ -229,6 +231,16 @@ public class GeometryCache {
 	private final Map<Integer, ObjFileDrawer> objDrawers = new ConcurrentHashMap<>();
 	private final ConcurrentLinkedQueue<Integer> expiredFileLists = new ConcurrentLinkedQueue<>();
 
+	private record PrimitiveKey(Type type, double base, double top, double height, int slices, int stacks,
+			boolean textured) {}
+
+	// Only accessed on the GL thread, including eviction and disposal.
+	private final Cache<PrimitiveKey, List<OpenGL.StoredDrawing>> primitiveMeshes =
+			newBuilder().maximumSize(32).removalListener(
+					(final RemovalNotification<PrimitiveKey, List<OpenGL.StoredDrawing>> notification) -> {
+				notification.getValue().forEach(OpenGL.StoredDrawing::dispose);
+			}).build();
+
 	/** Cache of bounding envelopes for geometry files, keyed by path. Expires after 2 minutes of inactivity. */
 	private final Cache<String, IEnvelope> envelopes;
 
@@ -332,6 +344,7 @@ public class GeometryCache {
 	 * from the {@link OpenGL} list cache to prevent memory leaks.
 	 */
 	public void dispose() {
+		primitiveMeshes.invalidateAll();
 		fileCache.invalidateAll();
 		releaseExpiredFileLists();
 		// Release all built-in geometry Runnables from the OpenGL list cache.
@@ -702,12 +715,30 @@ public class GeometryCache {
 	 * @param loops  the number of radial subdivisions
 	 */
 	public void drawDisk(final OpenGL gl, final double inner, final double outer, final int slices, final int loops) {
+		drawPrimitive(new PrimitiveKey(CIRCLE, inner, outer, 0, slices, loops, gl.isTextured()),
+				() -> buildDisk(gl, inner, outer, slices, loops));
+	}
+
+	private void drawPrimitive(final PrimitiveKey key, final Runnable producer) {
+		List<OpenGL.StoredDrawing> mesh = primitiveMeshes.getIfPresent(key);
+		openGL.getGL().glFrontFace(GL.GL_CCW);
+		try {
+			if (mesh == null) {
+				mesh = openGL.captureDrawing(producer);
+				primitiveMeshes.put(key, mesh);
+			}
+			for (final OpenGL.StoredDrawing drawing : mesh) { drawing.draw(); }
+		} finally {
+			openGL.getGL().glFrontFace(GL.GL_CW);
+		}
+	}
+
+	private void buildDisk(final OpenGL gl, final double inner, final double outer, final int slices, final int loops) {
 		final double da = PI_2 / slices;
 		final double dr = (outer - inner) / loops;
 		final double dtc = 2.0 * outer;
 		final boolean tex = gl.isTextured();
 		double r1 = inner;
-		gl.getGL().glFrontFace(GL.GL_CCW);
 		for (int l = 0; l < loops; l++) {
 			final double r2 = r1 + dr;
 			gl.beginDrawing(GL4.GL_TRIANGLE_STRIP);
@@ -725,7 +756,6 @@ public class GeometryCache {
 			gl.endDrawing();
 			r1 = r2;
 		}
-		gl.getGL().glFrontFace(GL.GL_CW);
 	}
 
 	/**
@@ -738,13 +768,17 @@ public class GeometryCache {
 	 * @param stacks the number of latitudinal subdivisions
 	 */
 	public void drawSphere(final OpenGL gl, final double radius, final int slices, final int stacks) {
+		drawPrimitive(new PrimitiveKey(SPHERE, radius, 0, 0, slices, stacks, gl.isTextured()),
+				() -> buildSphere(gl, radius, slices, stacks));
+	}
+
+	private void buildSphere(final OpenGL gl, final double radius, final int slices, final int stacks) {
 		final double drho = Math.PI / stacks;
 		final double dtheta = PI_2 / slices;
 		final double ds = 1.0 / slices;
 		final double dt = 1.0 / stacks;
 		final boolean tex = gl.isTextured();
 		double t = 1.0;
-		gl.getGL().glFrontFace(GL.GL_CCW);
 		for (int i = 0; i < stacks; i++) {
 			final double rho = i * drho;
 			gl.beginDrawing(GL4.GL_TRIANGLE_STRIP);
@@ -768,7 +802,6 @@ public class GeometryCache {
 			gl.endDrawing();
 			t -= dt;
 		}
-		gl.getGL().glFrontFace(GL.GL_CW);
 	}
 
 	/**
@@ -784,6 +817,12 @@ public class GeometryCache {
 	 */
 	public void drawCylinder(final OpenGL gl, final double base, final double top, final double height,
 			final int slices, final int stacks) {
+		drawPrimitive(new PrimitiveKey(CYLINDER, base, top, height, slices, stacks, gl.isTextured()),
+				() -> buildCylinder(gl, base, top, height, slices, stacks));
+	}
+
+	private void buildCylinder(final OpenGL gl, final double base, final double top, final double height,
+			final int slices, final int stacks) {
 		final double da = PI_2 / slices;
 		final double dr = (top - base) / stacks;
 		final double dz = height / stacks;
@@ -793,7 +832,6 @@ public class GeometryCache {
 		final boolean tex = gl.isTextured();
 		double z = 0.0;
 		double r = base;
-		gl.getGL().glFrontFace(GL.GL_CCW);
 		for (int j = 0; j < stacks; j++) {
 			float t = (float) (j * dt);
 			float s = 0.0f;
@@ -813,7 +851,6 @@ public class GeometryCache {
 			r += dr;
 			z += dz;
 		}
-		gl.getGL().glFrontFace(GL.GL_CW);
 	}
 
 }

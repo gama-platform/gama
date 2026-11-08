@@ -19,6 +19,187 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Navigator metadata during workspace recovery
+
+Generating file metadata no longer synchronously refreshes workspace resources.
+This removes an uncancellable wait for the build's workspace lock when navigator
+labels need uncached metadata, notably after a crash. Metadata invalidation still
+uses file-system modification times; background and explicit workspace refreshes
+remain enabled.
+
+### Static layer visibility
+
+In both OpenGL backends, `refresh: false` layers can be hidden and shown
+without losing their static behavior. A layer is built when first visible and
+rebuilt once when shown again after being hidden, using the current model state;
+it remains cached between those transitions. See the
+[display-layer guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#static-layers-and-visibility)
+for an example and details.
+
+### OpenGL FPS overlay shutdown
+
+Both OpenGL renderers read FPS through the canvas using a single animator-reference
+snapshot. This prevents an intermittent null-pointer exception when native-peer
+shutdown detaches the animator while its final frame is drawing the FPS overlay.
+
+Native OpenGL canvases start their animator independently of launch-overlay closure;
+unrealized native windows are not drawn. Hiding still pauses rendering, and showing
+resumes it. This avoids depending on post-launch view callbacks to start rendering
+while a synchronized simulation waits for its first frame. Disposed native peers
+cannot be restarted.
+
+### OpenGL4 geometry reuse
+
+OpenGL4 now retains sphere, cylinder, cone-side and disk geometry in renderer-local GPU buffers.
+Repeated instances and frames reuse positions, normals and texture coordinates instead of
+recomputing and uploading every strip. Compatible strips are consolidated into one indexed
+draw per primitive pass, preserving triangle winding and texture seams. Transforms, colors, transparency, lighting, wireframes
+and picking remain per draw. A bounded cache distinguishes geometry parameters and textured
+variants and releases GPU resources on eviction or display disposal.
+
+Complex polygons now use the same bounded CPU tessellation cache as legacy OpenGL, including
+holes and coordinate changes. Diagnostics report these cache hits and misses and retained-buffer
+uploads.
+
+Repeated constant-color geometry can also reuse GPU buffers: the first occurrence streams
+normally, and a second encounter admits it to a bounded cache. Geometry changes invalidate reuse;
+colors, transforms, lighting and picking remain dynamic. Mixed-color geometry keeps its streaming
+path. Distinct fields no longer compete for one mesh drawer merely because their dimensions match.
+
+Outline text reuses cached glyph tessellation and extrusion geometry. The basic shader computes
+normal matrices on the CPU instead of inverting a matrix per vertex, and skips unchanged matrix
+and rendering-flag uniform uploads. These optimizations require no model changes or new options.
+Outside eligible map batches, static-layer traversal remains live, but geometry objects retain ordered transform,
+color, texture-selection, outline-offset and GPU draw commands. Replays skip geometry
+construction and cache-key snapshots without freezing the camera or layer transforms.
+Picking, adaptive text, meshes and resource callbacks keep their existing paths.
+The command cache is bounded and pins its GPU buffers until eviction or layer disposal.
+Layers over 4,096 objects skip per-object command retention when they cannot use a
+whole-layer batch, avoiding repeated GPU allocation and eviction for large mixed layers.
+Refreshing layers over 256 objects also bypass per-object, coordinate-drawing and
+extrusion-side retention, avoiding repeated allocation and disposal as drawings are replaced.
+Static layers retain their existing caches.
+OpenGL4 also automatically instances consecutive compatible sphere and point draws
+in layers consisting entirely of opaque, filled, untextured, unbordered spheres and
+points. Their order, transforms, colors and lighting remain live. Layers with other
+shapes, unsupported properties, transparency or wireframes, and picking use the
+ordinary path. Diagnostics report instanced calls and instances; actual gains depend
+on the scene and hardware.
+
+OpenGL4 uses the same native input handling and non-stealing view focus behavior as
+legacy OpenGL, including conversion of mouse positions to logical window coordinates
+on high-density displays.
+
+Opaque, untextured layers containing only roads and/or flat unbordered polygon fills
+can now retain ordered multi-draw batches. Compatible consecutive draws share packed
+GPU buffers; separate ranges preserve road boundaries, polygon holes and traversal order.
+Later frames skip object traversal and uploads while keeping camera and layer transforms live.
+Color, lighting, line-width and depth-offset changes invalidate the batches. Transparent,
+textured, bordered or extruded layers, picking and unsupported geometry keep their existing paths.
+Diagnostics distinguish native multi-draw calls from the constituent drawings.
+
+Mesh fills and outlines now keep separate VAO layouts: unchanged meshes no longer redefine
+attribute pointers or toggle attribute arrays every frame. Streaming uniform-color geometry
+uses one constant color attribute rather than uploading an RGBA array; mixed-color geometry
+retains per-vertex colors. Geometry and resource objects keep the basic shader bound across
+their component draws, restoring it at the object boundary so text and other shader paths
+remain isolated. List traversals also share the basic shader across object boundaries;
+foreign text and mesh paths suspend that binding before taking control.
+
+Refreshed textured, grayscale and constant-color fields can reuse an unchanged mesh
+after an exact comparison of sampled elevation values and appearance settings, avoiding
+repeated smoothing, vertex reconstruction and GPU uploads. Mutable band and palette
+color providers retain their rebuilding behavior. Environment-size changes rebuild the mesh.
+
+Static image textures now remain owned by the display until disposal, matching the
+lifetime of texture IDs held by scene objects. This avoids expiring still-referenced
+allocations and losing the ability to release them. Successfully preloaded images
+leave the preload queue instead of being looked up again on every frame.
+
+### OpenGL4 chart textures
+
+Smooth chart and image textures now explicitly generate mipmap levels in GL4 core:
+JOGL's automatic compatibility-profile path left these textures incomplete and black.
+BufferedImage-backed scene objects resolve their texture through the backend cache on
+each use, avoiding stale IDs after chart refreshes and texture-pool reuse. Recycled
+image data regenerates its mipmaps when needed. Texture anisotropy uses the valid
+minimum of one when display antialiasing is disabled.
+
+Untextured GL4 draws keep a complete, renderer-owned white texture bound instead
+of texture zero, avoiding macOS's "texture unloadable" sampler warning. Texture
+binding explicitly selects unit zero so foreign shader paths cannot redirect
+ordinary image bindings to another unit.
+
+The GL4 line-width cache starts from the context's actual width, not zero, so
+restoring an object's previous width cannot submit the invalid `glLineWidth(0)`.
+Requested widths outside the native driver's supported range are constrained to
+that range, with one explicit warning per display. In particular, macOS forward-compatible
+GL4 contexts can reject widths greater than one with `GL_INVALID_VALUE`.
+Rendering diagnostics include the first three frames' scene readiness, viewport,
+framebuffer, swap mode and shader-link state. Basic-shader link failures now raise
+an explicit error with the driver's program log instead of continuing with a blank display.
+
+### OpenGL4 text contours
+
+Graph-font glyph contours are normalized before tessellation when their winding is
+opposite to JOGL's convention. This fixes filled holes and broken curved edges in
+affected glyphs, notably Poppins zeros, without changing fonts or replacing GPU text
+rendering with raster labels. Already-correct contours and intentional zero dots are preserved.
+
+Constant-color geometry also avoids populating a CPU color array. If a draw changes color or
+alpha between vertices, the earlier vertex colors are materialized and subsequent colors remain
+per vertex. Changes to color after the last vertex do not recolor the already submitted geometry.
+
+Unbordered filled polygon extrusions and elevated lines now retain their side walls as one
+indexed mesh instead of reconstructing and drawing every quad separately. Cache keys snapshot
+coordinates, extrusion vectors and texture orientation; changing geometry or depth rebuilds the
+mesh. Bordered and wireframe sides keep their original per-face traversal and outline ordering.
+The side cache is bounded and releases GPU resources on eviction or display disposal.
+
+OpenGL4 no longer drains the GPU with an unconditional `glFinish` at the end of every frame.
+It flushes submitted commands instead; buffer presentation and explicit readbacks provide
+their own synchronization. Picking keeps its dedicated readback synchronization. This allows
+CPU submission and GPU execution to overlap.
+
+Complex polygon fills now retain GPU drawings directly from their cached tessellation,
+avoiding repeated per-vertex callback replay and attribute-buffer reconstruction. Coordinate
+changes and face-normal changes produce new drawings. Textured polygons include orientation
+and mapping bounds in their GPU cache keys, preserving mapping changes without rebuilding
+attributes on every unchanged draw. Texture image contents and texture IDs remain per draw.
+Retained geometry with one uniform face normal uses a constant normal attribute instead of
+allocating and uploading a repeated normal buffer; curved surfaces retain per-vertex normals.
+
+Simple shapes, lines, outlines and textured rectangles now look up retained drawings before
+rebuilding vertex attributes. Cache keys include ordered coordinates, normals and texture-mapping
+state, but not colors or object transforms. A second occurrence admits a drawing; changing
+coordinates or texture orientation invalidates reuse. Compatible captured triangles, strips and
+fans are consolidated into one indexed draw without connecting separate contours.
+
+### OpenGL4 fixed-pipeline lighting
+
+OpenGL4 now computes two-sided ambient/diffuse lighting per vertex, matching the fixed OpenGL
+pipeline, rather than running the light loop for every covered pixel. This is particularly useful
+for large lit raster rectangles and polygon surfaces. Vertex material colors are clamped before
+interpolation and texture modulation, as in legacy OpenGL. Positional attenuation, spotlights,
+transparency and picking are preserved. Lighting on coarse geometry now follows legacy vertex
+interpolation rather than the previous per-pixel shading. Unlit draws skip normal-matrix
+calculation and upload; picking skips vertex lighting. No new model option is required.
+
+### OpenGL4 raster uploads
+
+Raster uploads now use packed ARGB pixels directly, removing the per-pixel RGBA byte conversion.
+Contiguous straight-ARGB images use their existing pixel array; other image layouts are normalized
+without creating an intermediate image. Reusable upload buffers reduce allocation pressure.
+Repeated lookups of the same `BufferedImage` share a texture within a simulation update, with
+separate mipmapped variants. Scene updates invalidate this cache so in-place image changes remain
+visible. These changes preserve alpha and image orientation and require no model changes.
+
+Non-mipmapped raster textures also reuse GPU storage across simulation updates. A renderer-local
+pool (at most 16 textures and 64 MiB) retains retired texture allocations; matching dimensions
+receive fresh pixels through a subimage upload. Pixel contents are still refreshed each update,
+and pooled storage is released on eviction or display disposal. Mipmapped images retain their
+full rebuild path.
+
 ### OBJ loading and rendering
 
 OBJ bounds are computed from the parsed vertex bounds without first constructing a geometry for
@@ -27,6 +208,8 @@ rather than additional incomplete polygons for each intermediate vertex. Repeate
 reuses the existing contents, and invalidating the file discards its parsed data and bounds.
 Face parsing avoids per-corner tokenizer and character-array allocations and resolves negative
 OBJ indices relative to the vertices, texture coordinates and normals already read.
+OBJ parsing is serialized per file, so several displays rendering the same OBJ concurrently
+no longer interleave its parsed lists and fail with index errors.
 
 Both renderers batch consecutive compatible OBJ triangles and quads without changing material or
 face order. The fixed pipeline compiles these batches into display lists. OpenGL4 retains triangle

@@ -526,7 +526,14 @@ public class LayerObject {
 	protected final void drawObjects(final IOpenGL gl, final Trace list, final double alpha, final boolean picking) {
 		gl.setCurrentObjectAlpha(alpha);
 		prepareDrawing(gl, list);
-		for (final AbstractObject object : list.asArray()) {
+		final AbstractObject<?, ?>[] objects = list.asArray();
+		final long firstObject = drawingObjectIndex;
+		gl.drawLayerObjects(objects, isStatic(), () -> drawObjectList(gl, objects, picking));
+		if (layer != null && hasDepth()) { drawingObjectIndex = firstObject + objects.length; }
+	}
+
+	private void drawObjectList(final IOpenGL gl, final AbstractObject<?, ?>[] objects, final boolean picking) {
+		for (final AbstractObject object : objects) {
 			if (layer != null && hasDepth()) {
 				gl.setCurrentZTranslation(drawingStartZTranslation + drawingObjectIndex * gl.getCurrentZIncrement());
 				drawingObjectIndex++;

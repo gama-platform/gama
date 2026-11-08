@@ -157,7 +157,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		final GamaGLCanvas canvas =
 				new GamaGLCanvas(this.parent, renderer, getOutput().getTitle(), !LaunchingOverlay.isLaunchOverlayVisible());
 		animator = canvas.getAnimator();
-		if (!LaunchingOverlay.isLaunchOverlayVisible()) { canvas.startAnimator(); }
+		canvas.startAnimator();
 	}
 
 	/**

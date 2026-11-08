@@ -582,7 +582,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseClicked(final com.jogamp.newt.event.MouseEvent e) {
-		if (renderer.getSurface().isOverDisplayControl(e.getX(), e.getY())) return;
+		if (isOverDisplayControl(e)) return;
 		if (e.getClickCount() == 2) {
 			if (keystoneMode) {
 				final int x = e.getX();
@@ -600,10 +600,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mousePressed(final com.jogamp.newt.event.MouseEvent e) {
-		if (e.getButton() == 1 && renderer.getSurface().isOverDisplayControl(e.getX(), e.getY())) {
+		if (e.getButton() == 1 && isOverDisplayControl(e)) {
 			controlGesture = true;
 			return;
 		}
+
 		// DEBUG.OUT("Mouse pressed from NEWT");
 		invokeOnGLThread(drawable -> {
 			final int x = e.getX();
@@ -611,6 +612,12 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			internalMouseDown(x, y, e.getButton(), isControlDown(e), e.isShiftDown());
 			return false;
 		});
+	}
+
+	private boolean isOverDisplayControl(final com.jogamp.newt.event.MouseEvent e) {
+		final int[] position = renderer.getCanvas().getNativeSurface()
+				.convertToWindowUnits(new int[] { e.getX(), e.getY() });
+		return renderer.getSurface().isOverDisplayControl(position[0], position[1]);
 	}
 
 	/**

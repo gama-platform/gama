@@ -125,7 +125,7 @@ experiment traffic type: gui autorun: true{
 	font title <- font("Arial", 18, #bold);
 	
 	output synchronized: true{
-		display carte type: 3d axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
+		display carte type: opengl axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
 			
 			 // The one-pixel frame deliberately allows the legend to overflow.
 			 overlay coordinates: #screen position: {50, 50} size: {1, 1} background: # black border: #black rounded: false

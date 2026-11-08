@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base {
 	
 	output {
 		layout #split parameters: false consoles: false;
-		display Ants antialias: false type: 3d axes: false map_order: true{
+		display Ants antialias: false type: opengl4 axes: false map_order: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
@@ -252,7 +252,7 @@ experiment "3D View" type: gui parent:base{
 	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output synchronized: true{
-		display Ants3D type: opengl show_fps: true antialias: false{
+		display "Ants3D" type: opengl4 show_fps: true antialias: false{
 			camera 'default' location: {50.0,134.8682,105.6514} target: {50.0,59.403,0.0};
 			grid ant_grid elevation: grid_values triangulation: true texture: terrain refresh: false;
 			agents "Trail" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.02} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
@@ -276,7 +276,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 
 	permanent {
-		display Comparison background: #white type:3d{
+		display Comparison background: #white type:opengl4{
 			chart "Food Gathered" type: series {
 			loop s over: simulations {
 				if (!dead(s)) {
@@ -289,7 +289,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
-		display Ants background: color type: 3d toolbar: color axes: false map_order: true{
+		display Ants background: color type: opengl4 toolbar: color axes: false map_order: true{
 			picture terrain coordinates: #world refresh: false;
 			agents "agents" coordinates: #world transparency: 0.5 value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant coordinates: #world aspect: icon;

@@ -97,6 +97,17 @@ public interface IOpenGL {
 
 	void popMatrix();
 
+	default void drawObjectGeometry(final AbstractObject<?, ?> object, final Runnable drawing) { drawing.run(); }
+
+	default boolean canRetainObjectGeometry(final AbstractObject<?, ?> object) { return false; }
+
+	default void drawLayerObjects(final AbstractObject<?, ?>[] objects, final boolean staticLayer,
+			final Runnable drawing) { drawing.run(); }
+
+	default Pass offsetPolygonsForOutline() {
+		return gama.ui.display.opengl.renderer.helpers.PolygonOffset.apply(this);
+	}
+
 	void pushIdentity(int mode);
 
 	void push(int mode);

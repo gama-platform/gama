@@ -119,7 +119,7 @@ import gama.gaml.statements.AspectStatement;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, usefull in case of agents that do not move)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to true.")) },
 		omissible = IKeyword.SPECIES)
 @doc (
 		value = "The `" + IKeyword.SPECIES_LAYER

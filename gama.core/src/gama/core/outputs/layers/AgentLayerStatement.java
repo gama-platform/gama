@@ -127,7 +127,7 @@ import gaml.compiler.descriptions.SpeciesDescription;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, useful in case of agents that do not move)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to true.")) },
 		omissible = IKeyword.NAME)
 @validator (AgentLayerValidator.class)
 @doc (

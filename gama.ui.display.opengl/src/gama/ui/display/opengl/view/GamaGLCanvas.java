@@ -43,6 +43,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.GLRunnable;
 
 import gama.api.runtime.SystemInfo;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
@@ -66,7 +67,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	GLWindow drawable;
 
 	/** The fps delegate. */
-	private GamaGLAnimator animator;
+	private volatile GamaGLAnimator animator;
 
 	/** The detached. */
 	protected boolean detached = false;
@@ -216,7 +217,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 * Creates the heavyweight NEWT/SWT native peer the first time it is needed.
 	 */
 	private void ensureNativePeer() {
-		if (drawable != null || isDisposed()) return;
+		if (drawable != null || isDisposed() || nativePeerDisposalRequested) return;
 		final GLCapabilities cap = defineCapabilities();
 		drawable = GLWindow.create(cap);
 		drawable.setAutoSwapBufferMode(false);
@@ -600,43 +601,65 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	@Override
 	public void setUpdateFPSFrames(final int frames, final PrintStream out) {
-		if (animator != null) { animator.setUpdateFPSFrames(frames, out); }
+		final GamaGLAnimator currentAnimator = animator;
+		if (currentAnimator != null) { currentAnimator.setUpdateFPSFrames(frames, out); }
 	}
 
 	@Override
 	public void resetFPSCounter() {
-		if (animator != null) { animator.resetFPSCounter(); }
+		final GamaGLAnimator currentAnimator = animator;
+		if (currentAnimator != null) { currentAnimator.resetFPSCounter(); }
 	}
 
 	@Override
 	public int getUpdateFPSFrames() {
-		return animator == null ? 0 : animator.getUpdateFPSFrames();
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0 : currentAnimator.getUpdateFPSFrames();
 
 	}
 
 	@Override
-	public long getFPSStartTime() { return animator == null ? 0L : animator.getFPSStartTime(); }
+	public long getFPSStartTime() {
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0L : currentAnimator.getFPSStartTime();
+	}
 
 	@Override
 	public long getLastFPSUpdateTime() {
-		return animator == null ? 0L : animator.getLastFPSUpdateTime();
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0L : currentAnimator.getLastFPSUpdateTime();
 
 	}
 
 	@Override
-	public long getLastFPSPeriod() { return animator == null ? 0L : animator.getLastFPSPeriod(); }
+	public long getLastFPSPeriod() {
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0L : currentAnimator.getLastFPSPeriod();
+	}
 
 	@Override
-	public float getLastFPS() { return animator == null ? 0f : animator.getLastFPS(); }
+	public float getLastFPS() {
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0f : currentAnimator.getLastFPS();
+	}
 
 	@Override
-	public int getTotalFPSFrames() { return animator == null ? 0 : animator.getTotalFPSFrames(); }
+	public int getTotalFPSFrames() {
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0 : currentAnimator.getTotalFPSFrames();
+	}
 
 	@Override
-	public long getTotalFPSDuration() { return animator == null ? 0L : animator.getTotalFPSDuration(); }
+	public long getTotalFPSDuration() {
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0L : currentAnimator.getTotalFPSDuration();
+	}
 
 	@Override
-	public float getTotalFPS() { return animator == null ? 0f : animator.getTotalFPS(); }
+	public float getTotalFPS() {
+		final GamaGLAnimator currentAnimator = animator;
+		return currentAnimator == null ? 0f : currentAnimator.getTotalFPS();
+	}
 
 	@Override
 	public void setVisible(final boolean v) {
@@ -683,24 +706,34 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 * Starts the animator if needed and ensures it is not paused.
 	 */
 	public void startAnimator() {
+		if (isDisposed() || nativePeerDisposalRequested) return;
 		ensureNativePeer();
-		if (animator == null) return;
-		if (!animator.isStarted()) { animator.start(); }
-		animator.resume();
+		final GamaGLAnimator currentAnimator = animator;
+		if (currentAnimator == null) return;
+		if (!currentAnimator.isStarted()) {
+			currentAnimator.start();
+			if (GamaPreferences.Displays.OPENGL_DIAGNOSTICS.getValue()) {
+				DEBUG.ERR("[OpenGL animator] display=" + name + " started=" + currentAnimator.isStarted()
+						+ " visible=" + visible + " realized=" + isRealized());
+			}
+		}
+		currentAnimator.resume();
 	}
 
 	/**
 	 *
 	 */
 	public void pauseAnimator() {
-		if (animator != null) { animator.pause(); }
+		final GamaGLAnimator currentAnimator = animator;
+		if (currentAnimator != null) { currentAnimator.pause(); }
 	}
 
 	/**
 	 * Resume animator.
 	 */
 	public void resumeAnimator() {
-		if (animator != null) { animator.resume(); }
+		final GamaGLAnimator currentAnimator = animator;
+		if (currentAnimator != null) { currentAnimator.resume(); }
 	}
 
 }

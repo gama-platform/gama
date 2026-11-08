@@ -199,14 +199,18 @@ public class PickingHelper extends AbstractRendererHelper
 			final int[] viewport = new int[4];
 			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
 			final double x = camera.getMousePosition().getX(), y = camera.getMousePosition().getY();
-			final int width = openGL.getViewWidth(), height = openGL.getViewHeight();
+			final int width = getRenderer().getCanvas().getSurfaceWidth();
+			final int height = getRenderer().getCanvas().getSurfaceHeight();
+			// CameraHelper receives NEWT coordinates in framebuffer pixels, not logical view pixels.
+			pickX = (int) x;
+			pickY = height - 1 - (int) y;
 			pickInViewport = width > 0 && height > 0 && viewport[0] >= 0 && viewport[1] >= 0
 					&& viewport[2] > 0 && viewport[3] > 0
-					&& x >= 0 && x < width && y >= 0 && y < height;
+					&& x >= 0 && x < width && y >= 0 && y < height
+					&& pickX >= viewport[0] && pickX < viewport[0] + viewport[2]
+					&& pickY >= viewport[1] && pickY < viewport[1] + viewport[3];
 			if (pickInViewport) {
-				pickX = viewport[0] + (int) (x * viewport[2] / width);
-				pickY = viewport[1] + viewport[3] - 1 - (int) (y * viewport[3] / height);
-				beginFramebuffer(viewport[0] + viewport[2], viewport[1] + viewport[3]);
+				beginFramebuffer(width, height);
 			}
 		} catch (final RuntimeException e) {
 			openGL.pop(GLMatrixFunc.GL_PROJECTION);

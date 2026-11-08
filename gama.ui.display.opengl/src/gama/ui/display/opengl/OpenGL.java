@@ -1732,7 +1732,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void drawFPS(final boolean doIt) {
 		if (doIt) {
 			setCurrentColor(GamaColorFactory.BLACK);
-			final int nb = (int) getCanvas().getAnimator().getLastFPS();
+			final int nb = (int) getCanvas().getLastFPS();
 			final String s = nb == 0 ? "(computing FPS...)" : nb + " FPS";
 			rasterText(s, GLUT.BITMAP_HELVETICA_12, -5, 5, 0);
 		}

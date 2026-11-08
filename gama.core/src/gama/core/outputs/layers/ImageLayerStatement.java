@@ -93,7 +93,7 @@ import gama.core.outputs.layers.ImageLayerStatement.ImageLayerValidator;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the image display is refreshed or not. (false by default, true should be used in cases of images that are modified over the simulation)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to false.")) },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "`" + IKeyword.IMAGE_LAYER

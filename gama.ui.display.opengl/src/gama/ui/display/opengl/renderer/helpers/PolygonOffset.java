@@ -16,6 +16,10 @@ public final class PolygonOffset {
 
 	public static Pass forOutline(final IOpenGL openGL, final boolean hasOutline) {
 		if (!hasOutline) return NO_OFFSET;
+		return openGL.offsetPolygonsForOutline();
+	}
+
+	public static Pass apply(final IOpenGL openGL) {
 		final GL2GL3 gl = openGL.getGL();
 		if (openGL.isDrawingStored()) {
 			// Attribute operations are recorded in legacy display lists and restore the state at replay time.

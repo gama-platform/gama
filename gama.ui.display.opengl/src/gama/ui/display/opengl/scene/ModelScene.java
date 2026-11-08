@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
@@ -238,6 +242,19 @@ public class ModelScene {
 		// zIncrement = computeVisualZIncrement();
 	}
 
+	/** Restore declaration order when an initially hidden layer is first added to a later scene. */
+	public void orderLayers() {
+		final Map<ILayer, Integer> order = new IdentityHashMap<>();
+		final var definitions = renderer.getSurface().getManager().getItems();
+		for (int i = 0; i < definitions.size(); i++) { order.put(definitions.get(i), i); }
+		final var entries = new ArrayList<>(layers.entrySet());
+		entries.sort((a, b) -> Integer.compare(
+				a.getValue().layer == null ? -1 : order.getOrDefault(a.getValue().layer, Integer.MAX_VALUE),
+				b.getValue().layer == null ? -1 : order.getOrDefault(b.getValue().layer, Integer.MAX_VALUE)));
+		layers.clear();
+		for (final var entry : entries) { layers.put(entry.getKey(), entry.getValue()); }
+	}
+
 	/**
 	 * Rendered.
 	 *
@@ -263,9 +280,14 @@ public class ModelScene {
 	 * @param alpha
 	 *            the alpha
 	 */
-	public void beginDrawingLayer(final ILayer layer, final Double alpha) {
+	public LayerObject beginDrawingLayer(final ILayer layer, final Double alpha) {
 		final String key = layer.getName() + layer.getDefinition().getOrder();
 		currentLayer = layers.get(key);
+		LayerObject replaced = null;
+		if (currentLayer != null && !layer.getData().isDynamic()) {
+			replaced = currentLayer;
+			currentLayer = null;
+		}
 		if (currentLayer == null) {
 			// DEBUG.OUT("ModelScene #" + myIndex + ": Layer " + layer.getName() + " is not present in the scene");
 			currentLayer = layer.isOverlay() ? new OverlayLayerObject(renderer, layer)
@@ -277,6 +299,12 @@ public class ModelScene {
 		}
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys after creation = " + layers.keySet());
 		currentLayer.setAlpha(alpha);
+		return replaced;
+	}
+
+	public boolean containsLayerObject(final LayerObject object) {
+		for (final LayerObject value : layers.values()) { if (value == object) return true; }
+		return false;
 	}
 
 	/**

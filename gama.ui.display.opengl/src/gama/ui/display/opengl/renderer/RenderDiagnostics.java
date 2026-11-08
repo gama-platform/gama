@@ -15,6 +15,27 @@ public final class RenderDiagnostics {
 	private long intervalStart, frameStart, frameNanos, sceneNanos, pickingNanos;
 	private long frames, pickingPasses, genericDraws, meshDraws, genericBytes, meshBytes;
 	private long polygonHits, polygonMisses;
+	private long objectReplays;
+	private long mapBatchCalls, mapBatchDrawings;
+	private long instancedCalls, instances;
+
+	public void instancedDraw(final int count) {
+		if (enabled) {
+			instancedCalls++;
+			instances += count;
+		}
+	}
+
+	public void objectReplay() {
+		if (enabled) { objectReplays++; }
+	}
+
+	public void mapBatch(final int drawings) {
+		if (enabled) {
+			mapBatchCalls++;
+			mapBatchDrawings += drawings;
+		}
+	}
 
 	public void beginFrame() {
 		enabled = GamaPreferences.Displays.OPENGL_DIAGNOSTICS.getValue();
@@ -46,6 +67,10 @@ public final class RenderDiagnostics {
 		}
 	}
 
+	public void genericUpload(final long bytes) {
+		if (enabled) { genericBytes += bytes; }
+	}
+
 	public void meshDraw() {
 		if (enabled) { meshDraws++; }
 	}
@@ -72,9 +97,15 @@ public final class RenderDiagnostics {
 		final boolean gl4 = backend.startsWith("gama.ui.display.opengl4.");
 		final String detail = gl4
 				? String.format(Locale.ROOT, "GL4 tracked calls/frame: generic=%.1f mesh=%.1f; "
-						+ "buffer MiB/frame: generic=%.3f mesh=%.3f", (double) genericDraws / frames,
+						+ "buffer MiB/frame: generic=%.3f mesh=%.3f; polygon cache: hits=%d misses=%d; "
+						+ "retained objects/frame=%.1f; map multi-draw calls/frame=%.1f drawings/frame=%.1f; "
+						+ "instanced calls/frame=%.1f instances/frame=%.1f",
+						(double) genericDraws / frames,
 						(double) meshDraws / frames, genericBytes / (1024d * 1024d * frames),
-						meshBytes / (1024d * 1024d * frames))
+						meshBytes / (1024d * 1024d * frames), polygonHits, polygonMisses,
+						(double) objectReplays / frames, (double) mapBatchCalls / frames,
+						(double) mapBatchDrawings / frames, (double) instancedCalls / frames,
+						(double) instances / frames)
 				: String.format(Locale.ROOT, "legacy polygon cache: hits=%d misses=%d", polygonHits, polygonMisses);
 		DEBUG.LOG(String.format(Locale.ROOT,
 				"[OpenGL diagnostics] display=%s backend=%s frames=%d CPU ms/frame: render=%.3f scene=%.3f "
@@ -90,5 +121,8 @@ public final class RenderDiagnostics {
 		intervalStart = frameNanos = sceneNanos = pickingNanos = 0;
 		frames = pickingPasses = genericDraws = meshDraws = genericBytes = meshBytes = 0;
 		polygonHits = polygonMisses = 0;
+		objectReplays = 0;
+		mapBatchCalls = mapBatchDrawings = 0;
+		instancedCalls = instances = 0;
 	}
 }

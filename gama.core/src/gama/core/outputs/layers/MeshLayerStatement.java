@@ -155,7 +155,7 @@ import gama.api.annotations.validator;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, but should be deactivated if the field is static)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to true.")) },
 		omissible = IKeyword.SOURCE)
 @doc (
 		value = "Allows the modeler to display in an optimized way a field of values, optionally using elevation. Useful for displaying DEMs, for instance, without having to load them into a grid. Can be fed with a matrix of int/float, a grid, a csv/raster/image file and supports many visualisation options",

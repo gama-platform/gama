@@ -24,6 +24,7 @@ import static gama.api.gaml.types.Types.INT;
 import static gama.api.gaml.types.Types.POINT;
 
 import java.awt.Point;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -52,6 +53,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	public static final String REFERENTIAL_DOC = "The coordinate system of draw contents, independently of layer placement. In #screen, at: and rectangular size: use the layer's dimensions as their reference, fractions below 1 and logical pixels from 1; geometric lengths are pixels and #px is 1. In #world, contents use model units. A screen overlay fits world contents uniformly into its frame from the upper-left corner; screen graphics scale them independently along X and Y. Neither clips overflowing drawings. Font sizes keep their nominal typographic meaning in both modes. Graphics and overlays inherit coordinates, including its default; screen contents require screen placement.";
 	public static final String POSITION_DOC = "Position of the upper-left corner of the layer. In #world, XY values are model units, including values below 1 and negative positions. In #screen, magnitudes strictly below 1 are viewport fractions and values from 1 are logical pixels; negative values count from the opposite edge. Overlays and charts default to #screen; other layers default to #world. World-layer Z behavior is unchanged; screen frames have no world-depth placement.";
 	public static final String SIZE_DOC = "Extent of the layer from its origin. In #world, XY values are model units. In #screen, magnitudes strictly below 1 are viewport fractions and values from 1 are logical pixels: {1,1} is one pixel by one pixel. Omitting size fills the reference extent. Overlays and charts default to #screen; other layers default to #world. The Z component retains the existing scaling convention.";
+	public static final String REFRESH_DOC = "In OpenGL displays, refresh: false retains the layer's drawings instead of rebuilding them each step. The drawings are built when the layer first becomes visible and rebuilt once each time it is shown after being hidden. Explicit display redraws can also rebuild them. Java2D continues to redraw layers.";
 
 	private final LayerCoordinates coordinates;
 	private final LayerCoordinates contentCoordinates;
@@ -115,6 +117,8 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	/** The visible. */
 	Attribute<Boolean> visible;
 
+	private final AtomicBoolean hiddenSinceLastVisibleUpdate = new AtomicBoolean();
+
 	/** The structural change by user. */
 	volatile boolean structuralChangeByUser;
 
@@ -154,7 +158,6 @@ public class LayerData extends AttributeHolder implements ILayerData {
 
 	@Override
 	public boolean compute(final IScope scope, final IGraphics g) throws GamaRuntimeException {
-		boolean v = isVisible();
 		final LayerCoordinates previous = g.setCoordinateSystem(coordinates);
 		try {
 			this.refresh(scope);
@@ -165,7 +168,11 @@ public class LayerData extends AttributeHolder implements ILayerData {
 		} finally {
 			g.setCoordinateSystem(previous);
 		}
-		return scope.getClock().getCycle() > 0 && isVisible() != v;
+		if (!isVisible()) {
+			hiddenSinceLastVisibleUpdate.set(true);
+			return false;
+		}
+		return hiddenSinceLastVisibleUpdate.getAndSet(false);
 	}
 
 	@Override
@@ -301,8 +308,8 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	public void setVisible(final Boolean b) {
 		// TODO AD We should maybe force it to a constant ?
 		if (isVisible() != b) {
+			if (!b) { hiddenSinceLastVisibleUpdate.set(true); }
 			visible = create(VISIBLE, BOOL, b);
-			structuralChangeByUser = true;
 		}
 	}
 
@@ -313,7 +320,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	 */
 	@Override
 	public boolean hasStructurallyChanged() {
-		boolean result = transparency.changed() || trace.changed() || refresh.changed() || visible.changed()
+		boolean result = transparency.changed() || trace.changed() || refresh.changed()
 				|| structuralChangeByUser;
 		structuralChangeByUser = false;
 		return result;

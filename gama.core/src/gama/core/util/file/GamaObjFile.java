@@ -99,8 +99,8 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	/** The mtl path. */
 	public final String mtlPath;
 
-	/** The loaded. */
-	boolean loaded = false;
+	/** Set only after a complete parse; volatile so readers that see it also see the parsed lists. */
+	volatile boolean loaded = false;
 	private volatile long contentsRevision;
 
 	public long getContentsRevision() { return contentsRevision; }
@@ -224,7 +224,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 * @param forDrawing
 	 *            the for drawing
 	 */
-	public void loadObject(final IScope scope, final boolean forDrawing) {
+	public synchronized void loadObject(final IScope scope, final boolean forDrawing) {
 		if (loaded) return;
 		try (BufferedReader br = new BufferedReader(new FileReader(getFile(scope)))) {
 			loadObject(br);
@@ -242,7 +242,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	public void loadObject(final BufferedReader br) throws IOException {
+	public synchronized void loadObject(final BufferedReader br) throws IOException {
 		if (loaded) return;
 		int facecounter = 0;
 		boolean firstpass = true;
@@ -412,7 +412,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 		contentsRevision++;
 	}
 
-	private void clearParsedData() {
+	private synchronized void clearParsedData() {
 		setOfVertex.clear();
 		setOfVertexNormals.clear();
 		setOfVertexTextures.clear();

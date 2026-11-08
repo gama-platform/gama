@@ -249,6 +249,48 @@ Legacy OpenGL picking selects the last hit in its 4-by-4 selection region;
 its selection mode does not test texture alpha, so it can select through a
 transparent texture area.
 
+### Static layers and visibility
+
+In both OpenGL backends, a layer with `refresh: false` is **static**, but it
+can still be hidden and shown. `refresh:` controls whether its drawings are
+recomputed on every display update; `visible:` controls whether the layer is
+shown. The two facets are independent:
+
+- If the layer starts visible, its drawings are built on its first visible update.
+  If it starts hidden, they are built when it is first shown.
+- While it remains visible, the drawings are retained rather than recomputed
+  on every update. Changes to agents or variables used by the drawings do not
+  automatically appear.
+- Hiding the layer does not rebuild it. Each later **hidden-to-visible**
+  transition recomputes its drawings once using the current model state, then
+  retains them again. An explicit display redraw can also rebuild it.
+
+For example, `show_routes` can be a global boolean controlled by an event or
+an experiment parameter:
+
+```gaml
+display "Map" type: opengl {
+    species route aspect: default refresh: false visible: show_routes;
+}
+```
+
+Changing `show_routes` hides or shows the whole layer. The layer menu can also
+hide or show it; choosing a visibility in the menu replaces the layer's
+`visible:` expression with that chosen constant, so the expression no longer
+controls it. For independently toggled content, use separate layers with
+separate `visible:` expressions. A condition *inside* an aspect is evaluated
+when the static layer is rebuilt, but changing that condition alone does not
+change the layer's visibility or trigger a rebuild.
+
+This can save the cost of repeatedly evaluating aspects and constructing
+drawings for large, mostly unchanged layers. Showing one can still be expensive,
+and static layers do not eliminate the cost of rendering their contents.
+Use `refresh: true` if contents must follow model changes while visible.
+`refresh:` defaults to `true` for most layers and `false` for image layers.
+Java2D continues to redraw layers rather than retaining them this way.
+
+### OpenGL diagnostics
+
 For performance investigation, enable **Displays > OpenGL Rendering Properties >
 Log OpenGL rendering diagnostics**. The preference is off by default. Roughly every
 five seconds while rendering, each display reports its backend and CPU elapsed
@@ -257,13 +299,52 @@ standard output). Picking time is the total for the interval, with the number
 of passes; render and scene times are averages per frame. Render time includes
 scene and picking work, but excludes viewport reshaping and the subsequent buffer swap. It measures
 CPU elapsed time, not GPU execution time; picking can include GPU readback waits.
+OpenGL4 submits frames without a forced frame-end GPU completion wait. Its CPU
+timings therefore measure submission rather than waiting for all submitted GPU work
+to finish; lower reported CPU times alone do not prove higher presentation FPS.
 
 OpenGL4 reports draw calls and uploaded buffer bytes per frame for the generic
 and mesh drawing paths, including any picking pass. These are partial counts:
-they exclude other paths such as text, textures and keystone rendering. Legacy
-OpenGL instead reports hits and misses for its polygon tessellation cache; this
+they exclude other paths such as text, textures and keystone rendering. Retained
+OBJ, primitive and admitted constant-color geometry buffers contribute upload bytes
+only when they are built, as do retained complex polygon fills (including textured fills).
+Compatible primitive strips use one indexed draw per pass.
+OpenGL4 also reports retained geometry-object replays per frame. Nonanimated
+world-layer geometry retains ordered drawing commands: camera and layer transforms,
+layer alpha and object-depth offsets remain live. Picking, adaptive text, meshes
+and resource traversal are not frozen by this cache. GPU buffers stay owned until
+command eviction or layer/display disposal. This reduces CPU geometry work, not
+the number of draws through that command cache.
+Separately, OpenGL4 automatically instances consecutive compatible sphere and
+point draws in layers composed entirely of opaque, filled, untextured, unbordered
+spheres and points. It preserves their traversal order, transforms, colors and
+lighting; layers containing other shapes or unsupported properties, wireframes,
+transparency and picking use the ordinary path. Instances are rebuilt during
+traversal, so refreshed geometry and appearance remain live. Diagnostics report
+instanced calls and instances per frame; performance depends on the scene and
+hardware.
+An additional retained multi-draw path handles nonanimated, opaque, untextured
+layers made entirely of lines and/or flat unbordered polygon fills. It packs
+compatible consecutive draws into shared buffers without reordering them or
+connecting separate road strips. Camera and layer matrices remain live; changed
+colors, lighting, widths or object-depth offsets invalidate reuse. Transparent,
+bordered, extruded, textured and picking paths fall back to ordinary traversal.
+Diagnostics report map multi-draw calls and the number of constituent drawings
+per frame separately. These batches reduce submission overhead but do not
+establish FPS parity with the fixed pipeline.
+Native OpenGL4 line widths are limited by the driver. Requests outside its supported
+range use the nearest supported width and produce one warning per display; macOS
+forward-compatible contexts may support only one-pixel lines.
+Both backends report hits and misses for their polygon tessellation cache; this
 is not a count for all renderer caches. Logging can be disabled globally through
 GAMA's `enable_logging` flag.
+
+OpenGL4 evaluates two-sided ambient/diffuse lighting at vertices, like legacy
+OpenGL. The resulting clamped material colors are interpolated across each triangle
+and then modulated by the texture. This avoids a per-pixel light loop on large
+raster rectangles and polygon surfaces. On coarse geometry, lighting therefore
+follows the fixed pipeline's interpolation rather than OpenGL4's former per-pixel
+shading. Unlit drawings skip lighting calculations. No model option is needed.
 
 When the OpenGL anti-z-fighting preference is enabled (the default), the
 renderers in depth-based mode also apply small visual Z offsets. The configured increment factor
@@ -296,6 +377,12 @@ Visible fragments use per-pass IDs rather than their shaded colors, while
 fragments rejected by the alpha threshold remain unpickable. Picking samples
 one framebuffer pixel at the cursor. Text picking uses tessellated AWT outlines,
 which can differ slightly from the displayed graph-font glyphs.
+NEWT mouse coordinates are framebuffer pixels for camera and picking operations;
+display events and controls use logical viewport pixels. OpenGL4 picking does not
+apply the HiDPI scale a second time.
+Graph-font contours are normalized to JOGL's outer/inner winding convention before
+tessellation, preserving hollow glyphs such as Poppins zeros. This is independent
+of depth ordering and does not require a model option.
 
 Both OpenGL backends request a 24-bit depth buffer for the display and use a
 24-bit depth attachment when rendering through the keystone framebuffer.
@@ -387,7 +474,13 @@ antialiasing. Java2D scales the bitmap into the logical chart frame with
 bicubic interpolation; its other drawings retain the display's existing
 antialiasing and interpolation settings. OpenGL chart textures use trilinear mipmap filtering to retain the
 benefits of supersampling when reduced on screen, without changing filtering
-for ordinary image textures. World-placed charts still follow the camera; their
+for ordinary image textures. OpenGL4 explicitly generates the required mipmap
+levels in its core context, including after texture refreshes, rather than relying
+on compatibility-only automatic generation. BufferedImage textures are resolved
+through the renderer cache so refreshed charts cannot retain deleted or recycled IDs.
+Untextured OpenGL4 draws keep a complete neutral texture bound for core-profile
+sampler validation; the shader still disables texture sampling for these draws.
+World-placed charts still follow the camera; their
 raster size uses the layer's existing logical-pixel bookkeeping rectangle, not an adaptive
 perspective-projected bound. For fixed dashboard charts, keep screen placement.
 

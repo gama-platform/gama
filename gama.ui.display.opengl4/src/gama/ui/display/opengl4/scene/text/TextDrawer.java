@@ -35,8 +35,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import com.jogamp.graph.curve.Region;
+import com.jogamp.graph.curve.OutlineShape;
 import com.jogamp.graph.curve.opengl.RegionRenderer;
 import com.jogamp.graph.curve.opengl.TextRegionUtil;
 import com.jogamp.graph.font.FontFactory;
@@ -44,6 +50,7 @@ import com.jogamp.math.Recti;
 import com.jogamp.math.Vec3f;
 import com.jogamp.math.Vec4f;
 import com.jogamp.math.util.PMVMatrix4f;
+import com.jogamp.math.geom.plane.Winding;
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
@@ -149,6 +156,25 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	private record FontKey(Font font, boolean overlay) {}
 
 	private final Map<FontKey, com.jogamp.graph.font.Font> fontCache = new HashMap<>();
+	private final Set<OutlineShape> normalizedGlyphs = Collections.newSetFromMap(new IdentityHashMap<>());
+
+	private void normalizeGlyphs(final com.jogamp.graph.font.Font font, final String text) {
+		for (int i = 0; i < text.length(); i++) {
+			final OutlineShape shape = font.getGlyph(text.charAt(i)).getShape();
+			if (shape == null || !normalizedGlyphs.add(shape) || shape.getOutlineCount() == 0) continue;
+			var outer = shape.getOutline(0);
+			for (int contour = 1; contour < shape.getOutlineCount(); contour++) {
+				if (shape.getOutline(contour).compareTo(outer) > 0) { outer = shape.getOutline(contour); }
+			}
+			// JOGL assumes CCW outer contours. Some fonts reverse every contour within particular glyphs.
+			if (outer.getWinding() != Winding.CW) continue;
+			for (int contour = 0; contour < shape.getOutlineCount(); contour++) {
+				final var outline = shape.getOutline(contour);
+				outline.setWinding(outline.getWinding() == Winding.CW ? Winding.CCW : Winding.CW);
+			}
+			shape.clearCache();
+		}
+	}
 
 	// -------------------------------------------------------------------------
 	// Contour geometry state
@@ -238,6 +264,20 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 
 	/** Extrusion depth of the current string (0 = flat). */
 	double depth;
+
+	private record OutlineKey(Font font, String text, double precision, double depth, boolean wireframe) {}
+
+	private record OutlineGeometry(Rectangle2D bounds, double[] faces, double[] textures, double[] normals,
+			double[] sides, int[] contours) {
+		int weight() {
+			return 256 + Double.BYTES * (faces.length + textures.length + normals.length + sides.length)
+					+ Integer.BYTES * contours.length;
+		}
+	}
+
+	private final Cache<OutlineKey, OutlineGeometry> outlines = CacheBuilder.newBuilder()
+			.maximumWeight(16 * 1024 * 1024)
+			.weigher((OutlineKey key, OutlineGeometry geometry) -> geometry.weight()).build();
 
 	// -------------------------------------------------------------------------
 	// Constructor
@@ -745,6 +785,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		}
 
 		final GL2ES2 gl2es2 = gl4.getGL2ES2();
+		normalizeGlyphs(joglFont, text);
 		final IPoint p = attributes.getLocation();
 		final IPoint anchor = attributes.getAnchor();
 
@@ -917,19 +958,50 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 
 	private void drawOutline(final String text, final IDrawingAttributes attributes, final boolean billboard) {
 		final Font awtFont = attributes.getFont().getAwtFont();
-		final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
-		final Rectangle2D bounds = shape.getBounds2D();
 		this.depth = attributes.getDepth();
 		this.border = attributes.getBorder();
-		this.width = bounds.getWidth();
-		this.height = bounds.getHeight();
-		faceVertexBuffer.clear();
-		faceTextureBuffer.clear();
-		sideNormalBuffer.clear();
-		sideQuadsBuffer.clear();
-		currentIndex = -1;
-		process(shape.getPathIterator(AT, attributes.getPrecision()), gl.isWireframe());
+		final OutlineKey key = new OutlineKey(awtFont, text, attributes.getPrecision(), depth, gl.isWireframe());
+		OutlineGeometry geometry = outlines.getIfPresent(key);
+		final Rectangle2D bounds;
+		if (geometry == null) {
+			final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
+			bounds = shape.getBounds2D();
+			width = bounds.getWidth();
+			height = bounds.getHeight();
+			faceVertexBuffer.clear();
+			faceTextureBuffer.clear();
+			sideNormalBuffer.clear();
+			sideQuadsBuffer.clear();
+			currentIndex = -1;
+			process(shape.getPathIterator(AT, attributes.getPrecision()), gl.isWireframe());
+			geometry = new OutlineGeometry(bounds, snapshot(faceVertexBuffer), snapshot(faceTextureBuffer),
+					snapshot(sideNormalBuffer), snapshot(sideQuadsBuffer), Arrays.copyOf(indices, currentIndex + 1));
+			outlines.put(key, geometry);
+		} else {
+			bounds = geometry.bounds();
+			width = bounds.getWidth();
+			height = bounds.getHeight();
+			restore(faceVertexBuffer, geometry.faces());
+			restore(faceTextureBuffer, geometry.textures());
+			restore(sideNormalBuffer, geometry.normals());
+			restore(sideQuadsBuffer, geometry.sides());
+			currentIndex = geometry.contours().length - 1;
+			if (indices.length < geometry.contours().length) { indices = new int[geometry.contours().length]; }
+			System.arraycopy(geometry.contours(), 0, indices, 0, geometry.contours().length);
+		}
 		drawOutlineText(attributes, bounds, billboard);
+	}
+
+	private static double[] snapshot(final DoubleBuffer source) {
+		final double[] values = new double[source.limit()];
+		source.duplicate().rewind().get(values);
+		return values;
+	}
+
+	private static void restore(final DoubleBuffer target, final double[] values) {
+		target.clear();
+		target.put(values);
+		target.flip();
 	}
 
 	/**
@@ -1277,6 +1349,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			textVertexArray = 0;
 		}
 		fontCache.clear();
+		normalizedGlyphs.clear();
+		outlines.invalidateAll();
 		faceVertexBuffer = faceTextureBuffer = sideNormalBuffer = sideQuadsBuffer = null;
 	}
 }
