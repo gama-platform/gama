@@ -1,10 +1,100 @@
 # Navigator
 
-## Previous versions
+## Dependencies
 
-For a workspace file, **Previous versions...** in the navigator opens
+**Show dependencies** on a model or standalone experiment file opens the
+**Dependencies** view (`gama.ui.navigator.view.Dependencies`). The **Sync with editor**
+toggle uses the navigator's sync icon. Off by default, it keeps the graph pinned;
+when enabled, it immediately follows the active workspace model or standalone
+experiment and switches when the active editor changes. Other editor types and
+navigator selection leave the graph unchanged. The view does not require a running
+experiment.
+
+The GAML editor's options menu also provides **Show dependencies** / **Hide
+dependencies**, immediately after **Show versions** / **Hide versions**.
+Showing the view chooses that editor's saved workspace model.
+
+The navigator view is titled **Navigator**. **Views > Show...** groups Navigator,
+the three consoles, Outline / Versions / Minimap / Dependencies, and
+Validation / Tests, in that order with separators between groups. **Other...**
+remains available at the end for additional installed views.
+
+**Back** and **Forward** revisit models chosen in this view, including models
+followed through editor sync. Their left/right arrow buttons sit together at the
+far right of the toolbar and are disabled when no corresponding entry exists;
+tooltips name the destination.
+History navigation turns editor sync off to keep the revisited model pinned.
+Refreshes do not add entries, and choosing a new model after going back replaces
+the forward history. History lasts while the view is open; reopening starts with
+the restored model.
+
+The highlighted file and all its reachable imported models are arranged
+left-to-right using Jungrapht's Sugiyama layout with rounded, gap-routed connections.
+An arrow **A -> B** means A directly imports B. Shared imports
+appear once; no extra arrows are added for indirect dependencies. Imports outside
+the selected file's project are included. Plugins are not shown.
+The view reads saved files without semantic compilation: unsaved editor changes
+are not included. Saving or changing any workspace file in the graph refreshes
+it automatically, whether editor sync is on or off. Updates are debounced and
+retain the current manual pan, zoom, and focused card when possible, or refit
+the graph while Fit is active. **Refresh** remains
+available for an immediate reload or files outside the workspace. External edits
+must first be detected by Eclipse's workspace refresh.
+
+Click a card to open its file; drag to pan and scroll to zoom around the pointer.
+The toolbar provides zoom and fit actions. Arrow keys focus files, Enter opens
+the focused file, `+`/`-` zoom, and `F` or `0` fits the graph. Fit is active on
+initial opening and continues adjusting the graph when the view is resized.
+Manual zooming, dragging, or keyboard panning leaves Fit mode; selecting Fit
+enables it again. Hovering highlights
+immediate connections and shows full paths, import aliases, and diagnostics.
+Compact cards use the navigator's green (no known problems), yellow (warning),
+and red (error) status dots, with details only in tooltips. Model cards are
+180-280 units wide with tighter padding and column spacing; long parent paths
+are abbreviated rather than widening the cards, with full paths in tooltips. Status combines
+saved-file syntax diagnostics and existing workspace validation markers; changes
+to problem markers also refresh the view, without triggering validation. Missing/inaccessible
+files remain connected as pale, dashed ghost cards. Cyclic imports are normal and
+are neither flagged nor highlighted as problems. The view's paperclip icon and
+small circular-arrow **Refresh** icon match the GAMA modeling-view style, with
+light/dark variants and no model-file icon on the left. Initial display fits the
+graph; zoom in or pan to explore larger graphs.
+An isolated model is shown as one card.
+
+**Show resources used by each model** toggles compact icon-and-filename labels
+beneath each model, connected by teal lines rather than the import arrows.
+The toggle is off by default and restored with the view. Labels use the navigator's
+file icons and form one or two tidy columns, with space reserved by the layout.
+Shared resources appear beside each model that uses them; the status bar counts
+distinct resources. Click or use the arrow keys and Enter to open local resources;
+hover for their full path and owning model. Missing resources remain as dashed
+ghost labels and may represent files generated at runtime.
+
+Resource detection shares the navigator's **Uses** rules: quoted literal paths
+with a registered GAMA file extension, excluding comments and model imports.
+Paths are resolved relative to the declaring model, or as absolute local paths.
+This is not semantic analysis: dynamically constructed paths are not inferred,
+and literal output filenames may also appear. Remote references are displayed
+but never fetched or checked; clicking them explains this limitation.
+The view neither reads resource contents nor creates workspace links.
+Visible workspace resources participate in automatic refresh, including creation
+and deletion of missing targets. Hiding them returns to the model-only graph.
+
+Loading and layout run in the background, without a Stop toolbar button; changing
+the input or closing the view cancels obsolete work. A refresh keeps the
+previous snapshot visible until its replacement is ready; cancellation or failure
+does not present that previous snapshot as refreshed. The chosen file is restored
+when reopening the workbench, along with the sync and resources toggles. Linking chooses the
+active model; automatic refresh tracks that model and all its reachable imports,
+including creation/deletion of missing targets and project open/close changes.
+Unrelated workspace files do not trigger a reload. Graph geometry is transient
+and is rebuilt.
+
+## Versions
+
+For a workspace file, **Versions...** in the navigator opens
 `gama.ui.navigator.view.PreviousVersions`. GAML editors also expose
-**Show previous versions** / **Hide previous versions** immediately after the
+**Show versions** / **Hide versions** immediately after the
 minimap entry in their options menu. Files without saved history can still open
 the view.
 

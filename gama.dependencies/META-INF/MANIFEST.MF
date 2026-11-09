@@ -6,7 +6,8 @@ Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.dependencies.DependenciesActivator
-Import-Package: org.osgi.framework
+Import-Package: org.osgi.framework,
+ org.slf4j;version="[1.7,3)"
 Export-Package: au.com.objectix.jgridshift,
  com.bedatadriven.jackson.datatype.jts,
  com.bedatadriven.jackson.datatype.jts.parsers,
@@ -753,6 +754,16 @@ Export-Package: au.com.objectix.jgridshift,
  org.jgrapht.nio.tsplib,
  org.jgrapht.traverse,
  org.jgrapht.util,
+ org.jungrapht.visualization.layout.algorithms,
+ org.jungrapht.visualization.layout.algorithms.eiglsperger,
+ org.jungrapht.visualization.layout.algorithms.repulsion,
+ org.jungrapht.visualization.layout.algorithms.sugiyama,
+ org.jungrapht.visualization.layout.algorithms.util,
+ org.jungrapht.visualization.layout.event,
+ org.jungrapht.visualization.layout.model,
+ org.jungrapht.visualization.layout.quadtree,
+ org.jungrapht.visualization.layout.util,
+ org.jungrapht.visualization.layout.util.synthetics,
  org.jheaps,
  org.jheaps.annotations,
  org.jheaps.array,
@@ -873,6 +884,7 @@ Require-Bundle: gama.dev;visibility:=reexport,
  com.sun.jna,
  com.sun.jna.platform
 Bundle-ClassPath: .,
+ libs/jungrapht-layout 1.4/jungrapht-layout-1.4.jar,
  libs/fory 1.7.4/fory-core-1.7.4.jar,
  libs/geotools 33.4/jaxb-api-2.4.0-b180830.0359.jar,
  libs/Java-WebSocket 1.6.0/Java-WebSocket-1.6.0.jar,

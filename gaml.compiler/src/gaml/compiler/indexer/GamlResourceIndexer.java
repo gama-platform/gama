@@ -83,7 +83,7 @@ public class GamlResourceIndexer {
 				if (u != null) {
 					URI uri = URI.createURI(u, true);
 					try {
-						uri = uri.resolve(baseURI);
+						uri = GamlImportReader.resolveImport(baseURI, u);
 					} catch (Exception e1) {
 						DEBUG.LOG("Error in resolving " + uri + " against base " + baseURI);
 					}
@@ -95,7 +95,7 @@ public class GamlResourceIndexer {
 			final String u = expe.getImportURI();
 			if (u != null) {
 				URI uri = URI.createURI(u, true);
-				uri = properlyEncodedURI(uri.resolve(baseURI));
+				uri = GamlImportReader.resolveImport(baseURI, u);
 				result = Collections.singletonMap(uri, null);
 			}
 		}

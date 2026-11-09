@@ -106,6 +106,25 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 		createFrom(URI.createPlatformResourceURI(file.getFullPath().toOSString(), true));
 	}
 
+	/** Literal file references recognized by the navigator; this does not evaluate expressions. */
+	public static Collection<String> extractUses(final CharSequence content) {
+		final Set<String> result = new LinkedHashSet<>();
+		final Matcher tokenizer = findCommentsAndStrings.matcher(content);
+		while (tokenizer.find()) {
+			final String path = usedResource(tokenizer.group());
+			if (path != null) result.add(path);
+		}
+		return result;
+	}
+
+	private static String usedResource(final String literal) {
+		if (literal.length() <= 6 || literal.charAt(0) != '\'' && literal.charAt(0) != '"') return null;
+		final String path = literal.substring(1, literal.length() - 1);
+		final String extension = URI.createFileURI(path).fileExtension();
+		return extension != null && !extension.isBlank() && !"gaml".equals(extension)
+				&& GamaFileType.managesExtension(extension) ? path : null;
+	}
+
 	/**
 	 * Creates the from.
 	 *
@@ -145,16 +164,11 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 					tokenizer.appendReplacement(sanitized, " ");
 				} else {
 					// It's a string: check if it represents a valid use/import
-					if (match.length() > 6) {
-						String s = match.substring(1, match.length() - 1);
-						final URI u = URI.createFileURI(s);
-						final String ext = u.fileExtension();
-						if (ext != null && !ext.isBlank() && !"gaml".equals(ext)
-								&& GamaFileType.managesExtension(ext)) {
-							if (uses == null) { uses = new LinkedHashSet<>(); }
-							DEBUG.OUT("===== Considers in uses : " + s);
-							uses.add(s);
-						}
+					final String resource = usedResource(match);
+					if (resource != null) {
+						if (uses == null) { uses = new LinkedHashSet<>(); }
+						DEBUG.OUT("===== Considers in uses : " + resource);
+						uses.add(resource);
 					}
 					// KEEP the string intact so findExperiments can read its name
 					tokenizer.appendReplacement(sanitized, Matcher.quoteReplacement(match));

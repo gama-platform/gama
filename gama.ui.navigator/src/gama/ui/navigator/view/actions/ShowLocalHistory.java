@@ -34,7 +34,7 @@ public class ShowLocalHistory extends WorkspaceAction {
 	 *            the provider
 	 */
 	protected ShowLocalHistory(final IShellProvider provider) {
-		super(provider, "Previous versions...");
+		super(provider, "Versions...");
 	}
 
 	/** The selection. */
@@ -66,9 +66,9 @@ public class ShowLocalHistory extends WorkspaceAction {
 	 *
 	 * @return the prompt title
 	 */
-	protected String getPromptTitle() { return "Previous versions"; }
+	protected String getPromptTitle() { return "Versions"; }
 
 	@Override
-	protected String getOperationMessage() { return "Previous versions"; }
+	protected String getOperationMessage() { return "Versions"; }
 
 }
