@@ -19,6 +19,31 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Major addition: previous versions for model editing
+
+Model editing now includes a dedicated **Previous versions** view for browsing, comparing and restoring
+saved versions of workspace files without leaving GAMA. Open it with **Previous versions...** in a file's
+navigator context menu, or use **Show previous versions** / **Hide previous versions** immediately after
+the minimap entry in the GAML editor's top-right options menu.
+
+The view stays synchronized with the selected workspace file or active editor, automatically groups versions
+by date, and opens a selected version in comparison with the current file. It refreshes when opened, whenever
+a workspace editor is activated or brought to the top, and when the file changes, including saves. Revision
+and comparison editors do not change the workspace file being followed. The streamlined presentation removes
+the toolbar, repeated filename and column heading, and uses theme-aware GAMA clock, calendar and version icons.
+Files without saved history can still open the view.
+
+The revision context menu provides **Open in text editor**, **Compare with current**, and **Replace current**.
+Replacement asks for overwrite confirmation and preserves the replaced contents in local history; the current
+revision cannot replace itself. This makes it easier to inspect earlier modeling choices, compare edits and
+recover an earlier version without manually copying files.
+
+**Defaults and compatibility:** the navigator's former **Local history...** item is renamed **Previous versions...**.
+The application default disables Eclipse's local-history retention policy, removing age, version-count and
+file-size limits unless explicit workspace preferences enable them. Unlimited history can increase workspace
+disk usage. Only versions retained in this workspace are available: this is not Git history or a backup, and
+versions already discarded cannot be recovered. No GAML syntax migration is required.
+
 ### Experiment execution controls and pause-state migration
 
 Experiment agents expose `play`, `pause`, `step_once`, `step_back`, `synchronize`, `desynchronize` and `reload`.

@@ -38,6 +38,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.ui.navigator.view.PreviousVersionsView;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
 import gama.ui.shared.menus.GamaMenu;
@@ -165,6 +166,13 @@ public class EditorToolbar {
 					command = map == null ? e -> showView(IGui.MINIMAP_VIEW_ID)
 							: e -> WorkbenchHelper.getPage().hideView(map);
 					GamaCommand.build("editor/command.navigation", title, null, command).toItem(mainMenu);
+					final IViewPart history = WorkbenchHelper.getPage().findView(PreviousVersionsView.ID);
+					title = history == null ? "Show previous versions" : "Hide previous versions";
+					command = history == null ? e -> {
+						if (editor.getResource() instanceof IFile file) { PreviousVersionsView.show(file); }
+					} : e -> WorkbenchHelper.getPage().hideView(history);
+					GamaCommand.build(IGamaIcons.LOCAL_HISTORY, title, null, command).toItem(mainMenu)
+							.setEnabled(history != null || editor.getResource() instanceof IFile);
 					separate();
 					final Menu edition = sub(mainMenu, "Edition", null, "editor/menu.edition");
 					check(edition, "Surround selection using { [ ( \\", GamaPreferences.Modeling.CORE_SURROUND_SELECTED,

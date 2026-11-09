@@ -710,6 +710,15 @@
       <view
             allowMultiple="false"
             category="gama.ui.category.gama"
+            class="gama.ui.navigator.view.PreviousVersionsView"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.history.svg"
+            id="gama.ui.navigator.view.PreviousVersions"
+            name="Previous versions"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="false"
+            category="gama.ui.category.gama"
             class="gama.ui.navigator.view.GamaNavigator"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.navigator.svg"
             id="gama.ui.application.view.GamaNavigator" 

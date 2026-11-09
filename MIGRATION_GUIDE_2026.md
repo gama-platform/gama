@@ -65,12 +65,43 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 |---|---|
 | New **OpenGL 4.1** display plugin (`gama.ui.display.opengl4`) | Modern shader-based rendering; legacy OpenGL 2 pipeline removed |
 | New **launching overlay** | Visual improvement only, no code changes needed |
+| Major model-editing addition: **Previous versions** | Browse, compare and restore saved workspace versions; no GAML migration required |
 | Improved **concurrency** support | Internal threading improved; some scheduling APIs changed |
 | **Copilot integration extracted** to `gama.copilot` | Install from its dedicated p2 site; no Copilot feature/module in the core reactor |
 
 ---
 
 # Part 1: What's New and Why It Matters
+
+## Major addition to model editing: Previous versions
+
+GAMA now brings saved model versions directly into the editing workflow. The dedicated **Previous versions**
+view lets you revisit an earlier implementation, compare it with the current file, or restore it without
+leaving the workbench or managing manual copies.
+
+Open **Previous versions...** from a workspace file's navigator context menu. In a GAML editor, open the
+top-right options menu and choose **Show previous versions**, immediately after **Show/Hide minimap**.
+The same entry becomes **Hide previous versions** while the view is open.
+
+Versions are always grouped by date, and the view follows the selected workspace file or active editor.
+It refreshes automatically at opening, when a workspace editor becomes prominent, and when the file is saved
+or otherwise changes. Opening a revision or comparison editor does not redirect the history being followed.
+The compact view has no toolbar, repeated filename or column heading; its clock, calendar and version icons
+match GAMA's light and dark themes.
+
+Open a version to compare it with the current file, or use its context menu:
+
+- **Open in text editor** opens the version separately for inspection.
+- **Compare with current** displays the differences against the current workspace file.
+- **Replace current** restores the selected version after overwrite confirmation, preserving the replaced
+  contents in local history. This action is not offered for the current revision itself.
+
+**No model migration is needed.** The former **Local history...** navigator item is simply renamed.
+History is unlimited by application default: Eclipse's age, count and file-size retention limits are disabled,
+but explicit workspace retention preferences still take precedence. Disk usage can therefore grow.
+This feature uses the versions retained in the current workspace, not Git commits or an external backup;
+it cannot recover versions already discarded. A file with no saved history can still open the view.
+See the [changelog](CHANGELOG_2026.md#major-addition-previous-versions-for-model-editing) for the complete addition.
 
 ## Platform-agent operations
 
