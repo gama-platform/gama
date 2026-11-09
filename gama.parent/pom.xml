@@ -35,6 +35,11 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>gama-shared-models</id>
+			<url>https://gama-platform.org/gama.shared.models/</url>
+			<layout>p2</layout>
+		</repository>
 	</repositories>
 
 	<profiles>
