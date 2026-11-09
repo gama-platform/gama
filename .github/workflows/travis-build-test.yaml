@@ -12,6 +12,13 @@ jobs:
   compilation:
     runs-on: ubuntu-latest
     steps:
+      - name: Get the archive format test script
+        uses: actions/checkout@v4
+        with:
+          path: gama-src
+          sparse-checkout: travis/test_package_formats.py
+          sparse-checkout-cone-mode: false
+
       - name: Get linux testing releases
         uses: actions/download-artifact@v4
         with:
@@ -35,3 +42,7 @@ jobs:
           bash $GITHUB_WORKSPACE/headless/gama-headless.sh -m 10g -validate && \
           bash $GITHUB_WORKSPACE/headless/gama-headless.sh -m 10g -test && \
           echo "All good ! 🎉"
+
+      # Generate, unzip & check, validate and run 2 steps of a .gamx and a .gamp
+      - name: Test .gamx/.gamp headless commands
+        run: python3 gama-src/travis/test_package_formats.py -- bash $GITHUB_WORKSPACE/headless/gama-headless.sh
