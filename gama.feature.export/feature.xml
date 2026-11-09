@@ -7,7 +7,8 @@
       plugin="gama.export">
 
    <description url="http://gama-platform.org">
-      The export engine and UI for packaging GAMA models as playable models.
+      The engine reading, writing and validating GAMA playable models (.gamx) and project archives (.gamp),
+      used by the GUI and by the headless commands. The GUI part is in gama.feature.ui.export.
    </description>
 
    <copyright url="http://www.example.com/copyright">
@@ -24,13 +25,6 @@
 
    <plugin
          id="gama.export"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="gama.ui.export"
          download-size="0"
          install-size="0"
          version="0.0.0"

@@ -62,7 +62,7 @@ if [[ ${#args[@]} -eq 0 ]]; then
     workspaceCreate=1
 else
     case " ${args[*]} " in
-    *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*)
+    *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*|*-package*)
         workspaceCreate=1
         ;;
     esac

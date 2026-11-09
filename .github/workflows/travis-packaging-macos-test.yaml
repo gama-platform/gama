@@ -8,6 +8,13 @@ jobs:
     # https://earthly.dev/blog/creating-and-hosting-your-own-deb-packages-and-apt-repo/#step-1-creating-a-deb-package
     runs-on: macos-latest
     steps:
+      - name: Get the archive format test script
+        uses: actions/checkout@v4
+        with:
+          path: gama-src
+          sparse-checkout: travis/test_package_formats.py
+          sparse-checkout-cone-mode: false
+
       # Get Linux deb archive
       - uses: actions/download-artifact@v4
         with:
@@ -21,6 +28,7 @@ jobs:
           hdiutil attach ./gama.application-macosx.cocoa.x86_64_withJDK.dmg
           cp -r /Volumes/Gama/Gama.app ~/
           bash ~/Gama.app/Contents/headless/gama-headless.sh -help
+          python3 gama-src/travis/test_package_formats.py -- bash ~/Gama.app/Contents/headless/gama-headless.sh
           rm -fr ~/Gama.app
           hdiutil detach /Volumes/Gama
 
@@ -36,4 +44,5 @@ jobs:
           hdiutil attach ./gama.application-macosx.cocoa.x86_64.dmg
           cp -r /Volumes/Gama/Gama.app ~/
           bash ~/Gama.app/Contents/headless/gama-headless.sh -help
+          python3 gama-src/travis/test_package_formats.py -- bash ~/Gama.app/Contents/headless/gama-headless.sh
           hdiutil detach /Volumes/Gama

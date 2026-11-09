@@ -12,6 +12,13 @@ jobs:
   debian-test-installer:
     runs-on: ubuntu-latest
     steps:
+      - name: Get the archive format test script
+        uses: actions/checkout@v4
+        with:
+          path: gama-src
+          sparse-checkout: travis/test_package_formats.py
+          sparse-checkout-cone-mode: false
+
       # Get Linux deb archive
       - uses: actions/download-artifact@v4
         with:
@@ -29,6 +36,7 @@ jobs:
         run: |
           sudo apt install ./gama-platform-jdk_${RELEASE_VERSION}-1_amd64.deb
           gama-headless -help
+          python3 gama-src/travis/test_package_formats.py -- gama-headless
         env:
           RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
 
@@ -47,6 +55,7 @@ jobs:
           sudo update-java-alternatives -s $(update-java-alternatives -l | grep "\-openjdk" | cut -d " " -f 1)
           java -version
           gama-headless -help
+          python3 gama-src/travis/test_package_formats.py -- gama-headless
           sudo apt remove -y gama-platform
         env:
           RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}

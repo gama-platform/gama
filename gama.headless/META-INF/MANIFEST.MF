@@ -10,20 +10,24 @@ Require-Bundle: gama.core,
  gama.extension.traffic,
  gama.extension.maths,
  gama.extension.database,
- gama.extension.network
+ gama.extension.network,
+ gama.export
 Bundle-ActivationPolicy: lazy
 Export-Package: 
  gama.headless.common,
  gama.headless.core,
  gama.headless.job,
  gama.headless.openmole,
+ gama.headless.packaging,
  gama.headless.runtime,
  gama.headless.script,
  gama.headless.xml
 Import-Package: com.google.inject,
  gama.workspace,
  gama.workspace.manager,
- org.eclipse.core.resources
+ org.eclipse.core.resources,
+ org.osgi.framework,
+ org.osgi.framework.wiring
 Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.headless

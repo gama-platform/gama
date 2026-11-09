@@ -61,6 +61,8 @@ import gama.headless.common.HeadLessErrors;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.IExperimentJob;
+import gama.headless.packaging.PackageCommand;
+import gama.headless.packaging.PackageCommands;
 import gama.headless.script.ExperimentationPlanFactory;
 import gama.headless.server.GamaHeadlessServerGUIEventHandler;
 import gama.headless.xml.ConsoleReader;
@@ -281,7 +283,8 @@ public class HeadlessApplication implements IApplication {
 				+ "\n\t\t" + BUILD_XML_PARAMETER + " [experimentName] [modelFile.gaml] [xmlOutputFile.xml]"
 				+ "\n\t\t                              -- build an xml parameter file from a model"
 				+ "\n\t\t[xmlHeadlessFile.xml] [outputDirectory]"
-				+ "\n\t\t                              -- default usage of GAMA headless");
+				+ "\n\t\t                              -- default usage of GAMA headless"
+				+ PackageCommand.help());
 		// + "\n\t\t" + WRITE_XMI + " -- write scope provider resource files to disk");
 		DEBUG.OFF();
 	}
@@ -426,6 +429,25 @@ public class HeadlessApplication implements IApplication {
 		final Map<String, String[]> mm = context.getArguments();
 		final List<String> args = Arrays.asList(mm.get("application.args"));
 
+		// .gamx/.gamp commands: their plugins must be installed before GAMA is initialized
+		final boolean packageCommand;
+		try {
+			packageCommand = PackageCommand.kindOf(args).isPresent();
+		} catch (final IllegalArgumentException e) {
+			DEBUG.ON();
+			DEBUG.ERR(e.getMessage());
+			System.exit(PackageCommands.USAGE);
+			return null;
+		}
+		if (packageCommand) {
+			if (args.contains(VERBOSE_PARAMETER)) { DEBUG.ON(); }
+			System.exit(PackageCommands.execute(args, () -> {
+				configureInjector();
+				if (!verbose(args)) { DEBUG.OFF(); }
+			}));
+			return null;
+		}
+
 		// Check and apply parameters
 		if (!checkParameters(args)) { System.exit(-1); }
 		// ========================
@@ -476,6 +498,11 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		return null;
+	}
+
+	/** Whether the verbose flag is given. */
+	private static boolean verbose(final List<String> args) {
+		return args.contains(VERBOSE_PARAMETER);
 	}
 
 	/** Apply launch-only overrides, without writing the preference store. */

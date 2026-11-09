@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.ui.export"
+      label="Export GAMA Models (UI)"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO"
+      plugin="gama.ui.export">
+
+   <description url="http://gama-platform.org">
+      The user interface for exporting, opening and importing GAMA playable models and project archives.
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <update label="GAMA 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
+   </url>
+
+   <requires>
+      <import feature="gama.feature.export" version="0.0.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="gama.ui.export"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

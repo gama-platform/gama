@@ -7,6 +7,10 @@ set -e
 # 3. compare the resulting hash with what's stored in the cache
 # 4. if it doesn't match, remove the cache because it might lead 
 # to build inconsistencies throughout builds and machines
+#    and remove the Maven build cache too (BUILD_CACHE_PATH, optional): the modules it
+#    restores skip the install phase, so they would never be put back in the emptied
+#    repository, and Tycho then fails to assemble the p2 site and the product with
+#    "Mirroring failed: No repository found at file:<repository>"
 # 5. update the hash stored in the cache with the new one
 
 current_hash=$(find . -type f \
@@ -22,6 +26,11 @@ echo -e "stored hash \t: $stored_hash"
 if ! [ $current_hash == $stored_hash ]; then
     echo "cache miss, cleaning the current cache"
     rm -Rf ${MAVEN_CACHE_PATH}/*
+    if [ -n "${BUILD_CACHE_PATH}" ]; then
+        build_cache="${BUILD_CACHE_PATH/#\~/$HOME}"
+        echo "cleaning the Maven build cache too: ${build_cache}"
+        rm -Rf "${build_cache}"
+    fi
     else
         echo cache hit
 fi

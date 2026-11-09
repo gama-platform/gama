@@ -19,6 +19,15 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Headless commands for playable models and project archives
+
+`gama-headless` can now generate, validate and run `.gamx` playable models and `.gamp` project archives, with the
+same exporters and checks as the GUI. `-package <source> <output.gamx|output.gamp>` writes an archive from a project
+directory or a model; `-validate-package <archive>` checks its layout, manifest, plugins, host compatibility and models;
+`-run-package <archive>` runs one experiment until cycle N (`-until-cycle N`), or until its `until:` condition is true. Archive
+plugins and `-plugin <file.jar>` plugins are installed for the duration of the command only. A run exits with a
+nonzero status when the simulation raises a runtime error. The CI checks these commands on Linux and macOS.
+
 ### Simulation concurrency defaults
 
 The global preference for parallel simulation scheduling has been removed. Experiments without a `parallel:` facet
