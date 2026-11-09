@@ -13,7 +13,6 @@ package gama.api.utils.server;
 import static gama.api.utils.server.ISocketCommand.EXP_ID;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -78,8 +77,6 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 
 	private final GamaServerExchangeLog exchangeLog;
 	private final GamaServerConsole serverConsole;
-	private final PrintStream previousErrorStream = System.err;
-	private PrintStream serverErrorStream;
 
 	final synchronized void beginLoadStateDeferral(final WebSocket socket) {
 		loadStateDeferrals.merge(socket, 1, Integer::sum);
@@ -162,7 +159,6 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		if (interval == 0 || interval < -1) {
 			throw new IllegalArgumentException("Server ping interval must be positive or -1");
 		}
-		configureErrorStream();
 	}
 
 	@Override
@@ -173,7 +169,6 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		} catch (final RuntimeException e) {
 			serverConsole.error("Unable to start server", e);
 			serverConsole.setState(GamaServerConsole.State.FAILED, getPort());
-			restoreErrorStream();
 			throw e;
 		}
 	}
@@ -198,32 +193,6 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	@Override
 	public void removeListener(final Listener listener) {
 		listeners.remove(listener);
-	}
-
-	/**
-	 * Configure error stream so as to broadcast errors
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 16 oct. 2023
-	 */
-	private void configureErrorStream() {
-		// error handling should not rely on this as we don't know when the error starts and ends,
-		// making it hard to handle on the client side. This is a last resort option
-		serverErrorStream = new PrintStream(previousErrorStream) {
-
-			// This is actually probably never called, because printErrorStack uses print(String)
-			@Override
-			public void println(final String x) {
-				super.println(x);
-				broadcast(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, x))
-						.toString());
-			}
-		};
-		System.setErr(serverErrorStream);
-	}
-
-	private void restoreErrorStream() {
-		if (System.err == serverErrorStream) { System.setErr(previousErrorStream); }
 	}
 
 	/**
@@ -278,7 +247,6 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			throw e;
 		} finally {
 			exchangeLog.close();
-			restoreErrorStream();
 		}
 	}
 
@@ -426,7 +394,6 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 		if (conn == null && (serverConsole.snapshot().state() == GamaServerConsole.State.STARTING
 				|| serverConsole.snapshot().state() == GamaServerConsole.State.RUNNING)) {
 			serverConsole.setState(GamaServerConsole.State.FAILED, getPort());
-			restoreErrorStream();
 		}
 		ex.printStackTrace();
 		if (conn != null) {

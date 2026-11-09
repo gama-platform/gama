@@ -247,7 +247,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer implements 
 			while (true) { Thread.sleep(999999); }
 
 		} catch (Exception ex) {
-			ex.printStackTrace(); // will be broadcasted to every client
+			ex.printStackTrace();
 		}
 	}
 

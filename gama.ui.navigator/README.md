@@ -1,4 +1,33 @@
-# Contributing navigator folders
+# Navigator
+
+## Previous versions
+
+For a workspace file, **Previous versions...** in the navigator opens
+`gama.ui.navigator.view.PreviousVersions`. GAML editors also expose
+**Show previous versions** / **Hide previous versions** immediately after the
+minimap entry in their options menu. Files without saved history can still open
+the view.
+
+The view follows the selected workspace file or active editor, groups versions
+by date, and compares a version with the current file when opened. It has no
+toolbar, repeated filename, column heading, or configurable view modes. Date
+groups and revisions use theme-aware GAMA calendar and version icons.
+History is fetched at opening, whenever a
+workspace editor is activated or brought to the top, and when the file changes
+(including saves). Opening a revision or comparison editor does not change the
+workspace file being followed.
+
+Its revision context menu provides **Open in text editor**, **Compare with
+current**, and **Replace current**. Replacement uses Eclipse's overwrite
+confirmation and preserves the replaced contents in local history; the current
+revision cannot replace itself.
+
+The application default disables Eclipse's local-history retention policy, so
+versions are not discarded because of age, count, or file size. Explicit
+workspace retention preferences still take precedence. Unlimited history can
+increase workspace disk usage and cannot recover versions already discarded.
+
+## Contributing navigator folders
 
 The `gama.ui.navigator.topLevelFolders` extension point declares both the navigator's
 own workspace folders and independent top-level folders with their complete virtual
