@@ -217,7 +217,7 @@ experiment main {
 			
 			event " " {
 				if not has_started {
-					do resume();
+					do play();
 					has_started <- true;
 				}
 				ask bird {impulsion <- true;
