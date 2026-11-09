@@ -57,6 +57,7 @@ import gama.api.types.color.AdaptiveColor;
 import gama.api.ui.displays.DrawingData;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 
@@ -310,16 +311,7 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 	/** The delegate. */
 	private IDrawDelegate delegate;
 
-	/**
-	 * Inline two-slot cache replacing the former WeakHashMap. A draw statement is shared across all agents of a species
-	 * and is called once per agent per frame. Since 2D and 3D displays are never active simultaneously, there are at
-	 * most two distinct IGraphics instances in practice. A direct identity comparison is far cheaper than a WeakHashMap
-	 * get() called thousands of times per frame.
-	 */
-	private IGraphics cachedGraphics0, cachedGraphics1;
-
-	/** The cached data 1. */
-	private DrawingData cachedData0, cachedData1;
+	private final IExpression[] drawingItems;
 
 	/**
 	 * Instantiates a new draw statement.
@@ -331,7 +323,18 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 	 */
 	public DrawStatement(final IDescription desc) throws GamaRuntimeException {
 		super(desc);
+		drawingItems = new IExpression[] { getFacet(IKeyword.GEOMETRY), getFacet(BEGIN_ARROW), getFacet(END_ARROW) };
+	}
 
+	// A draw cannot declare locals; its enclosing aspect already provides the execution frame.
+	@Override
+	public void enterScope(final IScope scope) {
+		if (getClass() != DrawStatement.class) { super.enterScope(scope); }
+	}
+
+	@Override
+	public void leaveScope(final IScope scope) {
+		if (getClass() != DrawStatement.class) { super.leaveScope(scope); }
 	}
 
 	/**
@@ -362,30 +365,26 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 		final IGraphics g = scope.getGraphics();
 		if (scope.interrupted() || g == null || scope.getAgent() == null) return null;
 		try {
-			if (delegate == null) { delegate = (IDrawDelegate) getFacet(INTERNAL_DELEGATE).value(scope); }
-			// Inline two-slot cache: avoids WeakHashMap lookup per agent per frame
-			DrawingData d;
-			if (g == cachedGraphics0) {
-				d = cachedData0;
-			} else if (g == cachedGraphics1) {
-				d = cachedData1;
-			} else {
-				d = new DrawingData(this);
-				// Evict slot 1, shift slot 0 → slot 1, put new entry in slot 0
-				cachedGraphics1 = cachedGraphics0;
-				cachedData1 = cachedData0;
-				cachedGraphics0 = g;
-				cachedData0 = d;
+			if (delegate == null) {
+				final IDrawDelegate candidate = (IDrawDelegate) getFacet(INTERNAL_DELEGATE).value(scope);
+				delegate = candidate.getClass() == ShapeDrawer.class
+						? ((ShapeDrawer) candidate).prepare(drawingItems[0], drawingItems[1] != null
+								|| drawingItems[2] != null, hasFacet(TEXTURE)) : candidate;
 			}
+			final DrawingData d = g.getDrawingData(this);
+			final PreparationDiagnostics diagnostics = g.getPreparationDiagnostics();
+			final long facetsStart = diagnostics == null ? 0 : diagnostics.startTimer();
 			d.refresh(scope);
+			if (diagnostics != null) { diagnostics.facetsFinished(facetsStart); }
 			if (d.color.get() == AdaptiveColor.INSTANCE && !(delegate instanceof TextDrawer)) {
 				throw GamaRuntimeException.error("#adaptive is only supported when draw renders text", scope);
 			}
 			if (d.border.get() == AdaptiveColor.INSTANCE) {
 				throw GamaRuntimeException.error("#adaptive is a text foreground, not a border color", scope);
 			}
-			final IExpression item = getFacet(IKeyword.GEOMETRY);
-			final Rectangle2D result = delegate.executeOn(scope, d, item, getFacet(BEGIN_ARROW), getFacet(END_ARROW));
+			final long drawStart = diagnostics == null ? 0 : diagnostics.startTimer();
+			final Rectangle2D result = delegate.executeOn(scope, d, drawingItems);
+			if (diagnostics != null) { diagnostics.drawFinished(drawStart); }
 			if (result != null) { g.accumulateTemporaryEnvelope(result); }
 			return result;
 		} catch (final GamaRuntimeException e) {
@@ -395,15 +394,6 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	@Override
-	public void dispose() {
-		cachedGraphics0 = null;
-		cachedData0 = null;
-		cachedGraphics1 = null;
-		cachedData1 = null;
-		super.dispose();
 	}
 
 }

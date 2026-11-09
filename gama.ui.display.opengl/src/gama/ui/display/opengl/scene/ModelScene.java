@@ -33,6 +33,8 @@ import gama.ui.display.opengl.scene.layers.FrameLayerObject;
 import gama.ui.display.opengl.scene.layers.LayerObject;
 import gama.ui.display.opengl.scene.layers.LayerObjectWithTrace;
 import gama.ui.display.opengl.scene.layers.OverlayLayerObject;
+import gama.ui.display.opengl.scene.geometry.PrimitiveObject;
+import gama.api.types.geometry.IPoint;
 
 /**
  *
@@ -60,6 +62,10 @@ public class ModelScene {
 
 	/** The current layer. */
 	protected LayerObject currentLayer;
+
+	private final Map<ILayer, LayerObject> recycledLayers = new IdentityHashMap<>();
+	private final Map<Object, double[]> fieldBuffers = new IdentityHashMap<>();
+	private Map<ILayer, Integer> layerOrder;
 
 	/** The renderer. */
 	protected final IOpenGLRenderer renderer;
@@ -209,6 +215,13 @@ public class ModelScene {
 		if (currentLayer != null) { currentLayer.addGeometry(geometry, attributes); }
 	}
 
+	public void addPrimitive(final Geometry geometry, final double scale, final IPoint center,
+			final IDrawingAttributes attributes) {
+		if (currentLayer != null) {
+			currentLayer.addPrimitive(new PrimitiveObject(geometry, scale, center, attributes));
+		}
+	}
+
 	/**
 	 * Adds the field.
 	 *
@@ -228,6 +241,9 @@ public class ModelScene {
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys before disposing = " + layers.keySet());
 		layers.clear();
 		currentLayer = null;
+		recycledLayers.clear();
+		fieldBuffers.clear();
+		layerOrder = null;
 	}
 
 	/**
@@ -244,13 +260,39 @@ public class ModelScene {
 
 	/** Restore declaration order when an initially hidden layer is first added to a later scene. */
 	public void orderLayers() {
-		final Map<ILayer, Integer> order = new IdentityHashMap<>();
 		final var definitions = renderer.getSurface().getManager().getItems();
-		for (int i = 0; i < definitions.size(); i++) { order.put(definitions.get(i), i); }
+		boolean changed = layerOrder == null || layerOrder.size() != definitions.size();
+		if (!changed) {
+			for (int i = 0; i < definitions.size(); i++) {
+				if (!Integer.valueOf(i).equals(layerOrder.get(definitions.get(i)))) {
+					changed = true;
+					break;
+				}
+			}
+		}
+		if (changed) {
+			if (layerOrder == null) {
+				layerOrder = new IdentityHashMap<>();
+			} else {
+				layerOrder.clear();
+			}
+			for (int i = 0; i < definitions.size(); i++) { layerOrder.put(definitions.get(i), i); }
+		}
+		int previous = -1;
+		boolean ordered = true;
+		for (final LayerObject layer : layers.values()) {
+			final int order = layer.layer == null ? -1 : layerOrder.getOrDefault(layer.layer, Integer.MAX_VALUE);
+			if (order < previous) {
+				ordered = false;
+				break;
+			}
+			previous = order;
+		}
+		if (ordered) return;
 		final var entries = new ArrayList<>(layers.entrySet());
 		entries.sort((a, b) -> Integer.compare(
-				a.getValue().layer == null ? -1 : order.getOrDefault(a.getValue().layer, Integer.MAX_VALUE),
-				b.getValue().layer == null ? -1 : order.getOrDefault(b.getValue().layer, Integer.MAX_VALUE)));
+				a.getValue().layer == null ? -1 : layerOrder.getOrDefault(a.getValue().layer, Integer.MAX_VALUE),
+				b.getValue().layer == null ? -1 : layerOrder.getOrDefault(b.getValue().layer, Integer.MAX_VALUE)));
 		layers.clear();
 		for (final var entry : entries) { layers.put(entry.getKey(), entry.getValue()); }
 	}
@@ -289,10 +331,14 @@ public class ModelScene {
 			currentLayer = null;
 		}
 		if (currentLayer == null) {
+			if (layer.getData().isDynamic() && layer.getData().getTrace() == 0 && !layer.isOverlay()) {
+				currentLayer = recycledLayers.remove(layer);
+				if (currentLayer != null) { currentLayer.resetForReuse(); }
+			}
 			// DEBUG.OUT("ModelScene #" + myIndex + ": Layer " + layer.getName() + " is not present in the scene");
-			currentLayer = layer.isOverlay() ? new OverlayLayerObject(renderer, layer)
+			if (currentLayer == null) { currentLayer = layer.isOverlay() ? new OverlayLayerObject(renderer, layer)
 					: layer.getData().getTrace() > 0 ? new LayerObjectWithTrace(renderer, layer)
-					: new LayerObject(renderer, layer);
+					: new LayerObject(renderer, layer); }
 			// DEBUG.OUT("ModelScene #" + myIndex + ": Creating layer " + " : static " + currentLayer.isStatic()
 			// + "; trace " + currentLayer.hasTrace());
 			layers.put(key, currentLayer);
@@ -321,10 +367,43 @@ public class ModelScene {
 			if (layer.isStatic() || layer.hasTrace()) {
 				// DEBUG.OUT("===>> Adding " + name + " as static ");
 				newScene.layers.put(name, layer);
+				layer.markShared();
+				if (layer.layer != null) { fieldBuffers.remove(layer.layer.getDefinition()); }
 			}
 		});
 
 		return newScene;
+	}
+
+	public double[] getFieldBuffer(final Object owner, final int length) {
+		double[] buffer = fieldBuffers.get(owner);
+		if (buffer == null || buffer.length != length) {
+			buffer = new double[length];
+			fieldBuffers.put(owner, buffer);
+		}
+		return buffer;
+	}
+
+	/** Called on the GL thread only after this retired scene has been wiped. */
+	public void recycle() {
+		for (final LayerObject layer : layers.values()) {
+			if (layer.getClass() == LayerObject.class && !layer.isStatic() && !layer.hasTrace() && !layer.wasShared()) {
+				recycledLayers.put(layer.layer, layer);
+			}
+		}
+		layers.clear();
+		currentLayer = null;
+	}
+
+	public void reuseFrom(final ModelScene scene) {
+		rendered = false;
+		if (scene == null) {
+			initWorld();
+		} else {
+			scene.layers.forEach((key, layer) -> {
+				if (layer.isStatic() || layer.hasTrace()) { layers.put(key, layer); }
+			});
+		}
 	}
 
 }

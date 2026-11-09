@@ -35,6 +35,11 @@ public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes>
 		super(geometry, attributes, DrawerType.GEOMETRY);
 	}
 
+	public double getDrawingDepth() {
+		final Double depth = getAttributes().getDepth();
+		return depth == null ? 0d : depth;
+	}
+
 	@Override
 	public void getTranslationInto(final IPoint p) {
 		final IPoint explicitLocation = getAttributes().getLocation();

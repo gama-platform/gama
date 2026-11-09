@@ -83,12 +83,15 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOp
 			if (env != null) {
 				// try {
 				final boolean in2D = isDrawing2D(size, env, object);
+				final double geometryScale = object.getGeometryScale();
 				double factor = 0.0;
 				if (in2D) {
-					factor = Math.min(size.getX() / env.getWidth(), size.getY() / env.getHeight());
+					factor = Math.min(size.getX() / (env.getWidth() * geometryScale),
+							size.getY() / (env.getHeight() * geometryScale));
 				} else {
-					final double min_xy = Math.min(size.getX() / env.getWidth(), size.getY() / env.getHeight());
-					factor = Math.min(min_xy, size.getZ() / env.getDepth());
+					final double min_xy = Math.min(size.getX() / (env.getWidth() * geometryScale),
+							size.getY() / (env.getHeight() * geometryScale));
+					factor = Math.min(min_xy, size.getZ() / (env.getDepth() * geometryScale));
 				}
 				if (factor != 1d) {
 					object.getTranslationForScalingInto(loc);

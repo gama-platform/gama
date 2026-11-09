@@ -99,11 +99,12 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			applyRotation(object);
 			applyTranslation(object);
 			applyScaling(object);
+			final double scale = object.getGeometryScale();
+			if (scale != 1d) { gl.scaleBy(scale, scale, scale); }
 			final IColor border = !object.isFilled() && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
 			Geometry geometry = object.getObject();
-			Double d = object.getAttributes().getDepth();
-			final double height = d == null ? 0d : d;
+			final double height = object.getDrawingDepth();
 			IShape.Type type = object.getAttributes().getType();
 			drawGeometry(geometry, border, height, type);
 		} finally {

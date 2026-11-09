@@ -289,6 +289,80 @@ Use `refresh: true` if contents must follow model changes while visible.
 `refresh:` defaults to `true` for most layers and `false` for image layers.
 Java2D continues to redraw layers rather than retaining them this way.
 
+### CPU-side display preparation
+
+Preparing an OpenGL scene runs aspects and drawing expressions on the CPU,
+normally during the simulation's output update. It is separate from the rendering
+thread's scene playback. Faster GPU submission does not remove the cost of
+evaluating an aspect for every agent.
+
+Both OpenGL backends automatically use renderer-owned unit geometry for eligible
+direct `draw circle(r)`, `draw sphere(r)`, `draw square(s)` and `draw cube(s)`
+statements, and for corresponding default agent appearances. Each drawing records
+its current position, scale and appearance rather than constructing a new JTS
+polygon. Arguments and dynamic facets are still evaluated on each draw, in their
+existing order. The implicit center remains the current agent's location;
+`at:`, `size:`, `rotate:`, `depth:`, colors, lighting, outlines and picking retain
+their meanings and units. A primitive operator used elsewhere in a model still
+returns a normal geometry.
+
+The direct-draw optimization applies to the built-in one-argument operators.
+Composite geometry expressions, explicit textures or arrow facets, and the
+experimental **Only display visible agents in OpenGL** preference retain the
+ordinary geometry path. Java2D also retains that path. These fallbacks do not
+skip expressions or change the number of random evaluations.
+
+Constant, context-independent drawing facets can reuse their converted values.
+Pixel-dependent, time-dependent and agent-dependent expressions remain live.
+Screen-relative positions and lengths are resolved against the current viewport
+on every draw even when their underlying values are constant. Drawing data is
+owned by each graphics instance, so displays sharing an aspect do not share its
+mutable facet evaluation state.
+
+Draw-only aspects avoid execution-result wrappers for their child draws and
+unnecessary empty draw scopes. Aspects containing other statements retain the
+general interpreter path, including assignments, actions and control flow.
+Neither path runs aspects in parallel or suppresses their side effects.
+
+Dynamic, untraced OpenGL layers can reuse retired scene/list storage. Grid
+elevation expressions still run once per cell on each refresh, but their output
+arrays can reuse storage owned by the scene being built. A scene's storage is
+not recycled while it is being displayed; static layers and traces do not borrow
+these elevation arrays. Layer attribute evaluation still precedes visibility and
+static-content checks, preserving existing evaluation timing.
+
+### Preparation diagnostics
+
+Enable **Displays > OpenGL Rendering Properties > Log display preparation
+diagnostics** for CPU preparation reports, including Java2D. The preference is
+off by default. **Log OpenGL rendering diagnostics** also enables preparation
+reports for OpenGL displays.
+
+Approximately every five seconds of display updates, `[Display preparation]`
+reports accepted and skipped preparation updates, average elapsed CPU-side time
+per accepted update, layer-data time, aspect time, drawing-facet time and
+draw-delegate time. It includes aspect/draw/primitive counts and totals per layer.
+Aspect times include their draws, and total preparation includes all nested work:
+these timings must not be added together. Default aspects contribute to aspect
+and primitive counts, not to GAML `draw` counts. Render-synchronization waits are
+reported separately and are not included in preparation time. Display statement
+stepping (notably chart data collection), display-level facet updates and snapshot
+export are outside this preparation timer.
+
+The counters are not allocation measurements or a claimed speedup. To measure
+allocation and garbage collection, capture the running GAMA JVM with Java Flight
+Recorder using the JDK's `jcmd` tool:
+
+```sh
+jcmd <GAMA_PID> JFR.start name=display-preparation settings=profile duration=30s filename=/absolute/path/display-preparation.jfr
+```
+
+Inspect allocation samples and execution samples on the simulation/output-update
+thread separately from the OpenGL rendering thread. Compare the same model,
+population, display size and refresh policy after warm-up. Record synchronization
+mode too: time spent waiting for a frame is not CPU geometry preparation.
+UI behavior and end-to-end speed still need to be checked with the actual model.
+
 ### OpenGL diagnostics
 
 For performance investigation, enable **Displays > OpenGL Rendering Properties >

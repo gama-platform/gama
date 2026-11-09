@@ -59,6 +59,7 @@ public class SceneHelper extends AbstractRendererHelper {
 
 	/** The garbage. */
 	private final Queue<ModelScene> garbage = new ConcurrentLinkedQueue<>();
+	private final Queue<ModelScene> recycledScenes = new ConcurrentLinkedQueue<>();
 
 	private final Queue<LayerObject> retiredLayers = new ConcurrentLinkedQueue<>();
 
@@ -126,7 +127,12 @@ public class SceneHelper extends AbstractRendererHelper {
 			}
 			pendingUpdate.set(false);
 			if (pendingLayerRedraw.getAndSet(false)) { getSurface().getManager().forceRedrawingLayers(); }
-			backScene = createSceneFrom(staticScene);
+			backScene = recycledScenes.poll();
+			if (backScene == null) {
+				backScene = createSceneFrom(staticScene);
+			} else {
+				backScene.reuseFrom(staticScene);
+			}
 			// We prepare it for drawing
 			backScene.beginDrawingLayers();
 			keepLock = true;
@@ -258,7 +264,12 @@ public class SceneHelper extends AbstractRendererHelper {
 			final ModelScene scene = garbage.poll();
 			if (scene == null) break;
 			scene.wipe(gl);
-			scene.dispose();
+			if (recycledScenes.size() < 2) {
+				scene.recycle();
+				recycledScenes.offer(scene);
+			} else {
+				scene.dispose();
+			}
 		}
 		// A replaced layer can still be in the front scene until it has been rendered.
 		if (!sceneUpdateLock.tryLock()) return;
@@ -288,6 +299,8 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 
 	public void dispose() {
+		for (final ModelScene scene : recycledScenes) { scene.dispose(); }
+		recycledScenes.clear();
 		if (frontScene != null) { frontScene.dispose(); }
 		frontScene = null;
 		if (backScene != null) { backScene.dispose(); }

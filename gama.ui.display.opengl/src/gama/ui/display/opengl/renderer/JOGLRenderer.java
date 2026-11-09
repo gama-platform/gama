@@ -14,6 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.EnumMap;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -28,6 +29,7 @@ import gama.api.runtime.GeneralSynchronizer;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
@@ -37,6 +39,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.OverlayLayer;
@@ -75,6 +78,38 @@ import gama.ui.shared.utils.WorkbenchHelper;
  * The Class JOGLRenderer.
  */
 public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRenderer {
+
+	private final EnumMap<IShape.Type, Geometry> primitiveGeometry = new EnumMap<>(IShape.Type.class);
+
+	@Override
+	public boolean supportsPrimitiveDrawing() { return true; }
+
+	@Override
+	public Rectangle2D drawPrimitive(final IShape.Type type, final double scale, final IPoint center,
+			final IDrawingAttributes attributes) {
+		final ModelScene scene = sceneHelper.getSceneToUpdate();
+		if (scene == null) return null;
+		final Geometry geometry = primitiveGeometry.computeIfAbsent(type, t -> {
+			final IShape shape = switch (t) {
+				case CIRCLE, SPHERE -> GamaShapeFactory.buildCircle(1, origin);
+				case SQUARE, CUBE -> GamaShapeFactory.buildSquare(1, origin);
+				default -> throw new IllegalArgumentException("Unsupported drawing primitive: " + t);
+			};
+			final Geometry unitGeometry = shape.getInnerGeometry();
+			GamaCoordinateSequenceFactory.pointsOf(unitGeometry).ensureClockwiseness();
+			return unitGeometry;
+		});
+		tryToHighlight(attributes);
+		scene.addPrimitive(geometry, scale, center, attributes);
+		getPreparationDiagnostics().primitive();
+		return rect;
+	}
+
+	@Override
+	public double[] getFieldBuffer(final Object owner, final int length) {
+		final ModelScene scene = sceneHelper.getSceneToUpdate();
+		return scene == null ? super.getFieldBuffer(owner, length) : scene.getFieldBuffer(owner, length);
+	}
 
 	private final ThreadLocal<ILayer> renderingLayer = new ThreadLocal<>();
 
@@ -238,6 +273,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public void dispose() {
 		super.dispose();
+		primitiveGeometry.clear();
 		dispose(canvas);
 	}
 

@@ -16,13 +16,18 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Map;
+import java.util.IdentityHashMap;
 
 import gama.api.GAMA;
+import gama.api.gaml.statements.IStatement;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.api.ui.layers.ILayer;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.random.IRandom;
@@ -35,6 +40,23 @@ import gama.dev.DEBUG;
  * The Class AbstractDisplayGraphics.
  */
 public abstract class AbstractDisplayGraphics implements IGraphics {
+
+	private final Map<IStatement.Draw, DrawingData> drawingData = new IdentityHashMap<>();
+	private IStatement.Draw lastDraw;
+	private DrawingData lastDrawingData;
+	private final PreparationDiagnostics preparationDiagnostics = new PreparationDiagnostics();
+
+	@Override
+	public DrawingData getDrawingData(final IStatement.Draw statement) {
+		if (lastDraw != statement) {
+			lastDrawingData = drawingData.computeIfAbsent(statement, DrawingData::new);
+			lastDraw = statement;
+		}
+		return lastDrawingData;
+	}
+
+	@Override
+	public PreparationDiagnostics getPreparationDiagnostics() { return preparationDiagnostics; }
 
 	/** The cached GC. */
 	private static GraphicsConfiguration cachedGC;
@@ -138,6 +160,9 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	@Override
 	public void dispose() {
 		currentLayer = null;
+		drawingData.clear();
+		lastDraw = null;
+		lastDrawingData = null;
 	}
 
 	@Override

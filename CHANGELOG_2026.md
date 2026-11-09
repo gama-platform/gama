@@ -19,6 +19,29 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### CPU-side display preparation
+
+Both OpenGL backends prepare eligible direct circle, sphere, square and cube
+draws from immutable unit geometry instead of rebuilding JTS polygons per agent.
+Default appearances use the same path. Dynamic facets, agent-relative centers,
+transforms, appearance and picking remain live; general geometry expressions,
+textured/arrows draws and Java2D retain their existing preparation path.
+
+Drawing facets reuse invariant conversions without freezing pixel or viewport
+dependencies, and their mutable evaluation data is local to each display.
+Draw-only aspects avoid redundant child-result wrappers and empty draw scopes.
+Shapes without arrows skip arrow-coordinate extraction, including unnecessary
+convex-hull work for multipart geometries.
+
+Dynamic scene/list storage and untraced grid-elevation arrays can be reused only
+after retiring their previous scene. Static drawings, traces, arbitrary aspect
+side effects and grid expression evaluation timing are preserved.
+
+Display preparation diagnostics now report CPU-side layer/aspect/draw timings
+and synchronization waits separately from rendering. See the
+[display-layer guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#cpu-side-display-preparation)
+for eligibility, fallbacks and profiling instructions.
+
 ### Navigator metadata during workspace recovery
 
 Generating file metadata no longer synchronously refreshes workspace resources.

@@ -11,7 +11,6 @@
 package gama.gaml.statements.draw;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 
 import gama.api.gaml.constants.GamlCoreConstants;
@@ -46,7 +45,7 @@ public class DrawingAttributes implements IDrawingAttributes {
 	private static int INDEX = 0;
 
 	/** The flags. */
-	protected EnumSet<Flag> flags = EnumSet.of(Flag.Lighted);
+	private int flags = 1 << Flag.Lighted.ordinal();
 
 	/** The unique index. */
 	private final int uniqueIndex;
@@ -574,7 +573,7 @@ public class DrawingAttributes implements IDrawingAttributes {
 	 */
 	@Override
 	public boolean isSet(final Flag value) {
-		return flags.contains(value);
+		return (flags & 1 << value.ordinal()) != 0;
 	}
 
 	/**
@@ -588,9 +587,9 @@ public class DrawingAttributes implements IDrawingAttributes {
 	@Override
 	public void setFlag(final Flag value, final boolean b) {
 		if (b) {
-			flags.add(value);
+			flags |= 1 << value.ordinal();
 		} else {
-			flags.remove(value);
+			flags &= ~(1 << value.ordinal());
 		}
 	}
 

@@ -1207,6 +1207,9 @@ public class GamaPreferences {
 		public static final Pref<Boolean> OPENGL_DIAGNOSTICS = create("pref_opengl_diagnostics",
 				"Log OpenGL rendering diagnostics", false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
 
+		public static final Pref<Boolean> DISPLAY_PREPARATION_DIAGNOSTICS = create("pref_display_preparation_diagnostics",
+				"Log display preparation diagnostics", false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
+
 		/**
 		 * Whether a small z-increment should be added to objects and layers in OpenGL to prevent z-fighting
 		 * (depth-buffer conflicts that produce visual flickering). Activates {@link #OPENGL_Z_FACTOR}.

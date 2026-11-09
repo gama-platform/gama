@@ -9,6 +9,8 @@
  ********************************************************************************************************/
 package gama.api.runtime.scope;
 
+import gama.api.gaml.statements.IStatement;
+
 import java.io.Closeable;
 import java.util.EnumSet;
 import java.util.Map;
@@ -412,6 +414,11 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 */
 	default IExecutionResult execute(final IExecutable executable) {
 		return execute(executable, getCurrentObjectOrAgent(), null);
+	}
+
+	/** Execute a draw whose return value is consumed by the graphics' aspect envelope, not by the caller. */
+	default boolean executeDraw(final IStatement.Draw statement) {
+		return execute(statement).passed();
 	}
 
 	/**

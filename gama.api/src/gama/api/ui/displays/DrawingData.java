@@ -97,18 +97,18 @@ public class DrawingData extends AttributeHolder {
 	 */
 	public DrawingData(final IStatement.Draw symbol) {
 		super(symbol);
-		this.size = create(IKeyword.SIZE, this::castSize, Types.POINT, null);
+		this.size = createCached(IKeyword.SIZE, this::castSize, null);
 		this.lighting = create(IKeyword.LIGHTED, Types.BOOL, true);
 		this.depth = create(IKeyword.DEPTH, Types.FLOAT, null);
 		this.precision = create("precision", Types.FLOAT, 0.01);
-		this.rotation = create(IKeyword.ROTATE, this::castRotation, Types.NO_TYPE, null);
-		this.anchor = create(IKeyword.ANCHOR, this::castAnchor, Types.POINT, GamlCoreConstants.bottom_left);
+		this.rotation = createCached(IKeyword.ROTATE, this::castRotation, null);
+		this.anchor = createCached(IKeyword.ANCHOR, this::castAnchor, GamlCoreConstants.bottom_left);
 		this.location = create(IKeyword.AT, Types.POINT, null);
 		this.empty = create(IKeyword.WIREFRAME, Types.BOOL, false);
-		this.border = create(IKeyword.BORDER, this::castBorder, Types.COLOR, null);
-		this.color = create(IKeyword.COLOR, this::castColor, Types.COLOR, null);
+		this.border = createCached(IKeyword.BORDER, this::castBorder, null);
+		this.color = createCached(IKeyword.COLOR, this::castColor, null);
 		this.font = create(IKeyword.FONT, Types.FONT, GamaPreferences.Displays.DEFAULT_DISPLAY_FONT.getValue());
-		this.texture = create(IKeyword.TEXTURE, this::castTexture, Types.LIST, null);
+		this.texture = createCached(IKeyword.TEXTURE, this::castTexture, null);
 		// this.material = create(IKeyword.MATERIAL, Types.MATERIAL, null);
 		this.perspective = create(IKeyword.PERSPECTIVE, Types.BOOL, true);
 		this.lineWidth = create(IKeyword.WIDTH, Types.FLOAT, GamaPreferences.Displays.CORE_LINE_WIDTH.getValue());
@@ -171,7 +171,7 @@ public class DrawingData extends AttributeHolder {
 	 *             the gama runtime exception
 	 */
 	private IPoint castAnchor(final IScope scope, final IExpression exp) throws GamaRuntimeException {
-		final IPoint p = GamaPointFactory.castToPoint(scope, exp.value(scope));
+		final IPoint p = GamaPointFactory.create(GamaPointFactory.castToPoint(scope, exp.value(scope)));
 		p.setX(Math.min(1d, Math.max(p.getX(), 0d)));
 		p.setY(Math.min(1d, Math.max(p.getY(), 0d)));
 		return p;

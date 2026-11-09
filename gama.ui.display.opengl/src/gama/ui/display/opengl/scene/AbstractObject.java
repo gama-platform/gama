@@ -75,6 +75,8 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	 */
 	public T getObject() { return object; }
 
+	public double getGeometryScale() { return 1d; }
+
 	/**
 	 * Returns the id of the texture at index 1
 	 *

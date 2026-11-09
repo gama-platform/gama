@@ -42,6 +42,7 @@ import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.geometry.GeometryObject;
+import gama.ui.display.opengl.scene.geometry.PrimitiveObject;
 import gama.ui.display.opengl.scene.mesh.MeshObject;
 import gama.ui.display.opengl.scene.resources.ResourceObject;
 import gama.ui.display.opengl.scene.text.StringObject;
@@ -132,13 +133,9 @@ public class LayerObject {
 		 */
 		public AxisAngle getRotation() { return rotation; }
 
-		/**
-		 * As array.
-		 *
-		 * @return the abstract object[]
-		 */
-		/** Cached backing array — reallocated only when the list size changes. */
+		/** Cached backing array; reallocated only when the list size changes. */
 		private AbstractObject[] cachedArray = {};
+		private int cachedRevision = -1;
 
 		/**
 		 * As array.
@@ -148,7 +145,18 @@ public class LayerObject {
 		public AbstractObject[] asArray() {
 			final int n = size();
 			if (cachedArray.length != n) { cachedArray = new AbstractObject[n]; }
-			return toArray(cachedArray);
+			if (cachedRevision != modCount) {
+				toArray(cachedArray);
+				cachedRevision = modCount;
+			}
+			return cachedArray;
+		}
+
+		@Override
+		public void clear() {
+			super.clear();
+			java.util.Arrays.fill(cachedArray, null);
+			cachedRevision = -1;
 		}
 	}
 
@@ -160,6 +168,11 @@ public class LayerObject {
 
 	/** The is animated. */
 	volatile boolean isAnimated;
+	private boolean shared;
+
+	public void markShared() { shared = true; }
+
+	public boolean wasShared() { return shared; }
 
 	/** The renderer. */
 	protected final IOpenGLRenderer renderer;
@@ -661,6 +674,11 @@ public class LayerObject {
 		currentList.add(new GeometryObject(geometry, attributes));
 	}
 
+	public void addPrimitive(final PrimitiveObject object) {
+		isAnimated = object.getAttributes().isAnimated();
+		currentList.add(object);
+	}
+
 	/**
 	 * Gets the trace.
 	 *
@@ -693,6 +711,14 @@ public class LayerObject {
 			openGLListIndex = null;
 		}
 
+	}
+
+	public void resetForReuse() {
+		isAnimated = false;
+		isFading = false;
+		currentList.computeOffset();
+		currentList.computeScale();
+		currentList.computeRotation();
 	}
 
 	/**
