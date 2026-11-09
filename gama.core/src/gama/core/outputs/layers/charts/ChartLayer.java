@@ -70,7 +70,7 @@ public class ChartLayer extends AbstractLayer implements ILayer.Chart {
 		scale = Math.min(scale, Math.sqrt(MAX_RASTER_PIXELS / ((double) x * y)));
 		final int rasterWidth = Math.max(1, (int) Math.floor(x * scale));
 		final int rasterHeight = Math.max(1, (int) Math.floor(y * scale));
-		final BufferedImage im = chart.getImage(x, y, rasterWidth, rasterHeight, true);
+		final BufferedImage im = chart.getImage(x, y, rasterWidth, rasterHeight, dg.getSurface().getData().isAntialias());
 		dg.drawChart(im);
 	}
 

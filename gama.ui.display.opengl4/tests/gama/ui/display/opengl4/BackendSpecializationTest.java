@@ -96,9 +96,8 @@ public final class BackendSpecializationTest {
 		}
 	}
 
-	private static void checkFramebuffers() {
-		final List<String> calls = new ArrayList<>();
-		final GL2GL3 gl = proxy(GL2GL3.class, (p, method, args) -> {
+	private static GL2GL3 framebufferProxy(final List<String> calls, final int status) {
+		return proxy(GL2GL3.class, (p, method, args) -> {
 			final String name = method.getName();
 			calls.add(name);
 			if (name.startsWith("glGen")) {
@@ -109,9 +108,16 @@ public final class BackendSpecializationTest {
 			} else if ("glFramebufferTexture2D".equals(name)) {
 				check((int) args[2] == GL2ES2.GL_TEXTURE_2D,
 						"Render targets must use the common 2D texture attachment API");
+			} else if ("glCheckFramebufferStatus".equals(name)) {
+				return status;
 			}
 			return null;
 		});
+	}
+
+	private static void checkFramebuffers() {
+		final List<String> calls = new ArrayList<>();
+		final GL2GL3 gl = framebufferProxy(calls, GL2GL3.GL_FRAMEBUFFER_COMPLETE);
 		final FrameBufferObject fbo = new FrameBufferObject(gl, 100, 100);
 		check(calls.contains("glFramebufferTexture2D") && !calls.contains("glFramebufferTextureEXT"),
 				"The shared FBO must avoid GL2-only attachment entry points");
@@ -119,6 +125,16 @@ public final class BackendSpecializationTest {
 		fbo.unbindCurrentFrameBuffer();
 		fbo.setDisplayDimensions(200, 100);
 		fbo.cleanUp();
+
+		final List<String> incompleteCalls = new ArrayList<>();
+		try {
+			new FrameBufferObject(framebufferProxy(incompleteCalls, 0), 100, 100);
+			throw new AssertionError("Incomplete framebuffers must fail initialization");
+		} catch (final IllegalStateException e) {
+			check(e.getMessage().contains("status 0x0"), "The incomplete framebuffer status must be reported");
+			check(incompleteCalls.stream().filter(name -> name.startsWith("glDelete")).count() == 3,
+					"An incomplete framebuffer must release its allocated resources");
+		}
 	}
 
 	public static void main(final String[] args) throws Exception {
