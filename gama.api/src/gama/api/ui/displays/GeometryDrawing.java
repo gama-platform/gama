@@ -14,6 +14,7 @@ import java.util.List;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.util.GeometryEditor;
 
 import gama.api.types.geometry.GamaPointFactory;
@@ -24,6 +25,7 @@ import gama.api.utils.geometry.GeometryUtils;
 
 /**
  * An evaluated geometry command. Construction snapshots model coordinates; realization belongs to the consumer.
+ * Ring closure is preserved even when model coordinates change during collection.
  * No expression, agent location or execution scope is retained. The owned geometry must never be mutated by callers.
  */
 public final class GeometryDrawing {
@@ -41,6 +43,11 @@ public final class GeometryDrawing {
 				final IPoint[] points = new IPoint[coordinates.size()];
 				for (int i = 0; i < points.length; i++) {
 					points[i] = GamaPointFactory.create(coordinates.getX(i), coordinates.getY(i), coordinates.getZ(i));
+				}
+				if (geometry instanceof LinearRing && points.length > 0) {
+					// A moving shape may change between copying its first and closing vertices.
+					final IPoint last = points[points.length - 1];
+					last.setLocation(points[0].getX(), points[0].getY(), last.getZ());
 				}
 				// The array is owned already: copying it again would also normalize winding during collection.
 				return GamaCoordinateSequenceFactory.create(points, false);
