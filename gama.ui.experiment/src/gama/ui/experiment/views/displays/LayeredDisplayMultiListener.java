@@ -54,7 +54,7 @@ public class LayeredDisplayMultiListener {
 	volatile long lastEnterTime;
 
 	/** The last enter position. */
-	volatile Point lastEnterPosition = new Point(0, 0);
+	volatile Point lastEnterPosition;
 
 	/** The suppress next enter. */
 	volatile boolean suppressNextEnter;
@@ -170,7 +170,9 @@ public class LayeredDisplayMultiListener {
 		if (modifier) return;
 		if (button > 0) return;
 		final long currentTime = System.currentTimeMillis();
-		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
+		final Point previousEnter = lastEnterPosition;
+		if (previousEnter != null && currentTime - lastEnterTime < 100 && previousEnter.x == x && previousEnter.y == y)
+			return;
 		lastEnterTime = System.currentTimeMillis();
 		lastEnterPosition = new Point(x, y);
 		// DEBUG.LOG("Mouse entering " + e);
@@ -192,8 +194,8 @@ public class LayeredDisplayMultiListener {
 	public void mouseExit(final int x, final int y, final boolean modifier, final int button) {
 		final var controls = surface.getControlLayer();
 		if (controls != null) controls.cancelControlInteraction();
-		final long currentTime = System.currentTimeMillis();
-		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
+		// An exit is not a duplicate enter; the next re-entry must also be delivered, even at the same coordinates.
+		lastEnterPosition = null;
 		setMousePosition(-1, -1);
 		if (button > 0) return;
 		// DEBUG.LOG("Mouse exiting " + e);
