@@ -17,6 +17,11 @@ inputs:
     required: true
     type: string
     default: "default"
+  buildCachePath:
+    required: false
+    type: string
+    description: Maven build cache, cleared together with the dependency cache (its entries skip the install phase)
+    default: "~/.m2/build-cache"
   GH_TOKEN:
     required: true
     type: string
@@ -56,6 +61,7 @@ runs:
     run: ${GITHUB_ACTION_PATH}/compute_hash.sh
     env:
       MAVEN_CACHE_PATH: ${{ inputs.cachePath }}
+      BUILD_CACHE_PATH: ${{ inputs.buildCachePath }}
       GITHUB_ACTION_PATH: ${{ github.action_path }}
     
   
