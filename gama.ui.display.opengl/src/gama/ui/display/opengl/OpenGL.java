@@ -1279,6 +1279,16 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		geometryCache.process(object);
 	}
 
+	@Override
+	public void cacheGeometry(final GamaGeometryFile object, final String key) {
+		geometryCache.process(object, key);
+	}
+
+	@Override
+	public IEnvelope getEnvelopeFor(final GamaGeometryFile object, final String key) {
+		return geometryCache.getEnvelope(object, key);
+	}
+
 	/**
 	 * Gets the envelope for.
 	 *
@@ -1475,6 +1485,16 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void drawCachedGeometry(final GamaGeometryFile file, final IColor border) {
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
+		drawCachedFile(index, border);
+	}
+
+	@Override
+	public void drawCachedGeometry(final GamaGeometryFile file, final String key, final IColor border) {
+		if (file == null) return;
+		drawCachedFile(geometryCache.get(key), border);
+	}
+
+	private void drawCachedFile(final Integer index, final IColor border) {
 		if (index != null) {
 			try (var offset = PolygonOffset.forOutline(this, border != null && !isWireframe())) {
 				drawList(index);

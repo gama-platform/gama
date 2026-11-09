@@ -30,7 +30,7 @@ import gama.dev.DEBUG;
 /**
  * The Class DrawingAttributes.
  */
-public class DrawingAttributes implements IDrawingAttributes {
+public class DrawingAttributes implements IDrawingAttributes, Cloneable {
 
 	static {
 		DEBUG.OFF();
@@ -118,6 +118,20 @@ public class DrawingAttributes implements IDrawingAttributes {
 	 */
 	@Override
 	public int getIndex() { return uniqueIndex; }
+
+	@Override
+	public DrawingAttributes snapshot() {
+		try {
+			final DrawingAttributes copy = (DrawingAttributes) clone();
+			copy.location = location == null ? null : GamaPointFactory.create(location);
+			copy.size = size == null ? null : Scaling3D.of(size.getX(), size.getY(), size.getZ());
+			copy.rotation = rotation == null ? null : new AxisAngle(rotation.getAxis(), rotation.getAngle());
+			copy.textures = textures == null ? null : new java.util.ArrayList<>(textures);
+			return copy;
+		} catch (final CloneNotSupportedException e) {
+			throw new AssertionError(e);
+		}
+	}
 
 	/**
 	 * Sets the synthetic.

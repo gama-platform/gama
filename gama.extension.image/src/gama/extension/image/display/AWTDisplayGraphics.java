@@ -63,11 +63,16 @@ import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
 import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.GeometryDrawing;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.FramedLayerData;
@@ -523,11 +528,64 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	 */
 	@Override
 	public Rectangle2D drawShape(final Geometry gg, final IDrawingAttributes attributes) {
+		return drawShape(gg, attributes, sw);
+	}
+
+	@Override
+	public boolean supportsGeometryCommands() { return true; }
+
+	@Override
+	public Rectangle2D drawGeometry(final GeometryDrawing command, final IDrawingAttributes attributes) {
+		Geometry source = command.normalizedSource();
+		final IPoint center = GamaCoordinateSequenceFactory.pointsOf(source).getCenter();
+		final var size = attributes.getSize();
+		double scale = 1;
+		boolean scaled = false;
+		if (size != null && source.getNumPoints() != 1) {
+			final var envelope = source.getEnvelopeInternal();
+			final double factor = Math.min(envelope.getWidth() == 0 ? Double.POSITIVE_INFINITY
+					: size.getX() / envelope.getWidth(), envelope.getHeight() == 0 ? Double.POSITIVE_INFINITY
+							: size.getY() / envelope.getHeight());
+			if (Double.isFinite(factor)) { scale = factor; scaled = true; }
+		}
+		final double factor = scale;
+		final AxisAngle angle = attributes.getRotation();
+		final Rotation3D rotation = angle == null ? null
+				: new Rotation3D.CenteredOn(new AxisAngle(angle.getAxis(), -angle.getAngle()), center);
+		final IPoint location = attributes.getLocation();
+		if (!scaled && (angle != null || location != null)
+				&& source instanceof org.locationtech.jts.geom.Polygonal && !source.isValid()) {
+			source = source.buffer(0);
+		}
+		final IPoint working = GamaPointFactory.create();
+		final org.locationtech.jts.geom.CoordinateFilter transform = coordinate -> {
+			working.setLocation(center.getX() + factor * (coordinate.x - center.getX()),
+					center.getY() + factor * (coordinate.y - center.getY()), coordinate.getZ());
+			if (rotation != null) { rotation.filter(working.toCoordinate()); }
+			if (location != null) { working.add(location).subtract(center); }
+			coordinate.setCoordinate(working.toCoordinate());
+		};
+		// Arrowheads and artificial line depth are defined after Java2D object transforms.
+		if (command.hasArrows() || source instanceof Lineal && attributes.getDepth() != null) {
+			final Geometry transformed = source.copy();
+			transformed.apply(transform);
+			transformed.geometryChanged();
+			return drawShape(command.addArrows(transformed), attributes);
+		}
+		final ShapeWriter writer = new ShapeWriter((coordinate, destination) -> {
+			working.setLocation(coordinate.x, coordinate.y, coordinate.getZ());
+			transform.filter(working.toCoordinate());
+			destination.setLocation(xFromModelUnitsToPixels(working.getX()), yFromModelUnitsToPixels(working.getY()));
+		});
+		return drawShape(source, attributes, writer);
+	}
+
+	private Rectangle2D drawShape(final Geometry gg, final IDrawingAttributes attributes, final ShapeWriter writer) {
 		if (gg == null) return null;
 		Geometry geometry = gg;
 		if (geometry instanceof GeometryCollection) {
 			final Rectangle2D result = new Rectangle2D.Double();
-			GeometryUtils.applyToInnerGeometries(geometry, g -> result.add(drawShape(g, attributes)));
+			GeometryUtils.applyToInnerGeometries(geometry, g -> result.add(drawShape(g, attributes, writer)));
 			return result;
 		}
 		boolean isLine = geometry instanceof Lineal || geometry instanceof Puntal;
@@ -544,7 +602,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			attributes.setFill(GamaColorFactory.get(data.getHighlightColor().getRGB()));
 			if (border != null) { border = attributes.getColor(); }
 		}
-		final Shape s = sw.toShape(geometry);
+		final Shape s = writer.toShape(geometry);
 		final Stroke stroke = currentRenderer.getStroke();
 		try {
 			currentRenderer.setColor(IColor.toAWTColor(attributes.getColor()));

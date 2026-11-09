@@ -331,6 +331,66 @@ not recycled while it is being displayed; static layers and traces do not borrow
 these elevation arrays. Layer attribute evaluation still precedes visibility and
 static-content checks, preserving existing evaluation timing.
 
+### Evaluated drawing commands and renderer ownership
+
+For both OpenGL backends, collection records evaluated drawing commands rather
+than interpreting their geometry immediately. Ordinary geometry coordinates are
+copied once to isolate the displayed frame from later model mutations; no GAML
+expression or execution scope is stored in these commands. Winding normalization,
+arrowhead construction, object transforms and geometric-center calculations are
+performed by the rendering consumer. Multipart geometry retains its historical
+constituent winding. Eligible spheres and cubes use their known scalar dimensions
+directly; flat circle/square support geometry is created lazily by the renderer.
+
+Image support rectangles, grid-border geometry, multiline splitting and font
+metrics are also deferred until scene playback. Text still uses the same line
+spacing, anchor and logical-pixel/model-unit conversion, including gaps left by
+empty lines; empty lines do not consume an object-depth increment. Layout is
+cached with its captured drawing, as before for retained/static drawings.
+The coordinate defaults, reference frames and units described above are unchanged.
+
+Drawing attributes capture mutable locations, sizes, axes, text anchors and mesh
+dimensions without changing their picking identity. Each collected layer/trace
+captures its coordinate system, pixel rectangle, frame colors, selectability and
+refresh/trace settings. UI visibility remains live, so hiding an already collected
+layer still takes effect immediately. Layer transparency is evaluated during the
+normal layer refresh, not again when a renderer requests its background color.
+This deliberately removes redundant transparency-expression evaluations.
+
+Grid colors are captured as one packed ARGB array rather than updating an
+intermediate reusable image during collection. The renderer wraps the owned
+array as an image and performs texture conversion/upload. Mutable non-file image
+providers are resolved and copied on the producer side; file-backed images and
+animations keep their existing loading behavior. Ordinary mutable fields are
+copied before collection, while scene-owned grid-elevation buffers are transferred
+without another copy. Mesh smoothing, normals and sampling remain renderer work.
+These ownership copies are necessary CPU work, not work that can safely be moved
+onto a thread concurrently reading mutable model arrays.
+
+Java2D consumes the evaluated geometry command on its existing EDT painting path.
+It applies ordinary transforms during conversion to an AWT shape rather than
+building intermediate transformed JTS geometries. Arrows and artificial line
+depth still use renderer-side geometry realization after the Java2D transforms.
+Invalid polygon repair is retained when required; translating/rotating valid
+points and lines no longer uses a zero-distance polygon buffer that could erase
+them. Java2D aspect evaluation has not been moved to the simulation thread.
+
+The interface extension is opt-in for geometry commands and has adapters for
+existing graphics plugins. Plugins retaining drawing attributes asynchronously
+must provide an owning `snapshot()` implementation for their custom attributes.
+Existing synchronous drawing bounds and renderer picking interfaces are unchanged.
+For file assets, the producer resolves the drawing cache key and initial rotation
+once; renderer cache lookup no longer repeats contextual key resolution.
+Context-dependent GIS/OBJ/plugin loading and envelope discovery remain an explicit
+compatibility path using a detached services scope. That scope does not retain
+the producer's local frames, but it still shares root-agent services: this is not
+a claim that every third-party asset loader is scope-free.
+
+Aspects and GAML expressions still execute in their existing order and on their
+existing thread. Their assignments, actions and random evaluations have not been
+deferred or parallelized. These changes reduce preparation work; they do not
+establish a measured end-to-end speedup.
+
 ### Preparation diagnostics
 
 Enable **Displays > OpenGL Rendering Properties > Log display preparation

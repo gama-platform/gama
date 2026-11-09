@@ -79,7 +79,13 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOp
 
 		final Scaling3D size = object.getAttributes().getSize();
 		if (size != null) {
-			final IEnvelope env = gl.getEnvelopeFor(object.getObject());
+			if (object instanceof gama.ui.display.opengl.scene.geometry.PrimitiveObject primitive) {
+				final double extent = primitive.getUnitExtent() * primitive.getGeometryScale();
+				final double factor = Math.min(size.getX() / extent, size.getY() / extent);
+				if (factor != 1d) { gl.scaleBy(factor, factor, factor); }
+				return true;
+			}
+			final IEnvelope env = object.getEnvelope(gl);
 			if (env != null) {
 				// try {
 				final boolean in2D = isDrawing2D(size, env, object);

@@ -141,10 +141,19 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			if (scale != 1d) { gl.scaleBy(scale, scale, scale); }
 			final IColor border = !object.isFilled() && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
-			Geometry geometry = object.getObject();
 			final double height = object.getDrawingDepth();
 			IShape.Type type = object.getAttributes().getType();
-			drawGeometry(geometry, border, height, type);
+			if (object instanceof gama.ui.display.opengl.scene.geometry.PrimitiveObject
+					&& (type == Type.SPHERE || type == Type.CUBE)) {
+				if (type == Type.SPHERE) {
+					gl.scaleBy(height, height, height);
+				} else {
+					gl.scaleBy(1, 1, height);
+				}
+				gl.drawCachedGeometry(type, border);
+			} else {
+				drawGeometry(object.getObject(), border, height, type);
+			}
 		} finally {
 			gl.popMatrix();
 		}

@@ -406,6 +406,9 @@ public interface IDrawingAttributes {
 		return this;
 	}
 
+	/** Capture mutable appearance/transform values before an asynchronous consumer retains them. */
+	default IDrawingAttributes snapshot() { return this; }
+
 	/**
 	 * @return
 	 */

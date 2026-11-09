@@ -14,6 +14,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.displays.GeometryDrawing;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -22,6 +23,9 @@ import gama.ui.display.opengl.scene.AbstractObject;
  * The Class GeometryObject.
  */
 public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes> {
+
+	private final GeometryDrawing command;
+	private IPoint center;
 
 	/**
 	 * Instantiates a new geometry object.
@@ -32,7 +36,25 @@ public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes>
 	 *            the attributes
 	 */
 	public GeometryObject(final Geometry geometry, final IDrawingAttributes attributes) {
-		super(geometry, attributes, DrawerType.GEOMETRY);
+		this(new GeometryDrawing(geometry, 0, 0, !attributes.isEmpty()), attributes);
+	}
+
+	public GeometryObject(final GeometryDrawing command, final IDrawingAttributes attributes) {
+		super(null, attributes, DrawerType.GEOMETRY);
+		this.command = command;
+	}
+
+	protected GeometryObject(final IDrawingAttributes attributes) {
+		super(null, attributes, DrawerType.GEOMETRY);
+		command = null;
+	}
+
+	@Override
+	public Geometry getObject() { return command == null ? super.getObject() : command.realize(); }
+
+	protected void getCenterInto(final IPoint point) {
+		if (center == null) { center = GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(); }
+		point.setLocation(center);
 	}
 
 	public double getDrawingDepth() {
@@ -46,7 +68,7 @@ public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes>
 		if (explicitLocation == null) {
 			p.setLocation(0, 0, 0);
 		} else {
-			GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(p);
+			getCenterInto(p);
 			p.negate();
 			p.add(explicitLocation);
 		}
@@ -56,7 +78,7 @@ public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes>
 	public void getTranslationForRotationInto(final IPoint p) {
 		final IPoint explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
-			GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(p);
+			getCenterInto(p);
 			Double depth = getAttributes().getDepth();
 			if (depth != null) {
 				switch (getAttributes().getType()) {
@@ -81,7 +103,7 @@ public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes>
 
 	@Override
 	public void getTranslationForScalingInto(final IPoint p) {
-		GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(p);
+		getCenterInto(p);
 	}
 
 }

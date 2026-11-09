@@ -160,9 +160,19 @@ public interface IOpenGL {
 
 	void cacheGeometry(GamaGeometryFile geometry);
 
+	default void cacheGeometry(final GamaGeometryFile geometry, final String key) { cacheGeometry(geometry); }
+
 	IEnvelope getEnvelopeFor(Object object);
 
+	default IEnvelope getEnvelopeFor(final GamaGeometryFile geometry, final String key) {
+		return getEnvelopeFor(geometry);
+	}
+
 	void drawCachedGeometry(GamaGeometryFile geometry, IColor border);
+
+	default void drawCachedGeometry(final GamaGeometryFile geometry, final String key, final IColor border) {
+		drawCachedGeometry(geometry, border);
+	}
 
 	void drawCachedGeometry(IShape.Type type, IColor border);
 

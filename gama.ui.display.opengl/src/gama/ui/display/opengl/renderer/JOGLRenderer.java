@@ -11,20 +11,19 @@
 package gama.ui.display.opengl.renderer;
 
 import java.awt.geom.Rectangle2D;
-import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.EnumMap;
+import java.util.function.Function;
 
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 
 import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -33,17 +32,21 @@ import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
+import gama.api.types.file.IGamaFile;
+import gama.api.ui.displays.GeometryDrawing;
+import gama.api.ui.displays.PixelDrawing;
 import gama.api.ui.displays.IAsset;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.LayerCoordinates;
-import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
+import gama.core.util.matrix.GamaField;
+import gama.core.util.matrix.GamaFloatMatrix;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes;
@@ -61,6 +64,7 @@ import gama.ui.display.opengl.renderer.helpers.PickingHelper;
 import gama.ui.display.opengl.renderer.helpers.SceneHelper;
 import gama.ui.display.opengl.renderer.helpers.AdaptiveTextHelper;
 import gama.ui.display.opengl.scene.ModelScene;
+import gama.ui.display.opengl.scene.layers.LayerObject.LayerState;
 import gama.ui.display.opengl.view.GamaGLCanvas;
 import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
 import gama.ui.shared.utils.DPIHelper;
@@ -80,6 +84,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRenderer {
 
 	private final EnumMap<IShape.Type, Geometry> primitiveGeometry = new EnumMap<>(IShape.Type.class);
+	private final Function<IShape.Type, Geometry> primitiveSource = this::getPrimitiveGeometry;
 
 	@Override
 	public boolean supportsPrimitiveDrawing() { return true; }
@@ -89,7 +94,15 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			final IDrawingAttributes attributes) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
-		final Geometry geometry = primitiveGeometry.computeIfAbsent(type, t -> {
+		tryToHighlight(attributes);
+		scene.addPrimitive(primitiveSource, scale, center, attributes);
+		getPreparationDiagnostics().primitive();
+		return rect;
+	}
+
+	/** Renderer-thread-only realization of the few primitives that still need polygon vertices. */
+	private Geometry getPrimitiveGeometry(final IShape.Type type) {
+		return primitiveGeometry.computeIfAbsent(type, t -> {
 			final IShape shape = switch (t) {
 				case CIRCLE, SPHERE -> GamaShapeFactory.buildCircle(1, origin);
 				case SQUARE, CUBE -> GamaShapeFactory.buildSquare(1, origin);
@@ -99,10 +112,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			GamaCoordinateSequenceFactory.pointsOf(unitGeometry).ensureClockwiseness();
 			return unitGeometry;
 		});
-		tryToHighlight(attributes);
-		scene.addPrimitive(geometry, scale, center, attributes);
-		getPreparationDiagnostics().primitive();
-		return rect;
 	}
 
 	@Override
@@ -112,6 +121,18 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	private final ThreadLocal<ILayer> renderingLayer = new ThreadLocal<>();
+	private final ThreadLocal<LayerState> renderingState = new ThreadLocal<>();
+
+	@Override
+	public LayerState setRenderingLayerState(final LayerState state) {
+		final var previous = renderingState.get();
+		if (state == null) {
+			renderingState.remove();
+		} else {
+			renderingState.set(state);
+		}
+		return previous;
+	}
 
 	@Override
 	public ILayer setRenderingLayer(final ILayer layer) {
@@ -125,6 +146,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	private ILayer getScreenWorldLayer() {
+		if (renderingState.get() != null) return null;
 		final ILayer rendered = renderingLayer.get();
 		final ILayer layer = rendered == null ? currentLayer : rendered;
 		return layer != null && layer.getData().getCoordinates() == LayerCoordinates.SCREEN
@@ -440,15 +462,49 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
 		tryToHighlight(attributes);
-		if (file instanceof GamaGeometryFile) {
-			scene.addGeometryFile((GamaGeometryFile) file, attributes);
-			openGL.cacheGeometry((GamaGeometryFile) file);
+		if (file instanceof GamaGeometryFile geometry) {
+			final String key = geometry.getDrawingCacheKey(getSurface().getScope());
+			scene.addGeometryFile(geometry, attributes, key);
+			openGL.cacheGeometry(geometry, key);
 		} else if (file instanceof IImageProvider iip) {
-			if (attributes.useCache()) { openGL.cacheTexture(iip); }
-			scene.addImage(file, attributes);
+			final IImageProvider captured = captureImage(iip, attributes.useCache());
+			if (attributes.useCache() && !(captured instanceof PixelDrawing)) {
+				openGL.cacheTexture(captured);
+			}
+			scene.addImage(captured, attributes);
 		}
 
 		return rect;
+	}
+
+	private IImageProvider captureImage(final IImageProvider source, final boolean useCache) {
+		if (source instanceof PixelDrawing || source instanceof IGamaFile) return source;
+		if (source.getClass() == GamaFloatMatrix.class || source.getClass() == GamaField.class) {
+			final GamaFloatMatrix matrix = (GamaFloatMatrix) source;
+			return new PixelDrawing(matrix.getCols(getSurface().getScope()), matrix.getRows(getSurface().getScope()),
+					matrix.getMatrix());
+		}
+		final BufferedImage image = source.getImage(getSurface().getScope(), useCache);
+		if (image == null) throw GamaRuntimeException.error(
+				"Unable to obtain the display image " + source.getId(), getSurface().getScope());
+		return PixelDrawing.fromImage(image);
+	}
+
+	private void captureTextures(final IDrawingAttributes attributes) {
+		final List<?> textures = attributes.getTextures();
+		if (textures == null) return;
+		ArrayList<Object> captured = null;
+		for (int i = 0; i < textures.size(); i++) {
+			final Object source = textures.get(i);
+			final Object snapshot = source instanceof IImageProvider image
+					? captureImage(image, attributes.useCache())
+					: source instanceof BufferedImage image ? PixelDrawing.fromImage(image) : source;
+			if (snapshot != source) {
+				if (captured == null) { captured = new ArrayList<>(textures); }
+				captured.set(i, snapshot);
+			}
+		}
+		if (captured != null) { attributes.setTextures(captured); }
 	}
 
 	/**
@@ -464,9 +520,14 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public Rectangle2D drawField(final IField fieldValues, final IDrawingAttributes attributes) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
+		captureTextures(attributes);
 		final List<?> textures = attributes.getTextures();
 		if (textures != null && !textures.isEmpty()) {
-			for (final Object img : textures) { if (img instanceof IImageProvider im) { openGL.cacheTexture(im); } }
+			for (final Object img : textures) {
+				if (img instanceof IImageProvider im && !(im instanceof PixelDrawing)) {
+					openGL.cacheTexture(im);
+				}
+			}
 		}
 		scene.addField(fieldValues, attributes);
 		/*
@@ -485,7 +546,22 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
 		tryToHighlight(attributes);
+		captureTextures(attributes);
 		scene.addGeometry(shape, attributes);
+		return rect;
+	}
+
+	@Override
+	public boolean supportsGeometryCommands() { return true; }
+
+	@Override
+	public Rectangle2D drawGeometry(final GeometryDrawing command,
+			final IDrawingAttributes attributes) {
+		final ModelScene scene = sceneHelper.getSceneToUpdate();
+		if (scene == null) return null;
+		tryToHighlight(attributes);
+		captureTextures(attributes);
+		scene.addGeometry(command, attributes);
 		return rect;
 	}
 
@@ -504,10 +580,23 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
 		// if (attributes.useCache()) { openGL.cacheTexture(img); }
-		scene.addImage(img, attributes);
+		scene.addImage(PixelDrawing.fromImage(img), attributes);
 		tryToHighlight(attributes);
 		if (attributes.getBorder() != null) {
 			drawGridLine(GamaPointFactory.create(img.getWidth(), img.getHeight()), attributes.getBorder());
+		}
+		return rect;
+	}
+
+	@Override
+	public Rectangle2D drawPixels(final PixelDrawing command,
+			final IDrawingAttributes attributes) {
+		final ModelScene scene = sceneHelper.getSceneToUpdate();
+		if (scene == null) return null;
+		scene.addImage(command, attributes);
+		tryToHighlight(attributes);
+		if (attributes.getBorder() != null) {
+			drawGridLine(GamaPointFactory.create(command.getCols(null), command.getRows(null)), attributes.getBorder());
 		}
 		return rect;
 	}
@@ -524,7 +613,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		if (scene == null) return null;
 		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(null, true);
 		attributes.setSmoothTexture(true);
-		scene.addImage(chart, attributes);
+		scene.addImage(PixelDrawing.fromImage(chart), attributes);
 		return rect;
 	}
 
@@ -553,23 +642,11 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		final int rows = (int) dimensions.getY();
 		final double width = getEnvWidth();
 		final double height = getEnvHeight();
-		final GeometryFactory factory = GeometryUtils.getGeometryFactory();
-		final LineString[] lines = new LineString[columns + rows + 2];
-		for (int i = 0; i <= columns; i++) {
-			final double x = i * width / columns;
-			lines[i] =
-					factory.createLineString(new Coordinate[] { new Coordinate(x, 0, 0), new Coordinate(x, height, 0) });
-		}
-		for (int j = 0; j <= rows; j++) {
-			final double y = j * height / rows;
-			lines[columns + 1 + j] =
-					factory.createLineString(new Coordinate[] { new Coordinate(0, y, 0), new Coordinate(width, y, 0) });
-		}
 		final IColor color = GamaColorFactory.get(lineColor.getRGB());
 		final DrawingAttributes attributes = new ShapeDrawingAttributes(null, color, color, IShape.Type.MULTILINESTRING);
 		attributes.setEmpty(true);
 		// One object keeps grid size from diluting the scene's anti-z-fighting increment.
-		scene.addGeometry(factory.createMultiLineString(lines), attributes);
+		scene.addGridLines(columns, rows, width, height, attributes);
 	}
 
 	/**
@@ -586,20 +663,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		if (string == null || string.isEmpty()) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
-		// Multiline: Issue #780
-		if (string.contains("\n")) {
-			int i = 0;
-			final double lineHeight = attributes.getFont().getAwtFont()
-					.getLineMetrics("Ag", new FontRenderContext(null, true, true)).getHeight();
-			final double shift = lineHeight / getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			for (final String s : string.split("\\r?\\n", -1)) {
-				drawString(s, attributes.copyTranslatedBy(GamaPointFactory.create(0, shift * i++)));
-			}
-			return null;
-		}
-		final IDrawingAttributes copy = attributes.copyTranslatedBy(GamaPointFactory.create());
-		copy.getLocation().negateY();
-		scene.addString(string, copy);
+		scene.addString(string, attributes);
 		return null;
 	}
 
@@ -627,6 +691,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
 		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final var state = renderingState.get();
+		if (state != null && state.coordinates() == LayerCoordinates.SCREEN) {
+			return state.contentRatio() > 0 ? state.contentRatio() : state.width() / getEnvWidth();
+		}
 		final ILayer layer = getScreenWorldLayer();
 		if (layer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
 		if (layer != null) return layer.getData().getSizeInPixels().getX() / getEnvWidth();
@@ -636,6 +704,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
 		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final var state = renderingState.get();
+		if (state != null && state.coordinates() == LayerCoordinates.SCREEN) {
+			return state.contentRatio() > 0 ? state.contentRatio() : state.height() / getEnvHeight();
+		}
 		final ILayer layer = getScreenWorldLayer();
 		if (layer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
 		if (layer != null) return layer.getData().getSizeInPixels().getY() / getEnvHeight();
@@ -645,6 +717,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public double getAbsoluteRatioBetweenPixelsAndModelsUnits() {
 		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
+		final var state = renderingState.get();
+		if (state != null && state.coordinates() == LayerCoordinates.SCREEN)
+			return Math.min(getxRatioBetweenPixelsAndModelUnits(), getyRatioBetweenPixelsAndModelUnits());
 		if (getScreenWorldLayer() != null)
 			return Math.min(getxRatioBetweenPixelsAndModelUnits(), getyRatioBetweenPixelsAndModelUnits());
 		return Math.min(getViewHeight() / data.getEnvHeight(), getViewWidth() / data.getEnvWidth());

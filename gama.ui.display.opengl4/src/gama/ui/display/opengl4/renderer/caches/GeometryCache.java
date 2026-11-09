@@ -266,7 +266,7 @@ public class GeometryCache {
 	public GeometryCache(final IOpenGLRenderer renderer, final OpenGL openGL) {
 		this.renderer = renderer;
 		this.openGL = openGL;
-		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
+		this.scope = renderer.getSurface().getScope().detachedCopy("in opengl geometry cache");
 		this.drawer = g -> openGL.getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
@@ -289,6 +289,8 @@ public class GeometryCache {
 	public Integer get(final GamaGeometryFile file) {
 		return fileCache.getUnchecked(file.getDrawingCacheKey(scope));
 	}
+
+	public Integer get(final String key) { return fileCache.getUnchecked(key); }
 
 	/**
 	 * Gets the built-in geometry for the given shape type, or {@code null} if not yet initialised.
@@ -364,7 +366,7 @@ public class GeometryCache {
 	 */
 	public void processUnloaded() {
 		releaseExpiredFileLists();
-		for (final GamaGeometryFile object : geometriesToProcess.values()) { get(object); }
+		for (final String key : geometriesToProcess.keySet()) { get(key); }
 		geometriesToProcess.clear();
 	}
 
@@ -385,6 +387,10 @@ public class GeometryCache {
 	public void process(final GamaGeometryFile file) {
 		if (file == null) return;
 		final String key = file.getDrawingCacheKey(scope);
+		process(file, key);
+	}
+
+	public void process(final GamaGeometryFile file, final String key) {
 		if (fileCache.getIfPresent(key) != null) return;
 		fileMap.putIfAbsent(key, file);
 		geometriesToProcess.putIfAbsent(key, file);
@@ -397,8 +403,12 @@ public class GeometryCache {
 	 * @return the {@link IEnvelope}, or {@link GamaEnvelopeFactory#EMPTY} if unavailable
 	 */
 	public IEnvelope getEnvelope(final GamaGeometryFile file) {
+		return getEnvelope(file, file.getDrawingCacheKey(scope));
+	}
+
+	public IEnvelope getEnvelope(final GamaGeometryFile file, final String key) {
 		try {
-			return envelopes.get(file.getPath(scope), () -> file.computeEnvelope(scope));
+			return envelopes.get(key, () -> file.computeEnvelope(scope));
 		} catch (final ExecutionException e) {
 			return GamaEnvelopeFactory.EMPTY;
 		}

@@ -81,10 +81,14 @@ public class GridLayer extends AbstractLayer {
 		attributes.setGrayscaled(data.isGrayScaled());
 		attributes.setEmpty(data.isWireframe());
 		final BufferedImage image = data.getImage();
+		final gama.api.ui.displays.PixelDrawing pixels = image == null
+				|| gridValueMatrix != null && textureFile != null ? null
+				: new gama.api.ui.displays.PixelDrawing((int) data.getDimensions().getX(),
+						(int) data.getDimensions().getY(), data.getGrid().getDisplayData());
 		if (textureFile != null) {
 			attributes.setTextures(Collections.singletonList(textureFile));
 		} else if (image != null) {
-			attributes.setTextures(Collections.singletonList(data.updateImageFromGridDisplayData()));
+			attributes.setTextures(Collections.singletonList(pixels));
 		}
 		attributes.setTriangulated(data.isTriangulated());
 		attributes.setWithText(data.isShowText());
@@ -93,7 +97,7 @@ public class GridLayer extends AbstractLayer {
 		attributes.setSmooth(data.isSmooth() ? 1 : 0);
 
 		if (gridValueMatrix == null) {
-			dg.drawImage(image, attributes);
+			if (pixels != null) { dg.drawPixels(pixels, attributes); }
 		} else {
 			dg.drawField(GamaMatrixFactory.createField(scope, (int) data.getDimensions().getX(),
 					(int) data.getDimensions().getY(), gridValueMatrix, IField.NO_NO_DATA), attributes);

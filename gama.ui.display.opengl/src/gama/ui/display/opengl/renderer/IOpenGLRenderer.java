@@ -31,6 +31,11 @@ import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
  */
 public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 
+	default gama.ui.display.opengl.scene.layers.LayerObject.LayerState setRenderingLayerState(
+			final gama.ui.display.opengl.scene.layers.LayerObject.LayerState state) {
+		return null;
+	}
+
 	/** Sets the layer being rendered on the GL thread and returns the previous render context. */
 	ILayer setRenderingLayer(ILayer layer);
 

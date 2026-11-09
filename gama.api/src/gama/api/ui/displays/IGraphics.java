@@ -202,6 +202,17 @@ public interface IGraphics {
 	 */
 	Rectangle2D drawShape(final Geometry shape, final IDrawingAttributes attributes);
 
+	/** Opt-in boundary for evaluated commands; implementations perform realization on their drawing thread. */
+	default boolean supportsGeometryCommands() { return false; }
+
+	default Rectangle2D drawGeometry(final GeometryDrawing command, final IDrawingAttributes attributes) {
+		return drawShape(command.realize(), attributes);
+	}
+
+	default Rectangle2D drawPixels(final PixelDrawing command, final IDrawingAttributes attributes) {
+		return drawImage(command.getImage(null, true), attributes);
+	}
+
 	default DrawingData getDrawingData(final IStatement.Draw statement) { return new DrawingData(statement); }
 
 	default boolean supportsPrimitiveDrawing() { return false; }

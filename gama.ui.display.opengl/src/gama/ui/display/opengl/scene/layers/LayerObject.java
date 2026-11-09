@@ -57,6 +57,26 @@ import gama.ui.display.opengl.scene.text.StringObject;
 @SuppressWarnings ({ "rawtypes" })
 public class LayerObject {
 
+	public record LayerState(LayerCoordinates coordinates, LayerCoordinates contentCoordinates,
+			int x, int y, int width, int height, double contentRatio, IColor background, IColor border,
+			boolean rounded, boolean selectable, boolean dynamic, boolean fading, int trace, boolean adaptive) {}
+
+	private LayerState captureLayerState() {
+		if (layer == null) return new LayerState(LayerCoordinates.WORLD, LayerCoordinates.WORLD,
+				0, 0, 0, 0, 0, null, null, false, false, false, false, 0, false);
+		final ILayerData data = layer.getData();
+		final java.awt.Point position = data.getPositionInPixels(), size = data.getSizeInPixels();
+		final FramedLayerData frame = data instanceof FramedLayerData f ? f : null;
+		final gama.core.outputs.layers.OverlayLayerData overlay =
+				data instanceof gama.core.outputs.layers.OverlayLayerData o ? o : null;
+		return new LayerState(data.getCoordinates(), data.getContentCoordinates(), position.x, position.y,
+				size.x, size.y, overlay == null ? 0 : overlay.getContentRatio(),
+				frame == null ? null : frame.getBackgroundColor(), frame == null ? null : frame.getBorderColor(),
+				overlay != null && overlay.isRounded(), Boolean.TRUE.equals(data.isSelectable()), data.isDynamic(),
+				Boolean.TRUE.equals(data.getFading()), data.getTrace() == null ? 0 : data.getTrace(),
+				layer.getDefinition() instanceof OverlayStatement o && o.mayUseAdaptiveText());
+	}
+
 	/** The Constant NULL_OFFSET. */
 	final static IPoint NULL_OFFSET = GamaPointFactory.createImmutable(0, 0, 0);
 
@@ -70,6 +90,7 @@ public class LayerObject {
 	 * The Class Trace.
 	 */
 	class Trace extends ArrayList<AbstractObject<?, ?>> {
+		LayerState state;
 		/** The offset. */
 		final IPoint offset = GamaPointFactory.create(NULL_OFFSET);
 		/** The scale. */
@@ -82,9 +103,16 @@ public class LayerObject {
 		 * Instantiates a new trace.
 		 */
 		Trace() {
-			computeOffset();
-			computeScale();
-			computeRotation();
+			state = currentList == null ? captureLayerState() : currentList.state;
+			if (currentList == null) {
+				computeOffset();
+				computeScale();
+				computeRotation();
+			} else {
+				offset.setLocation(currentList.offset);
+				scale.setLocation(currentList.scale);
+				rotation = currentList.rotation;
+			}
 		}
 
 		/**
@@ -143,10 +171,21 @@ public class LayerObject {
 		 * @return the abstract object[]
 		 */
 		public AbstractObject[] asArray() {
-			final int n = size();
+			int n = 0;
+			for (final AbstractObject object : this) {
+				n += object instanceof StringObject text ? text.numberOfLines() : 1;
+			}
 			if (cachedArray.length != n) { cachedArray = new AbstractObject[n]; }
 			if (cachedRevision != modCount) {
-				toArray(cachedArray);
+				int index = 0;
+				for (final AbstractObject object : this) {
+					if (object instanceof StringObject text) {
+						for (final StringObject line : text.realizeLines(
+								renderer.getAbsoluteRatioBetweenPixelsAndModelsUnits())) { cachedArray[index++] = line; }
+					} else {
+						cachedArray[index++] = object;
+					}
+				}
 				cachedRevision = modCount;
 			}
 			return cachedArray;
@@ -258,7 +297,7 @@ public class LayerObject {
 	 *
 	 * @return true, if is pickable
 	 */
-	public boolean isPickable() { return layer != null && layer.getData().isSelectable(); }
+	public boolean isPickable() { return layer != null && currentList.state.selectable(); }
 
 	/**
 	 * Draw.
@@ -268,12 +307,12 @@ public class LayerObject {
 	 */
 	public void draw(final IOpenGL gl) {
 		final ILayer previousLayer = renderer.setRenderingLayer(layer);
+		final LayerState previousState = renderer.setRenderingLayerState(currentList.state);
 		final LayerCoordinates previous = renderer.setCoordinateSystem(
-				layer == null ? LayerCoordinates.WORLD : layer.getData().getContentCoordinates());
+				currentList.state.contentCoordinates());
 		try {
-			if (layer != null && layer.getDefinition() instanceof OverlayStatement overlay
-					&& overlay.mayUseAdaptiveText() && layer.getData() instanceof FramedLayerData frame
-					&& !renderer.getPickingHelper().isPicking()) {
+			final LayerState state = currentList.state;
+			if (state.adaptive() && !renderer.getPickingHelper().isPicking()) {
 				final List<TextDrawingAttributes> texts = new ArrayList<>();
 				for (final AbstractObject object : currentList.asArray()) {
 					if (object instanceof StringObject string
@@ -282,16 +321,16 @@ public class LayerObject {
 						texts.add(text);
 					}
 				}
-				final IColor background = frame.getBackgroundColor(renderer.getSurface().getScope());
+				final IColor background = state.background();
 				final AdaptiveColor.Background adaptiveBackground = background == null ? null
 						: new AdaptiveColor.Background(new Rectangle2D.Double(0, 0,
-								frame.getSizeInPixels().getX(), frame.getSizeInPixels().getY()), background, 1);
-				renderer.getAdaptiveTextHelper().resolve(texts, frame.getPositionInPixels().getX(),
-						frame.getPositionInPixels().getY(), adaptiveBackground, alpha);
+								state.width(), state.height()), background, 1);
+				renderer.getAdaptiveTextHelper().resolve(texts, state.x(), state.y(), adaptiveBackground, alpha);
 			}
 			drawInCoordinates(gl);
 		} finally {
 			renderer.setCoordinateSystem(previous);
+			renderer.setRenderingLayerState(previousState);
 			renderer.setRenderingLayer(previousLayer);
 		}
 	}
@@ -406,12 +445,12 @@ public class LayerObject {
 	 */
 	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
 		if (isScreenLayer()) {
-			final ILayerData d = layer.getData();
-			gl.translateBy(d.getPositionInPixels().getX(), -d.getPositionInPixels().getY(), 0);
+			final LayerState d = list.state;
+			gl.translateBy(d.x(), -d.y(), 0);
 			addScreenFrame(gl);
-			if (d.getContentCoordinates() != LayerCoordinates.SCREEN) {
-				gl.scaleBy(d.getSizeInPixels().getX() / renderer.getEnvWidth(),
-						d.getSizeInPixels().getY() / renderer.getEnvHeight(), list.getScale().getZ());
+			if (d.contentCoordinates() != LayerCoordinates.SCREEN) {
+				gl.scaleBy(d.width() / renderer.getEnvWidth(),
+						d.height() / renderer.getEnvHeight(), list.getScale().getZ());
 			}
 			return;
 		}
@@ -443,10 +482,9 @@ public class LayerObject {
 	}
 
 	private void addFrame(final IOpenGL gl, final double width, final double height) {
-		if (layer == null || !(layer.getData() instanceof FramedLayerData data)) return;
-		final IScope scope = renderer.getSurface().getScope();
-		final IColor background = data.getBackgroundColor(scope);
-		final IColor border = data.getBorderColor();
+		final LayerState data = currentList.state;
+		final IColor background = data.background();
+		final IColor border = data.border();
 		if (background == null && border == null) return;
 		final boolean previous = gl.setObjectWireframe(false);
 		final double previousAlpha = gl.getCurrentObjectAlpha();
@@ -504,12 +542,13 @@ public class LayerObject {
 	}
 
 	private boolean isScreenLayer() {
-		return layer != null && layer.getData().getCoordinates() == LayerCoordinates.SCREEN;
+		return layer != null && (currentList == null ? layer.getData().getCoordinates()
+				: currentList.state.coordinates()) == LayerCoordinates.SCREEN;
 	}
 
 	private void addScreenFrame(final IOpenGL gl) {
-		final ILayerData data = layer.getData();
-		addFrame(gl, data.getSizeInPixels().getX(), data.getSizeInPixels().getY());
+		final LayerState data = currentList.state;
+		addFrame(gl, data.width(), data.height());
 	}
 
 	/**
@@ -565,7 +604,7 @@ public class LayerObject {
 	 *
 	 * @return true, if is static
 	 */
-	public boolean isStatic() { return layer == null || !layer.getData().isDynamic(); }
+	public boolean isStatic() { return layer == null || !currentList.state.dynamic(); }
 
 	/**
 	 * Sets the alpha.
@@ -608,7 +647,7 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addString(final String string, final IDrawingAttributes attributes) {
-		currentList.add(new StringObject(string, attributes));
+		currentList.add(StringObject.collected(string, attributes.snapshot()));
 	}
 
 	/**
@@ -620,7 +659,11 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
-		currentList.add(new ResourceObject(file, attributes));
+		currentList.add(new ResourceObject(file, attributes.snapshot()));
+	}
+
+	public void addFile(final GamaGeometryFile file, final IDrawingAttributes attributes, final String key) {
+		currentList.add(new ResourceObject(file, attributes.snapshot(), key));
 	}
 
 	/**
@@ -640,13 +683,11 @@ public class LayerObject {
 		}
 		final IPoint loc = attributes.getLocation();
 		final IPoint newLoc = loc == null ? size.toGamaPoint().dividedBy(2) : loc;
-		// We build a rectangle that will serve as a "support" for the image (which will become its texture)
-		final Geometry geometry =
-				GamaShapeFactory.buildRectangle(size.getX(), size.getY(), GamaPointFactory.create()).getInnerGeometry();
 		attributes.setLocation(newLoc);
 		attributes.setTexture(o);
 		attributes.setSynthetic(true);
-		addGeometry(geometry, attributes);
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new gama.ui.display.opengl.scene.geometry.ImageObject(attributes.snapshot()));
 	}
 
 	/**
@@ -658,7 +699,8 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
-		currentList.add(new MeshObject(fieldValues, attributes));
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new MeshObject(fieldValues, attributes.snapshot()));
 	}
 
 	/**
@@ -670,12 +712,22 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
-		isAnimated = /* isAnimated || ?? */attributes.isAnimated();
-		currentList.add(new GeometryObject(geometry, attributes));
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new GeometryObject(geometry, attributes.snapshot()));
+	}
+
+	public void addGeometry(final gama.api.ui.displays.GeometryDrawing command, final IDrawingAttributes attributes) {
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new GeometryObject(command, attributes.snapshot()));
 	}
 
 	public void addPrimitive(final PrimitiveObject object) {
-		isAnimated = object.getAttributes().isAnimated();
+		isAnimated = isAnimated || object.getAttributes().isAnimated();
+		currentList.add(object);
+	}
+
+	public void addGeometryObject(final GeometryObject object) {
+		isAnimated = isAnimated || object.getAttributes().isAnimated();
 		currentList.add(object);
 	}
 
@@ -692,9 +744,7 @@ public class LayerObject {
 	 * @return the fading
 	 */
 	protected boolean getFading() {
-		if (layer == null) return false;
-		final Boolean fading = layer.getData().getFading();
-		return fading == null ? false : fading;
+		return currentList.state.fading();
 	}
 
 	/**
@@ -716,6 +766,12 @@ public class LayerObject {
 	public void resetForReuse() {
 		isAnimated = false;
 		isFading = false;
+		captureState();
+	}
+
+	/** Called only while the producer owns the empty trace. */
+	public void captureState() {
+		currentList.state = captureLayerState();
 		currentList.computeOffset();
 		currentList.computeScale();
 		currentList.computeRotation();
@@ -748,7 +804,16 @@ public class LayerObject {
 
 	/** Number of objects that advance the world-space Z translation when this layer is drawn. */
 	public long numberOfZTranslatedObjects() {
-		return layer == null || isScreenLayer() ? 0 : currentList.size();
+		if (layer == null || isScreenLayer()) return 0;
+		return numberOfObjects(currentList);
+	}
+
+	protected long numberOfObjects(final Trace trace) {
+		long count = 0;
+		for (final AbstractObject object : trace) {
+			count += object instanceof StringObject text ? text.numberOfLines() : 1;
+		}
+		return count;
 	}
 
 	/**

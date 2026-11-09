@@ -50,9 +50,13 @@ public class FramedLayerData extends LayerData {
 	 * @return the background color
 	 */
 	public IColor getBackgroundColor(final IScope scope) {
+		return getBackgroundColor();
+	}
+
+	public IColor getBackgroundColor() {
 		IColor c = background.get();
 		return c == null ? null
-				: c.withAlpha(c.alpha() / 255d * (1 - getTransparency(scope)));
+				: c.withAlpha(c.alpha() / 255d * (1 - transparency.get()));
 	}
 
 	/**

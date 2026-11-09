@@ -77,6 +77,10 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 
 	public double getGeometryScale() { return 1d; }
 
+	public gama.api.utils.geometry.IEnvelope getEnvelope(final IOpenGL gl) {
+		return gl.getEnvelopeFor(getObject());
+	}
+
 	/**
 	 * Returns the id of the texture at index 1
 	 *
@@ -109,6 +113,11 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	private int getTexture(final IOpenGL gl, final int order) {
 		if (textures == null || order < 0 || order > textures.length - 1) return IOpenGL.NO_TEXTURE;
 		final var sources = getAttributes().getTextures();
+		if (sources != null && order < sources.size()
+				&& sources.get(order) instanceof gama.api.ui.displays.PixelDrawing pixels) {
+			textures[order] = gl.getTextureId(pixels.getImage(null, true));
+			return textures[order];
+		}
 		if (sources != null && order < sources.size() && sources.get(order) instanceof BufferedImage image) {
 			// Image textures are refreshed per scene update; never reuse a stale or recycled GPU ID.
 			textures[order] = gl.getTextureId(image);

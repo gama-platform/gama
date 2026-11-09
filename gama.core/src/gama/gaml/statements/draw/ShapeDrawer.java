@@ -147,6 +147,24 @@ public class ShapeDrawer implements IDrawDelegate {
 			}
 		}
 
+		if (scope.getGraphics().supportsGeometryCommands()) {
+			double begin = 0, end = 0;
+			final IExpression beginExpression = items.length > 1 ? items[1] : null;
+			final IExpression endExpression = items.length > 2 ? items[2] : null;
+			// Collections historically use their convex hull for arrows, including the degenerate hull case.
+			final boolean endpoints = beginExpression != null || endExpression != null;
+			final boolean canHaveArrows = endpoints && (gg instanceof GeometryCollection
+					? GeometryUtils.getPointsOf(gg).length >= 2 : gg.getNumPoints() >= 2);
+			if (canHaveArrows) {
+				if (endExpression != null) { end = Cast.asFloat(scope, endExpression.value(scope)); }
+				if (beginExpression != null) { begin = Cast.asFloat(scope, beginExpression.value(scope)); }
+			}
+			addTextures(scope, attributes);
+			if (begin > 0 || end > 0) { attributes.setType(IShape.Type.NULL); }
+			return scope.getGraphics().drawGeometry(
+					new gama.api.ui.displays.GeometryDrawing(gg, begin, end, !attributes.isEmpty()), attributes);
+		}
+
 		// Normalizing a collection's convex hull does not normalize any of its constituent geometries.
 		final ICoordinates ic = gg instanceof GeometryCollection && !scope.getGraphics().is2D() ? null
 				: GamaCoordinateSequenceFactory.pointsOf(gg);

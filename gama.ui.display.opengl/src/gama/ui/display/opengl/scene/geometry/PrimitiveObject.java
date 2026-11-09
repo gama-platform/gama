@@ -8,23 +8,45 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.geometry;
 
+import java.util.function.Function;
+
 import org.locationtech.jts.geom.Geometry;
 
 import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape.Type;
 import gama.api.ui.layers.IDrawingAttributes;
 
 /** A per-scene placement of renderer-owned, immutable unit geometry. */
 public final class PrimitiveObject extends GeometryObject {
 
 	private final double scale, x, y, z;
+	private final Function<Type, Geometry> geometry;
 
 	public PrimitiveObject(final Geometry unitGeometry, final double scale, final IPoint center,
 			final IDrawingAttributes attributes) {
-		super(unitGeometry, attributes);
+		this(type -> unitGeometry, scale, center, attributes);
+	}
+
+	public PrimitiveObject(final Function<Type, Geometry> geometry,
+			final double scale, final IPoint center, final IDrawingAttributes attributes) {
+		super(attributes);
+		this.geometry = geometry;
 		this.scale = scale;
 		x = center.getX();
 		y = center.getY();
 		z = center.getZ();
+	}
+
+	@Override
+	public Geometry getObject() {
+		return geometry.apply(getAttributes().getType());
+	}
+
+	public double getUnitExtent() {
+		return switch (getAttributes().getType()) {
+			case CIRCLE, SPHERE -> 2;
+			default -> 1;
+		};
 	}
 
 	@Override

@@ -21,6 +21,19 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ### CPU-side display preparation
 
+Evaluated drawing commands now move winding/arrow realization, image support
+rectangles, grid borders and multiline layout to OpenGL scene playback. Native
+spheres/cubes use scalar dimensions rather than rediscovering them from polygons.
+Java2D applies ordinary object transforms during AWT shape conversion, while
+preserving renderer-side arrow/depth and invalid-polygon handling.
+
+Coordinates, mutable drawing attributes, grid pixels and ordinary field arrays
+are captured before asynchronous rendering. Layer/trace state and file drawing
+keys are captured once; transparency is evaluated on layer refresh, not again
+during background rendering. Asset loaders requiring contextual services retain
+a detached-scope compatibility path. Existing GAML aspect execution and graphics
+plugin adapters are preserved.
+
 Both OpenGL backends prepare eligible direct circle, sphere, square and cube
 draws from immutable unit geometry instead of rebuilding JTS polygons per agent.
 Default appearances use the same path. Dynamic facets, agent-relative centers,

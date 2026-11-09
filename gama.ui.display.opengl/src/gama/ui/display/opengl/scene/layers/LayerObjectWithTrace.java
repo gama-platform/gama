@@ -111,9 +111,7 @@ public class LayerObjectWithTrace extends LayerObject {
 
 	@Override
 	protected int getTrace() {
-		if (layer == null) return 0;
-		final Integer trace = layer.getData().getTrace();
-		return trace == null ? 0 : trace;
+		return currentList.state.trace();
 	}
 
 	/**
@@ -130,7 +128,7 @@ public class LayerObjectWithTrace extends LayerObject {
 	public long numberOfZTranslatedObjects() {
 		if (layer == null || isOverlay()) return 0;
 		long count = 0;
-		for (final Trace trace : traces) { count += trace.size(); }
+		for (final Trace trace : traces) { count += numberOfObjects(trace); }
 		return count;
 	}
 

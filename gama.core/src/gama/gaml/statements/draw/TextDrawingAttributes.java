@@ -18,6 +18,7 @@ import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
 import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IShape.Type;
 import gama.api.ui.layers.IDrawingAttributes.Flag;
 import gama.api.utils.geometry.AxisAngle;
@@ -157,12 +158,17 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 */
 	@Override
 	public TextDrawingAttributes copyTranslatedBy(final IPoint p) {
-		try {
-			TextDrawingAttributes clone = (TextDrawingAttributes) this.clone();
-			clone.setLocation(getLocation().plus(p));
-			return clone;
-		} catch (CloneNotSupportedException e) {}
-		return new TextDrawingAttributes(getSize(), getRotation(), getLocation().plus(p), getColor());
+		final TextDrawingAttributes copy = snapshot();
+		copy.setLocation(getLocation().plus(p));
+		return copy;
+	}
+
+	@Override
+	public TextDrawingAttributes snapshot() {
+		final TextDrawingAttributes copy = (TextDrawingAttributes) super.snapshot();
+		copy.anchor = anchor == null ? null : GamaPointFactory.create(anchor);
+		copy.adaptiveTextBounds = adaptiveTextBounds == null ? null : (Rectangle2D) adaptiveTextBounds.clone();
+		return copy;
 	}
 
 	/**

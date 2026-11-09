@@ -204,7 +204,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 
 	@Override
 	public final Double getTransparency(final IScope scope) {
-		return Cast.asFloat(scope, transparency.value(scope));
+		return transparency.get();
 	}
 
 	@Override

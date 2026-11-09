@@ -68,23 +68,22 @@ public class OverlayLayerObject extends LayerObject {
 	 */
 	@Override
 	protected void addFrame(final IOpenGL gl) {
-		if (layer == null || !(layer.getData() instanceof OverlayLayerData d)) return;
-		final java.awt.Point size = d.getSizeInPixels();
-		final double w = size.getX();
-		final double h = size.getY();
+		if (layer == null) return;
+		final LayerState d = currentList.state;
+		final double w = d.width();
+		final double h = d.height();
 		if (w <= 0 || h <= 0) return;
-		final IScope scope = renderer.getSurface().getScope();
-		final double radius = d.isRounded() ? CORNER_RADIUS : 0;
+		final double radius = d.rounded() ? CORNER_RADIUS : 0;
 		final boolean previous = gl.setObjectWireframe(false);
 		final double previousAlpha = gl.getCurrentObjectAlpha();
 		try {
 			gl.setCurrentObjectAlpha(1);
-			final IColor background = d.getBackgroundColor(scope);
+			final IColor background = d.background();
 			if (background != null) {
 				gl.setCurrentColor(background, 1);
 				drawRoundedRectangle(gl, 0, -h, w, h, radius, CORNER_SEGMENTS);
 			}
-			final IColor border = d.getBorderColor();
+			final IColor border = d.border();
 			if (border != null) {
 				gl.setCurrentColor(border, 1);
 				drawRoundedOutline(gl, 0, -h, w, h, radius, CORNER_SEGMENTS);
@@ -262,16 +261,11 @@ public class OverlayLayerObject extends LayerObject {
 	 */
 	@Override
 	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
-		final OverlayLayerData data = layer != null && layer.getData() instanceof OverlayLayerData d ? d : null;
-		if (data != null) {
-			final java.awt.Point position = data.getPositionInPixels();
-			gl.translateBy(position.getX(), -position.getY(), 0);
-		}
+		final LayerState data = list.state;
+		gl.translateBy(data.x(), -data.y(), 0);
 		addFrame(gl);
-		if (data != null) {
-			final double ratio = data.getContentRatio();
-			gl.scaleBy(ratio, ratio, 1);
-		}
+		final double ratio = data.contentRatio();
+		gl.scaleBy(ratio, ratio, 1);
 	}
 
 	@Override

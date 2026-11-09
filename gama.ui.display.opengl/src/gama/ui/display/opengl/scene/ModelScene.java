@@ -35,6 +35,7 @@ import gama.ui.display.opengl.scene.layers.LayerObjectWithTrace;
 import gama.ui.display.opengl.scene.layers.OverlayLayerObject;
 import gama.ui.display.opengl.scene.geometry.PrimitiveObject;
 import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 
 /**
  *
@@ -191,6 +192,10 @@ public class ModelScene {
 		if (currentLayer != null) { currentLayer.addFile(file, attributes); }
 	}
 
+	public void addGeometryFile(final GamaGeometryFile file, final IDrawingAttributes attributes, final String key) {
+		if (currentLayer != null) { currentLayer.addFile(file, attributes, key); }
+	}
+
 	/**
 	 * Adds the image.
 	 *
@@ -215,10 +220,29 @@ public class ModelScene {
 		if (currentLayer != null) { currentLayer.addGeometry(geometry, attributes); }
 	}
 
+	public void addGeometry(final gama.api.ui.displays.GeometryDrawing command, final IDrawingAttributes attributes) {
+		if (currentLayer != null) { currentLayer.addGeometry(command, attributes); }
+	}
+
+	public void addGridLines(final int cols, final int rows, final double width, final double height,
+			final IDrawingAttributes attributes) {
+		if (currentLayer != null) {
+			currentLayer.addGeometryObject(new gama.ui.display.opengl.scene.geometry.GridLineObject(
+					cols, rows, width, height, attributes.snapshot()));
+		}
+	}
+
 	public void addPrimitive(final Geometry geometry, final double scale, final IPoint center,
 			final IDrawingAttributes attributes) {
 		if (currentLayer != null) {
-			currentLayer.addPrimitive(new PrimitiveObject(geometry, scale, center, attributes));
+			currentLayer.addPrimitive(new PrimitiveObject(geometry, scale, center, attributes.snapshot()));
+		}
+	}
+
+	public void addPrimitive(final java.util.function.Function<IShape.Type, Geometry> geometry,
+			final double scale, final IPoint center, final IDrawingAttributes attributes) {
+		if (currentLayer != null) {
+			currentLayer.addPrimitive(new PrimitiveObject(geometry, scale, center, attributes.snapshot()));
 		}
 	}
 
@@ -231,7 +255,20 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
-		if (currentLayer != null) { currentLayer.addField(fieldValues, attributes); }
+		if (currentLayer == null) return;
+		boolean owned = false;
+		for (final double[] buffer : fieldBuffers.values()) {
+			if (buffer == fieldValues.getMatrix()) { owned = true; break; }
+		}
+		if (owned) {
+			currentLayer.addField(fieldValues, attributes);
+		} else {
+			final var copied = fieldValues.copy(renderer.getSurface().getScope(), null, true);
+			if (!(copied instanceof IField snapshot)) {
+				throw new IllegalStateException("A displayed field must provide a field-preserving copy");
+			}
+			currentLayer.addField(snapshot, attributes);
+		}
 	}
 
 	/**
@@ -344,6 +381,7 @@ public class ModelScene {
 			layers.put(key, currentLayer);
 		}
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys after creation = " + layers.keySet());
+		currentLayer.captureState();
 		currentLayer.setAlpha(alpha);
 		return replaced;
 	}

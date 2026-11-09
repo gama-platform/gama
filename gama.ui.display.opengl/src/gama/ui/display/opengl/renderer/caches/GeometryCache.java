@@ -193,7 +193,7 @@ public class GeometryCache {
 	 *            the renderer
 	 */
 	public GeometryCache(final IOpenGLRenderer renderer, final OpenGL openGL) {
-		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
+		this.scope = renderer.getSurface().getScope().detachedCopy("in opengl geometry cache");
 		this.drawer = g -> openGL.getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
@@ -221,6 +221,8 @@ public class GeometryCache {
 		// DEBUG.OUT("Getting from cache: " + file);
 		return fileCache.getUnchecked(file.getDrawingCacheKey(scope));
 	}
+
+	public Integer get(final String key) { return fileCache.getUnchecked(key); }
 
 	/**
 	 * Gets the.
@@ -290,7 +292,7 @@ public class GeometryCache {
 	 * Process unloaded.
 	 */
 	public void processUnloaded() {
-		for (final GamaGeometryFile object : geometriesToProcess.values()) { get(object); }
+		for (final String key : geometriesToProcess.keySet()) { get(key); }
 		geometriesToProcess.clear();
 	}
 
@@ -303,6 +305,10 @@ public class GeometryCache {
 	public void process(final GamaGeometryFile file) {
 		if (file == null) return;
 		final String key = file.getDrawingCacheKey(scope);
+		process(file, key);
+	}
+
+	public void process(final GamaGeometryFile file, final String key) {
 		if (fileCache.getIfPresent(key) != null) return;
 		fileMap.putIfAbsent(key, file);
 		geometriesToProcess.putIfAbsent(key, file);
@@ -316,8 +322,12 @@ public class GeometryCache {
 	 * @return the envelope
 	 */
 	public IEnvelope getEnvelope(final GamaGeometryFile file) {
+		return getEnvelope(file, file.getDrawingCacheKey(scope));
+	}
+
+	public IEnvelope getEnvelope(final GamaGeometryFile file, final String key) {
 		try {
-			return envelopes.get(file.getPath(scope), () -> file.computeEnvelope(scope));
+			return envelopes.get(key, () -> file.computeEnvelope(scope));
 		} catch (final ExecutionException e) {
 			return GamaEnvelopeFactory.EMPTY;
 		}
