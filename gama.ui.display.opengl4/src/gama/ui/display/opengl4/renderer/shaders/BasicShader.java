@@ -1,8 +1,15 @@
 package gama.ui.display.opengl4.renderer.shaders;
 
 import com.jogamp.opengl.GL4;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GLException;
+import java.nio.charset.StandardCharsets;
 import gama.ui.display.opengl.renderer.shaders.AbstractShader;
 import org.joml.Matrix4f;
+import org.joml.Matrix3f;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -10,7 +17,7 @@ import org.joml.Vector4f;
  * The Class BasicShader.
  *
  * <p>The main shader program used for rendering all opaque geometry in the OpenGL4 display. It
- * supports texturing, per-vertex colour and two-sided ambient/diffuse lighting driven by uniform
+ * supports texturing, per-vertex colour and fixed-pipeline-style two-sided vertex lighting driven by uniform
  * variables that are updated every frame by {@link gama.ui.display.opengl4.renderer.helpers.LightHelper}.
  *
  * <h3>Vertex attributes (all bound before linking)</h3>
@@ -46,12 +53,58 @@ public class BasicShader extends AbstractShader {
 
 	/** Uniform location: projection matrix. */
 	private int location_projection;
+	private int location_normalMatrix;
+	private int location_mapBatch, location_framebufferSize;
+	private final Matrix4f modelMatrix = new Matrix4f(), viewMatrix = new Matrix4f(), modelView = new Matrix4f();
+	private final Matrix3f normalMatrix = new Matrix3f();
+	private final float[] normalValues = new float[9];
+	private boolean normalMatrixDirty = true;
+	private final Map<Integer, float[]> matrixValues = new HashMap<>();
 
 	/** Uniform location: useTexture flag. */
 	private int location_useTexture;
 
 	/** Uniform location: premultiplyTexture flag. */
 	private int location_premultiplyTexture;
+
+	private int location_picking, location_pickingColor, location_pickingAlpha;
+	private int location_instanced;
+	private Boolean instancingEnabled;
+	private Boolean textureEnabled, premultiplyEnabled, lightingEnabled, pickingEnabled;
+	private int pickingId = Integer.MIN_VALUE;
+	private float pickingAlpha = Float.NaN;
+	private int geometrySequence;
+	private boolean sequenceProgramBound;
+
+	/** Geometry/resource drawers use only this program; text and mesh rendering remain outside this scope. */
+	public void beginGeometrySequence() {
+		geometrySequence++;
+	}
+
+	public void endGeometrySequence() {
+		if (geometrySequence == 0) throw new IllegalStateException("Unbalanced geometry shader sequence");
+		if (--geometrySequence == 0) { suspendGeometrySequence(); }
+	}
+
+	public void suspendGeometrySequence() {
+		if (sequenceProgramBound) {
+			super.stop();
+			sequenceProgramBound = false;
+		}
+	}
+
+	@Override
+	public void start() {
+		if (geometrySequence == 0 || !sequenceProgramBound) {
+			super.start();
+			sequenceProgramBound = geometrySequence > 0;
+		}
+	}
+
+	@Override
+	public void stop() {
+		if (geometrySequence == 0) { super.stop(); }
+	}
 
 	/** Uniform location: useLighting flag. */
 	private int location_useLighting;
@@ -73,6 +126,16 @@ public class BasicShader extends AbstractShader {
 	 */
 	public BasicShader(final GL4 gl) {
 		super(gl, "glsl/basic.vert", "glsl/basic.frag", false);
+		final int[] linked = new int[1];
+		gl.glGetProgramiv(getProgramID(), GL2ES2.GL_LINK_STATUS, linked, 0);
+		if (linked[0] == 0) {
+			final int[] length = new int[1];
+			gl.glGetProgramiv(getProgramID(), GL2ES2.GL_INFO_LOG_LENGTH, length, 0);
+			final byte[] log = new byte[Math.max(1, length[0])];
+			gl.glGetProgramInfoLog(getProgramID(), log.length, length, 0, log, 0);
+			throw new GLException("OpenGL4 basic shader failed to link: "
+					+ new String(log, 0, length[0], StandardCharsets.UTF_8));
+		}
 	}
 
 	@Override
@@ -89,8 +152,15 @@ public class BasicShader extends AbstractShader {
 		location_model         = getUniformLocation("model");
 		location_view          = getUniformLocation("view");
 		location_projection    = getUniformLocation("projection");
+		location_normalMatrix  = getUniformLocation("normalMatrix");
+		location_mapBatch = getUniformLocation("mapBatch");
+		location_framebufferSize = getUniformLocation("framebufferSize");
 		location_useTexture    = getUniformLocation("useTexture");
 		location_premultiplyTexture = getUniformLocation("premultiplyTexture");
+		location_picking = getUniformLocation("picking");
+		location_instanced = getUniformLocation("instanced");
+		location_pickingColor = getUniformLocation("pickingColor");
+		location_pickingAlpha = getUniformLocation("pickingAlpha");
 		location_useLighting   = getUniformLocation("useLighting");
 		location_ambientColor  = getUniformLocation("ambientColor");
 		location_lightCount    = getUniformLocation("lightCount");
@@ -112,7 +182,10 @@ public class BasicShader extends AbstractShader {
 	 * @param matrix the 4×4 model-view matrix
 	 */
 	public void loadModelMatrix(final Matrix4f matrix) {
-		loadMatrix(location_model, matrix);
+		if (updateMatrix(location_model, matrix)) {
+			modelMatrix.set(matrix);
+			normalMatrixDirty = true;
+		}
 	}
 
 	/**
@@ -121,7 +194,15 @@ public class BasicShader extends AbstractShader {
 	 * @param matrix the 4×4 view matrix
 	 */
 	public void loadViewMatrix(final Matrix4f matrix) {
-		loadMatrix(location_view, matrix);
+		if (updateMatrix(location_view, matrix)) {
+			viewMatrix.set(matrix);
+			normalMatrixDirty = true;
+		}
+	}
+
+	private void loadNormalMatrix() {
+		viewMatrix.mul(modelMatrix, modelView).normal(normalMatrix).get(normalValues);
+		gl.glUniformMatrix3fv(location_normalMatrix, 1, false, normalValues, 0);
 	}
 
 	/**
@@ -139,7 +220,10 @@ public class BasicShader extends AbstractShader {
 	 * @param useTexture {@code true} to sample from {@code texture1}
 	 */
 	public void loadUseTexture(final boolean useTexture) {
-		gl.glUniform1i(location_useTexture, useTexture ? 1 : 0);
+		if (textureEnabled == null || textureEnabled != useTexture) {
+			gl.glUniform1i(location_useTexture, useTexture ? 1 : 0);
+			textureEnabled = useTexture;
+		}
 	}
 
 	/**
@@ -149,7 +233,40 @@ public class BasicShader extends AbstractShader {
 	 * @param premultiply {@code true} to premultiply the textured colour by the texel alpha
 	 */
 	public void loadPremultiplyTexture(final boolean premultiply) {
-		gl.glUniform1i(location_premultiplyTexture, premultiply ? 1 : 0);
+		if (premultiplyEnabled == null || premultiplyEnabled != premultiply) {
+			gl.glUniform1i(location_premultiplyTexture, premultiply ? 1 : 0);
+			premultiplyEnabled = premultiply;
+		}
+	}
+
+	public void loadPicking(final boolean picking, final int id, final float alpha) {
+		if (pickingEnabled == null || pickingEnabled != picking) {
+			gl.glUniform1i(location_picking, picking ? 1 : 0);
+			pickingEnabled = picking;
+		}
+
+		if (pickingId != id) {
+			gl.glUniform4f(location_pickingColor, (id & 255) / 255f, (id >> 8 & 255) / 255f,
+					(id >> 16 & 255) / 255f, id < 0 ? 0f : 1f);
+			pickingId = id;
+		}
+
+		if (pickingAlpha != alpha) {
+			gl.glUniform1f(location_pickingAlpha, alpha);
+			pickingAlpha = alpha;
+		}
+	}
+
+	public void loadInstanced(final boolean enabled) {
+		if (instancingEnabled == null || instancingEnabled != enabled) {
+			gl.glUniform1i(location_instanced, enabled ? 1 : 0);
+			instancingEnabled = enabled;
+		}
+	}
+
+	public void loadMapBatch(final boolean enabled, final int width, final int height) {
+		gl.glUniform1i(location_mapBatch, enabled ? 1 : 0);
+		if (enabled) { gl.glUniform2f(location_framebufferSize, width, height); }
 	}
 
 	/**
@@ -159,7 +276,14 @@ public class BasicShader extends AbstractShader {
 	 * @param useLighting {@code true} to enable lighting
 	 */
 	public void loadUseLighting(final boolean useLighting) {
-		gl.glUniform1i(location_useLighting, useLighting ? 1 : 0);
+		if (useLighting && normalMatrixDirty) {
+			loadNormalMatrix();
+			normalMatrixDirty = false;
+		}
+		if (lightingEnabled == null || lightingEnabled != useLighting) {
+			gl.glUniform1i(location_useLighting, useLighting ? 1 : 0);
+			lightingEnabled = useLighting;
+		}
 	}
 
 	/**
@@ -207,9 +331,20 @@ public class BasicShader extends AbstractShader {
 	 * @param matrix   the JOML {@link Matrix4f}
 	 */
 	protected void loadMatrix(final int location, final Matrix4f matrix) {
-		float[] matArray = new float[16];
-		matrix.get(matArray);
-		gl.glUniformMatrix4fv(location, 1, false, matArray, 0);
+		updateMatrix(location, matrix);
+	}
+
+	private final float[] matrixScratch = new float[16];
+
+	private boolean updateMatrix(final int location, final Matrix4f matrix) {
+		matrix.get(matrixScratch);
+		final float[] previous = matrixValues.get(location);
+		if (previous != null && Arrays.equals(previous, matrixScratch)) return false;
+		final float[] values = previous == null ? new float[16] : previous;
+		System.arraycopy(matrixScratch, 0, values, 0, 16);
+		matrixValues.put(location, values);
+		gl.glUniformMatrix4fv(location, 1, false, values, 0);
+		return true;
 	}
 
 	@Override

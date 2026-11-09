@@ -62,11 +62,20 @@ public interface IOpenGL {
 
 	void unproject(double x, double y, double depth, double[] result);
 
+	/** Projects through the current layer/object matrices to logical viewport pixels, with Y increasing downwards. */
+	boolean project(double x, double y, double z, double[] result);
+
 	double[] getPixelWidthAndHeightOfWorld();
 
 	IPoint getRatios();
 
 	void setZIncrement(double increment);
+
+	double getCurrentZIncrement();
+
+	double getCurrentZTranslation();
+
+	void setCurrentZTranslation(double translation);
 
 	void suspendZTranslation();
 
@@ -87,6 +96,17 @@ public interface IOpenGL {
 	void pushMatrix();
 
 	void popMatrix();
+
+	default void drawObjectGeometry(final AbstractObject<?, ?> object, final Runnable drawing) { drawing.run(); }
+
+	default boolean canRetainObjectGeometry(final AbstractObject<?, ?> object) { return false; }
+
+	default void drawLayerObjects(final AbstractObject<?, ?>[] objects, final boolean staticLayer,
+			final Runnable drawing) { drawing.run(); }
+
+	default Pass offsetPolygonsForOutline() {
+		return gama.ui.display.opengl.renderer.helpers.PolygonOffset.apply(this);
+	}
 
 	void pushIdentity(int mode);
 
@@ -114,6 +134,8 @@ public interface IOpenGL {
 
 	void outputVertex(double x, double y, double z);
 
+	void outputNormal(double x, double y, double z);
+
 	void endDrawing();
 
 	void setCurrentColor(IColor color);
@@ -123,6 +145,8 @@ public interface IOpenGL {
 	void setCurrentColor(double red, double green, double blue, double alpha);
 
 	void setCurrentObjectAlpha(double alpha);
+
+	double getCurrentObjectAlpha();
 
 	boolean isTextured();
 
@@ -136,9 +160,19 @@ public interface IOpenGL {
 
 	void cacheGeometry(GamaGeometryFile geometry);
 
+	default void cacheGeometry(final GamaGeometryFile geometry, final String key) { cacheGeometry(geometry); }
+
 	IEnvelope getEnvelopeFor(Object object);
 
+	default IEnvelope getEnvelopeFor(final GamaGeometryFile geometry, final String key) {
+		return getEnvelopeFor(geometry);
+	}
+
 	void drawCachedGeometry(GamaGeometryFile geometry, IColor border);
+
+	default void drawCachedGeometry(final GamaGeometryFile geometry, final String key, final IColor border) {
+		drawCachedGeometry(geometry, border);
+	}
 
 	void drawCachedGeometry(IShape.Type type, IColor border);
 

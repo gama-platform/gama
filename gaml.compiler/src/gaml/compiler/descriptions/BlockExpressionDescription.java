@@ -17,6 +17,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.types.Types;
 import gaml.compiler.expressions.DenotedActionExpression;
 
 /**
@@ -43,10 +44,17 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 		final ITypeDescription sd = context.getTypeContext();
 		// if (sd.isExperiment())
 		// sd = sd.getModelDescription();
+		final boolean control = "ui_button".equals(context.getKeyword()) || "ui_switch".equals(context.getKeyword())
+				|| "ui_slider".equals(context.getKeyword()) || "ui_radio".equals(context.getKeyword());
 		final IStatementDescription action =
 				(IStatementDescription) GAML.getDescriptionFactory().create(element, sd, null);
 		if (action != null) {
-			sd.addChild(action);
+			if (control && (!"ui_button".equals(context.getKeyword())
+					|| context instanceof UiControlDescription ui && ui.isToggle())) {
+				((StatementWithChildrenDescription) action).addTemp(action, null, "ui_value",
+						"ui_slider".equals(context.getKeyword()) ? Types.FLOAT : Types.BOOL);
+			}
+			if (!control) sd.addChild(action);
 			action.validate();
 			// final String name = action.getName();
 			expression = new DenotedActionExpression(action);

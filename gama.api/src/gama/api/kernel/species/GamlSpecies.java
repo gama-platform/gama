@@ -249,8 +249,8 @@ import one.util.streamex.StreamEx;
 						name = IKeyword.FILE,
 						type = IType.FILE,
 						specific_to = IKeyword.GRID,
-						excludes = { IKeyword.FILES, IKeyword.WIDTH, IKeyword.HEIGHT,
-								IKeyword.CELL_WIDTH, IKeyword.CELL_HEIGHT },
+						excludes = { IKeyword.FILES, IKeyword.WIDTH, IKeyword.HEIGHT, IKeyword.CELL_WIDTH,
+								IKeyword.CELL_HEIGHT },
 						optional = true,
 						doc = @doc ("(grid only), a bitmap file that will be loaded at runtime so that the value of each pixel can be assigned to the attribute 'grid_value'")),
 				@facet (
@@ -671,9 +671,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	public IList<ISpecies> getSubSpecies(final IScope scope) {
 		final IList<ISpecies> subspecies = GamaListFactory.create(Types.SPECIES);
 		final IModelSpecies model = scope.getModel();
-		for (final ISpecies s : model.getAllSpecies().values()) {
-			if (s.getParent() == this) { subspecies.add(s); }
-		}
+		for (final ISpecies s : model.getAllSpecies().values()) { if (s.getParent() == this) { subspecies.add(s); } }
 		return subspecies;
 	}
 

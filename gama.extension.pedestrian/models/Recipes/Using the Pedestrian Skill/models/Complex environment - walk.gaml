@@ -114,7 +114,7 @@ global {
 	}
 	
 	reflex stop when: empty(people) {
-		do pause();
+		experiment.pause();
 	}
 	
 }

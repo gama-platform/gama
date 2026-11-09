@@ -42,6 +42,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.types.list.IList;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.EventLayer;
@@ -181,11 +182,18 @@ public class DisplaySurfaceMenu {
 	 *            the displays
 	 */
 	public void buildMenu(final int mousex, final int mousey, final int x, final int y, final List<ILayer> displays) {
+		buildMenu(mousex, mousey, x, y, x, y, displays);
+	}
+
+	public void buildMenu(final int mousex, final int mousey, final int screenX, final int screenY, final int worldX,
+			final int worldY, final List<ILayer> displays) {
 		if (displays.isEmpty()) return;
 		final Set<IAgent> all = new LinkedHashSet<>();
 		for (final ILayer display : displays) {
 			if (display.getData().isSelectable()) {
-				final Set<IAgent> agents = display.collectAgentsAt(x, y, surface);
+				final boolean screenLayer = display.getData().getCoordinates() == LayerCoordinates.SCREEN;
+				final Set<IAgent> agents = display.collectAgentsAt(screenLayer ? screenX : worldX,
+						screenLayer ? screenY : worldY, surface);
 				if (agents.isEmpty()) { continue; }
 				all.addAll(agents);
 			}

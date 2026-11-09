@@ -24,7 +24,7 @@ global {
 	}
 	//Reflex that will pause the simulation when the number of cycles reach 100.
 	reflex end_simulation when: cycle = 100 {
-		do pause(); 
+		experiment.pause(); 
 	}
 }
 

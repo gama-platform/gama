@@ -64,8 +64,10 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 
 /**
@@ -90,7 +92,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	final GLUtessellator tobj = GLU.gluNewTess();
 
 	/** The previous Y. */
-	double previousX = Double.MIN_VALUE, previousY = Double.MIN_VALUE;
+	double previousX = Double.NaN, previousY = Double.NaN;
 
 	/**
 	 * Position of the placeholder normal written for the first vertex of the current contour in sideNormalBuffer.
@@ -140,8 +142,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	private record TextKey(String text, Font font, double precision, double depth, boolean wireframe,
 			boolean textured) {}
 
-	private record TextMesh(double width, double height, double y, double[] faces, double[] textures,
-			double[] normals, double[] sides, int[] contours) {
+	private record TextMesh(double width, double height, double boundsX, double boundsMaxY, double[] faces,
+			double[] textures, double[] normals, double[] sides, int[] contours) {
 
 		int weight(final TextKey key) {
 			return 256 + key.text().length() * 2 + contours.length * Integer.BYTES
@@ -191,7 +193,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 				restore(sideQuadsBuffer, mesh.sides());
 				System.arraycopy(mesh.contours(), 0, indices, 0, mesh.contours().length);
 				currentIndex = mesh.contours().length - 1;
-				drawText(attributes, mesh.y());
+				drawText(attributes, mesh.boundsX(), mesh.boundsMaxY());
 				return;
 			}
 			Shape shape = font.createGlyphVector(context, s.getObject()).getOutline();
@@ -205,20 +207,20 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			currentIndex = -1;
 			// Reset the previous-vertex state so that the first contour of this string
 			// does not inherit stale coordinates from the previous drawn string.
-			previousX = Double.MIN_VALUE;
-			previousY = Double.MIN_VALUE;
+			previousX = Double.NaN;
+			previousY = Double.NaN;
 			contourStartX = Double.MIN_VALUE;
 			contourStartY = Double.MIN_VALUE;
 			contourStartNormalPos = -1;
 			tessellationFailed = false;
 			process(shape.getPathIterator(AT, attributes.getPrecision()));
 			if (!tessellationFailed) {
-				mesh = new TextMesh(width, height, bounds.getY(), snapshot(faceVertexBuffer),
+				mesh = new TextMesh(width, height, bounds.getX(), bounds.getMaxY(), snapshot(faceVertexBuffer),
 						snapshot(faceTextureBuffer), snapshot(sideNormalBuffer), snapshot(sideQuadsBuffer),
 						Arrays.copyOf(indices, currentIndex + 1));
 				meshes.put(key, mesh);
 			}
-			drawText(attributes, bounds.getY());
+			drawText(attributes, bounds.getX(), bounds.getMaxY());
 		}
 	}
 
@@ -253,6 +255,17 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		gl.pushMatrix();
 		final IPoint p = attributes.getLocation();
 		final boolean rotated = applyRotation(attributes, p);
+		if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+			final double[] position = new double[3];
+			final Rectangle2D bounds = new Rectangle2D.Double();
+			if (gl.project(rotated ? 0 : p.getX(), rotated ? 0 : p.getY(), rotated ? 0 : p.getZ(), position)) {
+				final int fontHeight = fontToUse == GLUT.BITMAP_HELVETICA_10 ? 10
+						: fontToUse == GLUT.BITMAP_HELVETICA_12 ? 12 : 18;
+				bounds.setRect(position[0], position[1] - fontHeight,
+						gl.getGlut().glutBitmapLength(fontToUse, object), fontHeight + 4);
+			}
+			gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text, bounds);
+		}
 		gl.rasterText(object, fontToUse, rotated ? 0 : p.getX(), rotated ? 0 : p.getY(), rotated ? 0 : p.getZ());
 		gl.popMatrix();
 	}
@@ -314,10 +327,12 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *
 	 * @param attributes
 	 *            the attributes
-	 * @param y
-	 *            the y
+	 * @param boundsX
+	 *            the AWT outline X position
+	 * @param boundsMaxY
+	 *            the AWT outline maximum Y before the Y-axis flip
 	 */
-	void drawText(final IDrawingAttributes attributes, final double y) {
+	void drawText(final IDrawingAttributes attributes, final double boundsX, final double boundsMaxY) {
 
 		final IPoint p = attributes.getLocation();
 
@@ -330,9 +345,14 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final double locY = rotated ? 0 : p.getY();
 			final double locZ = rotated ? 0 : p.getZ();
 			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			gl.translateBy(locX - width * scale * anchor.getX(), locY + y * scale * anchor.getY(),
-					locZ + gl.getCurrentZTranslation());
+			final double x = -boundsX - width * anchor.getX();
+			final double y = boundsMaxY - height * anchor.getY();
+			gl.translateBy(locX + x * scale, locY + y * scale, locZ);
 			gl.scaleBy(scale, scale, scale);
+			if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+				gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text,
+						new Rectangle2D.Double(boundsX, -boundsMaxY, width, height), depth);
+			}
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
 			} else {
@@ -374,20 +394,21 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 * @return the color
 	 */
 	private IColor drawFacesAndBorder(IColor previous) {
-		// Solid case
-		drawFace(depth == 0);
-		if (depth > 0) {
-			gl.translateBy(0, 0, depth);
-			drawFace(true);
-			gl.translateBy(0, 0, -depth);
-			drawSide();
+		try (var offset = PolygonOffset.forOutline(gl, border != null)) {
+			drawFace(depth == 0);
+			if (depth > 0) {
+				gl.translateBy(0, 0, depth);
+				drawFace(true);
+				gl.translateBy(0, 0, -depth);
+				drawSide();
+			}
 		}
 		if (border != null) {
 			previous = gl.getCurrentColor();
 			gl.setCurrentColor(border);
-			gl.translateBy(0, 0, depth + 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, depth);
 			drawBorder();
-			gl.translateBy(0, 0, -depth - 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, -depth);
 		}
 		return previous;
 	}
@@ -451,8 +472,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		indices[++currentIndex] = sideQuadsBuffer.position();
 		// Each new contour must not inherit the last vertex of the previous contour;
 		// reset so that addContourVertex0 knows there is no "previous" vertex yet.
-		previousX = Double.MIN_VALUE;
-		previousY = Double.MIN_VALUE;
+		previousX = Double.NaN;
+		previousY = Double.NaN;
 		contourStartX = Double.MIN_VALUE;
 		contourStartY = Double.MIN_VALUE;
 		contourStartNormalPos = -1;
@@ -466,12 +487,13 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *
 	 */
 	public void addContourVertex0(final double x, final double y) {
+		if (x == previousX && y == previousY) return;
 		sideQuadsBuffer.put(x).put(y).put(0);
 		if (depth > 0) {
 			// If depth > 0, then we will build side faces, and we need to calculate their normal.
 			// We always emit a normal entry so that sideNormalBuffer stays parallel to sideQuadsBuffer
 			// (both 2 entries per geometric point).
-			if (previousX > Double.MIN_VALUE) {
+			if (!Double.isNaN(previousX)) {
 				temp.setTo(previousX, previousY, 0, previousX, previousY, depth, x, y, 0, previousX, previousY, 0);
 				temp.getNormal(true, 1, normal);
 				// We add two normal vectors as the vertex buffer will be filled by 2 coordinates
@@ -578,7 +600,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 
 	@Override
 	public void combine(final double[] coords, final Object[] data, final float[] weight, final Object[] outData) {
-		outData[0] = data[0];
+		outData[0] = coords.clone();
 	}
 
 	@Override

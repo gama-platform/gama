@@ -134,6 +134,7 @@ public class ImageDisplaySurface implements IDisplaySurface {
 		if (displayGraphics != null) { displayGraphics.dispose(); }
 		displayGraphics = new AWTDisplayGraphics(g2);
 		((AWTDisplayGraphics) displayGraphics).setUntranslatedGraphics2D(bufferImage.createGraphics());
+		((AWTDisplayGraphics) displayGraphics).setFrameBuffer(bufferImage);
 		displayGraphics.setDisplaySurface(this);
 		if (getScope() != null && getScope().isPaused()) {
 			updateDisplay(true);

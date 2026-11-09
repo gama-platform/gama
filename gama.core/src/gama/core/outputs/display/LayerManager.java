@@ -24,6 +24,7 @@ import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.ui.layers.ILayerStatement;
@@ -155,6 +156,9 @@ public class LayerManager implements ILayerManager {
 		// If the experiment is already closed
 		if (scope == null || scope.interrupted()) return;
 		scope.setGraphics(g);
+		final PreparationDiagnostics diagnostics = g.getPreparationDiagnostics();
+		if (diagnostics != null) { diagnostics.begin(!g.is2D()); }
+		boolean prepared = false;
 		// boolean changed = false;
 		// First we compute all the data and verify if anything is changed
 		// for (final ILayer dis : layers) {
@@ -162,20 +166,23 @@ public class LayerManager implements ILayerManager {
 		// changed |= dis.getData().compute(scope, g);
 		// }
 		// if (changed) { forceRedrawingLayers(); }
-		if (g.beginDrawingLayers()) {
-			try {
-				// We stop separating in two phases: updating of the data and then drawing, as it generates artefacts
-				// like the ones described in #3446
-				for (final ILayer dis : layers) {
-					if (scope.interrupted()) return;
-
-					dis.draw(scope, g);
+		try {
+			if (g.beginDrawingLayers()) {
+				prepared = true;
+				try {
+					// Updating and drawing stay interleaved to preserve layer evaluation order (#3446).
+					for (final ILayer dis : layers) {
+						if (scope.interrupted()) return;
+						dis.draw(scope, g);
+					}
+				} catch (final Exception e) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(e, scope), false);
+				} finally {
+					g.endDrawingLayers();
 				}
-			} catch (final Exception e) {
-				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(e, scope), false);
-			} finally {
-				g.endDrawingLayers();
 			}
+		} finally {
+			if (diagnostics != null) { diagnostics.end(surface.getOutput().getName(), prepared); }
 		}
 	}
 

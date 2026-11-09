@@ -117,20 +117,18 @@ experiment clustering type: gui {
 	output {
 		layout horizontal([1::5000,0::5000]) tabs:true editors: false;
 		display map_dbscan type:2d{
-            //define a new overlay layer positioned at the coordinate half-space/0
-            overlay position: { world.shape.width/2, 0 } size: { 180 #px, 50 #px } background: #black transparency: 0.2 border: #black rounded: true
+            // Center the heading in the viewport, independently of world size and zoom.
+            overlay coordinates: #screen position: {0, 0} size: {#display_width, 50} background: #black transparency: 0.2 border: #black rounded: true
             {
-					//draw square(5#px) at: { 0, 0 } color: #red border: #white;
-                    draw string("DbScan") at: { world.shape.width/2 - 40, 20 } color: #blue font: font("SansSerif", 36, #bold); 
+                    draw "DbScan" at: {0.5, 25} anchor: #center color: #blue font: font("SansSerif", 36, #bold);
                 }		
 
 			species dummy aspect: dbscan_aspect;
 		}
 		display map_kmeans type:2d{
-			overlay position: { world.shape.width/2, 0 } size: { 180 #px, 50 #px } background: #black transparency: 0.2 border: #black rounded: true
+			overlay coordinates: #screen position: {0, 0} size: {#display_width, 50} background: #black transparency: 0.2 border: #black rounded: true
             {
-					//draw square(5#px) at: { 0, 0 } color: #red border: #white;
-                    draw string("K-means") at: { world.shape.width/2-45, 20 } color: #orange font: font("SansSerif", 36, #bold); 
+                    draw "K-means" at: {0.5, 25} anchor: #center color: #orange font: font("SansSerif", 36, #bold);
                 }	
 			species dummy aspect: kmeans_aspect;
 			species centroids aspect:centroids_aspect;

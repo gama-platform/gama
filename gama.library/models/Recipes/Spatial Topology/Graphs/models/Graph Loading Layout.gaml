@@ -74,7 +74,7 @@ experiment loadgraph type: gui {
 	parameter "Theta" category:"Force_FR_indexed" var:theta; 
 	parameter "Layout type" var: layout_type among:["Force FR","Force FR Indexed" , "Force", "Circular", "Grid"] init:"Force FR";
 	output {
-		display map type: 3d{
+		display map type: 3d map_order: true{
 			species edge_agent ;
 			species node_agent ;
 		}

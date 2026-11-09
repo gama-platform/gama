@@ -58,7 +58,17 @@ global {
 		}
 
 		//Creation of the food places placed randomly with a certain distance between each
-		loop times: number_of_food_places {
+		loop times: number_of_food_places { do add_food();}
+		//Creation of the ants that will be placed in the nest
+		create ant number: ants_number with: (location: center);
+	}
+	//Reflex to diffuse the pheromon among the grid
+	reflex diffuse {
+		diffuse var: road on: ant_grid proportion: diffusion_rate radius: 3 propagation: gradient method: convolution;
+	}
+	
+	action add_food() {
+		
 			point loc <- {rnd(gridsize - 10) + 5, rnd(gridsize - 10) + 5};
 			list<ant_grid> food_places <- (ant_grid where ((each distance_to loc) < 5));
 			ask food_places {
@@ -68,14 +78,9 @@ global {
 					color <- food_color;
 				}
 			}
-		}
-		//Creation of the ants that will be placed in the nest
-		create ant number: ants_number with: (location: center);
+		
 	}
-	//Reflex to diffuse the pheromon among the grid
-	reflex diffuse {
-		diffuse var: road on: ant_grid proportion: diffusion_rate radius: 3 propagation: gradient method: convolution;
-	}
+
 }
 
 	//Grid used to discretize the space to place food
@@ -131,7 +136,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//Initial state to make the ant wander 
 	state wandering initial: true {
-		do wander amplitude: 90.0;
+		do wander (amplitude: 90.0);
 		ant_grid here <- ant_grid(location);
 		float pr <- here.road;
 		transition to: carryingFood when: has_food;
@@ -139,7 +144,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//State to carry food once it has been found
 	state carryingFood {
-		self. goto (target: center);
+		self.goto (target: center);
 		transition to: wandering when: !has_food;
 	}
 	//State to follow a pheromon road if once has been found
@@ -197,11 +202,12 @@ experiment "With Inspector" type: gui parent:base{
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
 	output {
 		layout #split editors: false;
-		display Ants type: 3d axes:false{
-			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
-			agents "agents" transparency: 0.7 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
-			species ant position: {0.05, 0.05, 0.05} size: {0.9, 0.9} aspect: icon_svg;
-			overlay transparency: 0.3 background: rgb(99, 85, 66, 255) position: {50#px, 50#px} size: {250#px, 150#px} border: rgb(99, 85, 66, 255) rounded: true {
+		display Ants type: opengl axes:false map_order: true{
+			// This inset belongs to the world and must keep following the 3D camera.
+			picture terrain coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} refresh: false;
+			agents "agents" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
+			species ant coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.05} size: {0.9 * world.shape.width, 0.9 * world.shape.height} aspect: icon_svg;
+			overlay coordinates: #screen transparency: 0.3 background: rgb(99, 85, 66, 255) position: {50, 50} size: {250, 150} border: rgb(99, 85, 66, 255) rounded: true {
 			draw ant_shape at: {60#px, 70#px} size: {140#px, 100#px} rotate: -60;
 				draw ('Food foraged: ' + (((food_placed = 0 ? 0 : food_gathered / food_placed) * 100) with_precision 2) + '%') at: {40#px, 70#px} font: font("Arial", 18, #bold) color:
 				#white;
@@ -216,25 +222,26 @@ experiment "With Inspector" type: gui parent:base{
 }
 
 experiment "Classic" type: gui parent:base {
-	parameter 'Population:' var:ants_number unit: 'ants' category: 'Model';
-	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
-	parameter 'Rate of diffusion of the signal (per cycle):' var: diffusion_rate category: 'Model' unit: #percent;
-	parameter 'Use icons for the agents:' var: use_icons category: 'Display';
-	parameter 'Display state of agents:' var: display_state category: 'Display';
-	
-	user_command "Save" {
-		save simulation to: '../result/file.simulation' format: "json" ;}
+	bool fake;
 	
 	output {
-		display Ants antialias: false type: 3d axes: true {
+		layout #split parameters: false consoles: false;
+		display Ants antialias: false type: opengl axes: false map_order: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
 			agents "Grid" transparency: 0.4 value: ant_grid where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant aspect: info;
+			overlay position: {12, 12} size: {300, 202}  {
+				ui_slider "Signal evaporation / cycle" var: evaporation_per_cycle min: 0.0 max: 240.0 step: 1.0 at: {12, 12} size: {276, 40} ;
+				ui_slider "Signal diffusion / cycle" var: diffusion_rate min: 0.0 max: 1.0 step: 0.01 at: {12, 62} size: {276, 40};
+				ui_switch "Use agent icons" var: use_icons at: {12, 112} size: {276, 28} ;
+				ui_switch "Display agent state" var: display_state at: {12, 162} size: {276, 28} ;
+				ui_button "Add food" at: {12, 212} size: {276, 28} { ask simulation {do add_food();}}	
+			} 
 		}
 
-	}
+	}				 
 }
 
 experiment Record parent: Classic record: true {}
@@ -245,11 +252,11 @@ experiment "3D View" type: gui parent:base{
 	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output synchronized: true{
-		display Ants3D type: 3d show_fps: true antialias: false{
+		display "Ants3D" type: opengl4 show_fps: true antialias: false{
 			camera 'default' location: {50.0,134.8682,105.6514} target: {50.0,59.403,0.0};
 			grid ant_grid elevation: grid_values triangulation: true texture: terrain refresh: false;
-			agents "Trail" transparency: 0.7 position: {0.05, 0.05, 0.02} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
-			species ant position: {0.05, 0.05, 0.025} size: {0.9, 0.9} aspect: threeD;
+			agents "Trail" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.02} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
+			species ant coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.025} size: {0.9 * world.shape.width, 0.9 * world.shape.height} aspect: threeD;
 		}
 	}
 }
@@ -269,7 +276,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 
 	permanent {
-		display Comparison background: #white type:2d{
+		display Comparison background: #white type:opengl4{
 			chart "Food Gathered" type: series {
 			loop s over: simulations {
 				if (!dead(s)) {
@@ -282,12 +289,10 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
-		display Ants background: color type: 3d toolbar: color axes: false {
-			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
-			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
-			species ant position: {0.05, 0.05} size: {0.9, 0.9} aspect: icon;
+		display Ants background: color type: opengl4 toolbar: color axes: false map_order: true{
+			picture terrain coordinates: #world refresh: false;
+			agents "agents" coordinates: #world transparency: 0.5 value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
+			species ant coordinates: #world aspect: icon;
 		}
 	}
 }
-
-

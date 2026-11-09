@@ -137,17 +137,17 @@ experiment road_traffic type: gui {
 	parameter "Number of hours between two road repairs" var: repair_time category: "Road" unit: "h";
 	
 	output {
-		display city_display type:3d {
+		display city_display type:3d map_order: true {
 			species building aspect: base ;
 			species road aspect: base ;
 			species people aspect: base ;
 		}
-		display chart_display refresh: every(10#cycles)  type: 2d { 
-			chart "Road Status" type: series size: {1, 0.5} position: {0, 0} {
+		display chart_display refresh: every(10#cycles)  type: 3d { 
+			chart "Road Status" coordinates: #screen type: series size: {#display_width, 0.5} position: {0, 0} {
 				data "Mean road destruction" value: mean (road collect each.destruction_coeff) style: line color: #green ;
 				data "Max road destruction" value: road max_of each.destruction_coeff style: line color: #red ;
 			}
-			chart "People Objectif" type: pie style: exploded size: {1, 0.5} position: {0, 0.5}{
+			chart "People Objectif" coordinates: #screen type: pie style: exploded size: {#display_width, 0.5} position: {0, 0.5}{
 				data "Working" value: people count (each.objective="working") color: #magenta ;
 				data "Resting" value: people count (each.objective="resting") color: #blue ;
 			}

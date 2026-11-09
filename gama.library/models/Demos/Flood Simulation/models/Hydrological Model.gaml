@@ -319,7 +319,7 @@ experiment Run type: gui {
          grid cell elevation: grid_value * vertical_exaggeration triangulation: true;
          species buildings aspect: geometry;
          species dyke aspect: geometry ;
-         overlay position: {16#px, 16#px} size: {245#px, 156#px} background: paper rounded: true {
+         overlay coordinates: #screen position: {16, 16} size: {245, 156} background: paper rounded: true {
             draw "FLOOD DEPTH" at: {14#px, 20#px} color: ink font: font("Helvetica", 12, #bold);
             draw square(10#px) at: {20#px, 45#px} color: shallow_water;
             draw "Shallow" at: {36#px, 49#px} color: ink font: font("Helvetica", 12);
@@ -333,7 +333,7 @@ experiment Run type: gui {
             draw "Right-click a dyke to destroy it" at: {14#px, 140#px} color: ink font: font("Helvetica", 11);
          }
       }
-      display chart_display refresh: every(24#cycles) type: 2d background: paper {
+      display chart_display refresh: every(24#cycles) type: 3d background: paper {
          chart "Dyke pressure" type: series background: paper axes: ink color: ink
             x_label: "Time (hours)" y_label: "Pressure / fraction of dykes" y_range: {0.0, 1.0}
             legend_font: font("Helvetica", 11) label_font: font("Helvetica", 12)

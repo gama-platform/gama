@@ -60,7 +60,7 @@ global {
 	}
 	
 	reflex stop_sim when: empty(people) {
-		do pause();
+		experiment.pause();
 	}
 }
  

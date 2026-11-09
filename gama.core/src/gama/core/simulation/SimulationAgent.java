@@ -138,11 +138,12 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 		@variable (
 				name = ISimulationAgent.USAGE,
 				type = IType.INT,
-				doc = @doc ("Counts raw draws from the simulation RNG, not operator calls. Float draws usually consume "
-						+ "two raw draws, bounded integer draws usually one (more if rejection sampling is needed). "
-						+ "Assigning a value reinitializes the RNG with its current seed and advances it to that usage; "
-						+ "negative values reset it to zero. Cached Gaussian values are not restored. "
-						+ "The threaded RNG always reports zero and cannot be restored.")),
+				doc = @doc ("""
+						Counts raw draws from the simulation RNG, not operator calls. Float draws usually consume \
+						two raw draws, bounded integer draws usually one (more if rejection sampling is needed). \
+						Assigning a value reinitializes the RNG with its current seed and advances it to that usage; \
+						negative values reset it to zero. Cached Gaussian values are not restored. \
+						The threaded RNG always reports zero and cannot be restored.""")),
 		@variable (
 				name = ISimulationAgent.PAUSED,
 				type = IType.BOOL,
@@ -342,8 +343,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		final Set<IDescription> visited = Collections.newSetFromMap(new IdentityHashMap<>());
 		final boolean parallel = experiment != null && !experiment.isHeadless()
 				|| requiresSpatialIndexSynchronization(scope, getSpecies().getDescription(), visited)
-				|| experiment != null
-						&& requiresSpatialIndexSynchronization(scope, experiment.getSpecies().getDescription(), visited);
+				|| experiment != null && requiresSpatialIndexSynchronization(scope,
+						experiment.getSpecies().getDescription(), visited);
 
 		if (topology != null) {
 			topology.updateEnvironment(scope, shape, parallel);
@@ -362,9 +363,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 */
 	private boolean requiresSpatialIndexSynchronization(final IScope scope, final IDescription description,
 			final Set<IDescription> visited) {
-		if (!visited.add(description)) return false;
-		if (description instanceof IExperimentDescription
-				&& (getExperiment() == null || description != getExperiment().getSpecies().getDescription())) return false;
+		if (!visited.add(description) || description instanceof IExperimentDescription
+				&& (getExperiment() == null || description != getExperiment().getSpecies().getDescription()))
+			return false;
 		if (IKeyword.DISPLAY.equals(description.getKeyword()) || IKeyword.EVENT.equals(description.getKeyword()))
 			return true;
 		Caller caller = Caller.NONE;
@@ -378,8 +379,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		}
 		if (caller != Caller.NONE || IKeyword.ASK.equals(description.getKeyword())) {
 			final IExpression parallel = description.getFacetExpr(IKeyword.PARALLEL);
-			if ((parallel != null && !parallel.isConst())
-					|| GamaExecutorService.getParallelism(scope, parallel, caller) > 0) return true;
+			if (parallel != null && !parallel.isConst()
+					|| GamaExecutorService.getParallelism(scope, parallel, caller) > 0)
+				return true;
 		}
 		return !description.visitChildren(child -> !requiresSpatialIndexSynchronization(scope, child, visited));
 	}
@@ -744,7 +746,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 			name = "pause",
 			doc = @doc (
 					value = "Compatibility alias that delegates to the owning experiment's pause action. Pauses all simulations scheduled by that experiment, not only this simulation. A cycle already running may finish.",
-					deprecated = "Use ask experiment { do pause; } instead. Execution control belongs to the experiment.",
+					deprecated = "Use experiment.pause(); instead. Execution control belongs to the experiment.",
 					returns = "nil",
 					see = { "pause", "play" }))
 
@@ -795,8 +797,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	@action (
 			name = "resume",
 			doc = @doc (
-					value = "Compatibility alias that delegates to the owning experiment's play action. Resumes all simulations scheduled by that experiment, not only this simulation.",
-					deprecated = "Use ask experiment { do play; } instead. Execution control belongs to the experiment.",
+					value = "Compatibility alias that delegates to the owning experiment's resume action. Resumes all simulations scheduled by that experiment, not only this simulation.",
+					deprecated = "Use  experiment.resume(); instead. Execution control belongs to the experiment.",
 					returns = "nil",
 					see = { "play", "pause" }))
 

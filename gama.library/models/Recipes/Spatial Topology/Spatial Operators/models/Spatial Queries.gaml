@@ -123,7 +123,7 @@ species point_agent parent:agent_base {
 experiment Spatialqueries type: gui {
 	parameter "Query" var: type_query on_change: {ask simulation{do apply_query();} do update_outputs();};
 	output {
-		display map {
+		display map map_order: true {
 			species polygon_agent;
 			species point_agent;
 			species polyline_agent;	

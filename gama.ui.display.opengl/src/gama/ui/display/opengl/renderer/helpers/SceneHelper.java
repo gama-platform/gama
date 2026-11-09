@@ -30,6 +30,7 @@ import gama.dev.DEBUG;
 import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.ModelScene;
+import gama.ui.display.opengl.scene.layers.LayerObject;
 
 /**
  * Class SceneHelper. Manages the interactions between the updating and the rendering tasks by keeping hold of three
@@ -58,12 +59,16 @@ public class SceneHelper extends AbstractRendererHelper {
 
 	/** The garbage. */
 	private final Queue<ModelScene> garbage = new ConcurrentLinkedQueue<>();
+	private final Queue<ModelScene> recycledScenes = new ConcurrentLinkedQueue<>();
+
+	private final Queue<LayerObject> retiredLayers = new ConcurrentLinkedQueue<>();
 
 	/** Serializes scene updates with invalidation and forced redraws. */
 	private final ReentrantLock sceneUpdateLock = new ReentrantLock();
 
 	/** Updates skipped while a scene is being built or awaiting its first render. */
 	private final AtomicBoolean pendingUpdate = new AtomicBoolean();
+	private final AtomicBoolean pendingLayerRedraw = new AtomicBoolean();
 
 	/**
 	 * Instantiates a new scene helper.
@@ -89,7 +94,10 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void beginDrawingLayer(final ILayer layer, final Double currentLayerAlpha) {
 		final ModelScene scene = getSceneToUpdate();
-		if (scene != null) { scene.beginDrawingLayer(layer, currentLayerAlpha); }
+		if (scene != null) {
+			final LayerObject replaced = scene.beginDrawingLayer(layer, currentLayerAlpha);
+			if (replaced != null) { retiredLayers.add(replaced); }
+		}
 	}
 
 	/**
@@ -118,7 +126,13 @@ public class SceneHelper extends AbstractRendererHelper {
 				return false;
 			}
 			pendingUpdate.set(false);
-			backScene = createSceneFrom(staticScene);
+			if (pendingLayerRedraw.getAndSet(false)) { getSurface().getManager().forceRedrawingLayers(); }
+			backScene = recycledScenes.poll();
+			if (backScene == null) {
+				backScene = createSceneFrom(staticScene);
+			} else {
+				backScene.reuseFrom(staticScene);
+			}
 			// We prepare it for drawing
 			backScene.beginDrawingLayers();
 			keepLock = true;
@@ -165,14 +179,12 @@ public class SceneHelper extends AbstractRendererHelper {
 			if (backScene == null) return;
 			// We ask the backScene to stop updating
 			backScene.endDrawingLayers();
-			// We create the static scene from it if it does not exist yet or if it
-			// has been discarded
+			// Newly visible static layers can be added after the first scene was created.
 			if (hasStructurallyChanged()) { discardStaticScene(); }
-			if (staticScene == null) {
-				// DEBUG.LOG("Creating static scene from scene " +
-				// backScene.getId());
-				staticScene = createSceneFrom(backScene);
-			}
+			backScene.orderLayers();
+			final ModelScene previousStaticScene = staticScene;
+			staticScene = createSceneFrom(backScene);
+			if (previousStaticScene != null) { previousStaticScene.dispose(); }
 			// If there is another frontScene, we discard it (will be disposed of
 			// later)
 			if (frontScene != null) {
@@ -194,17 +206,10 @@ public class SceneHelper extends AbstractRendererHelper {
 		}
 	}
 
-	/**
-	 * Forces layers to be redrawn without allowing the invalidation to discard an in-progress scene update.
-	 */
-	public boolean forceRedrawingLayers() {
-		if (!sceneUpdateLock.tryLock()) return false;
-		try {
-			getSurface().getManager().forceRedrawingLayers();
-			return true;
-		} finally {
-			sceneUpdateLock.unlock();
-		}
+	/** Apply forced invalidation only when a new scene can be built, never midway through an update. */
+	public void forceRedrawingLayers() {
+		pendingLayerRedraw.set(true);
+		requestUpdate();
 	}
 
 	/**
@@ -255,13 +260,38 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void garbageCollect(final IOpenGL gl) {
 		int size = garbage.size();
-		if (size == 0) return;
-		final ModelScene[] scenes = garbage.toArray(new ModelScene[size]);
-		garbage.clear();
-		for (final ModelScene scene : scenes) {
+		for (int i = 0; i < size; i++) {
+			final ModelScene scene = garbage.poll();
+			if (scene == null) break;
 			scene.wipe(gl);
-			scene.dispose();
+			if (recycledScenes.size() < 2) {
+				scene.recycle();
+				recycledScenes.offer(scene);
+			} else {
+				scene.dispose();
+			}
 		}
+		// A replaced layer can still be in the front scene until it has been rendered.
+		if (!sceneUpdateLock.tryLock()) return;
+		try {
+			size = retiredLayers.size();
+			for (int i = 0; i < size; i++) {
+				final LayerObject layer = retiredLayers.poll();
+				if (layer == null) break;
+				if (containsLayer(frontScene, layer) || containsLayer(backScene, layer)
+						|| containsLayer(staticScene, layer)) {
+					retiredLayers.add(layer);
+				} else {
+					layer.clear(gl);
+				}
+			}
+		} finally {
+			sceneUpdateLock.unlock();
+		}
+	}
+
+	private boolean containsLayer(final ModelScene scene, final LayerObject layer) {
+		return scene != null && scene.containsLayerObject(layer);
 	}
 
 	/**
@@ -269,6 +299,8 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 
 	public void dispose() {
+		for (final ModelScene scene : recycledScenes) { scene.dispose(); }
+		recycledScenes.clear();
 		if (frontScene != null) { frontScene.dispose(); }
 		frontScene = null;
 		if (backScene != null) { backScene.dispose(); }
@@ -327,13 +359,26 @@ public class SceneHelper extends AbstractRendererHelper {
 		// if picking, we draw a first pass to pick the color
 		final IPickingHelper picking = getRenderer().getPickingHelper();
 		if (picking.isBeginningPicking()) {
+			final long pickingStart = getRenderer().getDiagnostics().startTimer();
 			// DEBUG.OUT("In SceneHelper.draw, beginning picking");
-			picking.beginPicking();
-			getSceneToRender().draw(gl);
-			picking.endPicking();
+			try {
+				picking.beginPicking();
+				try {
+					if (picking.shouldRenderPicking()) { getSceneToRender().draw(gl); }
+				} finally {
+					picking.endPicking();
+				}
+			} finally {
+				getRenderer().getDiagnostics().pickingFinished(pickingStart);
+			}
 		}
 		// we draw the scene on screen
-		getSceneToRender().draw(gl);
+		final long sceneStart = getRenderer().getDiagnostics().startTimer();
+		try {
+			getSceneToRender().draw(gl);
+		} finally {
+			getRenderer().getDiagnostics().sceneFinished(sceneStart);
+		}
 	}
 
 	/**

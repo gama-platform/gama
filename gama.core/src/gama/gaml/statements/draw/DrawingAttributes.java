@@ -11,7 +11,6 @@
 package gama.gaml.statements.draw;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 
 import gama.api.gaml.constants.GamlCoreConstants;
@@ -31,7 +30,7 @@ import gama.dev.DEBUG;
 /**
  * The Class DrawingAttributes.
  */
-public class DrawingAttributes implements IDrawingAttributes {
+public class DrawingAttributes implements IDrawingAttributes, Cloneable {
 
 	static {
 		DEBUG.OFF();
@@ -46,7 +45,7 @@ public class DrawingAttributes implements IDrawingAttributes {
 	private static int INDEX = 0;
 
 	/** The flags. */
-	protected EnumSet<Flag> flags = EnumSet.of(Flag.Lighted);
+	private int flags = 1 << Flag.Lighted.ordinal();
 
 	/** The unique index. */
 	private final int uniqueIndex;
@@ -71,6 +70,8 @@ public class DrawingAttributes implements IDrawingAttributes {
 
 	/** The textures. */
 	protected List<?> textures;
+
+	private boolean smoothTexture;
 
 	/** The material. */
 	// GamaMaterial material;
@@ -117,6 +118,20 @@ public class DrawingAttributes implements IDrawingAttributes {
 	 */
 	@Override
 	public int getIndex() { return uniqueIndex; }
+
+	@Override
+	public DrawingAttributes snapshot() {
+		try {
+			final DrawingAttributes copy = (DrawingAttributes) clone();
+			copy.location = location == null ? null : GamaPointFactory.create(location);
+			copy.size = size == null ? null : Scaling3D.of(size.getX(), size.getY(), size.getZ());
+			copy.rotation = rotation == null ? null : new AxisAngle(rotation.getAxis(), rotation.getAngle());
+			copy.textures = textures == null ? null : new java.util.ArrayList<>(textures);
+			return copy;
+		} catch (final CloneNotSupportedException e) {
+			throw new AssertionError(e);
+		}
+	}
 
 	/**
 	 * Sets the synthetic.
@@ -205,6 +220,12 @@ public class DrawingAttributes implements IDrawingAttributes {
 			setTextures(Collections.singletonList(o));
 		}
 	}
+
+	@Override
+	public void setSmoothTexture(final boolean smooth) { smoothTexture = smooth; }
+
+	@Override
+	public boolean isSmoothTexture() { return smoothTexture; }
 
 	/**
 	 * Mark selected.
@@ -566,7 +587,7 @@ public class DrawingAttributes implements IDrawingAttributes {
 	 */
 	@Override
 	public boolean isSet(final Flag value) {
-		return flags.contains(value);
+		return (flags & 1 << value.ordinal()) != 0;
 	}
 
 	/**
@@ -580,9 +601,9 @@ public class DrawingAttributes implements IDrawingAttributes {
 	@Override
 	public void setFlag(final Flag value, final boolean b) {
 		if (b) {
-			flags.add(value);
+			flags |= 1 << value.ordinal();
 		} else {
-			flags.remove(value);
+			flags &= ~(1 << value.ordinal());
 		}
 	}
 

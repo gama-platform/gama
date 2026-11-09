@@ -96,7 +96,7 @@ species road  {
 experiment multigraph type: gui {
 	float minimum_cycle_duration <- 0.05;
 	output {
-		display friendship type: 3d{
+		display friendship type: 3d map_order: true{
 			species road ;
 			species friendship_link ;
 			species people;

@@ -161,7 +161,7 @@ experiment Tentacle type: gui {
 			
 			camera 'default' location: {41.4967,256.6061,54.4653} target: {71.8988,40.2835,0.0};
 
-			overlay position: {5, 5} size: {290 #px, 130 #px} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
+			overlay coordinates: #screen position: {5, 5} size: {290, 130} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
 				draw "CONE-TWIST TENTACLE" at: {10 #px, 16 #px} color: rgb(112, 111, 103) font: font("SansSerif", 10, #bold);
 				draw "Selected segment : S" + selected_segment at: {10 #px, 34 #px} color: rgb(153, 83, 96);
 				draw "Segment speed : " + (norm(tentacle_segment[selected_segment].velocity) with_precision 1) + " u/s" at: {10 #px, 50 #px} color: rgb(64, 104, 132);

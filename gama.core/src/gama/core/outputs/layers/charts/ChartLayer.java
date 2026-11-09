@@ -19,7 +19,6 @@ import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.layers.AbstractLayer;
 
 /**
@@ -29,6 +28,9 @@ import gama.core.outputs.layers.AbstractLayer;
  *
  */
 public class ChartLayer extends AbstractLayer implements ILayer.Chart {
+
+	private static final int MAX_RASTER_DIMENSION = 4096;
+	private static final int MAX_RASTER_PIXELS = 8 * 1024 * 1024;
 
 	/**
 	 * Instantiates a new chart layer.
@@ -59,15 +61,16 @@ public class ChartLayer extends AbstractLayer implements ILayer.Chart {
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
 		IChart chart = getChart();
-		int x = dg.getLayerWidth();
-		int y = dg.getLayerHeight();
+		final int x = (int) Math.abs((double) dg.getLayerWidth());
+		final int y = (int) Math.abs((double) dg.getLayerHeight());
 		if (x == 0 || y == 0) return;
-		if (!dg.is2D()) {
-			// Projected layer dimensions can be signed; raster dimensions cannot.
-			final double size = Math.min(Math.abs((double) x), Math.abs((double) y));
-			y = x = Math.max(1, (int) (size * GamaPreferences.Displays.CHART_QUALITY.getValue()));
-		}
-		final BufferedImage im = chart.getImage(x, y, dg.getSurface().getData().isAntialias());
+		double scale = dg.getDevicePixelRatio() * ((ChartLayerStatement) definition).getQuality();
+		// Bound both raster size and the memory used by the two buffers without changing layout.
+		scale = Math.min(scale, (double) MAX_RASTER_DIMENSION / Math.max(x, y));
+		scale = Math.min(scale, Math.sqrt(MAX_RASTER_PIXELS / ((double) x * y)));
+		final int rasterWidth = Math.max(1, (int) Math.floor(x * scale));
+		final int rasterHeight = Math.max(1, (int) Math.floor(y * scale));
+		final BufferedImage im = chart.getImage(x, y, rasterWidth, rasterHeight, dg.getSurface().getData().isAntialias());
 		dg.drawChart(im);
 	}
 

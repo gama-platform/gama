@@ -34,6 +34,7 @@ import gama.core.outputs.layers.MeshLayerData;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.MeshSampling;
 import gama.ui.display.opengl4.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.mesh.MeshObject;
 import one.util.streamex.DoubleStreamEx;
@@ -133,26 +134,32 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 
 	/** The (possibly downsampled and smoothed) data used to build the buffers. Kept for drawing the labels */
 	private double[] builtData;
+	private double[] builtSource;
 
 	/**
-	 * Everything that determines the content of the buffers. The mesh object is compared by identity: a new one is
-	 * produced each time the layer is refreshed.
+	 * Everything that determines the content of the buffers. A refreshed object checks sampled values before
+	 * rebuilding when its color provider is immutable.
 	 */
 	private record BuildKey(MeshObject object, int cols, int rows, int step, boolean triangles,
 			boolean outputsTextures, boolean outputsColors, boolean outputsLines, boolean useFillForLines,
-			IMeshColorProvider colorProvider, IColor line, double above, double noData, int smooth, double zTranslation) {
+			IMeshColorProvider colorProvider, IColor line, double above, double noData, int smooth,
+			double cellWidth, double cellHeight) {
 
-		@Override
-		public boolean equals(final Object o) {
-			if (this == o) return true;
-			if (!(o instanceof BuildKey k)) return false;
-			return object == k.object && cols == k.cols && rows == k.rows && step == k.step
+		boolean sameAppearance(final BuildKey k) {
+			return cols == k.cols && rows == k.rows && step == k.step
 					&& triangles == k.triangles && outputsTextures == k.outputsTextures
 					&& outputsColors == k.outputsColors && outputsLines == k.outputsLines
 					&& useFillForLines == k.useFillForLines && colorProvider == k.colorProvider
 					&& java.util.Objects.equals(line, k.line) && Double.compare(above, k.above) == 0
 					&& Double.compare(noData, k.noData) == 0 && smooth == k.smooth
-					&& Double.compare(zTranslation, k.zTranslation) == 0;
+					&& Double.compare(cellWidth, k.cellWidth) == 0 && Double.compare(cellHeight, k.cellHeight) == 0;
+		}
+
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) return true;
+			if (!(o instanceof BuildKey k)) return false;
+			return object == k.object && sameAppearance(k);
 		}
 
 		@Override
@@ -185,7 +192,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			vboIds = null;
 		}
 		if (vaoId != null) {
-			gl.getGL().glDeleteVertexArrays(1, vaoId, 0);
+			gl.getGL().glDeleteVertexArrays(vaoId.length, vaoId, 0);
 			vaoId = null;
 		}
 	}
@@ -226,8 +233,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		this.triangles = attributes.isTriangulated();
 
 		BuildKey key = new BuildKey(object, cols, rows, step, triangles, outputsTextures, outputsColors, outputsLines,
-				useFillForLines, colorProvider, line, above, noData, attributes.getSmooth(),
-				gl.getCurrentZTranslation());
+				useFillForLines, colorProvider, line, above, noData, attributes.getSmooth(), cx, cy);
 		if (key.equals(failedKey)) return;
 		if (!key.equals(builtKey) && !buildMesh(object, key, noData)) return;
 		gl.pushMatrix();
@@ -257,18 +263,28 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 	 * @return true if the buffers have been built
 	 */
 	private boolean buildMesh(final MeshObject object, final BuildKey key, final double noData) {
-		builtKey = null;
 		try {
 			checkBufferSizes();
 			var attributes = object.getAttributes();
 			double[] source = object.getObject().getMatrix();
 			if (step > 1) { source = MeshSampling.downsample(source, sourceCols, sourceRows, step, noData); }
+			if (builtSource != null && builtKey != null && builtKey.sameAppearance(key)
+					&& java.util.Arrays.equals(builtSource, source)) {
+				builtKey = key;
+				return true;
+			}
+			builtKey = null;
 			double[] data = attributes.getSmoothProvider().smooth(cols, rows, source, noData, attributes.getSmooth());
 			getMinMax(data, noData);
 			initializeBuffers();
 			fillBuffers(data, noData);
 			finalizeBuffers();
 			builtData = data;
+			// Mutable palettes and band providers may change independently of the elevation field.
+			final boolean stableColors = !outputsColors && !useFillForLines || colorProvider != null
+					&& (colorProvider.getClass() == gama.gaml.statements.draw.ColorBasedMeshColorProvider.class
+							|| colorProvider.getClass() == gama.gaml.statements.draw.GrayscaleMeshColorProvider.class);
+			builtSource = stableColors ? source.clone() : null;
 			builtKey = key;
 			needsUpload = true;
 			return true;
@@ -314,6 +330,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		vertexBuffer = normalBuffer = texBuffer = colorBuffer = lineColorBuffer = null;
 		indexBuffer = null;
 		builtData = null;
+		builtSource = null;
 		builtKey = null;
 	}
 
@@ -478,7 +495,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 				var z = get(data, i, j);
 				realIndexes[index] = z == noData ? -1 : realIndex++;
 				if (z == noData) { continue; }
-				vertexBuffer.put((float) x).put((float) -y).put((float) (z + gl.getCurrentZTranslation()));
+				vertexBuffer.put((float) x).put((float) -y).put((float) z);
 				setColor(z, i, j);
 				setNormal(data, i, j);
 				if (j > 0 && i > 0) {
@@ -583,38 +600,56 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL4.GL_CONSTANT_ALPHA, GL4.GL_ONE_MINUS_CONSTANT_ALPHA);
-		gl.beginDrawing(GL.GL_TRIANGLES);
-		for (var index = 0; index < indexBuffer.limit(); index++) {
-			var i = indexBuffer.get(index);
-			int one = i * 3, two = one + 1, three = one + 2;
-			if (!gl.isWireframe() && outputsColors) {
-				// TODO Bug when using a gradient: some color components are outside the range
-				try {
-					gl.setCurrentColor(colorBuffer.get(i * 4), colorBuffer.get(i * 4 + 1), colorBuffer.get(i * 4 + 2),
-							colorBuffer.get(i * 4 + 3));
-				} catch (IllegalArgumentException e) {
-					DEBUG.OUT("Problem with following colors: " + colorBuffer.get(i * 4) + " "
-							+ colorBuffer.get(i * 4 + 1) + " " + colorBuffer.get(i * 4 + 2));
+		try {
+			if (!gl.isWireframe()) {
+				try (var offset = PolygonOffset.forOutline(gl, outputsLines)) {
+					drawFieldFallbackPass(false);
 				}
 			}
-			if (outputsTextures) { gl.outputTexCoord(texBuffer.get(i * 2), texBuffer.get(i * 2 + 1)); }
-			gl.outputNormal(normalBuffer.get(one), normalBuffer.get(two), normalBuffer.get(three));
-			gl.outputVertex(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
-		}
-		if (outputsLines) {
-			boolean previous = gl.setObjectWireframe(true);
-			for (var index = 0; index < indexBuffer.limit(); index++) {
-				var i = indexBuffer.get(index);
-				// lineColorBuffer has 4 components per vertex (RGBA)
-				gl.setCurrentColor(lineColorBuffer.get(i * 4), lineColorBuffer.get(i * 4 + 1),
-						lineColorBuffer.get(i * 4 + 2), lineColorBuffer.get(i * 4 + 3));
-				gl.outputVertex(vertexBuffer.get(i * 3), vertexBuffer.get(i * 3 + 1), vertexBuffer.get(i * 3 + 2));
+			if (outputsLines) {
+				boolean previous = gl.setObjectWireframe(true);
+				try {
+					drawFieldFallbackPass(true);
+				} finally {
+					gl.setObjectWireframe(previous);
+				}
 			}
-			gl.setObjectWireframe(previous);
+		} finally {
+			ogl.glBlendColor(0.0f, 0.0f, 0.0f, 0.0f);
+			ogl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		}
-		gl.endDrawing();
-		ogl.glBlendColor(0.0f, 0.0f, 0.0f, 0.0f);
-		ogl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	private void drawFieldFallbackPass(final boolean outline) {
+		final int batchVertices = 4096 * 3;
+		gl.beginDrawing(GL.GL_TRIANGLES);
+		try {
+			for (var index = 0; index < indexBuffer.limit(); index++) {
+				if (index > 0 && index % batchVertices == 0) {
+					gl.endDrawing();
+					gl.beginDrawing(GL.GL_TRIANGLES);
+				}
+				var i = indexBuffer.get(index);
+				int one = i * 3, two = one + 1, three = one + 2;
+				if (outline) {
+					gl.setCurrentColor(lineColorBuffer.get(i * 4), lineColorBuffer.get(i * 4 + 1),
+							lineColorBuffer.get(i * 4 + 2), lineColorBuffer.get(i * 4 + 3));
+				} else if (outputsColors) {
+					try {
+						gl.setCurrentColor(colorBuffer.get(i * 4), colorBuffer.get(i * 4 + 1),
+								colorBuffer.get(i * 4 + 2), colorBuffer.get(i * 4 + 3));
+					} catch (IllegalArgumentException e) {
+						DEBUG.OUT("Problem with following colors: " + colorBuffer.get(i * 4) + " "
+								+ colorBuffer.get(i * 4 + 1) + " " + colorBuffer.get(i * 4 + 2));
+					}
+				}
+				if (!outline && outputsTextures) { gl.outputTexCoord(texBuffer.get(i * 2), texBuffer.get(i * 2 + 1)); }
+				gl.outputNormal(normalBuffer.get(one), normalBuffer.get(two), normalBuffer.get(three));
+				gl.outputVertex(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
+			}
+		} finally {
+			gl.endDrawing();
+		}
 	}
 
 	/**
@@ -642,64 +677,40 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		final boolean upload = needsUpload;
 		needsUpload = false;
 		if (vaoId == null) {
-			vaoId = new int[1];
-			ogl.glGenVertexArrays(1, vaoId, 0);
+			vaoId = new int[2];
+			ogl.glGenVertexArrays(2, vaoId, 0);
 		}
 
-		// Bind the VAO so that all subsequent VBO/attrib state is recorded in it
-		ogl.glBindVertexArray(vaoId[0]);
-
-		// Upload vertex data (float)
-		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
 		if (upload) {
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) vertexBuffer.limit() * Float.BYTES, vertexBuffer,
-					GL.GL_STATIC_DRAW);
-		}
-		ogl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 0, 0);
-		ogl.glEnableVertexAttribArray(0);
-
-		// Upload normal data (float) – attribute location 3
-		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
-		if (upload) {
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) normalBuffer.limit() * Float.BYTES, normalBuffer,
-					GL.GL_STATIC_DRAW);
-		}
-		ogl.glVertexAttribPointer(3, 3, GL.GL_FLOAT, false, 0, 0);
-		ogl.glEnableVertexAttribArray(3);
-
-		if (outputsTextures) {
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
-			if (upload) {
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) texBuffer.limit() * Float.BYTES, texBuffer,
-						GL.GL_STATIC_DRAW);
+			ogl.glBindVertexArray(vaoId[0]);
+			uploadAttribute(0, 0, 3, vertexBuffer);
+			uploadAttribute(1, 3, 3, normalBuffer);
+			if (outputsTextures) {
+				uploadAttribute(2, 2, 2, texBuffer);
+			} else {
+				ogl.glDisableVertexAttribArray(2);
 			}
-			ogl.glVertexAttribPointer(2, 2, GL.GL_FLOAT, false, 0, 0);
-			ogl.glEnableVertexAttribArray(2);
-		} else {
-			ogl.glDisableVertexAttribArray(2);
-		}
-
-		if (outputsColors) {
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-			if (upload) {
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) colorBuffer.limit() * Float.BYTES, colorBuffer,
-						GL.GL_STATIC_DRAW);
+			if (outputsColors) {
+				uploadAttribute(3, 1, 4, colorBuffer);
+			} else {
+				ogl.glDisableVertexAttribArray(1);
 			}
-			ogl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0);
-			ogl.glEnableVertexAttribArray(1);
-		} else {
-			ogl.glDisableVertexAttribArray(1);
-			// Provide a white default color so geometry is visible
-			ogl.glVertexAttrib4f(1, 1.0f, 1.0f, 1.0f, 1.0f);
-		}
-
-		// Upload index data to the element-array buffer (stays bound in the VAO)
-		indexBuffer.rewind();
-		ogl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[5]);
-		if (upload) {
+			indexBuffer.rewind();
+			ogl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[5]);
 			ogl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.limit() * Integer.BYTES, indexBuffer,
 					GL.GL_STATIC_DRAW);
+			gl.getRenderer().getDiagnostics().meshUpload((long) indexBuffer.limit() * Integer.BYTES);
+			if (outputsLines) {
+				ogl.glBindVertexArray(vaoId[1]);
+				bindAttribute(0, 0, 3);
+				bindAttribute(1, 3, 3);
+				uploadAttribute(4, 1, 4, lineColorBuffer);
+				ogl.glDisableVertexAttribArray(2);
+				ogl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[5]);
+			}
 		}
+		ogl.glBindVertexArray(vaoId[0]);
+		if (!outputsColors) { ogl.glVertexAttrib4f(1, 1, 1, 1, 1); }
 
 		// Push matrices and lighting to the shader
 		var shader = gl.getBasicShader();
@@ -710,34 +721,38 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			shader.loadProjectionMatrix(gl.getProjectionMatrix());
 			shader.loadUseTexture(outputsTextures);
 			shader.loadPremultiplyTexture(false);
+			gl.loadPicking(shader, (float) gl.getCurrentObjectAlpha());
 			boolean useLighting = outputsColors && gl.getLighting();
 			shader.loadUseLighting(useLighting);
 		}
 
+		final boolean disableDepthWrites = gl.getCurrentObjectAlpha() < 1d
+				&& !gl.getRenderer().getPickingHelper().isBeginningPicking();
+		final byte[] previousDepthMask = new byte[1];
+		if (disableDepthWrites) {
+			ogl.glGetBooleanv(GL.GL_DEPTH_WRITEMASK, previousDepthMask, 0);
+			ogl.glDepthMask(false);
+		}
 		try {
 			if (!gl.isWireframe()) {
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
+				try (var offset = PolygonOffset.forOutline(gl, outputsLines)) {
+					ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
+					gl.getRenderer().getDiagnostics().meshDraw();
+				}
 			}
 			if (outputsLines) {
-				// Switch attribute 1 to the line-color buffer
-				if (vboIds[4] != 0) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-					if (upload) {
-						ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) lineColorBuffer.limit() * Float.BYTES,
-								lineColorBuffer, GL.GL_STATIC_DRAW);
-					}
-					ogl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0);
-					ogl.glEnableVertexAttribArray(1);
-				}
+				if (shader != null) { shader.loadUseTexture(false); }
+				ogl.glBindVertexArray(vaoId[1]);
 				boolean previous = gl.setObjectWireframe(true);
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
-				gl.setObjectWireframe(previous);
+				try {
+					ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
+					gl.getRenderer().getDiagnostics().meshDraw();
+				} finally {
+					gl.setObjectWireframe(previous);
+				}
 			}
 		} finally {
-			ogl.glDisableVertexAttribArray(0);
-			ogl.glDisableVertexAttribArray(1);
-			ogl.glDisableVertexAttribArray(2);
-			ogl.glDisableVertexAttribArray(3);
+			if (disableDepthWrites) { ogl.glDepthMask(previousDepthMask[0] != 0); }
 			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 			ogl.glBindVertexArray(0);
 			if (shader != null) { shader.stop(); }
@@ -745,6 +760,21 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			ogl.glBlendColor(0.0f, 0.0f, 0.0f, 0.0f);
 			ogl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		}
+	}
+
+	private void bindAttribute(final int buffer, final int attribute, final int components) {
+		final var ogl = gl.getGL();
+		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[buffer]);
+		ogl.glVertexAttribPointer(attribute, components, GL.GL_FLOAT, false, 0, 0);
+		ogl.glEnableVertexAttribArray(attribute);
+	}
+
+	private void uploadAttribute(final int buffer, final int attribute, final int components,
+			final FloatBuffer data) {
+		bindAttribute(buffer, attribute, components);
+		final long bytes = (long) data.limit() * Float.BYTES;
+		gl.getGL().glBufferData(GL.GL_ARRAY_BUFFER, bytes, data, GL.GL_STATIC_DRAW);
+		gl.getRenderer().getDiagnostics().meshUpload(bytes);
 	}
 
 	/**

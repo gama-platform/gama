@@ -157,6 +157,8 @@ public class LayeredDisplayData implements IDisplayData {
 
 	private boolean isWireframe = false;
 
+	private volatile Boolean mapOrder;
+
 	/** The ortho. */
 	private boolean ortho = false;
 
@@ -250,6 +252,12 @@ public class LayeredDisplayData implements IDisplayData {
 	 */
 	@Override
 	public boolean isWireframe() { return isWireframe; }
+
+	@Override
+	public boolean isMapOrder() {
+		final Boolean override = mapOrder;
+		return override == null ? GamaPreferences.Displays.OPENGL_MAP_ORDER.getValue() : override;
+	}
 
 	/**
 	 * Sets the wireframe.
@@ -582,6 +590,9 @@ public class LayeredDisplayData implements IDisplayData {
 		final IExpression ortho = facets.getExpr(IKeyword.ORTHOGRAPHIC_PROJECTION);
 		if (ortho != null) { setOrtho(Cast.asBool(scope, ortho.value(scope))); }
 
+		final IExpression mapOrderExpression = facets.getExpr("map_order");
+		mapOrder = mapOrderExpression == null ? null : Cast.asBool(scope, mapOrderExpression.value(scope));
+
 		final IExpression keystone_exp = facets.getExpr(IKeyword.KEYSTONE);
 		if (keystone_exp != null) {
 			@SuppressWarnings ("unchecked") final List<IPoint> val = GamaListFactory.create(scope, Types.POINT,
@@ -700,6 +711,11 @@ public class LayeredDisplayData implements IDisplayData {
 	 */
 	@Override
 	public void update(final IScope scope, final Facets facets) {
+
+		final IExpression mapOrderExpression = facets.getExpr("map_order");
+		if (mapOrderExpression != null && !mapOrderExpression.isConst()) {
+			mapOrder = Cast.asBool(scope, mapOrderExpression.value(scope));
+		}
 
 		if (cameraNameExpression != null) {
 			boolean isLocked = camera == null ? false : camera.isLocked();

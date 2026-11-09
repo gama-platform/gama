@@ -31,6 +31,8 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.gaml.symbols.ISymbol;
+import gama.gaml.statements.draw.DrawStatement;
 
 /**
  * The Class AspectStatement.
@@ -83,6 +85,20 @@ public class AspectStatement extends AbstractStatementSequence implements IState
 	/** The is highlight aspect. */
 	boolean isHighlightAspect;
 
+	private boolean drawsOnly;
+
+	@Override
+	public void setChildren(final Iterable<? extends ISymbol> children) {
+		super.setChildren(children);
+		drawsOnly = true;
+		for (final IStatement command : getCommands()) {
+			if (command.getClass() != DrawStatement.class) {
+				drawsOnly = false;
+				break;
+			}
+		}
+	}
+
 	/**
 	 * Instantiates a new aspect statement.
 	 *
@@ -131,7 +147,13 @@ public class AspectStatement extends AbstractStatementSequence implements IState
 		if (!sc.isGraphics()) return null;
 		IGraphicsScope scope = (IGraphicsScope) sc;
 		final IGraphics g = scope.getGraphics();
-		super.privateExecuteIn(scope);
+		if (drawsOnly) {
+			for (final IStatement command : getCommands()) {
+				if (!scope.executeDraw((IStatement.Draw) command)) { break; }
+			}
+		} else {
+			super.privateExecuteIn(scope);
+		}
 		return g.getAndWipeTemporaryEnvelope();
 	}
 }

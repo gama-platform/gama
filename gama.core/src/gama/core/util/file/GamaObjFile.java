@@ -32,6 +32,8 @@ import gama.api.types.list.IList;
 import gama.api.types.pair.IPair;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.IEnvelope;
 import gama.dev.DEBUG;
 
 /**
@@ -97,8 +99,11 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	/** The mtl path. */
 	public final String mtlPath;
 
-	/** The loaded. */
-	boolean loaded = false;
+	/** Set only after a complete parse; volatile so readers that see it also see the parsed lists. */
+	volatile boolean loaded = false;
+	private volatile long contentsRevision;
+
+	public long getContentsRevision() { return contentsRevision; }
 
 	/**
 	 * @param scope
@@ -219,16 +224,14 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 * @param forDrawing
 	 *            the for drawing
 	 */
-	public void loadObject(final IScope scope, final boolean forDrawing) {
-
+	public synchronized void loadObject(final IScope scope, final boolean forDrawing) {
+		if (loaded) return;
 		try (BufferedReader br = new BufferedReader(new FileReader(getFile(scope)))) {
 			loadObject(br);
-		} catch (final IOException e) {
-			DEBUG.ERR("Failed to read file: " /* + br.toString() */);
-		} catch (final NumberFormatException e) {
-			DEBUG.ERR("Malformed OBJ file: "/* + br.toString() */ + "\r \r" + e.getMessage());
+		} catch (final IOException | IllegalArgumentException e) {
+			clearParsedData();
+			throw GamaRuntimeException.create(e, scope);
 		}
-
 	}
 
 	/**
@@ -239,7 +242,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	public void loadObject(final BufferedReader br) throws IOException {
+	public synchronized void loadObject(final BufferedReader br) throws IOException {
 		if (loaded) return;
 		int facecounter = 0;
 		boolean firstpass = true;
@@ -247,11 +250,14 @@ public class GamaObjFile extends Gama3DGeometryFile {
 		while ((newline = br.readLine()) != null) {
 			if (newline.length() > 0) {
 				newline = newline.trim();
+				if (newline.isEmpty() || newline.charAt(0) == '#') { continue; }
+				final int comment = newline.indexOf('#');
+				if (comment >= 0) { newline = newline.substring(0, comment).trim(); }
 
 				// LOADS VERTEX COORDINATES
-				if (newline.startsWith("v ")) {
+				if (hasDirective(newline, "v")) {
 					newline = newline.substring(2);
-					final StringTokenizer st = new StringTokenizer(newline, " ");
+					final StringTokenizer st = new StringTokenizer(newline);
 					final double coords[] = new double[st.countTokens()];
 					for (int i = 0; st.hasMoreTokens(); i++) { coords[i] = Double.parseDouble(st.nextToken()); }
 
@@ -274,56 +280,50 @@ public class GamaObjFile extends Gama3DGeometryFile {
 				} else
 
 				// LOADS VERTEX TEXTURE COORDINATES
-				if (newline.startsWith("vt")) {
+				if (hasDirective(newline, "vt")) {
 					final double coords[] = new double[4];
 					// final String coordstext[] = new String[4];
 					newline = newline.substring(3);
-					final StringTokenizer st = new StringTokenizer(newline, " ");
+					final StringTokenizer st = new StringTokenizer(newline);
 					for (int i = 0; st.hasMoreTokens(); i++) { coords[i] = Double.parseDouble(st.nextToken()); }
 
 					setOfVertexTextures.add(coords);
 				} else
 
 				// LOADS VERTEX NORMALS COORDINATES
-				if (newline.startsWith("vn")) {
+				if (hasDirective(newline, "vn")) {
 					final double coords[] = new double[4];
 					// final String coordstext[] = new String[4];
 					newline = newline.substring(3);
-					final StringTokenizer st = new StringTokenizer(newline, " ");
+					final StringTokenizer st = new StringTokenizer(newline);
 					for (int i = 0; st.hasMoreTokens(); i++) { coords[i] = Double.parseDouble(st.nextToken()); }
 					setOfVertexNormals.add(coords);
 				} else
 				// LOADS FACES COORDINATES
-				if (newline.startsWith("f ")) {
+				if (hasDirective(newline, "f")) {
 					facecounter++;
 					newline = newline.substring(2);
-					final StringTokenizer st = new StringTokenizer(newline, " ");
+					final StringTokenizer st = new StringTokenizer(newline);
 					final int count = st.countTokens();
 					final int v[] = new int[count];
 					final int vt[] = new int[count];
 					final int vn[] = new int[count];
 					for (int i = 0; i < count; i++) {
-						final char chars[] = st.nextToken().toCharArray();
-						final StringBuilder sb = new StringBuilder();
-						char lc = 'x';
-						for (final char c : chars) {
-							if (c == '/' && lc == '/') { sb.append('0'); }
-							lc = c;
-							sb.append(lc);
-						}
-
-						final StringTokenizer st2 = new StringTokenizer(sb.toString(), "/");
-						final int num = st2.countTokens();
-						v[i] = Integer.parseInt(st2.nextToken());
-						if (num > 1) {
-							vt[i] = Integer.parseInt(st2.nextToken());
-						} else {
-							vt[i] = 0;
-						}
-						if (num > 2) {
-							vn[i] = Integer.parseInt(st2.nextToken());
-						} else {
-							vn[i] = 0;
+						final String token = st.nextToken();
+						final int firstSlash = token.indexOf('/');
+						final int secondSlash = firstSlash < 0 ? -1 : token.indexOf('/', firstSlash + 1);
+						v[i] = resolveIndex(Integer.parseInt(token, 0,
+								firstSlash < 0 ? token.length() : firstSlash, 10), setOfVertex.size());
+						if (firstSlash >= 0) {
+							final int end = secondSlash < 0 ? token.length() : secondSlash;
+							if (end > firstSlash + 1) {
+								vt[i] = resolveIndex(Integer.parseInt(token, firstSlash + 1, end, 10),
+										setOfVertexTextures.size());
+							}
+							if (secondSlash >= 0 && secondSlash + 1 < token.length()) {
+								vn[i] = resolveIndex(Integer.parseInt(token, secondSlash + 1, token.length(), 10),
+										setOfVertexNormals.size());
+							}
 						}
 					}
 
@@ -333,16 +333,14 @@ public class GamaObjFile extends Gama3DGeometryFile {
 				} else
 
 				// LOADS MATERIALS
-				if (newline.charAt(0) == 'm' && newline.charAt(1) == 't' && newline.charAt(2) == 'l'
-						&& newline.charAt(3) == 'l' && newline.charAt(4) == 'i' && newline.charAt(5) == 'b') {
+				if (hasDirective(newline, "mtllib")) {
 					// String[] coordstext = new String[3];
 					// coordstext = newline.split("\\s+");
 					if (mtlPath != null) { loadMaterials(); }
 				} else
 
 				// USES MATERIALS
-				if (newline.charAt(0) == 'u' && newline.charAt(1) == 's' && newline.charAt(2) == 'e'
-						&& newline.charAt(3) == 'm' && newline.charAt(4) == 't' && newline.charAt(5) == 'l') {
+				if (hasDirective(newline, "usemtl")) {
 					final String[] coords = new String[2];
 					final String[] coordstext = newline.split("\\s+");
 					coords[0] = coordstext[1];
@@ -356,6 +354,32 @@ public class GamaObjFile extends Gama3DGeometryFile {
 		loaded = true;
 	}
 
+	private static int resolveIndex(final int index, final int size) {
+		if (index == 0 || index < -size) throw new IllegalArgumentException("Invalid OBJ index: " + index);
+		return index < 0 ? size + index + 1 : index;
+	}
+
+	private static boolean hasDirective(final String line, final String directive) {
+		return line.startsWith(directive) && line.length() > directive.length()
+				&& Character.isWhitespace(line.charAt(directive.length()));
+	}
+
+	@Override
+	public IEnvelope computeEnvelope(final IScope scope) {
+		if (envelope == null) {
+			loadObject(scope, false);
+			envelope = GamaEnvelopeFactory.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);
+			if (initRotation != null && initRotation.getAngle() != 0.0) { envelope = envelope.rotate(initRotation); }
+		}
+		return envelope;
+	}
+
+	@Override
+	public void setInitRotation(final AxisAngle rotation) {
+		super.setInitRotation(rotation);
+		envelope = null;
+	}
+
 	/**
 	 * Method fillBuffer(). Fills the buffer with the polygons built from the .obj vertices + faces
 	 *
@@ -363,8 +387,9 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
+		if (getBuffer() != null) return;
 		loadObject(scope, false);
-		setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
+		final IList<IShape> result = GamaListFactory.create(Types.GEOMETRY);
 		final IList<IShape> vertices = GamaListFactory.create(Types.POINT);
 		for (final double[] coords : setOfVertex) {
 			final IPoint pt = GamaPointFactory.create(coords[0], -coords[1], coords[2]);
@@ -374,11 +399,31 @@ public class GamaObjFile extends Gama3DGeometryFile {
 			final IList<IShape> face = GamaListFactory.<IShape> create(Types.POINT);
 			for (final int vertex : vertexRefs) {
 				face.add(vertices.get(vertex - 1));
-				getBuffer().add(GamaShapeFactory.buildPolygon(face));
 			}
+			result.add(GamaShapeFactory.buildPolygon(face));
 		}
-		envelope = GamaEnvelopeFactory.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);
+		setBuffer(result);
+	}
 
+	@Override
+	public void invalidateContents() {
+		super.invalidateContents();
+		clearParsedData();
+		contentsRevision++;
+	}
+
+	private synchronized void clearParsedData() {
+		setOfVertex.clear();
+		setOfVertexNormals.clear();
+		setOfVertexTextures.clear();
+		faces.clear();
+		facesTexs.clear();
+		facesNorms.clear();
+		matTimings.clear();
+		materials = null;
+		envelope = null;
+		loaded = false;
+		toppoint = bottompoint = leftpoint = rightpoint = farpoint = nearpoint = 0;
 	}
 
 	@Override

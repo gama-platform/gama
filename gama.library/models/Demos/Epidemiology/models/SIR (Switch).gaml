@@ -358,7 +358,7 @@ experiment mysimulation type: gui {
 			species Host aspect: basic;
 		}
 	
-		display 'Switch model' type: 2d {
+		display 'Switch model' type: 3d {
 			chart 'Susceptible' type: series background: #white style: exploded {
 				data 'susceptible' value: current_model.S color: rgb(46,204,113);
 				data 'infected' value: current_model.I color: rgb(231,76,60);
@@ -367,7 +367,7 @@ experiment mysimulation type: gui {
 
 		}
 
-		display SI_maths type: 2d {
+		display SI_maths type: 3d {
 			chart "SI" type: series background: #white {
 				data 'S' value: first((my_SIR_maths)).S color: rgb(46,204,113);
 				data 'I' value: first((my_SIR_maths)).I color: rgb(231,76,60);

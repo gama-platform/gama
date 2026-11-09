@@ -19,6 +19,333 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### CPU-side display preparation
+
+Evaluated drawing commands now move winding/arrow realization, image support
+rectangles, grid borders and multiline layout to OpenGL scene playback. Native
+spheres/cubes use scalar dimensions rather than rediscovering them from polygons.
+Java2D applies ordinary object transforms during AWT shape conversion, while
+preserving renderer-side arrow/depth and invalid-polygon handling.
+
+Coordinates, mutable drawing attributes, grid pixels and ordinary field arrays
+are captured before asynchronous rendering. Layer/trace state and file drawing
+keys are captured once; transparency is evaluated on layer refresh, not again
+during background rendering. Asset loaders requiring contextual services retain
+a detached-scope compatibility path. Existing GAML aspect execution and graphics
+plugin adapters are preserved.
+
+Both OpenGL backends prepare eligible direct circle, sphere, square and cube
+draws from immutable unit geometry instead of rebuilding JTS polygons per agent.
+Default appearances use the same path. Dynamic facets, agent-relative centers,
+transforms, appearance and picking remain live; general geometry expressions,
+textured/arrows draws and Java2D retain their existing preparation path.
+
+Drawing facets reuse invariant conversions without freezing pixel or viewport
+dependencies, and their mutable evaluation data is local to each display.
+Draw-only aspects avoid redundant child-result wrappers and empty draw scopes.
+Shapes without arrows skip arrow-coordinate extraction, including unnecessary
+convex-hull work for multipart geometries.
+
+Dynamic scene/list storage and untraced grid-elevation arrays can be reused only
+after retiring their previous scene. Static drawings, traces, arbitrary aspect
+side effects and grid expression evaluation timing are preserved.
+
+Display preparation diagnostics now report CPU-side layer/aspect/draw timings
+and synchronization waits separately from rendering. See the
+[display-layer guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#cpu-side-display-preparation)
+for eligibility, fallbacks and profiling instructions.
+
+### Navigator metadata during workspace recovery
+
+Generating file metadata no longer synchronously refreshes workspace resources.
+This removes an uncancellable wait for the build's workspace lock when navigator
+labels need uncached metadata, notably after a crash. Metadata invalidation still
+uses file-system modification times; background and explicit workspace refreshes
+remain enabled.
+
+### Static layer visibility
+
+In both OpenGL backends, `refresh: false` layers can be hidden and shown
+without losing their static behavior. A layer is built when first visible and
+rebuilt once when shown again after being hidden, using the current model state;
+it remains cached between those transitions. See the
+[display-layer guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#static-layers-and-visibility)
+for an example and details.
+
+Both OpenGL backends now wait for a visible, initialized viewport before building
+the first scene, rather than rebuilding all static layers immediately afterward.
+Random expressions in static aspects are therefore not re-evaluated by that
+startup redraw.
+
+### OpenGL FPS overlay shutdown
+
+Both OpenGL renderers read FPS through the canvas using a single animator-reference
+snapshot. This prevents an intermittent null-pointer exception when native-peer
+shutdown detaches the animator while its final frame is drawing the FPS overlay.
+
+Native OpenGL canvases start their animator independently of launch-overlay closure;
+unrealized native windows are not drawn. Hiding still pauses rendering, and showing
+resumes it. This avoids depending on post-launch view callbacks to start rendering
+while a synchronized simulation waits for its first frame. Disposed native peers
+cannot be restarted.
+
+### OpenGL4 geometry reuse
+
+OpenGL4 keystone compositing now uses a core-profile vertex array and restores
+rendering state. Large meshes in its fallback path are streamed in bounded
+triangle batches, and general drawing buffers grow when necessary.
+
+Large dynamic layers stream the untextured, unbordered sides of each extruded
+polygon in ordered triangle batches instead of submitting each face separately.
+Textured, outlined and wireframe geometry keeps its existing rendering path.
+
+OpenGL4 now retains sphere, cylinder, cone-side and disk geometry in renderer-local GPU buffers.
+Repeated instances and frames reuse positions, normals and texture coordinates instead of
+recomputing and uploading every strip. Compatible strips are consolidated into one indexed
+draw per primitive pass, preserving triangle winding and texture seams. Transforms, colors, transparency, lighting, wireframes
+and picking remain per draw. A bounded cache distinguishes geometry parameters and textured
+variants and releases GPU resources on eviction or display disposal.
+
+Complex polygons now use the same bounded CPU tessellation cache as legacy OpenGL, including
+holes and coordinate changes. Diagnostics report these cache hits and misses and retained-buffer
+uploads.
+
+Repeated constant-color geometry can also reuse GPU buffers: the first occurrence streams
+normally, and a second encounter admits it to a bounded cache. Geometry changes invalidate reuse;
+colors, transforms, lighting and picking remain dynamic. Mixed-color geometry keeps its streaming
+path. Distinct fields no longer compete for one mesh drawer merely because their dimensions match.
+
+Outline text reuses cached glyph tessellation and extrusion geometry. The basic shader computes
+normal matrices on the CPU instead of inverting a matrix per vertex, and skips unchanged matrix
+and rendering-flag uniform uploads. These optimizations require no model changes or new options.
+Outside eligible map batches, static-layer traversal remains live, but geometry objects retain ordered transform,
+color, texture-selection, outline-offset and GPU draw commands. Replays skip geometry
+construction and cache-key snapshots without freezing the camera or layer transforms.
+Picking, adaptive text, meshes and resource callbacks keep their existing paths.
+The command cache is bounded and pins its GPU buffers until eviction or layer disposal.
+Layers over 4,096 objects skip per-object command retention when they cannot use a
+whole-layer batch, avoiding repeated GPU allocation and eviction for large mixed layers.
+Refreshing layers over 256 objects also bypass per-object, coordinate-drawing and
+extrusion-side retention, avoiding repeated allocation and disposal as drawings are replaced.
+Static layers retain their existing caches.
+OpenGL4 also automatically instances consecutive compatible sphere and point draws
+in layers consisting entirely of opaque, filled, untextured, unbordered spheres and
+points. Their order, transforms, colors and lighting remain live. Layers with other
+shapes, unsupported properties, transparency or wireframes, and picking use the
+ordinary path. Diagnostics report instanced calls and instances; actual gains depend
+on the scene and hardware.
+
+OpenGL4 uses the same native input handling and non-stealing view focus behavior as
+legacy OpenGL, including conversion of mouse positions to logical window coordinates
+on high-density displays.
+
+Opaque, untextured layers containing only roads and/or flat unbordered polygon fills
+can now retain ordered multi-draw batches. Compatible consecutive draws share packed
+GPU buffers; separate ranges preserve road boundaries, polygon holes and traversal order.
+Later frames skip object traversal and uploads while keeping camera and layer transforms live.
+Color, lighting, line-width and depth-offset changes invalidate the batches. Transparent,
+textured, bordered or extruded layers, picking and unsupported geometry keep their existing paths.
+Diagnostics distinguish native multi-draw calls from the constituent drawings.
+
+Eligible refreshed map layers over 256 objects and animated maps now stream ordered
+multi-draw batches through bounded, reusable CPU and GPU buffers, without retaining
+per-object geometry. Opaque, untextured lines and flat unbordered fills keep their
+colors, lighting, transforms and drawing-depth offsets live; unsupported draws
+flush pending batches before using the ordinary path. Static maps with native-width
+lines retain the existing whole-layer cache.
+
+Eligible map lines wider than one pixel use screen-space triangle ribbons instead
+of driver-limited native wide lines. These maps also use the streaming path, even
+when static. Widths are measured in framebuffer pixels, like native OpenGL widths;
+segments have butt ends and no added miter or round joins. Picking, transparency,
+textures, outlines and extrusions retain their ordinary paths and native-width
+limits. Map shader attributes are separate from sphere/point instancing attributes.
+
+Forced layer redraws requested after picking now wait for the next scene update
+under its lock instead of invalidating an in-progress scene.
+
+Mesh fills and outlines now keep separate VAO layouts: unchanged meshes no longer redefine
+attribute pointers or toggle attribute arrays every frame. Streaming uniform-color geometry
+uses one constant color attribute rather than uploading an RGBA array; mixed-color geometry
+retains per-vertex colors. Geometry and resource objects keep the basic shader bound across
+their component draws, restoring it at the object boundary so text and other shader paths
+remain isolated. List traversals also share the basic shader across object boundaries;
+foreign text and mesh paths suspend that binding before taking control.
+
+Refreshed textured, grayscale and constant-color fields can reuse an unchanged mesh
+after an exact comparison of sampled elevation values and appearance settings, avoiding
+repeated smoothing, vertex reconstruction and GPU uploads. Mutable band and palette
+color providers retain their rebuilding behavior. Environment-size changes rebuild the mesh.
+
+Static image textures now remain owned by the display until disposal, matching the
+lifetime of texture IDs held by scene objects. This avoids expiring still-referenced
+allocations and losing the ability to release them. Successfully preloaded images
+leave the preload queue instead of being looked up again on every frame.
+
+### OpenGL4 chart textures
+
+Smooth chart and image textures now explicitly generate mipmap levels in GL4 core:
+JOGL's automatic compatibility-profile path left these textures incomplete and black.
+BufferedImage-backed scene objects resolve their texture through the backend cache on
+each use, avoiding stale IDs after chart refreshes and texture-pool reuse. Recycled
+image data regenerates its mipmaps when needed. Texture anisotropy uses the valid
+minimum of one when display antialiasing is disabled.
+
+Untextured GL4 draws keep a complete, renderer-owned white texture bound instead
+of texture zero, avoiding macOS's "texture unloadable" sampler warning. Texture
+binding explicitly selects unit zero so foreign shader paths cannot redirect
+ordinary image bindings to another unit.
+
+The GL4 line-width cache starts from the context's actual width, not zero, so
+restoring an object's previous width cannot submit the invalid `glLineWidth(0)`.
+Requested widths outside the native driver's supported range are constrained to
+that range, with one explicit warning per display. In particular, macOS forward-compatible
+GL4 contexts can reject widths greater than one with `GL_INVALID_VALUE`.
+Rendering diagnostics include the first three frames' scene readiness, viewport,
+framebuffer, swap mode and shader-link state. Basic-shader link failures now raise
+an explicit error with the driver's program log instead of continuing with a blank display.
+
+### OpenGL4 text contours
+
+Graph-font glyph contours are normalized before tessellation when their winding is
+opposite to JOGL's convention. This fixes filled holes and broken curved edges in
+affected glyphs, notably Poppins zeros, without changing fonts or replacing GPU text
+rendering with raster labels. Already-correct contours and intentional zero dots are preserved.
+
+Constant-color geometry also avoids populating a CPU color array. If a draw changes color or
+alpha between vertices, the earlier vertex colors are materialized and subsequent colors remain
+per vertex. Changes to color after the last vertex do not recolor the already submitted geometry.
+
+Unbordered filled polygon extrusions and elevated lines now retain their side walls as one
+indexed mesh instead of reconstructing and drawing every quad separately. Cache keys snapshot
+coordinates, extrusion vectors and texture orientation; changing geometry or depth rebuilds the
+mesh. Bordered and wireframe sides keep their original per-face traversal and outline ordering.
+The side cache is bounded and releases GPU resources on eviction or display disposal.
+
+OpenGL4 no longer drains the GPU with an unconditional `glFinish` at the end of every frame.
+It flushes submitted commands instead; buffer presentation and explicit readbacks provide
+their own synchronization. Picking keeps its dedicated readback synchronization. This allows
+CPU submission and GPU execution to overlap.
+
+Complex polygon fills now retain GPU drawings directly from their cached tessellation,
+avoiding repeated per-vertex callback replay and attribute-buffer reconstruction. Coordinate
+changes and face-normal changes produce new drawings. Textured polygons include orientation
+and mapping bounds in their GPU cache keys, preserving mapping changes without rebuilding
+attributes on every unchanged draw. Texture image contents and texture IDs remain per draw.
+Retained geometry with one uniform face normal uses a constant normal attribute instead of
+allocating and uploading a repeated normal buffer; curved surfaces retain per-vertex normals.
+
+Simple shapes, lines, outlines and textured rectangles now look up retained drawings before
+rebuilding vertex attributes. Cache keys include ordered coordinates, normals and texture-mapping
+state, but not colors or object transforms. A second occurrence admits a drawing; changing
+coordinates or texture orientation invalidates reuse. Compatible captured triangles, strips and
+fans are consolidated into one indexed draw without connecting separate contours.
+
+### OpenGL4 fixed-pipeline lighting
+
+OpenGL4 now computes two-sided ambient/diffuse lighting per vertex, matching the fixed OpenGL
+pipeline, rather than running the light loop for every covered pixel. This is particularly useful
+for large lit raster rectangles and polygon surfaces. Vertex material colors are clamped before
+interpolation and texture modulation, as in legacy OpenGL. Positional attenuation, spotlights,
+transparency and picking are preserved. Lighting on coarse geometry now follows legacy vertex
+interpolation rather than the previous per-pixel shading. Unlit draws skip normal-matrix
+calculation and upload; picking skips vertex lighting. No new model option is required.
+
+### OpenGL4 raster uploads
+
+Raster uploads now use packed ARGB pixels directly, removing the per-pixel RGBA byte conversion.
+Contiguous straight-ARGB images use their existing pixel array; other image layouts are normalized
+without creating an intermediate image. Reusable upload buffers reduce allocation pressure.
+Repeated lookups of the same `BufferedImage` share a texture within a simulation update, with
+separate mipmapped variants. Scene updates invalidate this cache so in-place image changes remain
+visible. These changes preserve alpha and image orientation and require no model changes.
+
+Non-mipmapped raster textures also reuse GPU storage across simulation updates. A renderer-local
+pool (at most 16 textures and 64 MiB) retains retired texture allocations; matching dimensions
+receive fresh pixels through a subimage upload. Pixel contents are still refreshed each update,
+and pooled storage is released on eviction or display disposal. Mipmapped images retain their
+full rebuild path.
+
+### OBJ loading and rendering
+
+OBJ bounds are computed from the parsed vertex bounds without first constructing a geometry for
+every face. When an OBJ is used as GAML geometry, its buffer now contains one polygon per face,
+rather than additional incomplete polygons for each intermediate vertex. Repeated buffer access
+reuses the existing contents, and invalidating the file discards its parsed data and bounds.
+Face parsing avoids per-corner tokenizer and character-array allocations and resolves negative
+OBJ indices relative to the vertices, texture coordinates and normals already read.
+OBJ parsing is serialized per file, so several displays rendering the same OBJ concurrently
+no longer interleave its parsed lists and fail with index errors.
+
+Both renderers batch consecutive compatible OBJ triangles and quads without changing material or
+face order. The fixed pipeline compiles these batches into display lists. OpenGL4 retains triangle
+and filled-quad batches in GPU buffers, reusing them across instances and frames while keeping
+per-instance transforms, colors, lighting and picking. Wireframe quads and less common polygon or
+mixed-attribute faces retain their individual drawing path. Cached GPU buffers are released on
+cache expiration or display disposal and rebuilt when their source OBJ is invalidated.
+Both backends avoid constructing temporary face coordinates when all normals are supplied, and
+leave cached material textures under the texture cache's ownership.
+
+### Optional OpenGL rendering diagnostics
+
+The **Displays > OpenGL Rendering Properties > Log OpenGL rendering diagnostics** preference
+enables periodic per-display reports in the application process log. It is off by default.
+Both backends report CPU elapsed time for rendering, the visible scene and picking; OpenGL4 also
+reports draw calls and buffer uploads for its generic and mesh paths, while legacy OpenGL reports
+polygon-tessellation cache hits and misses. These are scoped counters, not totals for every GPU
+operation. The measurements do not force GPU completion and are not GPU execution times.
+
+### Improved OpenGL rendering for maps and map-like environments
+
+Both OpenGL backends now support **map ordering**, an opt-in rendering mode for flat maps and
+map-like environments where overlapping backgrounds, grids, roads, polygons, agents and labels
+should follow their existing drawing order. Instead of letting the depth buffer decide which
+coplanar fragments are visible, it composites world layers and drawings in traversal order:
+later fragments cover or blend over earlier ones. This provides a more reliable way to avoid
+z-fighting between overlapping map elements than small depth offsets alone.
+
+Enable it per display with `map_order: true`, or enable **Displays > OpenGL Rendering Properties >
+In OpenGL, draw world layers in map order instead of using 3D depth**. The preference defaults to
+`false`; an explicit display facet overrides it. Java2D is unaffected. Selected library map displays
+have been updated to demonstrate the option.
+
+Map ordering disables world depth testing and writes, including within individual drawings, so it
+is not a general solution for 3D scenes: elevated surfaces, meshes and overlapping faces may no
+longer appear in spatial depth order. Camera clipping still applies, screen layers keep their
+existing ordering, and picking has backend-specific limitations. Legacy orthographic OpenGL also
+now uses the same camera-depth direction as perspective and OpenGL4, so overlapping geometry in
+existing depth-based displays can look different even when map ordering is disabled.
+
+**Migration:** existing displays do not opt in automatically. Add the facet to suitable displays
+or enable the preference; use `map_order: false` to retain depth-based rendering for a particular
+display when the preference is enabled. See [map-order migration](MIGRATION_GUIDE_2026.md#map-order-for-opengl-displays)
+and the [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#map-ordering-in-opengl).
+
+### Display viewport dimensions and mouse-coordinate aliases
+
+`#display_width` and `#display_height` now always return the visible viewport dimensions in logical pixels,
+independent of zoom and layer referential. In graphical scopes, including `event` callbacks, they use the
+originating display; outside graphics they use the frontmost display, or return `0` if none exists.
+They no longer return the zoomed world's pixel extent in world contexts and never denote overlay-local size.
+`#px` remains contextual: one logical pixel in screen contexts, a pixel-to-model-unit conversion in world contexts.
+
+`#mouse_location_in_world` joins `#user_location` and `#user_location_in_world` as a world-coordinate synonym.
+`#mouse_location_in_display` is a synonym of `#user_location_in_display`, measured from the viewport's top-left
+in logical pixels. The old `#mouse_world_location` and `#mouse_screen_location` names remain compatibility aliases.
+All aliases retain the originating mouse-event snapshot behavior.
+Both OpenGL backends convert native mouse-event pixels to logical viewport pixels using the actual native
+surface scale, fixing undersized overlay hit areas on HiDPI displays. Camera picking retains physical pixels.
+World-layer layout uses non-negative fitted viewport dimensions scaled by zoom instead of a camera-projected
+point, preventing valid layer sizes from becoming negative during camera movement. Camera-matrix reads used
+for projected world coordinates are synchronized with updates in both OpenGL backends.
+
+**Migration:** review dimension expressions that relied on zoom-dependent world extents. Use viewport mouse
+coordinates with viewport dimensions, and world mouse coordinates with world geometry; point arithmetic does
+not convert between referentials. Multiplying viewport dimensions by `#zoom` is not a general replacement for
+the former extent because aspect-ratio fitting and projection also affect it.
+See the [migration reference](MIGRATION_GUIDE_2026.md#display-dimensions-and-mouse-coordinates)
+and [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
+
 ### Major addition: previous versions for model editing
 
 Model editing now includes a dedicated **Previous versions** view for browsing, comparing and restoring

@@ -174,6 +174,13 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 */
 	public void setXYDimension(final IPoint dim) { dimensions = dim; }
 
+	@Override
+	public MeshDrawingAttributes snapshot() {
+		final MeshDrawingAttributes copy = (MeshDrawingAttributes) super.snapshot();
+		copy.dimensions = dimensions == null ? null : gama.api.types.geometry.GamaPointFactory.create(dimensions);
+		return copy;
+	}
+
 	/**
 	 * Sets the cell size.
 	 *

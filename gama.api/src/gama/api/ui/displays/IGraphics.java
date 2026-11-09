@@ -16,10 +16,13 @@ import java.awt.image.BufferedImage;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.api.types.color.IColor;
+import gama.api.gaml.statements.IStatement;
 import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.random.IRandom;
 
@@ -30,6 +33,18 @@ import gama.api.utils.random.IRandom;
  *
  */
 public interface IGraphics {
+
+	/** The coordinate context currently used to evaluate expressions. */
+	LayerCoordinates getCoordinateSystem();
+
+	/** Overrides the coordinate context and returns the previous override; null uses the current layer's context. */
+	LayerCoordinates setCoordinateSystem(LayerCoordinates coordinates);
+
+	/** The reference width for relative positions inside the current layer. */
+	default double getContentWidth() { return getLayerWidth(); }
+
+	/** The reference height for relative positions inside the current layer. */
+	default double getContentHeight() { return getLayerHeight(); }
 
 	/**
 	 * Gets the random number generator specific to this graphics. See Issue #3250.
@@ -162,6 +177,9 @@ public interface IGraphics {
 	 */
 	Rectangle2D drawChart(BufferedImage chart);
 
+	/** Physical device pixels per logical display pixel for the current drawing target. */
+	default double getDevicePixelRatio() { return 1d; }
+
 	/**
 	 * Draw string.
 	 *
@@ -183,6 +201,32 @@ public interface IGraphics {
 	 * @return the rectangle 2 D
 	 */
 	Rectangle2D drawShape(final Geometry shape, final IDrawingAttributes attributes);
+
+	/** Opt-in boundary for evaluated commands; implementations perform realization on their drawing thread. */
+	default boolean supportsGeometryCommands() { return false; }
+
+	default Rectangle2D drawGeometry(final GeometryDrawing command, final IDrawingAttributes attributes) {
+		return drawShape(command.realize(), attributes);
+	}
+
+	default Rectangle2D drawPixels(final PixelDrawing command, final IDrawingAttributes attributes) {
+		return drawImage(command.getImage(null, true), attributes);
+	}
+
+	default DrawingData getDrawingData(final IStatement.Draw statement) { return new DrawingData(statement); }
+
+	default boolean supportsPrimitiveDrawing() { return false; }
+
+	/** Draw an immutable unit primitive scaled and positioned without materializing a model geometry. */
+	default Rectangle2D drawPrimitive(final IShape.Type type, final double scale, final IPoint center,
+			final IDrawingAttributes attributes) {
+		throw new UnsupportedOperationException("Primitive drawing is not supported by this graphics");
+	}
+
+	/** Storage owned by the scene being prepared, never by a scene still being rendered. */
+	default double[] getFieldBuffer(final Object owner, final int length) { return new double[length]; }
+
+	default PreparationDiagnostics getPreparationDiagnostics() { return null; }
 
 	/**
 	 * Sets the alpha.

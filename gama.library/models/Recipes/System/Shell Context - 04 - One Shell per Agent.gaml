@@ -20,7 +20,7 @@ global {
 			write name + " wrote in " + shell.directory.path + ":\n" + trim(command(windows ? "type log.txt" : "cat log.txt", shell).result);
 			do die();
 		}
-		do pause();
+		experiment.pause();
 	}
 }
 

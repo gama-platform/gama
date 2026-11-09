@@ -85,7 +85,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	private static EModelService getModelService() { return WorkbenchHelper.getService(EModelService.class); }
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The Constant LAYOUT_KEY. */
@@ -161,8 +161,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 * <p>
 	 * Applies the layout described by {@code tree} using the given pre-collected {@code holders}. If {@code holders} is
 	 * {@code null} the method calls {@link #collectAndPrepareDisplayViews()} itself, avoiding a redundant second call
-	 * when the caller has already collected them (e.g. the {@link Integer}-layout path in
-	 * {@link #execute(Object)}).
+	 * when the caller has already collected them (e.g. the {@link Integer}-layout path in {@link #execute(Object)}).
 	 * </p>
 	 *
 	 * @param tree
@@ -203,9 +202,12 @@ public class ArrangeDisplayViews extends AbstractHandler {
 				final boolean[] sentinel = { false };
 				display.asyncExec(() -> sentinel[0] = true);
 				int iterations = 0;
-				while (!sentinel[0]) { display.readAndDispatch(); iterations++; }
-				DEBUG.OUT("[ArrangeDisplayViews] readAndDispatch loop: " + iterations
-						+ " iteration(s) in " + (System.currentTimeMillis() - t0) + "ms total");
+				while (!sentinel[0]) {
+					display.readAndDispatch();
+					iterations++;
+				}
+				DEBUG.OUT("[ArrangeDisplayViews] readAndDispatch loop: " + iterations + " iteration(s) in "
+						+ (System.currentTimeMillis() - t0) + "ms total");
 			}
 			// Force an immediate layout pass so that SWT computes all sash weights and sizes
 			// the display canvases to their final positions BEFORE setRedraw(true) triggers the
@@ -276,16 +278,15 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		if (root == null) return;
 		final MElementContainer raw = root;
 		raw.getChildren().removeIf(e -> {
-			if (e instanceof MElementContainer<?> c) {
+			if (e instanceof MElementContainer<?> c)
 				return c.getTransientData().containsKey(DISPLAY_LAYOUT_SUBTREE_TAG);
-			}
 			return false;
 		});
 	}
 
 	/**
-	 * Builds the complete E4 sash-container subtree for {@code treeRoot} entirely in memory, without attaching any
-	 * node to the live E4 model. Returns the top-level {@link MElementContainer} that should be attached to the
+	 * Builds the complete E4 sash-container subtree for {@code treeRoot} entirely in memory, without attaching any node
+	 * to the live E4 model. Returns the top-level {@link MElementContainer} that should be attached to the
 	 * perspective's display area as a single {@code root.getChildren().add()} call.
 	 *
 	 * <p>
@@ -411,8 +412,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		// than seeing the normal-size view first and then watching it expand.
 		displays.forEach(d -> {
 			if (!d.isFullScreen() && d.getOutput() instanceof LayeredDisplayOutput ldo
-					&& (ldo.getData().fullScreen() >= 0
-							|| ldo.getData().fullScreen() == FULLSCREEN_CURRENT_MONITOR)) {
+					&& (ldo.getData().fullScreen() >= 0 || ldo.getData().fullScreen() == FULLSCREEN_CURRENT_MONITOR)) {
 				d.toggleFullScreen();
 			}
 		});
@@ -450,9 +450,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			if (container.equals(uiRoot)) { holder.setContainerData(weight); }
 			container.getChildren().add(holder);
 		} else {
-			for (final GamaNode<String> node : treeRoot.getChildren()) {
-				process(container, node, holdersByIndex);
-			}
+			for (final GamaNode<String> node : treeRoot.getChildren()) { process(container, node, holdersByIndex); }
 		}
 	}
 

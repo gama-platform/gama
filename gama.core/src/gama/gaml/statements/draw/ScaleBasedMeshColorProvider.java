@@ -36,7 +36,7 @@ public class ScaleBasedMeshColorProvider implements IMeshColorProvider {
 	 *            the scale
 	 */
 	public ScaleBasedMeshColorProvider(final GamaScale scale) {
-		this.scale = scale;
+		this.scale = new GamaScale(null, scale);
 	}
 
 	@Override

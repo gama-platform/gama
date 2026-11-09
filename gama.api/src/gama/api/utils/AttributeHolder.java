@@ -75,6 +75,8 @@ public abstract class AttributeHolder {
 		 */
 		boolean changed();
 
+		default boolean isConstant() { return false; }
+
 		/**
 		 * Gets the gaml type.
 		 *
@@ -149,6 +151,9 @@ public abstract class AttributeHolder {
 		public boolean changed() {
 			return false;
 		}
+
+		@Override
+		public boolean isConstant() { return true; }
 
 	}
 
@@ -285,6 +290,31 @@ public abstract class AttributeHolder {
 
 	}
 
+	private static final class CachedEvaluator<V> extends ExpressionEvaluator<V> {
+
+		private boolean initialized;
+
+		CachedEvaluator(final IExpressionWrapper<V> evaluator, final IExpression expression) {
+			super(evaluator, expression);
+		}
+
+		@Override
+		public void refresh(final String name, final IScope scope) {
+			if (initialized) {
+				changed = false;
+				return;
+			}
+			super.refresh(name, scope);
+			initialized = true;
+		}
+
+		@Override
+		public boolean isConstant() { return initialized; }
+
+		@Override
+		public boolean changed() { return false; }
+	}
+
 	/**
 	 * Refresh.
 	 *
@@ -292,13 +322,17 @@ public abstract class AttributeHolder {
 	 *            the scope
 	 * @return the attribute holder
 	 */
-	@SuppressWarnings ("unchecked")
 	public void refresh(final IScope scope) {
 		// Build the array cache on first call (or after a new attribute was added)
-		if (attributeArray == null) { attributeArray = attributes.values().toArray(new Attribute[0]); }
+		if (attributeArray == null) {
+			attributeArray = attributes.values().stream().filter(a -> !a.isConstant()).toArray(Attribute<?>[]::new);
+		}
 		final Attribute<?>[] arr = attributeArray;
 		final int n = arr.length;
-		for (int i = 0; i < n; i++) { arr[i].refresh(null, scope); }
+		for (int i = 0; i < n; i++) {
+			arr[i].refresh(null, scope);
+			if (arr[i].isConstant()) { attributeArray = null; }
+		}
 	}
 
 	/**
@@ -380,7 +414,8 @@ public abstract class AttributeHolder {
 	protected <T extends IType<V>, V> Attribute<V> create(final String facet, final IExpression exp, final T type,
 			final V def) {
 		Attribute<V> result;
-		if (exp == null || exp.isConst() && exp.isContextIndependant() && type != Types.BOOL) {
+		if (exp == null || exp.isConst() && exp.isContextIndependant() && !exp.isTimeDependent()
+				&& !exp.containsPixels()) {
 			result = new ConstantAttribute<>(exp == null ? def : type.cast(null, exp.getConstValue(), null, true));
 		} else {
 			result = new ExpressionAttribute<>(type, exp, def);
@@ -417,6 +452,17 @@ public abstract class AttributeHolder {
 		} else {
 			result = new ExpressionEvaluator<>(ev, exp);
 		}
+		putAttribute(facet, result);
+		return result;
+	}
+
+	/** Opt-in caching for drawing conversions, not agent-dependent layer evaluators such as grid elevation. */
+	protected <V> Attribute<V> createCached(final String facet, final IExpressionWrapper<V> evaluator,
+			final V defaultValue) {
+		final IExpression exp = symbol.getFacet(facet);
+		final Attribute<V> result = exp == null ? new ConstantAttribute<>(defaultValue)
+				: exp.isConst() && exp.isContextIndependant() && !exp.isTimeDependent() && !exp.containsPixels()
+						? new CachedEvaluator<>(evaluator, exp) : new ExpressionEvaluator<>(evaluator, exp);
 		putAttribute(facet, result);
 		return result;
 	}

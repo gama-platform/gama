@@ -46,7 +46,7 @@ species node_agent {
 experiment create_graph type: gui {
 	
 	output {
-		display graph1 type: 3d{
+		display graph1 type: 3d map_order: true{
 			graphics "the graph 1" {
 				loop e over: the_graph1.edges {
 					draw e color: #blue; 
@@ -56,7 +56,7 @@ experiment create_graph type: gui {
 				}
 			}
 		}
-		display graph2 type: 3d{
+		display graph2 type: 3d map_order: true{
 			graphics "the graph 2" {
 				loop e over: the_graph2.edges {
 					draw e color: #red; 

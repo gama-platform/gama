@@ -26,7 +26,7 @@ global{
 	
 	reflex write_duration_buffered when:state=3{
 		write "Duration for buffered writing: " + (gama.machine_time - start_time) + "ms";
-		do pause();
+		experiment.pause();
 	}
 
 	reflex write_buffered when:state = 2 {

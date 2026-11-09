@@ -19,6 +19,7 @@ import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
 import gama.ui.shared.utils.LaunchingOverlay;
+import gama.ui.shared.views.toolbar.ScaleLockable;
 
 /**
  * Class OpenGLLayeredDisplayView.
@@ -27,7 +28,7 @@ import gama.ui.shared.utils.LaunchingOverlay;
  * @since 25 mars 2015
  *
  */
-public class OpenGLDisplayView extends LayeredDisplayView {
+public class OpenGLDisplayView extends LayeredDisplayView implements ScaleLockable {
 
 	/**
 	 * Lazily installs NEWT listeners once the native OpenGL window has actually been created.
@@ -183,6 +184,12 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 
 	@Override
 	public boolean isCameraDynamic() { return getCameraHelper().isCameraDynamic(); }
+
+	@Override
+	public boolean isScaleLocked() { return getDisplaySurface().isScaleLocked(); }
+
+	@Override
+	public void toggleScaleLock() { getDisplaySurface().toggleScaleLock(); }
 
 	@Override
 	public boolean largePauseIcon() {

@@ -386,12 +386,20 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		// job.schedule();
 		// }
 		if (waitForRendering && surface != null && !surface.isDisposed()) {
+			final var graphicsScope = surface.getScope();
+			final var graphics = graphicsScope == null ? null : graphicsScope.getGraphics();
+			final var diagnostics = graphics == null ? null : graphics.getPreparationDiagnostics();
+			final long waitStart = diagnostics == null ? 0 : diagnostics.startTimer();
 			// Should we put a time out in case ?
 			// syncSemaphore.tryAcquire(5, TimeUnit.SECONDS);
 			// If interrupted, return early: the interrupt flag is already restored by acquire().
 			DEBUG.OUT("[LayeredDisplayView.update] waiting on syncSemaphore for " + getTitle());
 			final long t1 = System.currentTimeMillis();
-			if (!syncSemaphore.acquire()) return;
+			try {
+				if (!syncSemaphore.acquire()) return;
+			} finally {
+				if (diagnostics != null) { diagnostics.renderWaitFinished(waitStart); }
+			}
 			DEBUG.OUT("[LayeredDisplayView.update] acquired syncSemaphore for " + getTitle() + " waited="
 					+ (System.currentTimeMillis() - t1) + "ms");
 		}

@@ -82,7 +82,7 @@ global {
 			do report(phase: "RESULT");
 			if load_level = last_level {
 				finished <- true;
-				do pause();
+				experiment.pause();
 			} else {
 				load_level <- load_level + 1;
 				stage_started_cycle <- cycle;
@@ -192,7 +192,7 @@ experiment Benchmark type: gui {
 		display "3D" type: opengl {
 			species particle aspect: solid;
 		}
-		display "Charts" type: 2d {
+		display "Charts" type: 3d {
 			chart "Time series" type: series {
 				datalist legend: series_names value: series_values;
 			}

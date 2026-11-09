@@ -25,6 +25,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
+import gama.api.annotations.validator;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -57,10 +58,13 @@ import gama.api.ui.IOutput;
 		symbols = IKeyword.DISPLAY)
 @facets (
 		value = { @facet (
+				name = LayerData.COORDINATES, type = IType.STRING,
+				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
+				@facet (
 				name = IKeyword.POSITION,
 				type = IType.POINT,
 				optional = true,
-				doc = @doc ("position of the upper-left corner of the layer. Note that if coordinates are in [0,1[, the position is relative to the size of the environment (e.g. {0.5,0.5} refers to the middle of the display) whereas it is absolute when coordinates are greater than 1 for x and y. The z-ordinate can only be defined between 0 and 1. The position can only be a 3D point {0.5, 0.5, 0.5}, the last coordinate specifying the elevation of the layer.")),
+				doc = @doc (LayerData.POSITION_DOC)),
 				@facet (
 						name = IKeyword.ROTATE,
 						type = { IType.FLOAT },
@@ -85,7 +89,7 @@ import gama.api.ui.IOutput;
 						name = IKeyword.SIZE,
 						type = { IType.POINT, IType.FLOAT },
 						optional = true,
-						doc = @doc ("Represents the extent of the layer in the screen from its position. Coordinates in [0,1[ are treated as percentages of the total surface, while coordinates > 1 are treated as absolute sizes in model units (i.e. considering the model occupies the entire view). Like in 'position', an elevation can be provided with the z coordinate, allowing to scale the layer in the 3 directions. This latter possibility allows to limit the height of the field. If only a flat value is provided, it is considered implicitly as the z maximal amplitude (or z scaling factor if < 1)")),
+						doc = @doc (LayerData.SIZE_DOC + " A scalar size affects only the Z amplitude (or Z scaling factor if below 1); XY keeps the default full extent.")),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,
@@ -151,7 +155,7 @@ import gama.api.ui.IOutput;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, but should be deactivated if the field is static)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to true.")) },
 		omissible = IKeyword.SOURCE)
 @doc (
 		value = "Allows the modeler to display in an optimized way a field of values, optionally using elevation. Useful for displaying DEMs, for instance, without having to load them into a grid. Can be fed with a matrix of int/float, a grid, a csv/raster/image file and supports many visualisation options",
@@ -169,6 +173,7 @@ import gama.api.ui.IOutput;
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.GRID, IKeyword.EVENT, "graphics", IKeyword.IMAGE,
 				IKeyword.OVERLAY, IKeyword.SPECIES_LAYER })
 // @validator (OpenGLSpecificLayerValidator.class)
+@validator (AbstractLayerStatement.CoordinatesValidator.class)
 public class MeshLayerStatement extends AbstractLayerStatement {
 
 	/**

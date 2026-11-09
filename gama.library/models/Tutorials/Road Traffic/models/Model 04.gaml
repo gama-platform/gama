@@ -116,7 +116,7 @@ experiment road_traffic type: gui {
 
 	
 	output {
-		display city_display type:3d {
+		display city_display type:3d map_order: true {
 			species building aspect: base ;
 			species road aspect: base ;
 			species people aspect: base ;

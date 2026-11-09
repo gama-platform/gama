@@ -325,7 +325,7 @@ global {
 			if (not empty(marker)) {
 				save marker format: "shp"   crs:"EPSG:3857" to: exporting_path + "google_map_markers.shp" attributes:["type"];
 			}
-			do pause();
+			experiment.pause();
 		}
 		
 		 

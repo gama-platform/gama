@@ -35,6 +35,7 @@ import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D.Heterogeneous;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 
 /**
@@ -98,13 +99,22 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			applyRotation(object);
 			applyTranslation(object);
 			applyScaling(object);
+			final double scale = object.getGeometryScale();
+			if (scale != 1d) { gl.scaleBy(scale, scale, scale); }
 			final IColor border = !object.isFilled() && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
-			Geometry geometry = object.getObject();
-			Double d = object.getAttributes().getDepth();
-			final double height = d == null ? 0d : d;
+			final double height = object.getDrawingDepth();
 			IShape.Type type = object.getAttributes().getType();
-			drawGeometry(geometry, border, height, type);
+			if (object instanceof PrimitiveObject && (type == Type.SPHERE || type == Type.CUBE)) {
+				if (type == Type.SPHERE) {
+					gl.scaleBy(height, height, height);
+				} else {
+					gl.scaleBy(1, 1, height);
+				}
+				gl.drawCachedGeometry(type, border);
+			} else {
+				drawGeometry(object.getObject(), border, height, type);
+			}
 		} finally {
 			gl.popMatrix();
 		}
@@ -257,10 +267,12 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 			gl.setNormal(_vertices, clockwise);
 			final boolean hasHoles = getHolesNumber(p) > 0;
 			final int size = _vertices.size();
-			if (hasHoles || size > 5) {
-				gl.drawPolygon(p, _vertices, clockwise);
-			} else {
-				gl.drawSimpleShape(_vertices, size - 1, /* solid, */clockwise, false, null);
+			try (var offset = PolygonOffset.forOutline(gl, border != null)) {
+				if (hasHoles || size > 5) {
+					gl.drawPolygon(p, _vertices, clockwise);
+				} else {
+					gl.drawSimpleShape(_vertices, size - 1, /* solid, */clockwise, false, null);
+				}
 			}
 		}
 

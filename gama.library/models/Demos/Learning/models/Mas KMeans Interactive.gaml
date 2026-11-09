@@ -136,7 +136,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 			event #mouse_down {ask simulation {do register_click();}}
 			species centroids aspect: kmeans_aspect2D;
 			species datapoints aspect: kmeans_aspect2D;
-			overlay position: {16#px, 16#px} size: {340#px, 118#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {16, 16} size: {340, 118} background: backdrop rounded: true {
 				draw "K-MEANS / CLUSTER LAB" at: {14#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw (action_type >= 0 ? "Tool: " + tool_names[action_type] : "Select a tool on the right")
 					at: {14#px, 49#px} color: cluster_palette[0] font: font("Helvetica", 11);

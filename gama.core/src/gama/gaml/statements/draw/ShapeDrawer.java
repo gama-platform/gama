@@ -10,14 +10,20 @@
 package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
+import java.lang.reflect.Method;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.Lineal;
+import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import gama.api.additions.delegates.IDrawDelegate;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IOperator;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.IType;
@@ -29,6 +35,7 @@ import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.ui.displays.DrawingData;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
@@ -38,11 +45,74 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.benchmark.StopWatch;
+import gama.api.GAMA;
+import gama.gaml.operators.spatial.SpatialCreation;
 
 /**
  * The Class ShapeExecuter.
  */
 public class ShapeDrawer implements IDrawDelegate {
+
+	public IDrawDelegate prepare(final IExpression expression, final boolean hasArrows, final boolean hasTextures) {
+		if (hasArrows || hasTextures || !(expression instanceof IOperator operator)
+				|| !(operator.getPrototype() instanceof IArtefact.Operator prototype)
+				|| !(prototype.getJavaBase() instanceof Method method)
+				|| method.getDeclaringClass() != SpatialCreation.class) return this;
+		final IShape.Type type = switch (method.getName()) {
+			case "circle" -> IShape.Type.CIRCLE;
+			case "sphere" -> IShape.Type.SPHERE;
+			case "square" -> IShape.Type.SQUARE;
+			case "cube" -> IShape.Type.CUBE;
+			default -> null;
+		};
+		final Class<?>[] parameters = method.getParameterTypes();
+		if (type == null || parameters.length != 2 || parameters[0] != IScope.class
+				|| parameters[1] != Double.class) return this;
+		return new PrimitiveDrawer(operator, type);
+	}
+
+	private static final class PrimitiveDrawer extends ShapeDrawer {
+
+		private final IOperator operator;
+		private final IShape.Type type;
+
+		PrimitiveDrawer(final IOperator operator, final IShape.Type type) {
+			this.operator = operator;
+			this.type = type;
+		}
+
+		@Override
+		public Rectangle2D executeOn(final IGraphicsScope scope, final DrawingData data, final IExpression... items) {
+			final IGraphics graphics = scope.getGraphics();
+			if (!graphics.supportsPrimitiveDrawing()
+					|| GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue()) {
+				return super.executeOn(scope, data, items);
+			}
+			final double operand;
+			try (StopWatch watch = GAMA.benchmark(scope, operator)) {
+				operand = Cast.asFloat(scope, operator.arg(0).value(scope));
+				if (!Double.isFinite(operand)) {
+					final String quantity = type == IShape.Type.CIRCLE || type == IShape.Type.SPHERE ? "radius" : "side size";
+					throw GamaRuntimeException.error("The " + operator.literalValue() + " " + quantity
+							+ " must be a finite number", scope);
+				}
+			}
+			final double scale = type == IShape.Type.SQUARE ? Math.abs(operand) : operand;
+			final IPoint center = scope.getAgent().getLocation();
+			if (scale <= 0d) {
+				final IShape point = GamaShapeFactory.buildPoint(center);
+				return graphics.drawShape(point.getInnerGeometry(), computeAttributes(scope, data, point));
+			}
+			final Double defaultDepth = type == IShape.Type.SPHERE || type == IShape.Type.CUBE
+					? Double.valueOf(scale) : null;
+			final Double depth = data.depth.get() != null ? data.depth.get() : defaultDepth;
+			final IDrawingAttributes attributes = new ShapeDrawingAttributes(Scaling3D.of(data.getSize()), depth,
+					data.rotation.get(), data.getLocation(), data.empty.get(), data.color.get(), data.border.get(),
+					null, scope.getAgent(), type, data.lineWidth.get(), data.getLighting(true));
+			return graphics.drawPrimitive(type, scale, center, attributes);
+		}
+	}
 
 	/**
 	 * Execute on.
@@ -77,18 +147,55 @@ public class ShapeDrawer implements IDrawDelegate {
 			}
 		}
 
-		final ICoordinates ic = GamaCoordinateSequenceFactory.pointsOf(gg);
-		ic.ensureClockwiseness();
+		if (scope.getGraphics().supportsGeometryCommands()) {
+			double begin = 0, end = 0;
+			final IExpression beginExpression = items.length > 1 ? items[1] : null;
+			final IExpression endExpression = items.length > 2 ? items[2] : null;
+			// Collections historically use their convex hull for arrows, including the degenerate hull case.
+			final boolean endpoints = beginExpression != null || endExpression != null;
+			final boolean canHaveArrows = endpoints && (gg instanceof GeometryCollection
+					? GeometryUtils.getPointsOf(gg).length >= 2 : gg.getNumPoints() >= 2);
+			if (canHaveArrows) {
+				if (endExpression != null) { end = Cast.asFloat(scope, endExpression.value(scope)); }
+				if (beginExpression != null) { begin = Cast.asFloat(scope, beginExpression.value(scope)); }
+			}
+			addTextures(scope, attributes);
+			if (begin > 0 || end > 0) { attributes.setType(IShape.Type.NULL); }
+			return scope.getGraphics().drawGeometry(
+					new gama.api.ui.displays.GeometryDrawing(gg, begin, end, !attributes.isEmpty()), attributes);
+		}
 
-		// If the graphics is 2D, we pre-translate and pre-rotate the geometry
+		// Normalizing a collection's convex hull does not normalize any of its constituent geometries.
+		final ICoordinates ic = gg instanceof GeometryCollection && !scope.getGraphics().is2D() ? null
+				: GamaCoordinateSequenceFactory.pointsOf(gg);
+		if (ic != null) { ic.ensureClockwiseness(); }
+
+		// Java2D consumes transformed geometry; OpenGL applies these transforms during scene playback.
 		if (scope.getGraphics().is2D()) {
 			final IPoint center = ic.getCenter();
+			final Scaling3D size = attributes.getSize();
+			boolean copied = false;
+			if (size != null && !shape.isPoint()) {
+				final var envelope = gg.getEnvelopeInternal();
+				final double xScale = envelope.getWidth() == 0 ? Double.POSITIVE_INFINITY
+						: size.getX() / envelope.getWidth();
+				final double yScale = envelope.getHeight() == 0 ? Double.POSITIVE_INFINITY
+						: size.getY() / envelope.getHeight();
+				final double scale = Math.min(xScale, yScale);
+				if (Double.isFinite(scale)) {
+					gg = AffineTransformation.scaleInstance(scale, scale, center.getX(), center.getY()).transform(gg);
+					copied = true;
+				}
+			}
 			final AxisAngle rot = attributes.getRotation();
 			final IPoint location = attributes.getLocation();
 			if (rot != null) {
 				// Do this instead of copy() or clone() to avoid the exception quoted in #3602
 				// Seems to work...
-				gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+				if (!copied) {
+					gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+				}
+				copied = true;
 				// Negate the angle to match the OpenGL renderer behavior, which also negates it (see ObjectDrawer#applyRotation)
 				GeometryUtils.rotate(gg, center, new AxisAngle(rot.getAxis(), -rot.getAngle()));
 			}
@@ -96,8 +203,8 @@ public class ShapeDrawer implements IDrawDelegate {
 				if (gg.getNumPoints() == 1) {
 					gg = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 				} else {
-					// Copy only if not already copied by the rotation branch above
-					if (rot == null) {
+					// Copy only if scaling or rotation has not already copied the geometry.
+					if (!copied) {
 						gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
 					}
 					GeometryUtils.translate(gg, center, location);
@@ -138,10 +245,12 @@ public class ShapeDrawer implements IDrawDelegate {
 	IDrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
 		Double depth = data.depth.get();
 		if (depth == null) { depth = shape.getDepth(); }
-		return new ShapeDrawingAttributes(Scaling3D.of(data.size.get()), depth, data.rotation.get(), data.getLocation(),
+		// Flat lines have no surface normal; their arrowheads must share the same unlit color.
+		final boolean flatLine = shape.getInnerGeometry() instanceof Lineal && (depth == null || depth == 0d);
+		return new ShapeDrawingAttributes(Scaling3D.of(data.getSize()), depth, data.rotation.get(), data.getLocation(),
 				data.empty.get(), data.color.get(), /* data.getColors(), */
 				data.border.get(), data.texture.get(), /* data.material.get(), */ scope.getAgent(),
-				shape.getGeometricalType(), data.lineWidth.get(), data.lighting.get());
+				shape.getGeometricalType(), data.lineWidth.get(), data.getLighting(!flatLine));
 	}
 
 	/**
@@ -201,7 +310,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	 */
 	private Geometry addArrows(final IScope scope, final Geometry g1, final IExpression beginArrow,
 			final IExpression endArrow, final Boolean fill) {
-		if (g1 == null) return g1;
+		if (g1 == null || beginArrow == null && endArrow == null) return g1;
 		// if (!(g1 instanceof org.locationtech.jts.geom.Lineal)) return g1;
 		final IPoint[] points = GeometryUtils.getPointsOf(g1);
 		final int size = points.length;

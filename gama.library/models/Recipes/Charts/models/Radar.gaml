@@ -21,7 +21,7 @@ experiment "Different radars" type: gui
 	output synchronized: true
 	{
 		layout #split;
-		display "nice_radar_chart"  type: 2d 
+		display "nice_radar_chart"  type: 3d 
 		{
 			chart "Nice Cumulative Radar Chart" type: radar background: # darkblue color: # lightgreen axes: # lightgreen title_font: font('Serif', 10 #italic)
 			 tick_font: font('Monospaced',14 #bold) label_font: font('Arial', 18 #bold) legend_font: font('SanSerif', 14 ,#bold)
@@ -33,7 +33,7 @@ experiment "Different radars" type: gui
 
 		}
 
-		display "bounded_cumulative_radar_chart" type: 2d
+		display "bounded_cumulative_radar_chart" type: 3d
 		{
 			chart "bounded_cumulative_bar_chart" type: radar x_serie_labels: ("cycle" + cycle) x_range: 10
 			{
@@ -44,7 +44,7 @@ experiment "Different radars" type: gui
 
 		}
 
-		display "data_non_cumulative_bar_chart" type: 2d
+		display "data_non_cumulative_bar_chart" type: 3d
 		{
 			chart "data_non_cumulative_bar_chart" type: radar x_serie_labels: ["axeCos", "axeSin", "axeCosSin"] series_label_position: xaxis
 			{
@@ -55,7 +55,7 @@ experiment "Different radars" type: gui
 
 		}
 
-		display "datalist_radar_chart" type: 2d
+		display "datalist_radar_chart" type: 3d
 		{
 			chart "datalist_bar" type: radar series_label_position: onchart
 			{
@@ -64,7 +64,7 @@ experiment "Different radars" type: gui
 
 		}
 
-		display "onvalue_cumulative_bar_chart" type: 2d
+		display "onvalue_cumulative_bar_chart" type: 3d
 		{
 			chart "onvalue_cumulative_bar_chart" type: radar series_label_position: yaxis x_label: "my_time_label" y_range: 100
 			{
@@ -73,7 +73,7 @@ experiment "Different radars" type: gui
 
 		}
 
-		display "data_cumulative_style_chart" type: 2d
+		display "data_cumulative_style_chart" type: 3d
 		{
 			chart "Style Cumulative chart" type: radar style: stack
 			{

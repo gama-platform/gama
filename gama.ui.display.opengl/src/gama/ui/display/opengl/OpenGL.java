@@ -56,6 +56,7 @@ import gama.ui.display.opengl.renderer.caches.ITextureCache;
 import gama.ui.display.opengl.renderer.caches.PolygonTessellationCache;
 import gama.ui.display.opengl.renderer.caches.TextureCache2;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.geometry.GeometryDrawer;
@@ -209,9 +210,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The saved Z translation. */
 	private double currentZIncrement, currentZTranslation, savedZTranslation;
 
-	/** The Z translation suspended. */
-	private volatile boolean ZTranslationSuspended;
-
 	/** The end scene. */
 	// private final boolean useJTSTriangulation = !GamaPreferences.Displays.OPENGL_TRIANGULATOR.getValue();
 	private final Pass endScene = this::endScene;
@@ -240,8 +238,10 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The last bound texture ID for optimization. */
 	private int lastBoundTexture = NO_TEXTURE;
 
-	/** The last anti-aliasing setting for optimization. */
-	private boolean lastAntiAliasSetting = false;
+	/** The last texture minification filter. */
+	private int lastTextureMinFilter = GL.GL_NEAREST;
+
+	private boolean currentTextureSmooth;
 
 	/** The gl drawer. */
 	private final ICoordinates.IndexedVisitor glDrawer = this::drawVertex;
@@ -322,6 +322,17 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	@Override
 	public synchronized void unproject(final double x, final double y, final double depth, final double[] result) {
 		glu.gluUnProject(x, y, depth, mvmatrix, 0, projmatrix, 0, viewport, 0, result, 0);
+	}
+
+	@Override
+	public boolean project(final double x, final double y, final double z, final double[] result) {
+		final double[] model = new double[16], projection = new double[16];
+		final int[] view = { 0, 0, getViewWidth(), getViewHeight() };
+		gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, model, 0);
+		gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projection, 0);
+		if (!glu.gluProject(x, y, z, model, 0, projection, 0, view, 0, result, 0)) return false;
+		result[1] = getViewHeight() - result[1];
+		return Double.isFinite(result[0]) && Double.isFinite(result[1]) && result[2] >= 0 && result[2] <= 1;
 	}
 
 	@Override
@@ -433,6 +444,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final double height = getViewHeight();
 		final double aspect = getViewWidth() / (height == 0d ? 1d : height);
 		final double maxDim = getMaxEnvDim();
+		final double resizeScaleFactor =
+				renderer.getSurface().getResizeScaleFactor(getViewWidth(), getViewHeight());
 		double zNear = getZNear();
 		if (zNear < 0.0) {
 			zNear = maxDim / 100d;
@@ -459,14 +472,19 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 					fH = fW / aspect;
 				}
 
+				fW *= resizeScaleFactor;
+				fH *= resizeScaleFactor;
 				gl.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 			} catch (final BufferOverflowException e) {
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			gl.glOrtho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
+			gl.glOrtho(-maxDim * aspect * resizeScaleFactor, maxDim * aspect * resizeScaleFactor,
+					-maxDim * resizeScaleFactor, maxDim * resizeScaleFactor, -maxDim * 10, maxDim * 10);
 		} else {
-			gl.glOrtho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
+			gl.glOrtho(-maxDim * resizeScaleFactor, maxDim * resizeScaleFactor,
+					-maxDim / aspect * resizeScaleFactor, maxDim / aspect * resizeScaleFactor, -maxDim * 10,
+					maxDim * 10);
 		}
 
 		// else {
@@ -487,7 +505,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the pixel width and height of world
 	 */
-	public double[] getPixelWidthAndHeightOfWorld() {
+	public synchronized double[] getPixelWidthAndHeightOfWorld() {
 		final double[] coord = new double[4];
 		glu.gluProject(getWorldWidth(), 0, 0, mvmatrix, 0, projmatrix, 0, viewport, 0, coord, 0);
 		return coord;
@@ -519,18 +537,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Computes the translation in Z to enable z-fighting, using the current z increment, computed by ModelScene. The
-	 * translations are cumulative
-	 */
-	public void translateByZIncrement() {
-		if (!ZTranslationSuspended) { currentZTranslation += currentZIncrement; }
-	}
-
-	/**
 	 * Suspend Z translation.
 	 */
 	public void suspendZTranslation() {
-		ZTranslationSuspended = true;
 		savedZTranslation = currentZTranslation;
 		currentZTranslation = 0;
 	}
@@ -539,7 +548,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * Resume Z translation.
 	 */
 	public void resumeZTranslation() {
-		ZTranslationSuspended = false;
 		currentZTranslation = savedZTranslation;
 	}
 
@@ -549,6 +557,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @return the current Z translation
 	 */
 	public double getCurrentZTranslation() { return currentZTranslation; }
+
+	@Override
+	public void setCurrentZTranslation(final double translation) { currentZTranslation = translation; }
 
 	/**
 	 * Gets the current Z increment.
@@ -841,7 +852,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (!isWireframe()) {
 			if (computeNormal) { setNormal(yNegatedVertices, clockwise); }
 			final int style = number == 4 ? GL2ES3.GL_QUADS : number == -1 ? GL2.GL_POLYGON : GL.GL_TRIANGLES;
-			drawVertices(style, yNegatedVertices, number, clockwise);
+			try (var offset = PolygonOffset.forOutline(this, border != null)) {
+				drawVertices(style, yNegatedVertices, number, clockwise);
+			}
 		}
 		if (border != null || isWireframe()) {
 			final IColor colorToUse = border != null ? border : getCurrentColor();
@@ -858,7 +871,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param drawer
 	 */
 	public void drawPolygon(final Polygon p, final ICoordinates yNegatedVertices, final boolean clockwise) {
-		polygonTessellations.draw(p, yNegatedVertices, this);
+		polygonTessellations.draw(p, yNegatedVertices, this, renderer.getDiagnostics());
 	}
 
 	/**
@@ -905,14 +918,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/**
-	 * Outputs a single vertex to OpenGL, applying the z-translation to it
+	 * Outputs a single vertex to OpenGL.
 	 *
 	 * @param x
 	 * @param y
 	 * @param z
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
-		gl.glVertex3d(x, y, z + currentZTranslation);
+		gl.glVertex3d(x, y, z);
 	}
 
 	/**
@@ -1147,12 +1160,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 */
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-		boolean isAntiAlias = getData().isAntialias();
-		if (texture == lastBoundTexture && isAntiAlias == lastAntiAliasSetting) return;
+		final boolean isAntiAlias = getData().isAntialias() || currentTextureSmooth;
+		final int minFilter = currentTextureSmooth ? GL.GL_LINEAR_MIPMAP_LINEAR
+				: isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST;
+		if (texture == lastBoundTexture && minFilter == lastTextureMinFilter) return;
 
 		lastBoundTexture = texture;
-		lastAntiAliasSetting = isAntiAlias;
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
+		lastTextureMinFilter = minFilter;
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, minFilter);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, isAntiAlias ? ANISOTROPIC_LEVEL : 0);
 	}
@@ -1262,6 +1277,16 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 */
 	public void cacheGeometry(final GamaGeometryFile object) {
 		geometryCache.process(object);
+	}
+
+	@Override
+	public void cacheGeometry(final GamaGeometryFile object, final String key) {
+		geometryCache.process(object, key);
+	}
+
+	@Override
+	public IEnvelope getEnvelopeFor(final GamaGeometryFile object, final String key) {
+		return geometryCache.getEnvelope(object, key);
 	}
 
 	/**
@@ -1460,8 +1485,20 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void drawCachedGeometry(final GamaGeometryFile file, final IColor border) {
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
+		drawCachedFile(index, border);
+	}
+
+	@Override
+	public void drawCachedGeometry(final GamaGeometryFile file, final String key, final IColor border) {
+		if (file == null) return;
+		drawCachedFile(geometryCache.get(key), border);
+	}
+
+	private void drawCachedFile(final Integer index, final IColor border) {
 		if (index != null) {
-			drawList(index);
+			try (var offset = PolygonOffset.forOutline(this, border != null && !isWireframe())) {
+				drawList(index);
+			}
 			if (border != null || isWireframe()) {
 				final IColor colorToUse = border != null ? border : getCurrentColor();
 				final IColor old = swapCurrentColor(colorToUse);
@@ -1488,7 +1525,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (geometryCache == null || id == null) return;
 		final BuiltInGeometry object = geometryCache.get(id);
 		if (object == null) return;
-		if (!isWireframe()) { object.draw(this); }
+		if (!isWireframe()) {
+			try (var offset = PolygonOffset.forOutline(this, border != null)) {
+				object.draw(this);
+			}
+		}
 		if (border != null || isWireframe()) {
 			final IColor colorToUse = border != null ? border : getCurrentColor();
 			final IColor old = swapCurrentColor(colorToUse);
@@ -1527,6 +1568,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		// DEBUG.OUT("Object " + object + " begin and is " + (object.getAttributes().isEmpty() ? "empty" : "filled"));
 		IDrawingAttributes att = object.getAttributes();
+		currentTextureSmooth = att.isSmoothTexture();
 		if (isPicking) { registerForSelection(att.getIndex()); }
 		boolean empty = att.isEmpty();
 		previousObjectWireframe = setObjectWireframe(empty);
@@ -1551,7 +1593,6 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void endObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		disableTextures();
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		translateByZIncrement();
 		if (object.isFilled() && !object.getAttributes().isSynthetic()) {
 			gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_MODULATE);
 		}
@@ -1573,8 +1614,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final IColor backgroundColor = getData().getBackgroundColor();
 		gl.glClearColor(backgroundColor.red() / 255.0f, backgroundColor.green() / 255.0f,
 				backgroundColor.blue() / 255.0f, 1.0f);
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
+		gl.glDepthMask(true);
+		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
 		updatePerspective();
 		resetMatrix(GLMatrixFunc.GL_MODELVIEW);
@@ -1717,7 +1759,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void drawFPS(final boolean doIt) {
 		if (doIt) {
 			setCurrentColor(GamaColorFactory.BLACK);
-			final int nb = (int) getCanvas().getAnimator().getLastFPS();
+			final int nb = (int) getCanvas().getLastFPS();
 			final String s = nb == 0 ? "(computing FPS...)" : nb + " FPS";
 			rasterText(s, GLUT.BITMAP_HELVETICA_12, -5, 5, 0);
 		}

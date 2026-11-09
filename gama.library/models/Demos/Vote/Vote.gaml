@@ -135,7 +135,7 @@ global {
 		candidate elected <- active_candidates with_max_of (each.percentage_vote);
 		//Display a window telling who is the winner and halt the model
 		do tell (msg: "The winner is " + elected.name); 
-		do pause();
+		experiment.pause();
 	}
 	
 	//Reflex to compute the creation of group when one candidate chooses this strategy
@@ -356,7 +356,7 @@ experiment vote type: gui {
 			species Group_electors;
 			
 		}
-		display "Voters"  type: 2d {
+		display "Voters"  type: 3d {
 			chart "Distribution of electors" type: pie background: #white  {
 			 	loop cand over: candidate {
 			 		data  cand.name value:cand.percentage_vote color: cand.color ;
@@ -364,11 +364,11 @@ experiment vote type: gui {
 			}
 			
 			}
-		display "Indicators"  type: 2d {
-			chart "Shannon Entropy" type: series background: #white size: {1,0.5} position: {0, 0} {
+		display "Indicators"  type: 3d {
+			chart "Shannon Entropy" coordinates: #screen type: series background: #white size: {#display_width,0.5} position: {0, 0} {
 				data "entropy" value: entropy color: #blue ;
 			}
-			chart "Opinion distribution" type: series background: #white size: {1,0.5} position: {0, 0.5} {
+			chart "Opinion distribution" coordinates: #screen type: series background: #white size: {#display_width,0.5} position: {0, 0.5} {
 				data "Space area covered" value: (union(candidate collect (each.shape buffer threshold_attraction_candidates))).area / 40000 color: #blue ;
 			}
 		}

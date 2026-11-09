@@ -28,6 +28,7 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
+import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -47,6 +48,7 @@ import gama.api.types.list.IList;
 import gama.api.ui.IOutput;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.layers.AbstractLayerStatement;
+import gama.core.outputs.layers.LayerData;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -63,6 +65,15 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 		symbols = IKeyword.DISPLAY)
 @facets (
 		value = { @facet (
+				name = ChartLayerStatement.QUALITY,
+				type = { IType.FLOAT, IType.INT },
+				optional = true,
+				doc = @doc ("Raster scale for this chart only, between 0.1 and 2.0 inclusive: 1 is native device resolution, 2 supersamples, and values below 1 reduce resolution for speed. Evaluated at initialization. If omitted, uses the Chart raster scale preference. Applies to Java2D, OpenGL and OpenGL4; fonts and logical layout are unchanged. Raster memory limits still apply.")),
+				@facet (
+				name = LayerData.COORDINATES, type = IType.STRING,
+				optional = true,
+				doc = @doc (LayerData.COORDINATES_DOC)),
+				@facet (
 				name = ChartLayerStatement.XRANGE,
 				type = { IType.FLOAT, IType.INT, IType.POINT, IType.LIST },
 				optional = true,
@@ -101,12 +112,12 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						name = IKeyword.POSITION,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("position of the upper-left corner of the layer. Note that if coordinates are in [0,1[, the position is relative to the size of the environment (e.g. {0.5,0.5} refers to the middle of the display) whereas it is absolute when coordinates are greater than 1 for x and y. The z-ordinate can only be defined between 0 and 1. The position can only be a 3D point {0.5, 0.5, 0.5}, the last coordinate specifying the elevation of the layer.")),
+						doc = @doc (LayerData.POSITION_DOC)),
 				@facet (
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("the layer resize factor: {1,1} refers to the original size whereas {0.5,0.5} divides by 2 the height and the width of the layer. In case of a 3D layer, a 3D point can be used (note that {1,1} is equivalent to {1,1,0}, so a resize of a layer containing 3D objects with a 2D points will remove the elevation)")),
+						doc = @doc (LayerData.SIZE_DOC)),
 				@facet (
 						name = IKeyword.REVERSE_AXIS,
 						type = IType.BOOL,
@@ -370,7 +381,10 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 										isExecutable = false) }) },
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.EVENT, "graphics", IKeyword.GRID_LAYER,
 				IKeyword.IMAGE_LAYER, IKeyword.OVERLAY, IKeyword.QUADTREE, IKeyword.SPECIES_LAYER, IKeyword.TEXT })
+@validator (AbstractLayerStatement.CoordinatesValidator.class)
 public class ChartLayerStatement extends AbstractLayerStatement {
+
+	public static final String QUALITY = "quality";
 
 	/** The Constant XRANGE. */
 	public static final String XRANGE = "x_range";
@@ -497,6 +511,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The chartoutput. */
 	private ChartOutput chartOutput = null;
 
+	private Double quality;
+
+	public double getQuality() {
+		return quality == null ? GamaPreferences.Displays.CHART_QUALITY.getValue() : quality;
+	}
+
 	/** Whether the initial step done by the output manager must be skipped (include_init: false). */
 	private boolean skipInitialStep;
 
@@ -551,6 +571,16 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	public boolean _init(final IScope scope) throws GamaRuntimeException {
 		setName(getChartName(scope));
 		lastValues.clear();
+
+		final IExpression qualityExpression = getFacet(QUALITY);
+		quality = null;
+		if (qualityExpression != null) {
+			final double value = Cast.asFloat(scope, qualityExpression.value(scope));
+			if (!Double.isFinite(value) || value < 0.1 || value > 2.0) {
+				throw GamaRuntimeException.error("Chart quality must be finite and between 0.1 and 2.0", scope);
+			}
+			quality = value;
+		}
 
 		IExpression expression = getFacet(IKeyword.TYPE);
 

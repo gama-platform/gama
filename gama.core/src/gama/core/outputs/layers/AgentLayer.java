@@ -35,6 +35,7 @@ import gama.api.types.misc.IContainer;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayerStatement;
 import gama.api.utils.collections.Collector;
@@ -86,6 +87,22 @@ public class AgentLayer extends AbstractLayer {
 				}
 				final String defaultShape = GamaPreferences.Displays.CORE_SHAPE.getValue();
 				final Integer index = SHAPES.get(defaultShape);
+				if (index != null && g.supportsPrimitiveDrawing()) {
+					final IShape.Type type = switch (index) {
+						case 1 -> IShape.Type.CIRCLE;
+						case 2 -> IShape.Type.SQUARE;
+						case 4 -> IShape.Type.SPHERE;
+						case 5 -> IShape.Type.CUBE;
+						default -> null;
+					};
+					final double size = GamaPreferences.Displays.CORE_SIZE.getValue();
+					if (type != null && Double.isFinite(size) && size > 0) {
+						final Double depth = type == IShape.Type.SPHERE || type == IShape.Type.CUBE ? size : null;
+						final IDrawingAttributes attributes = new ShapeDrawingAttributes(null, depth, null, null,
+								color == null, color, borderColor, null, agent, type, null, null);
+						return g.drawPrimitive(type, size, agent.getLocation(), attributes);
+					}
+				}
 				IShape ag;
 
 				if (index != null) {
@@ -143,6 +160,7 @@ public class AgentLayer extends AbstractLayer {
 		IContainer<?, ? extends IAgent> agents = o instanceof ISpecies is ? is : o instanceof IList il ? il : null;
 		if (agents == null) return;
 		final String aspectName = def.getAspectName();
+		final PreparationDiagnostics diagnostics = g.getPreparationDiagnostics();
 		StreamEx<? extends IAgent> stream = agents.stream(scope);
 		// if (this.getData().getRefresh()) { stream = stream.parallel(); }
 		stream.nonNull().forEach(a -> {
@@ -154,7 +172,9 @@ public class AgentLayer extends AbstractLayer {
 				if (aspect == null) { aspect = a.getSpecies().getAspect(aspectName); }
 			}
 			if (aspect == null) { aspect = DEFAULT_ASPECT; }
+			final long start = diagnostics == null ? 0 : diagnostics.startTimer();
 			final IExecutionResult result = scope.execute(aspect, a, null);
+			if (diagnostics != null) { diagnostics.aspectFinished(start); }
 			final Object r = result.getValue();
 			if (r instanceof Rectangle2D r2d) { shapes.put(a, r2d); }
 		});

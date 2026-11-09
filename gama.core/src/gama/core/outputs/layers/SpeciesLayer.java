@@ -24,6 +24,7 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.api.ui.layers.ILayerStatement;
 import one.util.streamex.StreamEx;
 
@@ -95,9 +96,11 @@ public class SpeciesLayer extends AgentLayer {
 		// draw the population. A copy of the population is made to avoid
 		// concurrent modification exceptions
 		StreamEx<? extends IAgent> stream = population.stream(scope);
+		final PreparationDiagnostics diagnostics = g.getPreparationDiagnostics();
 		// if (this.getData().getRefresh()) { stream = stream.parallel(); }
 		stream.nonNull().filter(a -> !a.dead()).forEach(a -> {
 			IExecutionResult result = null;
+			final long start = diagnostics == null ? 0 : diagnostics.startTimer();
 			if (a == scope.getGui().getHighlightedAgent()) {
 				IExecutable hAspect = population.getSpecies().getAspect("highlighted");
 				if (hAspect == null) { hAspect = aspect; }
@@ -105,6 +108,7 @@ public class SpeciesLayer extends AgentLayer {
 			} else {
 				result = scope.execute(aspect, a, null);
 			}
+			if (diagnostics != null) { diagnostics.aspectFinished(start); }
 			if (result != IExecutionResult.FAILED) {
 				if (result != null && result.getValue() instanceof Rectangle2D) {
 					final Rectangle2D r = (Rectangle2D) result.getValue();

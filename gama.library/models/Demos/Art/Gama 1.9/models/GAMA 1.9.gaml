@@ -127,7 +127,7 @@ global {
 	}  
 	
 	reflex end_animation when: cycle  = 650{
-		do pause();
+		experiment.pause();
 	}
 } 
 
