@@ -87,8 +87,6 @@ public class WorkaroundForIssue2476 {
 		});
 		applet.addMouseListener(new java.awt.event.MouseListener() {
 
-			volatile boolean inMenu;
-
 			@Override
 			public void mouseReleased(final java.awt.event.MouseEvent e) {
 				setMousePosition(surface, e.getX(), e.getY());
@@ -115,15 +113,12 @@ public class WorkaroundForIssue2476 {
 			@Override
 			public void mouseClicked(final java.awt.event.MouseEvent e) {
 				if (e.getClickCount() == 2) { surface.zoomFit(); }
-				if (e.getButton() == 3 && !inMenu) {
-					inMenu = surface.canTriggerContextualMenu();
+				if (e.getButton() == 3) {
 					setMousePosition(surface, e.getX(), e.getY());
-					if (inMenu) { surface.selectAgentsAroundMouse(); }
+					// A click latch is not notified when the SWT menu closes and swallows the next right-click (#931).
+					if (surface.canTriggerContextualMenu()) { surface.selectAgentsAroundMouse(); }
 					surface.dispatchMouseEvent(SWT.MenuDetect, e.getX(), e.getY());
-					return;
 				}
-
-				if (inMenu) { inMenu = false; }
 			}
 		});
 
