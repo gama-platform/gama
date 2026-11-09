@@ -114,6 +114,24 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	/** Lazily resolved exploration algorithm (defaulting to Exploration when absent). */
 	private IExploration explorationAlgorithm;
 
+	/** Grouping strategy, resolved on first use and kept for the batch run. */
+	private Boolean groupParameterSets;
+
+	/**
+	 * Returns the batch's grouping strategy. It is evaluated once, when evaluation starts.
+	 *
+	 * @param experiment the active experiment
+	 * @return whether the batch groups simulations from different parameter sets
+	 */
+	public static boolean shouldGroupParameterSets(final IExperimentAgent experiment) {
+		if (!(experiment instanceof BatchAgent batch)) return false;
+		if (batch.groupParameterSets == null) {
+			final IExpression grouping = batch.getSpecies().getFacet(GamaExecutorService.GROUP_PARAMETER_SETS);
+			batch.groupParameterSets = grouping == null || Cast.asBool(batch.getScope(), grouping.value(batch.getScope()));
+		}
+		return batch.groupParameterSets;
+	}
+
 	/**
 	 * Instantiates a new batch agent.
 	 *
@@ -329,8 +347,8 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	private ISimulationAgent createSimulation(final Map<String, Object> sim,
 			final Map<IAgent, ParametersSet> simToParameter) {
 		ParametersSet sol = (ParametersSet) sim.get("parameters");
+		setSeed((Double) sim.get("seed"));
 		final ISimulationAgent s = createSimulation(sol, true);
-		s.setSeed((Double) sim.get("seed"));
 		simToParameter.put(s, sol);
 		return s;
 	}
@@ -345,7 +363,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	public IMap<ParametersSet, Map<String, List<Object>>>
 			runSimulationsAndReturnResults(final List<ParametersSet> sets) {
 		IMap<ParametersSet, Map<String, List<Object>>> res;
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(this)) {
+		if (shouldGroupParameterSets(this)) {
 			res = launchSimulationsInParallelWithParametersSets(sets);
 		} else {
 			res = GamaMapFactory.create();

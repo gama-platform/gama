@@ -29,12 +29,12 @@ public class PoolUtils {
 	static Set<ObjectPool> POOLS = new LinkedHashSet<>();
 
 	/** The pool. */
-	static public boolean POOL = true; // GamaPreferences.Experimental.USE_POOLING.getValue();
+	static public boolean POOL = Boolean.TRUE.equals(GamaPreferences.Experimental.USE_POOLING.getValue());
 	static {
 		DEBUG.ON();
 		GamaPreferences.Experimental.USE_POOLING.onChange(v -> {
-			POOLS.forEach(ObjectPool::dispose);
 			POOL = v;
+			POOLS.forEach(pool -> pool.setPoolingEnabled(v));
 		});
 	}
 
@@ -137,9 +137,14 @@ public class PoolUtils {
 		/** The active. */
 		public volatile boolean active;
 
+		/** Whether pooling is enabled for this particular pool when global pooling is active. */
+		private final boolean configuredActive;
+
 		/**
 		 * Instantiates a new object pool.
 		 *
+		 * @param active
+		 *            whether this pool is enabled when global pooling is active
 		 * @param factory
 		 *            the factory
 		 * @param copy
@@ -147,11 +152,19 @@ public class PoolUtils {
 		 * @param cleaner
 		 *            the cleaner
 		 */
-		private ObjectPool(final ObjectFactory<T> factory, final ObjectCopy<T> copy, final ObjectCleaner<T> cleaner) {
+		private ObjectPool(final boolean active, final ObjectFactory<T> factory, final ObjectCopy<T> copy,
+				final ObjectCleaner<T> cleaner) {
+			configuredActive = active;
+			this.active = POOL && active;
 			this.factory = factory;
 			this.copy = copy;
 			this.cleaner = cleaner;
 			objects = new ConcurrentLinkedQueue<>();
+		}
+
+		private void setPoolingEnabled(final boolean enabled) {
+			dispose();
+			active = enabled && configuredActive;
 		}
 
 		/**
@@ -243,8 +256,7 @@ public class PoolUtils {
 	public static <T> ObjectPool<T> create(final String name, final boolean active, final ObjectFactory<T> factory,
 			final ObjectCopy<T> copy, final ObjectCleaner<T> cleaner) {
 		DEBUG.BANNER(BANNER_CATEGORY.POOL, "Object pool added", "for", name);
-		final ObjectPool<T> result = new ObjectPool<>(factory, copy, cleaner);
-		result.active = POOL && active;
+		final ObjectPool<T> result = new ObjectPool<>(active, factory, copy, cleaner);
 		result.name = name;
 		POOLS.add(result);
 		return result;

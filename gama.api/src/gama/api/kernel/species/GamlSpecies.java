@@ -173,7 +173,7 @@ import one.util.streamex.StreamEx;
 				name = IKeyword.PARALLEL,
 				type = { IType.BOOL, IType.INT },
 				optional = true,
-				doc = @doc ("(experimental) setting this facet to 'true' will allow this species to use concurrency when scheduling its agents; setting it to an integer will set the threshold under which they will be run sequentially (the default is initially 20, but can be fixed in the preferences). This facet has a default set in the preferences (Under Performances > Concurrency)")),
+				doc = @doc ("Setting this facet to 'true' enables concurrent scheduling for this species; its splitting threshold follows the global thread-count preference. Setting it to an integer sets the splitting threshold, so populations at or below that size run sequentially. If omitted, agents are scheduled sequentially. Use this model-level facet to control reproducibility and parallel execution.")),
 				@facet (
 						name = IKeyword.WIDTH,
 						type = IType.INT,

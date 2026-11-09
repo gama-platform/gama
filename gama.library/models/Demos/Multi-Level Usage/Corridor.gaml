@@ -156,7 +156,7 @@ experiment "Corridor" type: gui autorun: true {
 			species pedestrian { 
 				draw circle(13) color: blend(color, lettering, 0.75) border: rgb(lettering, 0.4);
 			}
-
+ 
 			graphics front {
 				draw "ENTRY" at: {corridor_left_bounds - 180, environment_height / 2}
 					anchor: #right_center color: lettering font: font("Helvetica", 11);

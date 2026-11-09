@@ -66,7 +66,7 @@ import gama.dev.FLAGS;
  * </p>
  *
  * <p>
- * The inner static classes ({@link Interface}, {@link Theme}, {@link Modeling}, {@link Runtime}, {@link Displays},
+ * The inner static classes ({@link Interface}, {@link Modeling}, {@link Runtime}, {@link Displays},
  * {@link Network}, {@link External}, {@link Experimental}) act as namespaces grouping logically related preferences and
  * their associated tab/group name constants.
  * </p>
@@ -77,14 +77,13 @@ import gama.dev.FLAGS;
 public class GamaPreferences {
 
 	/**
-	 * Triggers the static initialization of all preference sub-namespaces ({@link Interface}, {@link Theme},
+	 * Triggers the static initialization of all preference sub-namespaces ({@link Interface},
 	 * {@link Modeling}, {@link Runtime}, {@link Displays}, {@link Network}, {@link External}, {@link Experimental}).
 	 * This method must be called once during GAMA startup (before any preference is read) to ensure that every
 	 * preference constant has been registered with the global preference store.
 	 */
 	public static void initialize() {
 		inter = new Interface();
-		theme = new Theme();
 		modeling = new Modeling();
 		runtime = new Runtime();
 		displays = new Displays();
@@ -97,9 +96,6 @@ public class GamaPreferences {
 
 	/** Holds the singleton instance of the {@link Interface} namespace, forcing its static initializer to run. */
 	static Interface inter;
-
-	/** Holds the singleton instance of the {@link Theme} namespace, forcing its static initializer to run. */
-	static Theme theme;
 
 	/** Holds the singleton instance of the {@link Modeling} namespace, forcing its static initializer to run. */
 	static Modeling modeling;
@@ -236,24 +232,6 @@ public class GamaPreferences {
 	public static final String PREF_WRITE_BUFFERING_STRATEGY = "pref_write_buffering_strategy";
 
 	/**
-	 * The {@code Theme} class acts as a namespace for preference tab and group name constants related to the visual
-	 * theme of the GAMA UI. It does not declare any {@link Pref} constants itself; the actual theme-related preferences
-	 * are contributed by other components.
-	 */
-	public static class Theme {
-
-		/** The display name of the "Theme" tab shown in the GAMA preferences dialog. */
-		public static final String NAME = "Theme";
-
-		/** The name of the "UI" group within the Theme tab. */
-		public static final String UI = "UI";
-
-		/** The name of the "Editor" group within the Theme tab. */
-		public static final String EDITOR = "Editor";
-
-	}
-
-	/**
 	 * The {@code Network} class groups all GAMA preferences related to networking: HTTP connections, web browser
 	 * selection, and GAMA Server mode. It also defines the tab and group name constants used to place these preferences
 	 * in the GAMA preferences dialog.
@@ -295,6 +273,9 @@ public class GamaPreferences {
 		/** The display name of the "Interface" tab shown in the GAMA preferences dialog. */
 		public static final String NAME = "Interface";
 
+		/** The name of the "Theme" group within the Interface tab. */
+		public static final String THEME = "Theme";
+
 		/** The name of the "Startup" group within the Interface tab. */
 		public static final String STARTUP = "Startup";
 
@@ -315,15 +296,18 @@ public class GamaPreferences {
 		// create("pref_show_maximized", "Maximize GAMA window", true, IType.BOOL, false).in(NAME, STARTUP)
 		// .hidden();
 
+		/** The name of the "Navigator" group within the Interface tab. */
+		public static final String WORKSPACE = "Workspace";
+
 		/** Whether GAMA should ask before automatically rebuilding a corrupted workspace. */
 		public static final Pref<Boolean> CORE_ASK_REBUILD =
 				create("pref_ask_rebuild", "Ask before rebuilding a corrupted workspace", true, IType.BOOL, false)
-						.in(NAME, STARTUP).inPlayer(false).withLabels("Yes", "No");
+						.in(NAME, WORKSPACE).inPlayer(false).withLabels("Yes", "No");
 
 		/** Whether GAMA should ask before opening a workspace that was created by a different GAMA version. */
 		public static final Pref<Boolean> CORE_ASK_OUTDATED =
 				create("pref_ask_outdated", "Ask before using a workspace created by another version", true, IType.BOOL,
-						false).in(NAME, STARTUP).inPlayer(false).withLabels("Yes", "No");
+						false).in(NAME, WORKSPACE).inPlayer(false).withLabels("Yes", "No");
 
 		/**
 		 * Whether GAMA should automatically open a predefined model at startup. Activates the model/experiment pickers.
@@ -359,16 +343,18 @@ public class GamaPreferences {
 							return result;
 						});
 
-		/** The name of the "Menus" group within the Interface tab. */
+		/** The Constant MENUS. */
+		// /** The name of the "Menus" group within the Interface tab. */
 		public static final String MENUS = "Menus";
-
-		/**
-		 * The threshold at which agent lists in context menus are broken into sub-menus. For example, a value of 50
-		 * means that menus showing more than 50 agents will be split into groups of 50.
-		 */
+		//
+		// /**
+		// * The threshold at which agent lists in context menus are broken into sub-menus. For example, a value of 50
+		// * means that menus showing more than 50 agents will be split into groups of 50.
+		/** The Constant CORE_MENU_SIZE. */
+		// */
 		public static final Pref<Integer> CORE_MENU_SIZE =
 				create("pref_menu_size", "Break down agents in menus every", 50, IType.INT, false).between(10, 1000)
-						.in(NAME, MENUS);
+						.in(NAME, MENUS).hidden();
 		/** The name of the "Console" group within the Interface tab. */
 		public static final String CONSOLE = "Console";
 
@@ -398,8 +384,6 @@ public class GamaPreferences {
 		/** The name of the "Appearance" group within the Interface tab. */
 		public static final String APPEARANCE = "Appearance";
 
-		/** The name of the "Navigator" group within the Interface tab. */
-		public static final String NAVIGATOR = "Navigator";
 		/** The name of the "Simulations" group within the Interface tab. */
 		public static final String SIMULATIONS = "Simulations";
 
@@ -613,9 +597,10 @@ public class GamaPreferences {
 				create("pref_editor_perspective_hide", "Hide editors when switching to simulation perspective", true,
 						IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS).inPlayer(false).withLabels("Yes", "No");
 
-		/**
-		 * Whether the operators context menu should be sorted by category or by name. Hidden from the preferences UI.
-		 */
+		// /**
+		// * Whether the operators context menu should be sorted by category or by name. Hidden from the preferences UI.
+		/** The Constant OPERATORS_MENU_SORT. */
+		// */
 		public static final Pref<Boolean> OPERATORS_MENU_SORT =
 				create("pref_menu_operators_sort2", "Sort operators menu by", true, IType.STRING, false)
 						.withLabels("Category", "Name").in(Interface.NAME, Interface.MENUS).inPlayer(false).hidden();
@@ -626,29 +611,32 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> CORE_SURROUND_SELECTED = create("pref_editor_surround_selected",
 				"Surround selected text with the matching character when { [ ( \" ' < is pressed", true, IType.BOOL,
-				false).in(NAME, TEXT).inPlayer(false).withLabels("Yes", "No");
+				false).in(NAME, TEXT).inPlayer(false).withLabels("Yes", "No").hidden();
 
 		/** Whether the editor should automatically insert a closing single quote after an opening one. */
 		public static final Pref<Boolean> CORE_CLOSE_QUOTE =
 				create("pref_editor_close_quote", "Automatically close single quotes — '..'", true, IType.BOOL, false)
-						.in(NAME, TEXT).inPlayer(false);
+						.in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Whether the editor should automatically insert a closing double quote after an opening one. */
-		public static final Pref<Boolean> CORE_CLOSE_DOUBLE = create("pref_editor_close_double",
-				"Automatically close double quotes — \"..\"", true, IType.BOOL, false).in(NAME, TEXT).inPlayer(false);
+		public static final Pref<Boolean> CORE_CLOSE_DOUBLE =
+				create("pref_editor_close_double", "Automatically close double quotes — \"..\"", true, IType.BOOL,
+						false).in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Whether the editor should automatically insert a closing curly bracket after an opening one. */
 		public static final Pref<Boolean> CORE_CLOSE_CURLY =
 				create("pref_editor_close_curly", "Automatically close curly brackets — {..}", true, IType.BOOL, false)
-						.in(NAME, TEXT).inPlayer(false);
+						.in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Whether the editor should automatically insert a closing square bracket after an opening one. */
-		public static final Pref<Boolean> CORE_CLOSE_SQUARE = create("pref_editor_close_square",
-				"Automatically close square brackets — [..]", true, IType.BOOL, false).in(NAME, TEXT).inPlayer(false);
+		public static final Pref<Boolean> CORE_CLOSE_SQUARE =
+				create("pref_editor_close_square", "Automatically close square brackets — [..]", true, IType.BOOL,
+						false).in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Whether the editor should automatically insert a closing parenthesis after an opening one. */
-		public static final Pref<Boolean> CORE_CLOSE_PARENTHESES = create("pref_editor_close_parentheses",
-				"Automatically close parentheses — (..)", true, IType.BOOL, false).in(NAME, TEXT).inPlayer(false);
+		public static final Pref<Boolean> CORE_CLOSE_PARENTHESES =
+				create("pref_editor_close_parentheses", "Automatically close parentheses — (..)", true, IType.BOOL,
+						false).in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Whether the GAML formatter should be applied automatically each time a file is saved. */
 		public static final Pref<Boolean> EDITOR_CLEAN_UP =
@@ -673,7 +661,7 @@ public class GamaPreferences {
 		/** Whether the editor should highlight all occurrences of the symbol under the cursor. */
 		public static final Pref<Boolean> EDITOR_MARK_OCCURRENCES = GamaPreferences
 				.create("pref_editor_mark_occurrences", "Mark occurrences of symbols", true, IType.BOOL, false)
-				.in(NAME, TEXT).inPlayer(false);
+				.in(NAME, TEXT).inPlayer(false).hidden();
 
 		/** Delay after typing before the editor rereads the code and updates its understanding of the model. */
 		public static final Pref<Integer> EDITOR_RECOMPILE_DELAY =
@@ -731,7 +719,7 @@ public class GamaPreferences {
 		 * Whether experiments should start running immediately after being launched, without waiting for user input.
 		 */
 		public static final Pref<Boolean> CORE_AUTO_RUN = create("pref_experiment_auto_run",
-				"Auto-run experiments when they are launched", false, IType.BOOL, true).in(NAME, EXECUTION);
+				"Auto-run experiments when they are launched", false, IType.BOOL, true).in(NAME, EXECUTION).hidden();
 
 		/** The Constant CORE_ASK_CLOSING. */
 		public static final Pref<Boolean> CORE_ASK_CLOSING =
@@ -747,7 +735,7 @@ public class GamaPreferences {
 		/** The Constant CORE_SYNC. */
 		public static final Pref<Boolean> CORE_SYNC =
 				create("pref_display_synchronized", "Synchronize outputs with the simulation", false, IType.BOOL, true)
-						.in(NAME, EXECUTION);
+						.in(NAME, EXECUTION).hidden();
 
 		/** The name of the "Parameters" group within the Execution tab. */
 		public static final String PARAMETERS = "Parameters";
@@ -987,24 +975,24 @@ public class GamaPreferences {
 				create("pref_display_show_overlay", "Show the display bottom overlay", false, IType.BOOL, true)
 						.in(NAME, PRESENTATION).hidden();
 
+		/** Group name for chart preferences. */
+		public static final String CHARTS_GROUP = "Default Chart Properties";
+
 		/**
 		 * Whether chart data points should be kept in memory (enabling CSV export) rather than discarded to reduce
 		 * memory usage.
 		 */
 		public static final Pref<Boolean> CHART_MEMORIZE = create("pref_display_memorize_charts",
 				"Keep chart values in memory (to save them as CSV) or not (to lower memory usage)", true, IType.BOOL,
-				true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
-
-		/** Group name for chart preferences. */
-		public static final String CHARTS_GROUP = "Default Chart Properties";
+				true).in(NAME, CHARTS_GROUP).inPlayer(false);
 
 		/**
-		 * Raster scale relative to native device resolution: {@code 1.0} is native resolution,
-		 * values above it supersample, and values below it trade quality for speed.
+		 * Raster scale relative to native device resolution: {@code 1.0} is native resolution, values above it
+		 * supersample, and values below it trade quality for speed.
 		 */
 		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
-				"Chart raster scale (1 = native resolution, 2 = supersampling; higher uses more resources)",
-				1.5, IType.FLOAT, true).in(NAME, CHARTS_GROUP).inPlayer(true).between(0.1, 2.0);
+				"Chart raster scale (1 = native resolution, 2 = supersampling; higher uses more resources)", 1.5,
+				IType.FLOAT, true).in(NAME, CHARTS_GROUP).inPlayer(true).between(0.1, 2.0);
 
 		/** Chart default title font face. */
 		public static final Pref<String> CHART_TITLE_FONT =
@@ -1152,10 +1140,13 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> DISPLAY_NO_ACCELERATION = create("pref_display_no_java2d_acceleration",
 				"Disable acceleration for Java2D (necessary on some configurations)", false, IType.BOOL, true)
-						.in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+						.in(NAME, "Rendering Compatibility").inPlayer(false);
 
 		/** The name of the "OpenGL Rendering Properties" group within the Displays tab. */
 		public static final String RENDERING = "OpenGL Rendering Properties";
+
+		/** The name of the group for OpenGL performance and resource-use preferences. */
+		public static final String OPENGL_PERFORMANCE = "OpenGL Performance";
 
 		/**
 		 * Whether only agents whose {@code visible} attribute is {@code true} should be sent to the OpenGL rendering
@@ -1163,7 +1154,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> DISPLAY_ONLY_VISIBLE = create("pref_display_visible_agents",
 				"Only display visible agents in OpenGL (faster, may create visual oddities)", false, IType.BOOL, true)
-						.in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+						.in(NAME, OPENGL_PERFORMANCE).inPlayer(false);
 
 		/** Whether the 3D coordinate axes should be drawn in OpenGL displays. Hidden from the preferences UI. */
 		public static final Pref<Boolean> CORE_DRAW_ENV =
@@ -1188,7 +1179,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> ONLY_VISIBLE_FACES =
 				create("pref_display_visible_faces", "Draw only the 'external' faces of objects in OpenGL", false,
-						IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+						IType.BOOL, true).in(NAME, OPENGL_PERFORMANCE).inPlayer(false);
 
 		/**
 		 * The number of polygon slices used when approximating circular geometries in OpenGL. Higher values produce
@@ -1196,19 +1187,22 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Integer> DISPLAY_SLICE_NUMBER = create("pref_display_slice_number",
 				"Number of slices of circular geometries in OpenGL (the higher the more resources consuming)", 16,
-				IType.INT, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+				IType.INT, true).in(NAME, OPENGL_PERFORMANCE).inPlayer(false);
 
 		/** Default painter ordering for OpenGL world layers; a display facet can override it. */
-		public static final Pref<Boolean> OPENGL_MAP_ORDER = create("pref_opengl_map_order",
-				"In OpenGL, draw world layers in map order instead of using 3D depth", false, IType.BOOL, true)
-						.in(NAME, RENDERING).inPlayer(false);
+		public static final Pref<Boolean> OPENGL_MAP_ORDER =
+				create("pref_opengl_map_order", "In OpenGL, draw world layers in map order instead of using 3D depth",
+						false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
 
 		/** Periodically report OpenGL rendering diagnostics to the application log. */
-		public static final Pref<Boolean> OPENGL_DIAGNOSTICS = create("pref_opengl_diagnostics",
-				"Log OpenGL rendering diagnostics", false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
+		public static final Pref<Boolean> OPENGL_DIAGNOSTICS =
+				create("pref_opengl_diagnostics", "Log OpenGL rendering diagnostics", false, IType.BOOL, true)
+						.in(NAME, RENDERING).inPlayer(false);
 
-		public static final Pref<Boolean> DISPLAY_PREPARATION_DIAGNOSTICS = create("pref_display_preparation_diagnostics",
-				"Log display preparation diagnostics", false, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
+		/** The Constant DISPLAY_PREPARATION_DIAGNOSTICS. */
+		public static final Pref<Boolean> DISPLAY_PREPARATION_DIAGNOSTICS =
+				create("pref_display_preparation_diagnostics", "Log display preparation diagnostics", false, IType.BOOL,
+						true).in(NAME, RENDERING).inPlayer(false);
 
 		/**
 		 * Whether a small z-increment should be added to objects and layers in OpenGL to prevent z-fighting
@@ -1216,8 +1210,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> OPENGL_Z_FIGHTING = create("pref_opengl_z_fighting",
 				"In OpenGL, add a small increment to the z ordinate of objects and layers to fight visual artefacts",
-				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false)
-						.activates("pref_opengl_z_factor");
+				true, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false).activates("pref_opengl_z_factor");
 
 		/**
 		 * The magnitude of the z-increment applied when {@link #OPENGL_Z_FIGHTING} is active. Range: {@code [0, 1]},
@@ -1225,7 +1218,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Double> OPENGL_Z_FACTOR =
 				create("pref_opengl_z_factor", "Increment factor (from 0, none, to 1, max)", 0.05, IType.FLOAT, true)
-						.in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false).between(0d, 1d).step(0.001);
+						.in(NAME, RENDERING).inPlayer(false).between(0d, 1d).step(0.001);
 
 		/**
 		 * Whether textures in OpenGL should be oriented to match the geometry on which they are displayed. This can
@@ -1233,7 +1226,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> OPENGL_TEXTURE_ORIENTATION = create("pref_texture_orientation",
 				"In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)",
-				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+				true, IType.BOOL, true).in(NAME, RENDERING).inPlayer(false);
 
 		/** The zoom speed factor for OpenGL displays, ranging from {@code 0} (slowest) to {@code 1} (fastest). */
 		public static final Pref<Double> OPENGL_ZOOM =
@@ -1262,13 +1255,12 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> OPENGL_CAP_FPS = create("pref_display_cap_fps",
 				"Limit the number of frames per second if you experience stuttering in the rendering", false,
-				IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false)
-						.activates("pref_display_max_fps");
+				IType.BOOL, true).in(NAME, OPENGL_PERFORMANCE).inPlayer(false).activates("pref_display_max_fps");
 
 		/** The maximum number of frames per second for the OpenGL renderer when {@link #OPENGL_CAP_FPS} is active. */
 		public static final Pref<Integer> OPENGL_FPS =
 				create("pref_display_max_fps", "Max. number of frames per second", 60, IType.INT, true)
-						.in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+						.in(NAME, OPENGL_PERFORMANCE).inPlayer(false);
 
 		/**
 		 * Whether the numeric keypad keys (2, 4, 6, 8) should be used for camera interaction in OpenGL displays in
@@ -1291,7 +1283,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> OPENGL_USE_IMAGE_CACHE = create("pref_display_use_cache",
 				"Use GAMA image cache when building textures in OpenGL (potentially faster when running several simulations, but uses more memory)",
-				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).inPlayer(false);
+				true, IType.BOOL, true).in(NAME, OPENGL_PERFORMANCE).inPlayer(false);
 
 		/**
 		 * The maximum number of cells of a field (mesh) drawn by OpenGL displays. Larger fields are downsampled (by
@@ -1329,6 +1321,15 @@ public class GamaPreferences {
 
 		/** The display name of the "Data and Operators" tab shown in the GAMA preferences dialog. */
 		public static final String NAME = "Data and Operators";
+
+		/** The name of the spatial-query preferences group. */
+		public static final String SPATIAL_QUERIES = "Spatial queries";
+
+		/** The name of the GIS data and caching preferences group. */
+		public static final String GIS_DATA = "GIS data and caching";
+
+		/** The name of the file input/output preferences group. */
+		public static final String FILE_IO = "File I/O";
 
 		/** The timeout in milliseconds for establishing an HTTP connection to a remote server. */
 		public static final Pref<Integer> CORE_HTTP_CONNECT_TIMEOUT =
@@ -1486,41 +1487,34 @@ public class GamaPreferences {
 	}
 
 	/**
-	 * The {@code Experimental} class groups all GAMA preferences that expose experimental or advanced features: spatial
-	 * index optimizations, expression constant folding, path computation shortcuts, tolerance settings, object pooling,
-	 * and miscellaneous graphical optimizations. These features are not fully tested and may be changed or removed in
-	 * future versions.
+	 * The {@code Experimental} namespace holds advanced GAML-accessible preferences that are not exposed in the
+	 * preferences dialog, plus internal experimental features.
 	 */
 	public static class Experimental {
 
-		/** The display name of the "Advanced" tab shown in the GAMA preferences dialog. */
+		/** The legacy category name for advanced preferences that are hidden from the preferences dialog. */
 		public static final String NAME = "Advanced";
 
 		/** The Constant ISOLATED_TESTS. */
 		public static final Pref<Boolean> ISOLATED_TESTS =
 				create("pref_isolated_tests", "Run tests in a separate headless process", false, IType.BOOL, false)
-						.in(NAME, Runtime.TESTS).inPlayer(false).withComment(
+						.in(Runtime.NAME, Runtime.TESTS).inPlayer(false).withComment(
 								"Slower startup, but Stop and timeout can terminate unresponsive Java operators. By default tests run in this JVM using cooperative interruption.");
 
 		/** Whether tests launched in the UI should write to the standard UI console. */
 		public static final Pref<Boolean> TESTS_USE_UI_CONSOLE =
 				create("pref_tests_use_ui_console", "Show test output in the UI console", false, IType.BOOL, false)
-						.in(NAME, Runtime.TESTS).inPlayer(false).withComment(
+						.in(Runtime.NAME, Runtime.TESTS).inPlayer(false).withComment(
 								"Routes test console messages to the standard GAMA console, including tests run in a separate process. Command-line runs are unchanged.");
 
-		/**
-		 * The label for the experimental features group, warning users that features within have not been fully tested.
-		 */
+		/** Legacy label for the experimental group. */
 		public static final String UNSAFE =
 				" These features have not been fully tested. Enable them at your own risks.";
 
-		/** The label for the safe optimizations group within the Advanced tab. */
+		/** Legacy label for the safe optimizations group. */
 		public static final String SAFE = "These optimizations are considered safe";
 
-		/**
-		 * The label for the graphical optimizations group within the Advanced tab, noting that some optimizations can
-		 * produce visual oddities.
-		 */
+		/** Legacy label for the graphical optimizations group. */
 		public static final String GRAPHICAL =
 				"Various graphics optimizations to speed up displays and/or reduce memory usage. Some can produce visual oddities";
 
@@ -1533,12 +1527,12 @@ public class GamaPreferences {
 				false).in(NAME, UNSAFE).inPlayer(false).hidden();
 
 		/**
-		 * Whether the spatial quadtree index should use a lazy insertion strategy (agents are added only when spatial
-		 * queries require it) rather than eager insertion. Still experimental.
+		 * Whether spatial indexes should be built lazily, only when spatial queries require them. Still experimental.
 		 */
-		public static final Pref<Boolean> QUADTREE_OPTIMIZATION = create("pref_optimize_quadtree",
-				"Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)", false,
-				IType.BOOL, true).in(NAME, UNSAFE).inPlayer(false);
+		public static final Pref<Boolean> QUADTREE_OPTIMIZATION =
+				create("pref_optimize_quadtree", "Create spatial indexes lazily (experimental)", false, IType.BOOL,
+						true).in(External.NAME, External.SPATIAL_QUERIES).inPlayer(false)
+								.withComment("Defers index construction until a spatial query needs it.");
 
 		/**
 		 * Whether constant GAML expressions should be evaluated at compile time and replaced by their results (constant
@@ -1553,20 +1547,24 @@ public class GamaPreferences {
 							} catch (CoreException e) {}
 						}).hidden();
 
-		/** The Constant CAST_CONTAINER_CONTENTS. */
+		/**
+		 * Super-advanced GAML-only control. Disabling automatic container element casting can leave values inconsistent
+		 * with their declared GAML type and cause runtime errors.
+		 */
 		public static final Pref<Boolean> CAST_CONTAINER_CONTENTS = create("pref_cast_container_contents",
-				"Cast the elements of a container to its declared type (If true, no verification is performed on the type of elements added to a container, which may lead to runtime errors)",
-				FLAGS.CAST_CONTAINER_CONTENTS, IType.BOOL, true).in(NAME, SAFE).inPlayer(false).onChange(newValue -> {
-					FLAGS.CAST_CONTAINER_CONTENTS = newValue;
-				});
+				"Cast container elements to their declared type", FLAGS.CAST_CONTAINER_CONTENTS, IType.BOOL, true)
+						.in(NAME, UNSAFE).inPlayer(false).hidden().onChange(newValue -> {
+							FLAGS.CAST_CONTAINER_CONTENTS = newValue;
+						});
 
 		/**
-		 * The tolerance (epsilon) used when comparing two GAML {@code point} values for equality. A value of
-		 * {@code 0.0} means exact comparison.
+		 * Super-advanced GAML-only control. A positive epsilon makes point equality approximate; because approximate
+		 * equality is not a suitable equivalence relation for hash-based collections, changing it may cause surprising
+		 * behavior when points are used as map keys or set elements.
 		 */
 		public static final Pref<Double> TOLERANCE_POINTS =
 				create("pref_point_tolerance", "Tolerance for the comparison of points", 0.0, IType.FLOAT, true)
-						.in(NAME, SAFE).inPlayer(false);
+						.in(NAME, UNSAFE).inPlayer(false).hidden();
 
 		/**
 		 * Whether shapefile data should be mapped and cached entirely in memory for faster repeated access. Disable
@@ -1574,7 +1572,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
 				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
-				true, IType.BOOL, true).in(NAME, SAFE).inPlayer(false);
+				true, IType.BOOL, true).in(External.NAME, External.GIS_DATA).inPlayer(false);
 
 		/**
 		 * The default I/O buffering strategy applied to the GAML {@code save} statement. Corresponds to the preference
@@ -1582,7 +1580,8 @@ public class GamaPreferences {
 		 */
 		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY = create(PREF_SAVE_BUFFERING_STRATEGY,
 				"Default buffering strategy for the save statement", BufferingUtils.NO_BUFFERING, IType.STRING, true)
-						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, SAFE).inPlayer(false);
+						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList())
+						.in(External.NAME, External.FILE_IO).inPlayer(false);
 
 		/**
 		 * The default I/O buffering strategy applied to the GAML {@code write} statement. Corresponds to the preference
@@ -1590,15 +1589,16 @@ public class GamaPreferences {
 		 */
 		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY = create(PREF_WRITE_BUFFERING_STRATEGY,
 				"Default buffering strategy for the write statement", BufferingUtils.NO_BUFFERING, IType.STRING, true)
-						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, SAFE).inPlayer(false);
+						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList())
+						.in(External.NAME, External.FILE_IO).inPlayer(false);
 
 		/**
-		 * Whether object pooling should be used to reuse short-lived GAML runtime objects and reduce GC pressure. Still
-		 * experimental; may cause side effects if object state is not correctly reset.
+		 * Super-advanced GAML-only control. Enables reuse of short-lived runtime objects, which may reduce allocation
+		 * and garbage-collection pressure but can retain memory and expose object-reset bugs.
 		 */
 		public static final Pref<Boolean> USE_POOLING =
-				create("pref_use_pooling", "Use object pooling to reduce memory usage (still experimental)", false,
-						IType.BOOL, true).in(NAME, UNSAFE).inPlayer(false);
+				create("pref_use_pooling", "Use object pooling (experimental)", false, IType.BOOL, true)
+						.in(NAME, UNSAFE).inPlayer(false).hidden();
 
 	}
 
@@ -1754,7 +1754,7 @@ public class GamaPreferences {
 	 * The canonical display order of preference tabs in the GAMA preferences dialog. Tabs are listed in the order they
 	 * should appear from left to right (or top to bottom).
 	 */
-	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Theme.NAME, Modeling.NAME,
-			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME, Experimental.NAME);
+	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Modeling.NAME,
+			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME);
 
 }

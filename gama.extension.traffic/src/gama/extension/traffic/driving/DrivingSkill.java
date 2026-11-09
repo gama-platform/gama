@@ -1970,13 +1970,12 @@ public class DrivingSkill extends MovingSkill {
 	 */
 	private boolean moveAcrossRoads(final IScope scope, final boolean isDrivingRandomly, final GamaSpatialGraph graph,
 			final Map<IAgent, Double> roadProba) {
-		if (GamaExecutorService.CONCURRENCY_SPECIES.getValue()) throw GamaRuntimeException.error("""
-				Driving agents cannot be scheduled in parallel. \
-				Please disable "Make species schedule theirs agents in parallel" \
-				in Preferences > Execution > Parallelism.""", scope);
-
 		IAgent vehicle = getCurrentAgent(scope);
 		ISpecies context = vehicle.getSpecies();
+		if (GamaExecutorService.getParallelism(scope, context.getConcurrency(), GamaExecutorService.Caller.SPECIES) > 0)
+			throw GamaRuntimeException.error("""
+					Driving agents cannot be scheduled in parallel. \
+					Remove or disable the species' parallel facet.""", scope);
 
 		IStatement.WithArgs actionImpactEF = context.getAction("external_factor_impact");
 		Arguments argsEF = new Arguments();

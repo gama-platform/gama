@@ -5,7 +5,10 @@
 *   agent. GAMA exposes its internal configuration as readable (and sometimes writable) attributes of the 'gama'
 *   pseudo-agent. These preferences control aspects such as console output limits, chart quality, error handling,
 *   display rendering, experiment behavior, and many more. This model prints the current value of every available
-*   preference to the console, serving as a live documentation of the platform configuration.
+*   preference to the console, serving as a live documentation of the platform configuration. The super-advanced
+*   container-casting, point-tolerance, and object-pooling preferences are hidden from the Preferences dialog and
+*   should only be changed directly from GAML by users who understand their global side effects. Assigning them from
+*   GAML updates and persists application-wide GAMA preferences; these are not model-local settings.
 * Tags: system, preferences, configuration, gama, platform, settings
 */
 // GAMA 0.0.0-SNAPSHOT Preferences saved on 2025-05-04T22:52:53.671264
@@ -215,29 +218,21 @@ experiment 'Display Preferences' type: gui {
 		//Optimize the path computation operators and goto action (but with possible 'jump' issues)
 		write sample(gama.pref_optimize_path_computation);
 
-		//Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)
+		//Create spatial indexes lazily (experimental)
 		write sample(gama.pref_optimize_quadtree);
 
-		//Allow grids to schedule their agents in parallel (prevents the reproducibility of simulations)
-		write sample(gama.pref_parallel_grids);
+		//Super-advanced, GAML-only preferences. Assignments persist globally for GAMA, not just for this model.
+		//Super-advanced GAML-only control: automatic casts for container elements
+		write sample(gama.pref_cast_container_contents);
 
-		//Allow experiments to run simulations in parallel
-		write sample(gama.pref_parallel_simulations);
+		//Super-advanced GAML-only control: global tolerance for point equality
+		write sample(gama.pref_point_tolerance);
 
-		//In batch, allow to run simulations with all available processors[WARNING: disables reflexes and permanent displays of batch experiments]
-		write sample(gama.pref_parallel_simulations_all);
-
-		//Make species schedule their agents in parallel (prevents the reproducibility of simulations)
-		write sample(gama.pref_parallel_species);
+		//Super-advanced GAML-only control: reuse of short-lived runtime objects
+		write sample(gama.pref_use_pooling);
 
 		//Max. number of threads to use (available processors: 16)
 		write sample(gama.pref_parallel_threads);
-
-		//Size under which populations are executed sequentially
-		write sample(gama.pref_parallel_threshold);
-
-		//Tolerance for the comparison of points
-		write sample(gama.pref_point_tolerance);
 
 		//Default seed value (0 is undefined)
 		write sample(gama.pref_rng_default_seed);
@@ -485,29 +480,25 @@ experiment 'Set Preferences' type: gui {
 		//Optimize the path computation operators and goto action (but with possible 'jump' issues)
 		gama.pref_optimize_path_computation <- false;
 
-		//Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)
+		//Create spatial indexes lazily (experimental)
 		gama.pref_optimize_quadtree <- false;
 
-		//Allow grids to schedule their agents in parallel (prevents the reproducibility of simulations)
-		gama.pref_parallel_grids <- false;
+		//Super-advanced, GAML-only preferences. These assignments persist globally for GAMA, not just for this model.
+		//SUPER-ADVANCED GAML-ONLY PREFERENCE. Disabling casts can leave container elements inconsistent with their
+		//declared GAML type and cause runtime errors.
+		gama.pref_cast_container_contents <- true;
 
-		//Allow experiments to run simulations in parallel
-		gama.pref_parallel_simulations <- true;
+		//SUPER-ADVANCED GAML-ONLY PREFERENCE. A positive value changes global point equality; use with care, especially
+		//when points are map keys or set elements.
+		gama.pref_point_tolerance <- 0.0;
 
-		//In batch, allow to run simulations with all available processors[WARNING: disables reflexes and permanent displays of batch experiments]
-		gama.pref_parallel_simulations_all <- true;
-
-		//Make species schedule their agents in parallel (prevents the reproducibility of simulations)
-		gama.pref_parallel_species <- false;
+		//SUPER-ADVANCED GAML-ONLY PREFERENCE. Pooling can reduce allocation pressure but may retain memory or expose
+		//object-reset bugs.
+		gama.pref_use_pooling <- false;
 
 		//Max. number of threads to use (available processors: 16)
 		gama.pref_parallel_threads <- 4;
 
-		//Size under which populations are executed sequentially
-		gama.pref_parallel_threshold <- 20;
-
-		//Tolerance for the comparison of points
-		gama.pref_point_tolerance <- 0.0;
 
 		//Default seed value (0 is undefined)
 		gama.pref_rng_default_seed <- 1.0;

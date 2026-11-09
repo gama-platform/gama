@@ -79,7 +79,7 @@ import gama.gaml.operators.System;
 						name = IKeyword.PARALLEL,
 						type = { IType.BOOL, IType.INT },
 						optional = true,
-						doc = @doc ("setting this facet to 'true' will allow 'perceive' to use concurrency with a parallel_bdi architecture; setting it to an integer will set the threshold under which they will be run sequentially (the default is initially 20, but can be fixed in the preferences). This facet is true by default.")),
+						doc = @doc ("setting this facet to 'true' allows 'perceive' to run concurrently with a parallel_bdi architecture; its splitting threshold follows the global thread-count preference. Setting it to an integer sets the splitting threshold, so populations at or below that size run sequentially. This facet is true by default.")),
 				@facet (
 						name = LawStatement.STRENGTH,
 						type = { IType.FLOAT, IType.INT },

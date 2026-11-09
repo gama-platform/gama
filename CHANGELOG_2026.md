@@ -19,6 +19,20 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Simulation concurrency defaults
+
+The global preference for parallel simulation scheduling has been removed. Experiments without a `parallel:` facet
+now step their simulations sequentially, including batch experiments. Set `parallel: true` on the experiment to use
+the configured thread count, or `parallel: n` to specify the maximum number of concurrent simulations. Headless
+non-batch experiments remain sequential. Each simulation still has its own thread regardless of the scheduling limit.
+Existing models and scripts that relied on `gama.pref_parallel_simulations` must use the experiment facet instead.
+
+Batch experiments now default to grouping simulations from different parameter sets in both GUI and headless modes.
+Use `group_parameter_sets: false` to process one parameter set at a time. This choice changes when experiment
+behaviors and outputs are stepped and can affect optimization behavior; it does not set the concurrency limit.
+The former `gama.pref_parallel_simulations_all` preference has been removed. GUI batches that relied on its default
+of `false` should use `group_parameter_sets: false` to preserve their evaluation strategy.
+
 ### CPU-side display preparation
 
 Evaluated drawing commands now move winding/arrow realization, image support
@@ -414,8 +428,8 @@ preference beyond the current experiment.
 ### Automatic spatial-index synchronization
 
 Spatial-index synchronization is now decided automatically for each simulation before its indices are created.
-The decision covers species and grid scheduling configured through `parallel:` or the concurrency preferences,
-parallel `ask` statements in nested or inherited behaviors, and species using the `thread` skill.
+The decision covers species and grid scheduling configured through model-level `parallel:` facets, parallel `ask`
+statements in nested or inherited behaviors, and species using the `thread` skill.
 Interactive experiments are synchronized because display event handlers, rendering, and agent inspectors can
 access simulation state from other threads. Displays and event layers also enable synchronization in headless
 experiments. The selected experiment's behaviors and outputs are considered; other experiments are excluded.

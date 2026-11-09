@@ -33,7 +33,6 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExploration;
-import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.core.experiment.parameters.ParametersSet;
@@ -216,7 +215,7 @@ public class Swarm extends AOptimizationAlgorithm {
 		while (!stoppingCriterion.stopSearchProcess(endingCritParams)) {
 			Map<ParametersSet, List<Particle>> soltTotest = GamaMapFactory.create();
 
-			if (GamaExecutorService.shouldRunAllSimulationsInParallel(batch)
+			if (BatchAgent.shouldGroupParameterSets(batch)
 					&& !batch.getParametersToExplore().isEmpty()) {
 				for (Particle particle : particles) {
 					List<Particle> ps = null;
@@ -284,10 +283,13 @@ public class Swarm extends AOptimizationAlgorithm {
 
 		if (batch == null) return;
 
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(batch) && !batch.getParametersToExplore().isEmpty()) {
+		if (BatchAgent.shouldGroupParameterSets(batch) && !batch.getParametersToExplore().isEmpty()) {
 			Map<ParametersSet, Double> res = testSolutions(soltTotest.keySet());
 			for (ParametersSet ps : res.keySet()) {
-				for (Particle particle : soltTotest.get(ps)) { particle.updatePersonalBest(); }
+				for (Particle particle : soltTotest.get(ps)) {
+					particle.currentVal = res.get(ps);
+					particle.updatePersonalBest();
+				}
 			}
 
 		} else {
@@ -315,7 +317,7 @@ public class Swarm extends AOptimizationAlgorithm {
 		for (int i = 0; i < numParticles; i++) {
 			Particle particle = new Particle(scope, batch, this, testedSolutions);
 			particles[i] = particle;
-			if (GamaExecutorService.shouldRunAllSimulationsInParallel(batch)
+			if (BatchAgent.shouldGroupParameterSets(batch)
 					&& !batch.getParametersToExplore().isEmpty()) {
 				List<Particle> ps = null;
 				if (soltTotest.containsKey(particle.getPosition())) {
