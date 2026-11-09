@@ -38,7 +38,7 @@ import gama.gaml.statements.draw.UiControlStatement;
 public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 
 	private record Control(UiControlStatement statement, Rectangle2D bounds, Object value, boolean enabled,
-			double min, double max, double step, String group) {}
+			double min, double max, double step, boolean continuous, String group) {}
 
 	private record Interaction(Control control, Object preview) {}
 
@@ -62,12 +62,12 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 
 	public Object registerControl(final UiControlStatement statement, final Rectangle2D localBounds,
 			final Object value, final boolean enabled, final double min, final double max, final double step,
-			final String group) {
+			final boolean continuous, final String group) {
 		final Rectangle2D screenBounds = new Rectangle2D.Double(
 				localBounds.getX() + getData().getPositionInPixels().getX(),
 				localBounds.getY() + getData().getPositionInPixels().getY(),
 				localBounds.getWidth(), localBounds.getHeight());
-		final Control current = new Control(statement, screenBounds, value, enabled, min, max, step, group);
+		final Control current = new Control(statement, screenBounds, value, enabled, min, max, step, continuous, group);
 		drawingControls.add(current);
 		final Interaction active = interaction.get();
 		if (active == null || active.control().statement() != statement) return value;
@@ -183,7 +183,11 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 			if (active.step() > 0 && fraction > 0 && fraction < 1) {
 				next -= Math.IEEEremainder(next - active.min(), active.step());
 			}
-			if (interaction.compareAndSet(current, new Interaction(active, Math.clamp(next, active.min(), active.max())))) {
+			final double preview = Math.clamp(next, active.min(), active.max());
+			if (interaction.compareAndSet(current, new Interaction(active, preview))) {
+				if (active.continuous() && !sameValue(preview, current.preview())) {
+					activateControl(active, preview);
+				}
 				refreshControls();
 			}
 		} else if (previousHover != hovered) refreshControls();
@@ -201,37 +205,43 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 		final boolean commit = getData().isVisible()
 				&& controls.stream().anyMatch(c -> sameControl(c, active))
 				&& (active.statement().isSlider() || active.bounds().contains(x, y));
+		if (commit && !active.continuous()
+				&& (!active.statement().isSlider() || !sameValue(next, active.value()))) {
+			activateControl(active, next);
+		}
+		refreshControls();
+		return true;
+	}
+
+	private void activateControl(final Control active, final Object next) {
 		final IDisplaySurface surface = controlSurface;
 		final List<Control> radioGroup = active.statement().isRadio()
 				? controls.stream().filter(c -> c.statement().isRadio() && Objects.equals(c.group(), active.group())).toList()
 				: List.of();
-		if (commit && (!active.statement().isSlider() || !sameValue(next, active.value()))) {
-			GAMA.runAndUpdateAll(() -> {
-				if (surface == null || controlSurface != surface || surface.isDisposed()) return;
-				try (IGraphicsScope callback = surface.getScope().copyForGraphics("for overlay control")) {
-					final IAgent experiment = callback.getExperiment();
-					if (experiment == null || experiment.dead()) return;
-					callback.execute(s -> {
-						if (active.statement().isRadio()) {
-							final List<Control> changed = new ArrayList<>();
-							for (final Control radio : radioGroup) {
-								final boolean selected = radio.statement() == active.statement();
-								if (!sameValue(radio.statement().getBoundValue(s), selected)) changed.add(radio);
-								radio.statement().setBoundValue(s, selected);
-							}
-							for (final Control radio : changed) {
-								radio.statement().notifyChange(s, radio.statement() == active.statement());
-							}
-						} else {
-							active.statement().activate(s, next);
+		GAMA.runAndUpdateAll(() -> {
+			if (surface == null || controlSurface != surface || surface.isDisposed() || !getData().isVisible()
+					|| controls.stream().noneMatch(c -> sameControl(c, active))) return;
+			try (IGraphicsScope callback = surface.getScope().copyForGraphics("for overlay control")) {
+				final IAgent experiment = callback.getExperiment();
+				if (experiment == null || experiment.dead()) return;
+				callback.execute(s -> {
+					if (active.statement().isRadio()) {
+						final List<Control> changed = new ArrayList<>();
+						for (final Control radio : radioGroup) {
+							final boolean selected = radio.statement() == active.statement();
+							if (!sameValue(radio.statement().getBoundValue(s), selected)) changed.add(radio);
+							radio.statement().setBoundValue(s, selected);
 						}
-						return null;
-					}, experiment, null);
-				}
-			});
-		}
-		refreshControls();
-		return true;
+						for (final Control radio : changed) {
+							radio.statement().notifyChange(s, radio.statement() == active.statement());
+						}
+					} else {
+						active.statement().activate(s, next);
+					}
+					return null;
+				}, experiment, null);
+			}
+		});
 	}
 
 	@Override
@@ -248,9 +258,10 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 	}
 
 	private static boolean sameControl(final Control first, final Control second) {
+		// Continuous commits change the binding without ending pointer capture.
 		return first.statement() == second.statement() && first.enabled() && first.bounds().equals(second.bounds())
-				&& sameValue(first.value(), second.value()) && first.min() == second.min()
-				&& first.max() == second.max() && first.step() == second.step()
+				&& (first.continuous() || sameValue(first.value(), second.value())) && first.min() == second.min()
+				&& first.max() == second.max() && first.step() == second.step() && first.continuous() == second.continuous()
 				&& Objects.equals(first.group(), second.group());
 	}
 

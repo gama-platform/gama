@@ -1,6 +1,6 @@
 /**
  * Overlay controls share screen placement with draw statements.
- * Switches and sliders commit their new value on pointer release.
+ * Controls commit on pointer release by default; continuous sliders update while dragging.
  */
 model Display_UI_Controls
 
@@ -28,7 +28,7 @@ experiment "Overlay controls" type: gui {
 				ui_slider "Speed" var: speed min: 0.0 max: 100.0 step: 1.0
 					at: {12, 92} size: {216, 40} active: running accent: #teal;
 				ui_slider "Explicit change handler" value: speed min: 0.0 max: 100.0 step: 1.0
-					at: {12, 144} size: {216, 40} {
+					at: {12, 144} size: {216, 40} continuous: true {
 					speed <- ui_value;
 				}
 				ui_button "Running (toggle)" toggle: true var: running

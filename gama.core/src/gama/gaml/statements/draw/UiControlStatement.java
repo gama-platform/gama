@@ -68,7 +68,8 @@ import gama.core.outputs.layers.OverlayLayer;
 		@facet(name = "value", type = IType.NONE, optional = true, doc = @doc("Read expression; ui_value is available in the change handler.")),
 		@facet(name = "min", type = IType.FLOAT, optional = true, doc = @doc("Slider minimum, default 0.")),
 		@facet(name = "max", type = IType.FLOAT, optional = true, doc = @doc("Slider maximum, default 100.")),
-		@facet(name = "step", type = IType.FLOAT, optional = true, doc = @doc("Slider increment from min; omitted means continuous.")),
+		@facet(name = "step", type = IType.FLOAT, optional = true, doc = @doc("Slider increment from min; omitted means no snapping for float bindings and 1 for integer bindings.")),
+		@facet(name = "continuous", type = IType.BOOL, optional = true, doc = @doc("Slider only: update the binding and invoke its change handler as the value changes during pointer press and drag. Default false commits only on release. Cancelling a continuous drag keeps already applied values.")),
 		@facet(name = "at", type = IType.POINT, optional = true, doc = @doc("Overlay-local position; screen fractions below 1, otherwise pixels.")),
 		@facet(name = "size", type = IType.POINT, optional = true, doc = @doc("Screen extent, default {160,28}.")),
 		@facet(name = "anchor", type = IType.POINT, optional = true, doc = @doc("Anchor of the control rectangle; default #top_left.")),
@@ -88,7 +89,7 @@ import gama.core.outputs.layers.OverlayLayer;
 		@facet(name = "on_change", type = IType.ACTION, optional = true, doc = @doc("Switch, radio, toggle button or slider change handler, as an action or block. Radio group bindings are updated before handlers run; ui_value is false for deselected radios and true for the selected radio.")),
 }, omissible = "label")
 @validator(UiControlStatement.ControlValidator.class)
-@doc("Screen-overlay controls. A final block handles activation/change, never drawing. var: binds directly; value: requires a handler. Inline handlers run on the experiment, like event blocks. Pointer activation commits on release.")
+@doc("Screen-overlay controls. A final block handles activation/change, never drawing. var: binds directly; value: requires a handler. Inline handlers run on the experiment, like event blocks. Pointer activation commits on release, except sliders with continuous: true, which commit as their value changes during press and drag.")
 public class UiControlStatement extends AbstractStatementSequence {
 
 	public static final String OVERLAY_SCOPE_KEY = "gama.ui.overlay.controls";
@@ -156,8 +157,9 @@ public class UiControlStatement extends AbstractStatementSequence {
 				d.error("A momentary button accepts action: or a final block; use toggle: true for a boolean binding.");
 			}
 			if (!button && d.hasFacet("action")) d.error("Use on_change: or a final block for value controls.");
-			if (!"ui_slider".equals(d.getKeyword()) && (d.hasFacet("min") || d.hasFacet("max") || d.hasFacet("step"))) {
-				d.error("min:, max: and step: are slider facets.");
+			if (!"ui_slider".equals(d.getKeyword()) && (d.hasFacet("min") || d.hasFacet("max")
+					|| d.hasFacet("step") || d.hasFacet("continuous"))) {
+				d.error("min:, max:, step: and continuous: are slider facets.");
 			}
 			final IExpression callback = d.getFacetExpr(button ? "action" : "on_change");
 			if (callback != null && callback.getConstValue() instanceof IActionDescription action
@@ -230,6 +232,7 @@ public class UiControlStatement extends AbstractStatementSequence {
 			throw GamaRuntimeException.error("UI control position and size must be finite, with a positive size", scope);
 		}
 		final boolean enabled = Cast.asBool(scope, evaluate(scope, "active", true));
+		final boolean continuous = isSlider() && Cast.asBool(scope, evaluate(scope, "continuous", false));
 		final Object current = binding != null ? binding.value(scope) : value == null ? null : value.value(scope);
 		final boolean integer = binding != null && binding.getGamlType().id() == IType.INT;
 		final double min = number(scope, "min", 0), max = number(scope, "max", 100), step = number(scope, "step", integer ? 1 : 0);
@@ -248,7 +251,7 @@ public class UiControlStatement extends AbstractStatementSequence {
 			throw GamaRuntimeException.error("ui_radio group: must be a non-empty string", scope);
 		}
 		final String group = isRadio() ? (String) groupValue : null;
-		final Object shown = overlay.registerControl(this, bounds, current, enabled, min, max, step, group);
+		final Object shown = overlay.registerControl(this, bounds, current, enabled, min, max, step, continuous, group);
 		if ("ui_button".equals(kind) && (hasFacet("image") || hasFacet("image_pressed")
 				|| hasFacet("image_hover") || hasFacet("image_checked"))) {
 			final ButtonImage image = buttonImage(scope, overlay, enabled, toggle && Cast.asBool(scope, shown));

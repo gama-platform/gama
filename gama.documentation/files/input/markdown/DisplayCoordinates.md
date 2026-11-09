@@ -877,10 +877,21 @@ as `image_hover:`. Inactive buttons use only their checked/default appearance.
 If no image resolves for the current state, the button is invisible but retains
 its declared interaction bounds.
 
-Slider limits default to 0 and 100. An omitted step is continuous for float
-bindings and 1 for integer bindings; an explicit step must be positive.
+Slider limits default to 0 and 100. An omitted step disables snapping for float
+bindings and uses a step of 1 for integer bindings; an explicit step must be positive.
 Integer bindings also require integer bounds and steps. Steps are measured from
 the minimum, with the maximum also reachable.
+
+`continuous:` controls when slider changes are applied, independently of `step:`.
+It defaults to `false`: dragging only previews the value, and release commits it.
+With `continuous: true`, pressing or dragging commits each changed value immediately,
+assigning `var:` before invoking its optional handler, or invoking the required handler
+for `value:`. Repeated pointer events at the same value and release without a new value
+do not invoke duplicate handlers.
+
+```gaml
+ui_slider "Shared zoom" var: factor min: 0.1 max: 2.0 continuous: true;
+```
 
 `ui_radio` displays a label and a switch-style circle on the right: a soft
 accent ring with a white inset when unchecked, and a full-accent ring with a
@@ -907,10 +918,13 @@ switch; its circle remains visible independently of `border:` and `background:`.
 
 This first implementation uses left-pointer press/release. Buttons activate
 on release inside their bounds; switches and toggle buttons toggle on release inside; sliders
-preview while dragging and commit on release, including outside their bounds.
-Leaving the display or losing focus cancels capture without committing.
-Changing a captured control's bounds, range, value or active state also cancels
-the pending change.
+preview while dragging and commit on release, including outside their bounds, unless
+`continuous: true` applies their changes during press and drag.
+Leaving the display or losing focus cancels capture without a further commit;
+values already applied by a continuous slider are not rolled back.
+Changing a captured control's bounds, range, active state or `continuous:` mode also
+cancels capture. Changing its bound value cancels a pending release-only change,
+but does not cancel a continuous drag, which keeps its pointer-controlled preview.
 Control drags do not pan the display or move the camera. Generic input
 listeners still observe the original input stream. No callback runs while
 the control is being drawn. Keyboard focus, keyboard activation and

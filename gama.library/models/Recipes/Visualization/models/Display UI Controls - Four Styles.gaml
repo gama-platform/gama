@@ -124,7 +124,7 @@ experiment "Four styles together" type: gui {
 				ui_slider "Speed" var: motion_speed min: 0.0 max: 6.0 step: 0.25
 					at: {16, 208} size: {288, 44} active: moving
 					color: text_color font: panel_font background: control_color
-					rounded: round_controls accent: accent_color {
+					rounded: round_controls accent: accent_color continuous: true {
 					ask panel_owner { slow_mode <- false; fast_mode <- false; }
 				}
 				ui_radio "Slow" var: slow_mode group: "speed" at: {16, 262} size: control_size

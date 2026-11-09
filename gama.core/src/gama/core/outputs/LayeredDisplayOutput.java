@@ -454,7 +454,12 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		final long t0 = System.currentTimeMillis();
 		DEBUG.OUT(
 				"[LayeredDisplayOutput.update] START for " + getName() + " thread=" + Thread.currentThread().getName());
-		getData().update(getScope(), description.getFacets());
+		final IGraphicsScope source = getScope();
+		// Input callbacks and simulation updates can refresh the same display concurrently.
+		try (IGraphicsScope refreshScope = source.copyForGraphics("for display update")) {
+			refreshScope.setGraphics(source.getGraphics());
+			getData().update(refreshScope, description.getFacets());
+		}
 		DEBUG.OUT("[LayeredDisplayOutput.update] after getData().update=" + (System.currentTimeMillis() - t0) + "ms");
 
 		super.update();
