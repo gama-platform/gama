@@ -3,9 +3,9 @@
 ## Navigator icons
 
 **Preferences > Interface > Workspace > Navigator icons** selects
-**Current** (the default), **Duotone** (slate blue and turquoise), **Retro**
+**Current**, **Duotone** (slate blue and turquoise), **Retro**
 (petroleum blue and ochre), **Petrol** (monochrome petroleum blue), **Outline**
-(petroleum-blue strokes only, without fills), **Mosaic**
+(the default: petroleum-blue strokes only, without fills), **Mosaic**
 (solid geometric petroleum-blue silhouettes with negative-space cutouts and opacity variations),
 **Orbit** (tinted circular badges with mineral colors and scientific pictograms),
 **Orbit Outline** (the Orbit pictograms in monochrome petroleum-blue outlines,
@@ -14,6 +14,8 @@ transparent pictogram cutouts), or **Folio Color** (the same folders colored by
 level: petroleum-blue categories, ochre projects, and slate-blue model/resource folders).
 The choice is saved and updates the navigator icons
 immediately, without rebuilding their contents or resetting expansion.
+Previously saved icon choices are preserved. In Outline, model/resource folder
+symbols are centered at 92% scale; projects and top-level categories retain their size.
 All alternative sets provide light/dark variants. Duotone, Retro, Petrol, and Outline use the same fine-stroke symbols
 (0.65-unit contours, 0.75-unit details, and 0.85-unit checkmarks in a 24-unit view box).
 Data, Demos, Library, Recipes, Tutorials, Tests, User, and contributed roots

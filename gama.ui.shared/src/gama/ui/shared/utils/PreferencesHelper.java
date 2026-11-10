@@ -124,7 +124,7 @@ public class PreferencesHelper {
 					false).in(NAME, WORKSPACE).inPlayer(false).hidden();
 
 	public static final Pref<String> NAVIGATOR_ICON_SET =
-			create("pref_navigator_icon_set", "Navigator icons", "Current", IType.STRING, false)
+			create("pref_navigator_icon_set", "Navigator icons", "Outline", IType.STRING, false)
 					.among("Current", "Duotone", "Retro", "Petrol", "Outline", "Mosaic", "Orbit", "Orbit Outline", "Folio",
 							"Folio Color")
 					.in(NAME, WORKSPACE).inPlayer(false)
