@@ -298,6 +298,14 @@
                   label="Individual file..."
                   style="push">
             </command>
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <iterate ifEmpty="true" operator="and">
+                     <test property="gama.navigator.supportsWorkspaceActions"
+                           value="true" forcePluginActivation="true"/>
+                  </iterate>
+               </with>
+            </visibleWhen>
          </menu>
          <separator
                name="gama.ui.gamaNavigator.separator1"
@@ -407,6 +415,8 @@
                         <instanceof
                               value="gama.ui.navigator.view.contents.VirtualContent">
                         </instanceof>
+                        <test property="gama.navigator.supportsWorkspaceActions"
+                              value="true" forcePluginActivation="true"/>
                         <not>
                            <instanceof
                                  value="gama.ui.navigator.view.contents.UserGroupFolder">
@@ -929,6 +939,13 @@ type="java.lang.Object">
              namespace="gama.navigator"
              properties="needsConversion"
              type="org.eclipse.core.resources.IResource">
+       </propertyTester>
+       <propertyTester
+             class="gama.ui.navigator.view.WorkspaceActionsTester"
+             id="gama.navigator.workspaceActionsTester"
+             namespace="gama.navigator"
+             properties="supportsWorkspaceActions"
+             type="java.lang.Object">
        </propertyTester>
     </extension>
 </plugin>

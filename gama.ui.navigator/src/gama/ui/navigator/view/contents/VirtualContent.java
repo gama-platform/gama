@@ -243,6 +243,15 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	}
 
 	/**
+	 * Whether workspace menu actions (import, resource properties, editing and refactoring) apply to this node.
+	 * Inherited from the parent so an independent folder can opt out for its whole hierarchy. Refresh remains available.
+	 */
+	public boolean supportsWorkspaceActions() {
+		final P parent = getParent();
+		return parent == null || parent.supportsWorkspaceActions();
+	}
+
+	/**
 	 * Gets the project.
 	 *
 	 * @return the project

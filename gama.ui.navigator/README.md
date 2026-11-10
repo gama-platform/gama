@@ -179,6 +179,17 @@ insertion groups are `group.new`, `group.open`, `group.openWith`, `group.copy`,
 `group.refresh`, and `additions`. Prefer `additions` for plug-in-specific commands,
 or a semantic group such as `group.open` for "Open on GitHub".
 
+Independent hierarchies can override `VirtualContent.supportsWorkspaceActions()`
+to return `false` on their top-level folder. Children inherit that policy.
+The standard **Import...**, resource **Properties**, **Copy**, **Paste**, **Delete**
+and refactoring entries are then omitted, including for mixed selections containing
+such nodes. Contributed commands remain available and can supply their own
+properties or import action. Declarative contributions can check the same policy
+with the `gama.navigator.supportsWorkspaceActions` property tester.
+Keep the navigator's existing **Refresh/F5** action rather than adding another:
+it calls `TopLevelFolder.refresh()` for independent folders and already has the
+standard refresh icon and keyboard binding.
+
 ### Commands and handlers (recommended)
 
 Declare a command/handler and contribute it through `org.eclipse.ui.menus`:
