@@ -1,5 +1,47 @@
 # Navigator
 
+## Navigator icons
+
+**Preferences > Interface > Workspace > Navigator icons** selects
+**Current** (the default), **Duotone** (slate blue and turquoise), **Retro**
+(petroleum blue and ochre), **Petrol** (monochrome petroleum blue), **Outline**
+(petroleum-blue strokes only, without fills), **Mosaic**
+(solid geometric petroleum-blue silhouettes with negative-space cutouts and opacity variations),
+**Orbit** (tinted circular badges with mineral colors and scientific pictograms),
+**Orbit Outline** (the Orbit pictograms in monochrome petroleum-blue outlines,
+without badges or fills), **Folio** (two-plane petroleum-blue folders with
+transparent pictogram cutouts), or **Folio Color** (the same folders colored by
+level: petroleum-blue categories, ochre projects, and slate-blue model/resource folders).
+The choice is saved and updates the navigator icons
+immediately, without rebuilding their contents or resetting expansion.
+All alternative sets provide light/dark variants. Duotone, Retro, Petrol, and Outline use the same fine-stroke symbols
+(0.65-unit contours, 0.75-unit details, and 0.85-unit checkmarks in a 24-unit view box).
+Data, Demos, Library, Recipes, Tutorials, Tests, User, and contributed roots
+using the shared Community icon are affected, along with projects, model folders
+(folder with chevrons), and resource folders (folder with documents).
+Mosaic instead uses modular tiles for projects, a terminal for model folders,
+and a composition of geometric shapes for resource folders.
+Orbit uses a folder for projects, code chevrons for model folders, and
+geometric objects for resource folders, with brighter colors in the dark theme.
+Model/resource icons are centered at 80% scale to distinguish them from top-level
+categories; Orbit Outline keeps the same sizes and pictograms.
+Folio uses the same folded-folder silhouette throughout, with a large cutout
+for each category and model/resource folders. Data uses a database cylinder,
+distinct from Community's paired people. Projects use a small hierarchy cutout
+(one parent linked to two children). The front plane has a vertical right edge
+and a square bottom-right corner throughout the set.
+Cutouts remain transparent on any navigator background, including selections.
+Folio Color preserves the same geometry and cutouts, with lighter variants of its
+three colors for the dark theme. All top-level categories share one color.
+Contributed virtual projects and folders, including those under Community, also
+use the selected set when they return the shared project/model-folder/resource-folder
+descriptors. The navigator applies this substitution when displaying labels and status
+icons; custom extension icons remain unchanged.
+Folder classification still follows model contents and updates when those contents
+change. External-link folders keep their cloud icon.
+File icons, validation overlays, user-group icons, and other independently contributed
+categories keep their existing icons. These are bundled sets, not external icon-folder loading.
+
 ## Dependencies
 
 **Show dependencies** on a model or standalone experiment file opens the

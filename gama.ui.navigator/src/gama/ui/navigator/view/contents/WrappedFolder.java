@@ -67,7 +67,8 @@ public class WrappedFolder extends WrappedContainer<IFolder> {
 	@Override
 	public ImageDescriptor getImageDescriptor() {
 		countModels();
-		return image;
+		if ("external".equals(getName())) return image;
+		return NavigatorIcons.descriptor(modelsCount == 0 ? "resource-folder" : "model-folder", image);
 	}
 
 	@Override

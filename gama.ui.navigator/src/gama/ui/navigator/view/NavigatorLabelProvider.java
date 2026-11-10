@@ -35,7 +35,7 @@ public class NavigatorLabelProvider extends CellLabelProvider
 	@Override
 	public Image getImage(final Object element) {
 		if (element instanceof VirtualContent vc) {
-			ImageDescriptor id = vc.getImageDescriptor();
+			ImageDescriptor id = vc.getNavigatorImageDescriptor();
 			if (id != null) return id.createImage();
 		}
 		return null;

@@ -122,6 +122,14 @@ public class PreferencesHelper {
 	public static final Pref<Boolean> NAVIGATOR_LINK_WITH_EDITOR =
 			create("pref_navigator_link_with_editor", "Keep the navigator in sync with the editor", true, IType.BOOL,
 					false).in(NAME, WORKSPACE).inPlayer(false).hidden();
+
+	public static final Pref<String> NAVIGATOR_ICON_SET =
+			create("pref_navigator_icon_set", "Navigator icons", "Current", IType.STRING, false)
+					.among("Current", "Duotone", "Retro", "Petrol", "Outline", "Mosaic", "Orbit", "Orbit Outline", "Folio",
+							"Folio Color")
+					.in(NAME, WORKSPACE).inPlayer(false)
+					.onChange(newValue -> WorkbenchHelper.refreshNavigator());
+
 	/** The Constant NAVIGATOR_HIDDEN. */
 	public static final Pref<Boolean> NAVIGATOR_HIDDEN =
 			create("pref_navigator_display_hidden", "Display hidden files in navigator", false, IType.BOOL, false)
