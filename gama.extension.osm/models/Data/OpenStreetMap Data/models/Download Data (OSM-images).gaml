@@ -384,7 +384,7 @@ global {
 			color <-rgb( (im) at {grid_x ,grid_y }) ;
 		}
 			
-		building_google <- building_google + define_building_from_image(cell_google collect each.shape, cell_google collect each.color);
+		building_google <- building_google + define_building_from_image(list(cell_google) collect each.shape, list(cell_google) collect each.color);
 					
 		if (not empty(building_google)) {
 			save building_google crs:"EPSG:3857" format: "shp" to:exporting_path +"google_map_building.shp";

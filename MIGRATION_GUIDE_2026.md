@@ -61,6 +61,9 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | OBJ geometry buffers contain one polygon per face | Review models that relied on the former incomplete intermediate polygons |
 | Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
 | Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
+| Grid `collect` preserves spatial structure | Use `list(cell) collect expression` when a flat list is required |
+| Grid attribute brackets are typed matrix reads and writes | Replace `matrix_with(cell, "attribute")` with `cell[attribute]` and `set_values` with `cell[attribute] <- matrix;` |
+| Attribute brackets also support ordinary species | `species[attribute]` reads a typed list; assigning a list requires exactly one element per current agent |
 
 ## Engine, UI, and Graphics
 
@@ -387,6 +390,92 @@ allocates an independent container, even for repeated executions of the same loc
 `cast(scope, null, ...)`. `getDefault()` remains the type's fallback/nullability value.
 The Java construction helpers `GamaListFactory.castToList` and `GamaMapFactory.castToMap` still
 convert Java null to an empty container; they are not the GAML casts.
+
+### Species attribute brackets and grid matrices
+
+Attribute brackets work on any statically known species. Ordinary species produce typed lists:
+
+```gaml
+list<float> energies <- animal[energy];
+animal[energy] <- energies collect (each * 0.95);
+```
+
+The list follows the species' current population order, just like `animal collect each.energy`;
+it is not indexed by agent identifiers. Assignment requires a non-nil list of compatible elements
+with exactly one element per current agent. Length and content type are checked before any write.
+An empty population reads as an empty typed list and accepts an empty list.
+Agents and values are captured before invoking setters, so setter side effects do not reorder the assignment.
+The population is resolved in the caller's host context, as with ordinary species iteration.
+Inherited attributes and species aliases are supported when their species type is statically known.
+Grids retain the spatial matrix behavior described below.
+
+```gaml
+// Before
+matrix<float> roads <- matrix_with(cell, "road");
+cell set_values ("road", roads);
+list<float> flat_roads <- cell collect each.road;
+
+// After
+matrix<float> roads <- cell[road];
+cell[road] <- roads;
+list<float> flat_roads <- list(cell) collect each.road;
+// Alternatively, flatten the spatial snapshot explicitly:
+list<float> flattened <- list(cell collect each.road);
+```
+
+`collect` on a statically known grid species returns a matrix with the grid's column and row
+counts. `each` is a cell agent, and `result[col, row]` contains the expression's value for
+the cell at `grid_x = col`, `grid_y = row`. These are zero-based grid indices, not world
+coordinates. Expressions are evaluated in row-major order, once per existing cell; missing
+cells receive the result content type's default value. The matrix is a snapshot, not a live
+view, and container-valued attributes are not deep-copied.
+
+The matrix element type is inferred from the expression: integer, float, boolean, color,
+string and container-valued expressions retain their types. Direct accesses such as
+`cell collect each.road` (including named iterators, `cell collect (c: c.road)`) use optimized
+attribute extraction, as does the equivalent `cell[road]`. Arbitrary expressions use normal
+per-cell evaluation, for example `cell collect (each.road * each.capacity)`.
+
+Float attribute snapshots are backed internally by a field while retaining the inferred
+`matrix<float>` type. Thus `field r <- field(cell[road]);` reuses the extracted field without
+copying its values. The equivalent direct-attribute `collect` uses the same representation.
+Extraction still creates a snapshot, not a live view of the grid. Field spatial accesses use
+the usual field world-coordinate conventions; `[col, row]` continues to use grid indices.
+
+In `species[attribute]`, a bare identifier naming an attribute resolves against the statically
+known species, even if a caller variable has the same name. The result is a
+`list<attribute_type>`, or `matrix<attribute_type>` for grids. Unknown names are compiled as ordinary index expressions and
+reported as errors if they are not valid caller variables either. Numeric and coordinate
+indexing are unchanged: `cell[0]` and `cell[col, row]` still select cells.
+To force caller-variable indexing when names collide, parenthesize the index: `cell[(road)]`.
+Brackets on lists, maps and matrices keep their existing meaning.
+
+Lists of cells, filtered grids (`cell where ...`), ordinary species, and species expressions
+without a statically known grid type still produce lists. Cast the source to a list to
+preserve the old flat behavior, especially before list-only operators such as
+`remove_duplicates` or functions taking lists. On an existing matrix, `collect` also preserves
+dimensions; it does not flatten the matrix.
+
+Assignments to species attribute brackets check that the attribute is writable and accepts the
+supplied list or matrix element type. The right-hand expression is evaluated once in the caller's context
+before writing. Use separate assignments for separate attributes:
+
+```gaml
+cell[road] <- roads;
+cell[color] <- colors;
+```
+
+Every matrix must have exactly the grid's dimensions; nil matrices and mismatched dimensions
+raise an error before any attribute is changed. Matrix positions map directly to grid indices.
+Missing cells are skipped. Writes use normal attribute setters, preserving type conversion,
+constraints and change notifications, with cells visited in row-major order. Each assignment
+is checked independently; errors from an individual setter do not roll back earlier writes.
+Reads are snapshots: modifying a separately stored list or matrix does not update the agents until it
+is assigned back. Container-valued attributes are shallowly copied, not deep-copied.
+
+The string-based grid `matrix_with` and `set_values` operators are removed. The dimensions-based iterator
+`{columns, rows} matrix_with expression` is unchanged: its `each` denotes a coordinate point,
+not a cell agent.
 
 ### 1.1 Arrow (`->`) expressions — braces removed
 

@@ -235,9 +235,11 @@ public class GamaMatrixFactory {
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "creates a matrix with a size provided by the first operand, and filled with the second operand. The given expression, unless constant, is evaluated for each cell. As in any iterator, the value of 'each' represents the index of the current cell (a point (col, row)) and can be retrieved using 'each' or explicitly using the '(:x...' syntax ",
-			comment = "Note that both components of the right operand point should be positive, otherwise an exception is raised.",
-			see = { IKeyword.MATRIX, "as_matrix" })
+			value = "Creates a matrix with dimensions (columns, rows) supplied by the first operand. The second operand is evaluated for each element, "
+					+ "and each is the zero-based coordinate point (column, row), not a cell agent. A named iterator is also supported: {2, 2} matrix_with (p: p.x + p.y).",
+			comment = "Both dimensions must be positive. To read an existing grid attribute use cell[attribute]; for computed values use cell collect expression. "
+					+ "The former matrix_with(cell, 'attribute') grid overload has been removed. Grid collect infers its matrix content type from the expression.",
+			see = { IKeyword.MATRIX, "as_matrix", "collect" })
 	@test ("{2,2} matrix_with (1) = matrix([1,1],[1,1])")
 	@test ("{2,2} matrix_with (p: p.x + p.y) = matrix([0.0, 1.0],[1.0,2.0])")
 	public static IMatrix createWith(final IScope scope, final String eachName, final IPoint size,

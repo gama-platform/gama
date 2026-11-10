@@ -1397,8 +1397,21 @@ The codebase makes extensive use of new Java features like pattern matching, res
 
 GAML's matrix toolkit expands with element-wise matrix/scalar arithmetic, powers, convolution,
 scalar comparisons producing masks, `shift`, matrix-valued `ifelse`, and element-wise mathematical
-functions. `matrix_with(grid, "attribute")` reads a grid attribute as a matrix; `set_values`
-writes matrix values back to the grid. Vectorized matrix/field/diffusion paths use the Java Vector API,
+functions. `cell[attribute]` reads a complete grid species attribute as a typed spatial matrix,
+with optimized extraction. `cell[attribute] <- values;` writes a matrix back using a
+compile-time-checked attribute reference. Values retain their declared types and normal
+attribute setter behavior. Matrix dimensions are checked before writing.
+Float attribute snapshots are internally fields, so `field(cell[attribute])` reuses the
+snapshot without a conversion copy while bracket expressions remain typed as `matrix<float>`.
+The same brackets work on ordinary species: `animal[energy]` returns a typed list in population order,
+and `animal[energy] <- values;` assigns a compatible list with exactly one element per agent.
+Inherited attributes and typed species aliases are supported; list length is checked before writing.
+`cell collect expression` also preserves spatial structure and infers the result content type.
+**Migration:** the string-based grid operators `matrix_with(grid, "attribute")` and `set_values` are removed;
+the dimensions-based `{columns, rows} matrix_with expression` remains available.
+Grid `collect` now returns a matrix, so use `list(cell) collect each.attribute` where a flat
+list is required. Lists of cells and filtered grids still collect to lists.
+Vectorized matrix/field/diffusion paths use the Java Vector API,
 and bundled Life and Ant Foraging examples demonstrate matrix-based computation
 ([`025ac5462`](https://github.com/gama-platform/gama/commit/025ac5462),
 [`b16056b3d`](https://github.com/gama-platform/gama/commit/b16056b3d),

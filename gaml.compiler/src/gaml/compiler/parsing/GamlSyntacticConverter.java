@@ -77,6 +77,7 @@ import gaml.compiler.EGaml;
 import gaml.compiler.ast.SyntacticExperimentModelElement;
 import gaml.compiler.ast.SyntacticFactory;
 import gaml.compiler.ast.SyntacticModelElement;
+import gaml.compiler.descriptions.IndexedExpressionDescription;
 import gaml.compiler.descriptions.OperatorExpressionDescription;
 import gaml.compiler.factories.ExpressionDescriptionFactory;
 import gaml.compiler.gaml.Access;
@@ -885,7 +886,8 @@ public class GamlSyntacticConverter {
 				// Add facet all: true when no index is provided
 				addFacet(elt, ALL, GAML.getExpressionDescriptionFactory().createConstant(true));
 			} else if (args.size() == 1) { // Integer index -- or pair index see #3099
-				addFacet(elt, AT, convExpr(args.get(0)));
+				addFacet(elt, AT, isAdd ? convExpr(args.get(0))
+						: new IndexedExpressionDescription((Access) expr));
 			} else { // Point index
 				final IExpressionDescription p = new OperatorExpressionDescription("internal_list",
 						convExpr(args.get(0)), convExpr(args.get(1)));

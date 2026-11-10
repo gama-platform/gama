@@ -45,7 +45,7 @@ global {
 		}
 		
 		//same computation, but in this case, we consider only the centroid (location) of the cell for the computation of the distance
-		map<point, float> results_location <- map<point, float>(IDW(cell_location collect each.location, pts, power));
+		map<point, float> results_location <- map<point, float>(IDW(list(cell_location) collect each.location, pts, power));
 			
 		ask cell_location {
 			val <- results_location[self.location];

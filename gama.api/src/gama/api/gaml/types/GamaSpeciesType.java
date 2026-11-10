@@ -122,7 +122,12 @@ import gama.api.runtime.scope.IScope;
 		wraps = { ISpecies.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SPECIES },
-		doc = @doc ("Meta-type of the species present in the GAML language"))
+		doc = @doc ("Meta-type of the species present in the GAML language. For a statically known species, "
+				+ "species[attribute] reads a typed list in population order, and species[attribute] <- values; "
+				+ "assigns a compatible list with exactly one value per current agent. Grids use spatial matrices instead. "
+				+ "Attribute names and writability are checked at compile time. Reads are shallow snapshots; "
+				+ "writes preserve normal setters, constraints and notifications. "
+				+ "Bare attribute names take precedence over caller variables; use species[(index)] to force ordinary indexing."))
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 
