@@ -121,7 +121,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 						type = IType.LIST,
 						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
-						doc = @doc ("a new temporary variable name containing the list of created agents (a list, even if only one agent has been created)")),
+						doc = @doc ("a new temporary variable name containing the list of created agents (a list, even if only one agent has been created). A species name or an expression of type species<agent_type> both produce a list<agent_type>.")),
 				@facet (
 						name = FROM,
 						type = IType.NONE,

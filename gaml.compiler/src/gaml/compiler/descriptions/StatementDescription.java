@@ -279,6 +279,12 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	}
 
 	@Override
+	protected IType<?> computeType() {
+		final IType<?> result = super.computeType();
+		return isCreate() && result.id() == IType.SPECIES ? result.getContentType() : result;
+	}
+
+	@Override
 	protected IExpression createVarWithTypes(final String tag) {
 		compileTypeProviderFacets();
 		final var tempFacet = getArtefact().getPossibleFacets().get(tag);
