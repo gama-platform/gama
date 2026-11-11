@@ -447,8 +447,10 @@ known species, even if a caller variable has the same name. The result is a
 `list<attribute_type>`, or `matrix<attribute_type>` for grids. Unknown names are compiled as ordinary index expressions and
 reported as errors if they are not valid caller variables either. Numeric and coordinate
 indexing are unchanged: `cell[0]` and `cell[col, row]` still select cells.
-To force caller-variable indexing when names collide, parenthesize the index: `cell[(road)]`.
-Brackets on lists, maps and matrices keep their existing meaning.
+To index when names collide, qualify the caller's attribute (for example, `road[self.linked]`
+inside a road agent), parenthesize the index (`road[(linked)]`), or copy it to an intermediate
+variable whose name is not an attribute of the indexed species (`int road_index <- linked;`
+followed by `road[road_index]`). Brackets on lists, maps and matrices keep their existing meaning.
 
 Lists of cells, filtered grids (`cell where ...`), ordinary species, and species expressions
 without a statically known grid type still produce lists. Cast the source to a list to
