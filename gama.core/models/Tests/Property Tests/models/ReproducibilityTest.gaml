@@ -17,18 +17,39 @@ species walker {
 experiment ReproducibilityTest type: test autorun: true {
 
 	/** Draws one value with each random operator */
-	list draw_all() {
-		return [rnd(1000), rnd(1.0), rnd(5, 10), rnd(0.0, 1.0, 0.1), flip(0.5), gauss(0, 1), gauss({0, 1}),
-			truncated_gauss(0, 1, -1, 1), poisson(3.0), binomial(10, 0.5), exp_rnd(2.0), gamma_rnd(2.0, 2.0),
-			lognormal_rnd(0.0, 1.0), weibull_rnd(1.0, 1.5), skew_gauss(0.0, 1.0, 0.7, 0.2), rnd_choice([0.2, 0.3, 0.5]),
-			shuffle([1, 2, 3, 4, 5, 6]), 3 among [1, 2, 3, 4, 5, 6], one_of([1, 2, 3, 4, 5, 6]), any([1, 2, 3, 4, 5, 6]),
-			rnd_color(255), any_location_in(square(10)), sample([1, 2, 3, 4, 5], 3, false), rnd({10, 10, 10}),
-			rnd(1000, true), rnd(-1000, 1000, true)];
+	list<float> draw_all() {
+		return [
+			rnd(1000), 
+			rnd(1.0), 
+			rnd(5, 10), 
+			rnd(0.0, 1.0, 0.1), 
+			flip(0.5) ? 0: 1, 
+			gauss(0, 1), 
+			gauss({0, 1}),
+			truncated_gauss(0, 1, -1, 1), 
+			poisson(3.0), binomial(10, 0.5), 
+			exp_rnd(2.0), 
+			gamma_rnd(2.0, 2.0),
+			lognormal_rnd(0.0, 1.0), 
+			weibull_rnd(1.0, 1.5), 
+			skew_gauss(0.0, 1.0, 0.7, 0.2), 
+			rnd_choice([0.2, 0.3, 0.5]),
+			first(shuffle([1, 2, 3, 4, 5, 6])), 
+			first(3 among [1, 2, 3, 4, 5, 6]), 
+			one_of([1, 2, 3, 4, 5, 6]), 
+			any([1, 2, 3, 4, 5, 6]),
+			rnd_color(255).red, 
+			(any_location_in(square(10))).x, 
+			first(sample([1, 2, 3, 4, 5], 3, false)), 
+			(rnd({10, 10, 10})).x,
+			rnd(1000, true), 
+			rnd(-1000, 1000, true)
+			];
 	}
 
-	list draw_sequence(float s) {
+	list<list<float>> draw_sequence(float s) {
 		seed <- s;
-		list result <- [];
+		list<list<float>> result <- [];
 		loop times: 5 {
 			result <+ draw_all();
 		}
@@ -36,8 +57,8 @@ experiment ReproducibilityTest type: test autorun: true {
 	}
 
 	test "The same seed gives the same draws" {
-		list first_draw <- draw_sequence(42.0);
-		list second_draw <- draw_sequence(42.0);
+		list<list<float>> first_draw <- draw_sequence(42.0);
+		list<list<float>> second_draw <- draw_sequence(42.0);
 		list<string> different <- [];
 		loop i from: 0 to: length(first_draw) - 1 {
 			if (first_draw[i] != second_draw[i]) { different <+ string(first_draw[i]) + " / " + second_draw[i]; }
@@ -48,8 +69,8 @@ experiment ReproducibilityTest type: test autorun: true {
 	}
 
 	test "Different seeds give different draws" {
-		list first_draw <- draw_sequence(42.0);
-		list second_draw <- draw_sequence(43.0);
+		list<list<float>> first_draw <- draw_sequence(42.0);
+		list<list<float>> second_draw <- draw_sequence(43.0);
 		assert first_draw != second_draw;
 		// almost every continuous value must differ
 		list<float> first_floats <- (first_draw collect list(each)[1]);
@@ -84,10 +105,10 @@ experiment ReproducibilityTest type: test autorun: true {
 	}
 
 	test "The draws are not altered by an unrelated computation" {
-		list first_draw <- draw_sequence(5.0);
+		list<list<float>> first_draw <- draw_sequence(5.0);
 		seed <- 5.0;
 		float unrelated <- sqrt(2) * #pi;
-		list second_draw <- [];
+		list<list<float>> second_draw <- [];
 		loop times: 5 { second_draw <+ draw_all(); }
 		assert first_draw = second_draw;
 	}
