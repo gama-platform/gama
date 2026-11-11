@@ -11379,33 +11379,33 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleExpression"
-    // InternalGaml.g:3958:1: ruleExpression returns [EObject current=null] : this_Pair_0= rulePair ;
+    // InternalGaml.g:3958:1: ruleExpression returns [EObject current=null] : this_If_0= ruleIf ;
     public final EObject ruleExpression() throws RecognitionException {
         EObject current = null;
 
-        EObject this_Pair_0 = null;
+        EObject this_If_0 = null;
 
 
 
         	enterRule();
 
         try {
-            // InternalGaml.g:3964:2: (this_Pair_0= rulePair )
-            // InternalGaml.g:3965:2: this_Pair_0= rulePair
+            // InternalGaml.g:3964:2: (this_If_0= ruleIf )
+            // InternalGaml.g:3965:2: this_If_0= ruleIf
             {
             if ( state.backtracking==0 ) {
 
-              		newCompositeNode(grammarAccess.getExpressionAccess().getPairParserRuleCall());
+		newCompositeNode(grammarAccess.getExpressionAccess().getIfParserRuleCall());
               	
             }
             pushFollow(FOLLOW_2);
-            this_Pair_0=rulePair();
+            this_If_0=ruleIf();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
-              		current = this_Pair_0;
+		current = this_If_0;
               		afterParserOrEnumRuleCall();
               	
             }
@@ -11471,12 +11471,12 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "rulePair"
-    // InternalGaml.g:3983:1: rulePair returns [EObject current=null] : (this_If_0= ruleIf ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) ) )? ) ;
+    // InternalGaml.g:3983:1: rulePair returns [EObject current=null] : (this_Addition_0= ruleAddition ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) ) )? ) ;
     public final EObject rulePair() throws RecognitionException {
         EObject current = null;
 
         Token lv_op_2_0=null;
-        EObject this_If_0 = null;
+        EObject this_Addition_0 = null;
 
         EObject lv_right_3_0 = null;
 
@@ -11485,29 +11485,29 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalGaml.g:3989:2: ( (this_If_0= ruleIf ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) ) )? ) )
-            // InternalGaml.g:3990:2: (this_If_0= ruleIf ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) ) )? )
+            // InternalGaml.g:3989:2: ( (this_Addition_0= ruleAddition ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) ) )? ) )
+            // InternalGaml.g:3990:2: (this_Addition_0= ruleAddition ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) ) )? )
             {
-            // InternalGaml.g:3990:2: (this_If_0= ruleIf ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) ) )? )
-            // InternalGaml.g:3991:3: this_If_0= ruleIf ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) ) )?
+            // InternalGaml.g:3990:2: (this_Addition_0= ruleAddition ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) ) )? )
+            // InternalGaml.g:3991:3: this_Addition_0= ruleAddition ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) ) )?
             {
             if ( state.backtracking==0 ) {
 
-              			newCompositeNode(grammarAccess.getPairAccess().getIfParserRuleCall_0());
+			newCompositeNode(grammarAccess.getPairAccess().getAdditionParserRuleCall_0());
               		
             }
             pushFollow(FOLLOW_44);
-            this_If_0=ruleIf();
+            this_Addition_0=ruleAddition();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
-              			current = this_If_0;
+			current = this_Addition_0;
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalGaml.g:3999:3: ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) ) )?
+            // InternalGaml.g:3999:3: ( () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) ) )?
             int alt53=2;
             int LA53_0 = input.LA(1);
 
@@ -11516,7 +11516,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             }
             switch (alt53) {
                 case 1 :
-                    // InternalGaml.g:4000:4: () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleIf ) )
+                    // InternalGaml.g:4000:4: () ( (lv_op_2_0= '::' ) ) ( (lv_right_3_0= ruleAddition ) )
                     {
                     // InternalGaml.g:4000:4: ()
                     // InternalGaml.g:4001:5:
@@ -11557,19 +11557,19 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
                     }
 
-                    // InternalGaml.g:4021:4: ( (lv_right_3_0= ruleIf ) )
-                    // InternalGaml.g:4022:5: (lv_right_3_0= ruleIf )
+                    // InternalGaml.g:4021:4: ( (lv_right_3_0= ruleAddition ) )
+                    // InternalGaml.g:4022:5: (lv_right_3_0= ruleAddition )
                     {
-                    // InternalGaml.g:4022:5: (lv_right_3_0= ruleIf )
-                    // InternalGaml.g:4023:6: lv_right_3_0= ruleIf
+                    // InternalGaml.g:4022:5: (lv_right_3_0= ruleAddition )
+                    // InternalGaml.g:4023:6: lv_right_3_0= ruleAddition
                     {
                     if ( state.backtracking==0 ) {
 
-                      						newCompositeNode(grammarAccess.getPairAccess().getRightIfParserRuleCall_1_2_0());
+						newCompositeNode(grammarAccess.getPairAccess().getRightAdditionParserRuleCall_1_2_0());
                       					
                     }
                     pushFollow(FOLLOW_2);
-                    lv_right_3_0=ruleIf();
+                    lv_right_3_0=ruleAddition();
 
                     state._fsp--;
                     if (state.failed) return current;
@@ -11582,7 +11582,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"right",
                       							lv_right_3_0,
-                      							"gaml.compiler.Gaml.If");
+							"gaml.compiler.Gaml.Addition");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -11957,7 +11957,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:4163:4: () ( (lv_op_2_0= 'or' ) ) ( (lv_right_3_0= ruleAnd ) )
             	    {
             	    // InternalGaml.g:4163:4: ()
-            	    // InternalGaml.g:4164:5:
+	    // InternalGaml.g:4164:5:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -12156,7 +12156,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:4232:4: () ( (lv_op_2_0= 'and' ) ) ( (lv_right_3_0= ruleCast ) )
             	    {
             	    // InternalGaml.g:4232:4: ()
-            	    // InternalGaml.g:4233:5:
+	    // InternalGaml.g:4233:5:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -12591,7 +12591,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleComparison"
-    // InternalGaml.g:4387:1: ruleComparison returns [EObject current=null] : (this_Addition_0= ruleAddition ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) ) )? ) ;
+    // InternalGaml.g:4387:1: ruleComparison returns [EObject current=null] : (this_Pair_0= rulePair ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) ) )? ) ;
     public final EObject ruleComparison() throws RecognitionException {
         EObject current = null;
 
@@ -12601,7 +12601,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         Token lv_op_2_4=null;
         Token lv_op_2_5=null;
         Token lv_op_2_6=null;
-        EObject this_Addition_0 = null;
+        EObject this_Pair_0 = null;
 
         EObject lv_right_3_0 = null;
 
@@ -12610,29 +12610,29 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalGaml.g:4393:2: ( (this_Addition_0= ruleAddition ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) ) )? ) )
-            // InternalGaml.g:4394:2: (this_Addition_0= ruleAddition ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) ) )? )
+            // InternalGaml.g:4393:2: ( (this_Pair_0= rulePair ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) ) )? ) )
+            // InternalGaml.g:4394:2: (this_Pair_0= rulePair ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) ) )? )
             {
-            // InternalGaml.g:4394:2: (this_Addition_0= ruleAddition ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) ) )? )
-            // InternalGaml.g:4395:3: this_Addition_0= ruleAddition ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) ) )?
+            // InternalGaml.g:4394:2: (this_Pair_0= rulePair ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) ) )? )
+            // InternalGaml.g:4395:3: this_Pair_0= rulePair ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) ) )?
             {
             if ( state.backtracking==0 ) {
 
-              			newCompositeNode(grammarAccess.getComparisonAccess().getAdditionParserRuleCall_0());
+			newCompositeNode(grammarAccess.getComparisonAccess().getPairParserRuleCall_0());
               		
             }
             pushFollow(FOLLOW_49);
-            this_Addition_0=ruleAddition();
+            this_Pair_0=rulePair();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
-              			current = this_Addition_0;
+			current = this_Pair_0;
               			afterParserOrEnumRuleCall();
               		
             }
-            // InternalGaml.g:4403:3: ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) ) )?
+            // InternalGaml.g:4403:3: ( ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) ) )?
             int alt60=2;
             int LA60_0 = input.LA(1);
 
@@ -12648,7 +12648,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             }
             switch (alt60) {
                 case 1 :
-                    // InternalGaml.g:4404:4: ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= ruleAddition ) )
+                    // InternalGaml.g:4404:4: ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) ) ( (lv_right_3_0= rulePair ) )
                     {
                     // InternalGaml.g:4404:4: ( () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) ) )
                     // InternalGaml.g:4405:5: () ( ( (lv_op_2_1= '!=' | lv_op_2_2= '=' | lv_op_2_3= '>=' | lv_op_2_4= '<=' | lv_op_2_5= '<' | lv_op_2_6= '>' ) ) )
@@ -12846,19 +12846,19 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
                     }
 
-                    // InternalGaml.g:4484:4: ( (lv_right_3_0= ruleAddition ) )
-                    // InternalGaml.g:4485:5: (lv_right_3_0= ruleAddition )
+                    // InternalGaml.g:4484:4: ( (lv_right_3_0= rulePair ) )
+                    // InternalGaml.g:4485:5: (lv_right_3_0= rulePair )
                     {
-                    // InternalGaml.g:4485:5: (lv_right_3_0= ruleAddition )
-                    // InternalGaml.g:4486:6: lv_right_3_0= ruleAddition
+                    // InternalGaml.g:4485:5: (lv_right_3_0= rulePair )
+                    // InternalGaml.g:4486:6: lv_right_3_0= rulePair
                     {
                     if ( state.backtracking==0 ) {
 
-                      						newCompositeNode(grammarAccess.getComparisonAccess().getRightAdditionParserRuleCall_1_1_0());
+						newCompositeNode(grammarAccess.getComparisonAccess().getRightPairParserRuleCall_1_1_0());
                       					
                     }
                     pushFollow(FOLLOW_2);
-                    lv_right_3_0=ruleAddition();
+                    lv_right_3_0=rulePair();
 
                     state._fsp--;
                     if (state.failed) return current;
@@ -12871,7 +12871,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"right",
                       							lv_right_3_0,
-                      							"gaml.compiler.Gaml.Addition");
+							"gaml.compiler.Gaml.Pair");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -13008,7 +13008,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:4533:5: () ( ( (lv_op_2_1= '+' | lv_op_2_2= '-' ) ) )
             	    {
             	    // InternalGaml.g:4533:5: ()
-            	    // InternalGaml.g:4534:6:
+	    // InternalGaml.g:4534:6:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -13261,7 +13261,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:4617:5: () ( ( (lv_op_2_1= '*' | lv_op_2_2= '/' ) ) )
             	    {
             	    // InternalGaml.g:4617:5: ()
-            	    // InternalGaml.g:4618:6:
+	    // InternalGaml.g:4618:6:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -13513,7 +13513,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:4701:5: () ( (lv_op_2_0= '^' ) )
             	    {
             	    // InternalGaml.g:4701:5: ()
-            	    // InternalGaml.g:4702:6:
+	    // InternalGaml.g:4702:6:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -13713,7 +13713,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:4772:5: () ( (lv_op_2_0= ruleValid_ID ) )
             	    {
             	    // InternalGaml.g:4772:5: ()
-            	    // InternalGaml.g:4773:6:
+	    // InternalGaml.g:4773:6:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -14581,7 +14581,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:5069:4: () ( ( ( (lv_op_2_0= '[' ) ) ( (lv_right_3_0= ruleExpressionList ) )? otherlv_4= ']' ) | ( ( (lv_op_5_0= '.' ) ) ( (lv_right_6_0= rulePrimary ) ) ) )
             	    {
             	    // InternalGaml.g:5069:4: ()
-            	    // InternalGaml.g:5070:5:
+	    // InternalGaml.g:5070:5:
             	    {
             	    if ( state.backtracking==0 ) {
 
@@ -14904,7 +14904,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             	    // InternalGaml.g:5182:4: () ( (lv_op_2_0= '[' ) ) ( (lv_right_3_0= ruleExpressionList ) )? otherlv_4= ']'
             	    {
             	    // InternalGaml.g:5182:4: ()
-            	    // InternalGaml.g:5183:5:
+	    // InternalGaml.g:5183:5:
             	    {
             	    if ( state.backtracking==0 ) {
 

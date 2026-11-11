@@ -3963,11 +3963,11 @@ ruleExpression returns [EObject current=null]
 	leaveRule();
 }:
 	{
-		newCompositeNode(grammarAccess.getExpressionAccess().getPairParserRuleCall());
+		newCompositeNode(grammarAccess.getExpressionAccess().getIfParserRuleCall());
 	}
-	this_Pair_0=rulePair
+	this_If_0=ruleIf
 	{
-		$current = $this_Pair_0.current;
+		$current = $this_If_0.current;
 		afterParserOrEnumRuleCall();
 	}
 ;
@@ -3989,11 +3989,11 @@ rulePair returns [EObject current=null]
 }:
 	(
 		{
-			newCompositeNode(grammarAccess.getPairAccess().getIfParserRuleCall_0());
+			newCompositeNode(grammarAccess.getPairAccess().getAdditionParserRuleCall_0());
 		}
-		this_If_0=ruleIf
+		this_Addition_0=ruleAddition
 		{
-			$current = $this_If_0.current;
+			$current = $this_Addition_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		(
@@ -4021,9 +4021,9 @@ rulePair returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getPairAccess().getRightIfParserRuleCall_1_2_0());
+						newCompositeNode(grammarAccess.getPairAccess().getRightAdditionParserRuleCall_1_2_0());
 					}
-					lv_right_3_0=ruleIf
+					lv_right_3_0=ruleAddition
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getPairRule());
@@ -4032,7 +4032,7 @@ rulePair returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"gaml.compiler.Gaml.If");
+							"gaml.compiler.Gaml.Addition");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -4393,11 +4393,11 @@ ruleComparison returns [EObject current=null]
 }:
 	(
 		{
-			newCompositeNode(grammarAccess.getComparisonAccess().getAdditionParserRuleCall_0());
+			newCompositeNode(grammarAccess.getComparisonAccess().getPairParserRuleCall_0());
 		}
-		this_Addition_0=ruleAddition
+		this_Pair_0=rulePair
 		{
-			$current = $this_Addition_0.current;
+			$current = $this_Pair_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		(
@@ -4484,9 +4484,9 @@ ruleComparison returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getComparisonAccess().getRightAdditionParserRuleCall_1_1_0());
+						newCompositeNode(grammarAccess.getComparisonAccess().getRightPairParserRuleCall_1_1_0());
 					}
-					lv_right_3_0=ruleAddition
+					lv_right_3_0=rulePair
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getComparisonRule());
@@ -4495,7 +4495,7 @@ ruleComparison returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"gaml.compiler.Gaml.Addition");
+							"gaml.compiler.Gaml.Pair");
 						afterParserOrEnumRuleCall();
 					}
 				)

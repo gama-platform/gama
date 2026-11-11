@@ -320,16 +320,17 @@ MatchBlock returns Block:
  * ****************************************************************************************** ******************************************************************************************/
 /*
  * Operator precedence parsing via cascading rule calls. 
- * Lower precedence operators (like OR) wrap higher precedence operators (like Parentheses).
+ * Lower precedence operators wrap higher precedence operators. Pair has higher precedence than
+ * Comparison (including '=') but lower precedence than Addition.
  */
 Expression:
-	Pair;
+	If;
 
 BinaryOperator returns Expression:
-	Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
+	Or | And | Cast | Comparison | Pair | Addition | Multiplication | Power | Binary | Unit;
 
 Pair returns Expression:
-	If ({BinaryOperator.left=current} op='::' right=If)?;
+	Addition ({BinaryOperator.left=current} op='::' right=Addition)?;
 
 If returns Expression:
 	Or ({If.left=current} op='?' right=Or (':' ifFalse=Or))?;
@@ -346,7 +347,7 @@ Cast returns Expression:
 
 // Example: a != b or a >= 5
 Comparison returns Expression:
-	Addition (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Addition)?;
+	Pair (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair)?;
 
 // Example: a + b
 Addition returns Expression:

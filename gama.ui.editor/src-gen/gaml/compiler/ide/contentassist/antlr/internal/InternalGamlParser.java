@@ -4748,28 +4748,28 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "ruleExpression"
-    // InternalGaml.g:1422:1: ruleExpression : ( rulePair ) ;
+    // InternalGaml.g:1422:1: ruleExpression : ( ruleIf ) ;
     public final void ruleExpression() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:1426:2: ( ( rulePair ) )
-            // InternalGaml.g:1427:2: ( rulePair )
+            // InternalGaml.g:1426:2: ( ( ruleIf ) )
+            // InternalGaml.g:1427:2: ( ruleIf )
             {
-            // InternalGaml.g:1427:2: ( rulePair )
-            // InternalGaml.g:1428:3: rulePair
+            // InternalGaml.g:1427:2: ( ruleIf )
+            // InternalGaml.g:1428:3: ruleIf
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getExpressionAccess().getPairParserRuleCall()); 
+               before(grammarAccess.getExpressionAccess().getIfParserRuleCall());
             }
             pushFollow(FOLLOW_2);
-            rulePair();
+            ruleIf();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getExpressionAccess().getPairParserRuleCall()); 
+               after(grammarAccess.getExpressionAccess().getIfParserRuleCall());
             }
 
             }
@@ -28208,28 +28208,28 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__Pair__Group__0__Impl"
-    // InternalGaml.g:8160:1: rule__Pair__Group__0__Impl : ( ruleIf ) ;
+    // InternalGaml.g:8160:1: rule__Pair__Group__0__Impl : ( ruleAddition ) ;
     public final void rule__Pair__Group__0__Impl() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:8164:1: ( ( ruleIf ) )
-            // InternalGaml.g:8165:1: ( ruleIf )
+            // InternalGaml.g:8164:1: ( ( ruleAddition ) )
+            // InternalGaml.g:8165:1: ( ruleAddition )
             {
-            // InternalGaml.g:8165:1: ( ruleIf )
-            // InternalGaml.g:8166:2: ruleIf
+            // InternalGaml.g:8165:1: ( ruleAddition )
+            // InternalGaml.g:8166:2: ruleAddition
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getPairAccess().getIfParserRuleCall_0()); 
+               before(grammarAccess.getPairAccess().getAdditionParserRuleCall_0());
             }
             pushFollow(FOLLOW_2);
-            ruleIf();
+            ruleAddition();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getPairAccess().getIfParserRuleCall_0()); 
+               after(grammarAccess.getPairAccess().getAdditionParserRuleCall_0());
             }
 
             }
@@ -30950,28 +30950,28 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__Comparison__Group__0__Impl"
-    // InternalGaml.g:9024:1: rule__Comparison__Group__0__Impl : ( ruleAddition ) ;
+    // InternalGaml.g:9024:1: rule__Comparison__Group__0__Impl : ( rulePair ) ;
     public final void rule__Comparison__Group__0__Impl() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:9028:1: ( ( ruleAddition ) )
-            // InternalGaml.g:9029:1: ( ruleAddition )
+            // InternalGaml.g:9028:1: ( ( rulePair ) )
+            // InternalGaml.g:9029:1: ( rulePair )
             {
-            // InternalGaml.g:9029:1: ( ruleAddition )
-            // InternalGaml.g:9030:2: ruleAddition
+            // InternalGaml.g:9029:1: ( rulePair )
+            // InternalGaml.g:9030:2: rulePair
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getComparisonAccess().getAdditionParserRuleCall_0()); 
+               before(grammarAccess.getComparisonAccess().getPairParserRuleCall_0());
             }
             pushFollow(FOLLOW_2);
-            ruleAddition();
+            rulePair();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getComparisonAccess().getAdditionParserRuleCall_0()); 
+               after(grammarAccess.getComparisonAccess().getPairParserRuleCall_0());
             }
 
             }
@@ -46777,28 +46777,28 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__Pair__RightAssignment_1_2"
-    // InternalGaml.g:14134:1: rule__Pair__RightAssignment_1_2 : ( ruleIf ) ;
+    // InternalGaml.g:14134:1: rule__Pair__RightAssignment_1_2 : ( ruleAddition ) ;
     public final void rule__Pair__RightAssignment_1_2() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:14138:1: ( ( ruleIf ) )
-            // InternalGaml.g:14139:2: ( ruleIf )
+            // InternalGaml.g:14138:1: ( ( ruleAddition ) )
+            // InternalGaml.g:14139:2: ( ruleAddition )
             {
-            // InternalGaml.g:14139:2: ( ruleIf )
-            // InternalGaml.g:14140:3: ruleIf
+            // InternalGaml.g:14139:2: ( ruleAddition )
+            // InternalGaml.g:14140:3: ruleAddition
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getPairAccess().getRightIfParserRuleCall_1_2_0()); 
+               before(grammarAccess.getPairAccess().getRightAdditionParserRuleCall_1_2_0());
             }
             pushFollow(FOLLOW_2);
-            ruleIf();
+            ruleAddition();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getPairAccess().getRightIfParserRuleCall_1_2_0()); 
+               after(grammarAccess.getPairAccess().getRightAdditionParserRuleCall_1_2_0());
             }
 
             }
@@ -47355,28 +47355,28 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__Comparison__RightAssignment_1_1"
-    // InternalGaml.g:14330:1: rule__Comparison__RightAssignment_1_1 : ( ruleAddition ) ;
+    // InternalGaml.g:14330:1: rule__Comparison__RightAssignment_1_1 : ( rulePair ) ;
     public final void rule__Comparison__RightAssignment_1_1() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:14334:1: ( ( ruleAddition ) )
-            // InternalGaml.g:14335:2: ( ruleAddition )
+            // InternalGaml.g:14334:1: ( ( rulePair ) )
+            // InternalGaml.g:14335:2: ( rulePair )
             {
-            // InternalGaml.g:14335:2: ( ruleAddition )
-            // InternalGaml.g:14336:3: ruleAddition
+            // InternalGaml.g:14335:2: ( rulePair )
+            // InternalGaml.g:14336:3: rulePair
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getComparisonAccess().getRightAdditionParserRuleCall_1_1_0()); 
+               before(grammarAccess.getComparisonAccess().getRightPairParserRuleCall_1_1_0());
             }
             pushFollow(FOLLOW_2);
-            ruleAddition();
+            rulePair();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getComparisonAccess().getRightAdditionParserRuleCall_1_1_0()); 
+               after(grammarAccess.getComparisonAccess().getRightPairParserRuleCall_1_1_0());
             }
 
             }

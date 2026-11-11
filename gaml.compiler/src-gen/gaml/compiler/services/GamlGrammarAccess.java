@@ -2220,7 +2220,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	public class ExpressionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Expression");
-		private final RuleCall cPairParserRuleCall = (RuleCall)rule.eContents().get(1);
+		private final RuleCall cIfParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		///******************************************************************************************
 		// * *****************************************************************************************
@@ -2228,14 +2228,15 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		// * ****************************************************************************************** ******************************************************************************************/
 		///*
 		// * Operator precedence parsing via cascading rule calls.
-		// * Lower precedence operators (like OR) wrap higher precedence operators (like Parentheses).
+		// * Lower precedence operators wrap higher precedence operators. Pair has higher precedence than
+		// * Comparison (including '=') but lower precedence than Addition.
 		// */
 		//Expression:
-		//    Pair;
+		//    If;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Pair
-		public RuleCall getPairParserRuleCall() { return cPairParserRuleCall; }
+		//If
+		public RuleCall getIfParserRuleCall() { return cIfParserRuleCall; }
 	}
 	public class BinaryOperatorElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.BinaryOperator");
@@ -2244,18 +2245,18 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cAndParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cCastParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		private final RuleCall cComparisonParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cAdditionParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cMultiplicationParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cPowerParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cBinaryParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cPairParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cPairParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cAdditionParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cMultiplicationParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cPowerParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cBinaryParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
 		private final RuleCall cUnitParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
 		
 		//BinaryOperator returns Expression:
-		//    Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
+		//    Or | And | Cast | Comparison | Pair | Addition | Multiplication | Power | Binary | Unit;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit
+		//Or | And | Cast | Comparison | Pair | Addition | Multiplication | Power | Binary | Unit
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//Or
@@ -2270,20 +2271,20 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Comparison
 		public RuleCall getComparisonParserRuleCall_3() { return cComparisonParserRuleCall_3; }
 		
+		//Pair
+		public RuleCall getPairParserRuleCall_4() { return cPairParserRuleCall_4; }
+
 		//Addition
-		public RuleCall getAdditionParserRuleCall_4() { return cAdditionParserRuleCall_4; }
+		public RuleCall getAdditionParserRuleCall_5() { return cAdditionParserRuleCall_5; }
 		
 		//Multiplication
-		public RuleCall getMultiplicationParserRuleCall_5() { return cMultiplicationParserRuleCall_5; }
+		public RuleCall getMultiplicationParserRuleCall_6() { return cMultiplicationParserRuleCall_6; }
 		
 		//Power
-		public RuleCall getPowerParserRuleCall_6() { return cPowerParserRuleCall_6; }
+		public RuleCall getPowerParserRuleCall_7() { return cPowerParserRuleCall_7; }
 		
 		//Binary
-		public RuleCall getBinaryParserRuleCall_7() { return cBinaryParserRuleCall_7; }
-		
-		//Pair
-		public RuleCall getPairParserRuleCall_8() { return cPairParserRuleCall_8; }
+		public RuleCall getBinaryParserRuleCall_8() { return cBinaryParserRuleCall_8; }
 		
 		//Unit
 		public RuleCall getUnitParserRuleCall_9() { return cUnitParserRuleCall_9; }
@@ -2291,25 +2292,25 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	public class PairElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Pair");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cIfParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cAdditionParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cBinaryOperatorLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final Assignment cOpAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
 		private final Keyword cOpColonColonKeyword_1_1_0 = (Keyword)cOpAssignment_1_1.eContents().get(0);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
-		private final RuleCall cRightIfParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		private final RuleCall cRightAdditionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//Pair returns Expression:
-		//    If ({BinaryOperator.left=current} op='::' right=If)?;
+		//    Addition ({BinaryOperator.left=current} op='::' right=Addition)?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//If ({BinaryOperator.left=current} op='::' right=If)?
+		//Addition ({BinaryOperator.left=current} op='::' right=Addition)?
 		public Group getGroup() { return cGroup; }
 		
-		//If
-		public RuleCall getIfParserRuleCall_0() { return cIfParserRuleCall_0; }
+		//Addition
+		public RuleCall getAdditionParserRuleCall_0() { return cAdditionParserRuleCall_0; }
 		
-		//({BinaryOperator.left=current} op='::' right=If)?
+		//({BinaryOperator.left=current} op='::' right=Addition)?
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{BinaryOperator.left=current}
@@ -2321,11 +2322,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'::'
 		public Keyword getOpColonColonKeyword_1_1_0() { return cOpColonColonKeyword_1_1_0; }
 		
-		//right=If
+		//right=Addition
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
 		
-		//If
-		public RuleCall getRightIfParserRuleCall_1_2_0() { return cRightIfParserRuleCall_1_2_0; }
+		//Addition
+		public RuleCall getRightAdditionParserRuleCall_1_2_0() { return cRightAdditionParserRuleCall_1_2_0; }
 	}
 	public class IfElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.If");
@@ -2531,7 +2532,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	public class ComparisonElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Comparison");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cAdditionParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cPairParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Group cGroup_1_0 = (Group)cGroup_1.eContents().get(0);
 		private final Action cBinaryOperatorLeftAction_1_0_0 = (Action)cGroup_1_0.eContents().get(0);
@@ -2544,20 +2545,20 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cOpLessThanSignKeyword_1_0_1_0_4 = (Keyword)cOpAlternatives_1_0_1_0.eContents().get(4);
 		private final Keyword cOpGreaterThanSignKeyword_1_0_1_0_5 = (Keyword)cOpAlternatives_1_0_1_0.eContents().get(5);
 		private final Assignment cRightAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cRightAdditionParserRuleCall_1_1_0 = (RuleCall)cRightAssignment_1_1.eContents().get(0);
+		private final RuleCall cRightPairParserRuleCall_1_1_0 = (RuleCall)cRightAssignment_1_1.eContents().get(0);
 		
 		//// Example: a != b or a >= 5
 		//Comparison returns Expression:
-		//    Addition (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Addition)?;
+		//    Pair (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair)?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Addition (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Addition)?
+		//Pair (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair)?
 		public Group getGroup() { return cGroup; }
 		
-		//Addition
-		public RuleCall getAdditionParserRuleCall_0() { return cAdditionParserRuleCall_0; }
+		//Pair
+		public RuleCall getPairParserRuleCall_0() { return cPairParserRuleCall_0; }
 		
-		//(({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Addition)?
+		//(({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair)?
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>'))
@@ -2590,11 +2591,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'>'
 		public Keyword getOpGreaterThanSignKeyword_1_0_1_0_5() { return cOpGreaterThanSignKeyword_1_0_1_0_5; }
 		
-		//right=Addition
+		//right=Pair
 		public Assignment getRightAssignment_1_1() { return cRightAssignment_1_1; }
 		
-		//Addition
-		public RuleCall getRightAdditionParserRuleCall_1_1_0() { return cRightAdditionParserRuleCall_1_1_0; }
+		//Pair
+		public RuleCall getRightPairParserRuleCall_1_1_0() { return cRightPairParserRuleCall_1_1_0; }
 	}
 	public class AdditionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Addition");
@@ -5023,10 +5024,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * ****************************************************************************************** ******************************************************************************************/
 	///*
 	// * Operator precedence parsing via cascading rule calls.
-	// * Lower precedence operators (like OR) wrap higher precedence operators (like Parentheses).
+	// * Lower precedence operators wrap higher precedence operators. Pair has higher precedence than
+	// * Comparison (including '=') but lower precedence than Addition.
 	// */
 	//Expression:
-	//    Pair;
+	//    If;
 	public ExpressionElements getExpressionAccess() {
 		return pExpression;
 	}
@@ -5036,7 +5038,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//BinaryOperator returns Expression:
-	//    Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
+	//    Or | And | Cast | Comparison | Pair | Addition | Multiplication | Power | Binary | Unit;
 	public BinaryOperatorElements getBinaryOperatorAccess() {
 		return pBinaryOperator;
 	}
@@ -5046,7 +5048,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//Pair returns Expression:
-	//    If ({BinaryOperator.left=current} op='::' right=If)?;
+	//    Addition ({BinaryOperator.left=current} op='::' right=Addition)?;
 	public PairElements getPairAccess() {
 		return pPair;
 	}
@@ -5098,7 +5100,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//// Example: a != b or a >= 5
 	//Comparison returns Expression:
-	//    Addition (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Addition)?;
+	//    Pair (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair)?;
 	public ComparisonElements getComparisonAccess() {
 		return pComparison;
 	}

@@ -1425,9 +1425,9 @@ ruleExpression
 	}
 	:
 	(
-		{ before(grammarAccess.getExpressionAccess().getPairParserRuleCall()); }
-		rulePair
-		{ after(grammarAccess.getExpressionAccess().getPairParserRuleCall()); }
+		{ before(grammarAccess.getExpressionAccess().getIfParserRuleCall()); }
+		ruleIf
+		{ after(grammarAccess.getExpressionAccess().getIfParserRuleCall()); }
 	)
 ;
 finally {
@@ -8163,9 +8163,9 @@ rule__Pair__Group__0__Impl
 	}
 :
 (
-	{ before(grammarAccess.getPairAccess().getIfParserRuleCall_0()); }
-	ruleIf
-	{ after(grammarAccess.getPairAccess().getIfParserRuleCall_0()); }
+	{ before(grammarAccess.getPairAccess().getAdditionParserRuleCall_0()); }
+	ruleAddition
+	{ after(grammarAccess.getPairAccess().getAdditionParserRuleCall_0()); }
 )
 ;
 finally {
@@ -9027,9 +9027,9 @@ rule__Comparison__Group__0__Impl
 	}
 :
 (
-	{ before(grammarAccess.getComparisonAccess().getAdditionParserRuleCall_0()); }
-	ruleAddition
-	{ after(grammarAccess.getComparisonAccess().getAdditionParserRuleCall_0()); }
+	{ before(grammarAccess.getComparisonAccess().getPairParserRuleCall_0()); }
+	rulePair
+	{ after(grammarAccess.getComparisonAccess().getPairParserRuleCall_0()); }
 )
 ;
 finally {
@@ -14137,9 +14137,9 @@ rule__Pair__RightAssignment_1_2
 	}
 :
 	(
-		{ before(grammarAccess.getPairAccess().getRightIfParserRuleCall_1_2_0()); }
-		ruleIf
-		{ after(grammarAccess.getPairAccess().getRightIfParserRuleCall_1_2_0()); }
+		{ before(grammarAccess.getPairAccess().getRightAdditionParserRuleCall_1_2_0()); }
+		ruleAddition
+		{ after(grammarAccess.getPairAccess().getRightAdditionParserRuleCall_1_2_0()); }
 	)
 ;
 finally {
@@ -14333,9 +14333,9 @@ rule__Comparison__RightAssignment_1_1
 	}
 :
 	(
-		{ before(grammarAccess.getComparisonAccess().getRightAdditionParserRuleCall_1_1_0()); }
-		ruleAddition
-		{ after(grammarAccess.getComparisonAccess().getRightAdditionParserRuleCall_1_1_0()); }
+		{ before(grammarAccess.getComparisonAccess().getRightPairParserRuleCall_1_1_0()); }
+		rulePair
+		{ after(grammarAccess.getComparisonAccess().getRightPairParserRuleCall_1_1_0()); }
 	)
 ;
 finally {
