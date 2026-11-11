@@ -245,7 +245,7 @@ public class AskStatement extends AbstractStatementSequence implements Breakable
 			agent = Cast.asAgent(scope, t);
 			if (agent == null) throw GamaRuntimeException.error("Can not execute ask on a nil agent", scope);
 		}
-		final IExecutionResult result = scope.execute(sequence, agent, null);
+		final IExecutionResult result = scope.execute(sequence, agent, true, null);
 		return result.getValue();
 	}
 

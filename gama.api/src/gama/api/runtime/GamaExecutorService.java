@@ -422,7 +422,7 @@ public abstract class GamaExecutorService {
 		switch (threshold) {
 			case 0:
 				for (final A agent : array) {
-					scope.execute(executable, (IAgent) agent, null);
+					scope.execute(executable, (IAgent) agent, true, null);
 					if (scope.getAndClearBreakStatus() == FlowStatus.BREAK) { break; }
 				}
 				return;
@@ -435,7 +435,7 @@ public abstract class GamaExecutorService {
 			try {
 				for (final A aa : array) {
 					final IAgent agent = (IAgent) aa;
-					submitFork(scope, tasks, fork -> fork.execute(executable, agent, null));
+					submitFork(scope, tasks, fork -> fork.execute(executable, agent, true, null));
 				}
 			} catch (final RuntimeException | Error failure) {
 				joinTasks(tasks, failure);
