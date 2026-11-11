@@ -143,6 +143,12 @@ jobs:
         with:
           action: restore
 
+      - name: Generate p2 categories
+        uses: gama-platform/gama.devtools/.github/actions/p2-categories@main
+        with:
+          parent-pom: gama.parent/pom.xml
+          output: gama.p2site/category.xml
+
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS -Dmaven.resolver.validation=MILD
         env:
