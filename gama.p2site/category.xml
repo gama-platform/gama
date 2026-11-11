@@ -1,70 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ============================================================================================
+     PLACEHOLDER - this file is regenerated in CI, before the Maven build, by the
+     gama.devtools "p2-categories" GitHub action. Do not add features or categories here:
+     anything written in this file is overwritten.
+    ============================================================================================
+
+    How features get their categories:
+      1. Declare the category of each plugin in its pom.xml:
+             <properties>
+               <gama.category>gama.category.ai</gama.category>
+             </properties>
+         (several categories can be given, separated by commas)
+      2. Each feature listed in gama.plugin.parent/pom.xml is published in the categories of
+         the plugins it contains. Features without any category go to gama.category.other.
+      3. An unknown category id fails the build.
+
+    Available categories:
+      https://github.com/gama-platform/gama.devtools/blob/main/gama.ui.devtools/categories.xml
+
+    Documentation, and how to generate this file locally:
+      https://github.com/gama-platform/gama.devtools/tree/main/.github/actions/p2-categories
+
+    This placeholder lists no feature, so a local build produces an empty update site;
+    that is expected, only the CI build is published.
+-->
 <site>
-   <description name="GAMA Update Site">
-      Site containing updates to the GAMA platform software (see http://gama-platform.org)
-   </description>
-
-   <!-- Dependencies -->
-   <feature url="features/gama.feature.dependencies_0.0.0.qualifier.jar" id="gama.feature.dependencies" version="0.0.0.qualifier">
-      <category name="gama.dep"/>
-   </feature>
-   
-   <!-- Core -->
-   <feature url="features/gama.feature.core_0.0.0.qualifier.jar" id="gama.feature.core" version="0.0.0">
-      <category name="gama.core"/>
-   </feature>
-   
-   <!-- Extension -->
-   <feature url="features/gama.feature.extensions_0.0.0.qualifier.jar" id="gama.feature.extensions" version="0.0.0">
-      <category name="gama.ext"/>
-   </feature>
-   <feature url="features/gama.feature.extension.image_0.0.0.jar" id="gama.feature.extension.image" version="0.0.0">
-      <category name="gama.ext"/>
-   </feature>
-   <feature url="features/gama.feature.extension.sound_0.0.0.jar" id="gama.feature.extension.sound" version="0.0.0">
-      <category name="gama.ext"/>
-   </feature>
-   <feature url="features/gama.feature.extension.stats_0.0.0.jar" id="gama.feature.extension.stats" version="0.0.0">
-      <category name="gama.ext"/>
-   </feature>
-   
-   <!--
-      UI
-   -->
-   <!-- Eclipse Base -->
-   <feature url="features/gama.feature.ui_0.0.0.qualifier.jar" id="gama.feature.ui" version="0.0.0">
-      <category name="gama.ui"/>
-   </feature>
-   <feature url="features/gama.feature.ui.dependencies_0.0.0.qualifier.jar" id="gama.feature.ui.dependencies" version="0.0.0.qualifier">
-      <category name="gama.ui"/>
-   </feature>
-   <!-- Editor UI -->
-   <feature url="features/gama.feature.ui.editor_0.0.0.qualifier.jar" id="gama.feature.ui.editor" version="0.0.0">
-      <category name="gama.ui"/>
-   </feature>
-   <!-- Simulation UI -->
-   <feature url="features/gama.feature.ui.experiment_0.0.0.qualifier.jar" id="gama.feature.ui.experiment" version="0.0.0">
-      <category name="gama.ui"/>
-   </feature>
-
-   <!-- Extra -->
-   <feature id="gama.feature.export" version="0.0.0">
-      <category name="gama.optional"/>
-   </feature>
-   <feature url="features/gama.feature.library_0.0.0.qualifier.jar" id="gama.feature.library" version="0.0.0.qualifier">
-      <category name="gama.models"/>
-   </feature>
-   <feature id="gama.feature.shared.models" version="0.0.0">
-      <category name="gama.models"/>
-   </feature>
-
-   <!--
-      Categories
-   -->
-   <category-def name="gama.dep" label="Depenciences of GAMA"/>
-   <category-def name="gama.core" label="Core components of GAMA"/>
-   <category-def name="gama.ext" label="Extensions components of GAMA"/>
-   <category-def name="gama.ui" label="UI components of GAMA"/>
-   <category-def name="gama.models" label="GAMA Models Library"/>
-   <category-def name="gama.optional" label="Optional components of GAMA"/>
+    <description name="GAMA Update Site">
+        Site containing updates to the GAMA platform software (see http://gama-platform.org)
+    </description>
 </site>
