@@ -47,10 +47,10 @@ global {
 				// we place those in the center of the y and z axis, the influences will be anywhere
 				location <- {0, width/2, height/2};
 				
-				full_name <- result["name"][i];
+				full_name <- string(result["name"][i]);
 				date_of_birth <- date(result["birthDateStr"][i]);
 				place_of_birth <- first(result["birthPlaces"][i] split_with ";");
-				string infl <- result["influencedByList"][i];
+				string infl <- string(result["influencedByList"][i]);
 				if infl != nil and !empty(infl) {
 					influences <-map<string, philosopher>(((infl split_with ";") where (each != '')) as_map (each::[]));// hack that could be removed when #767 is solved			
 				}
