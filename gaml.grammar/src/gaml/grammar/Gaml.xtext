@@ -14,7 +14,7 @@ generate gaml 'http://www.compiler.gaml/Gaml'
  * The others are used for dynamically parsing snippets (e.g., UI consoles).
  */
 Entry:
-	=> Model | => StandaloneExperiment | StandaloneExpression | StandaloneBlock;
+	Model | StandaloneExperiment | StandaloneExpression | StandaloneBlock;
 
 // Parses a raw block without a model wrapper. Example: { do action; }
 StandaloneBlock:
@@ -24,9 +24,10 @@ StandaloneBlock:
 StandaloneExpression:
 	'__standalone_expression__' expr=Expression;
 
+// Select entries from their headers so syntax errors in the body preserve the model AST.
 // Parses an experiment independently. Example: experiment my_exp type: gui { }
 StandaloneExperiment:
-	(pragmas+=Pragma)* key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+	=>((pragmas+=Pragma)* key=K_Experiment) name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
 
 /******************************************************************************************
  * *****************************************************************************************
@@ -41,7 +42,7 @@ StandaloneExperiment:
  * global { }
  */
 Model:
-	(pragmas+=Pragma)* 'model' name=Valid_ID (imports+=Import)* block=ModelBlock;
+	=>((pragmas+=Pragma)* 'model') name=Valid_ID (imports+=Import)* block=ModelBlock;
 
 // Example: import "other_model.gaml" as other_alias
 Import:
@@ -85,7 +86,7 @@ S_Global:
 
 // Example: species agent_A { ... } or grid cell_grid { ... } or class object_A { ... }
 S_Species:
-	key=(K_Species | K_Grid | K_Class | K_Skill) name=ID FacetsAndBlock;
+	=>(key=(K_Species | K_Grid | K_Class | K_Skill) name=ID) FacetsAndBlock;
 
 // Example: experiment exp1 type: gui { ... }
 S_Experiment:
@@ -105,14 +106,14 @@ Statement:
 	// 1. Unambiguous statements (no overlap with Valid_ID).
 	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations |
 	// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
-	=> S_ActionCall | => S_Assignment |
+	=> S_ActionCall | S_Assignment |
 
 	// 2. Keywords that could also be variables.
-	=> S_Species | => S_Reflex |
+	S_Species | S_Reflex |
 
 	// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
-	=> S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
-	=> S_Definition |  // If no '(', it falls back safely to a standard variable.
+	S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
+	=> S_Definition |  // Full lookahead distinguishes declarations from named blocks such as aspect default { ... }.
 	// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
 	S_Other;
 
@@ -176,19 +177,19 @@ S_Other returns Statement:
 S_Definition:
 	tkey=TypeRef name=Valid_ID (facets+=Facet)* ';';
 	
-// 2. The shared interface for anything that can take arguments
+// Select callables using only their headers, not their possibly unfinished bodies.
 S_Callable returns S_Definition:
-	S_Method | S_Action;
+	=>(S_Method | S_Action) FacetsAndBlock;
 
-// 3. Typed Action (Method) Definition: Parentheses are MANDATORY.
+// 3. Typed action signature: parentheses distinguish methods from variables.
 // Example: int toto(); or int toto(int a) { ... }
 S_Method returns S_Callable:
-	{S_Method} tkey=TypeRef name=Valid_ID '(' ActionArguments? ')' FacetsAndBlock;
+	{S_Method} tkey=TypeRef name=Valid_ID '(' ActionArguments? ')';
 
-// 4. Keyword Action Definition: Parentheses are MANDATORY.
+// 4. Keyword action signature. The body is parsed after selecting S_Callable.
 // Example: action do_something (int arg1) { ... }
 S_Action returns S_Callable:
-	{S_Action} key='action' name=Valid_ID '(' ActionArguments? ')' FacetsAndBlock;
+	{S_Action} key='action' name=Valid_ID '(' ActionArguments? ')';
 
 /******************************************************************************************
  * *****************************************************************************************
@@ -198,10 +199,10 @@ S_Action returns S_Callable:
 // Example: my_var <- 5; or my_list[0] <- 10;
 // Example: reflex move when: time > 10 { ... }
 S_Reflex:
-	key=('reflex' | 'abort' | K_Init) (name=Valid_ID)? FacetsAndBlock;
+	=>key=('reflex' | 'abort' | K_Init) (name=Valid_ID)? FacetsAndBlock;
 	
 S_Assignment:
-	expr=Expression key=K_Assignment value=Expression (facets+=Facet)* ';';
+	=>(expr=Expression key=K_Assignment) value=Expression (facets+=Facet)* ';';
 
 // Example: equation eq1 { ... }
 S_Equations:

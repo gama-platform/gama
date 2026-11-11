@@ -15,31 +15,62 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
+import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.browser.LocationAdapter;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.xtext.Assignment;
+import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.resource.IEObjectDescription;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.ui.IImageHelper;
 import org.eclipse.xtext.ui.editor.contentassist.ConfigurableCompletionProposal;
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
+import org.eclipse.xtext.ui.editor.hover.html.XtextBrowserInformationControl;
 
 import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.html.HtmlEscapers;
 import com.google.inject.Inject;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
+import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
+import gama.ui.shared.access.GamlDocStyleHelper;
+import gama.ui.shared.utils.WebHelper;
 import gaml.compiler.EGaml;
+import gaml.compiler.gaml.ArgumentDefinition;
+import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.Facet;
+import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.Model;
+import gaml.compiler.gaml.S_Callable;
+import gaml.compiler.gaml.S_Definition;
+import gaml.compiler.gaml.S_Experiment;
+import gaml.compiler.gaml.S_Global;
+import gaml.compiler.gaml.S_Loop;
+import gaml.compiler.gaml.S_Reflex;
+import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
+import gaml.compiler.scoping.BuiltinGlobalScopeProvider;
+import gaml.compiler.scoping.GamlScopeProvider;
 import gaml.compiler.services.GamlGrammarAccess;
 import gaml.compiler.ui.labeling.GamlLabelProvider;
 
@@ -49,31 +80,12 @@ import gaml.compiler.ui.labeling.GamlLabelProvider;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
-	// private static Set<String> typeList;
-	// private static GamlProperties allowedFacets;
-	// private static Image rgbImage =
-	// ImageDescriptor.createFromFile(GamlProposalProvider.class,
-	// "/icons/_rgb.png")
-	// .createImage();
-	// private static Image facetImage =
-	// ImageDescriptor.createFromFile(GamlProposalProvider.class,
-	// "/icons/_facet.png")
-	/** The type image. */
-	// .createImage();
-	static Image typeImage =
-			ImageDescriptor.createFromFile(GamlProposalProvider.class, "/icons/_type.png").createImage();
-
-	/** The var image. */
-	static Image varImage = ImageDescriptor.createFromFile(GamlProposalProvider.class, "/icons/_var.png").createImage();
-
-	/** The action image. */
-	static Image actionImage =
-			ImageDescriptor.createFromFile(GamlProposalProvider.class, "/icons/_action.png").createImage();
-
-	// private static Image skillImage =
-	// ImageDescriptor.createFromFile(GamlProposalProvider.class,
-	// "/icons/_skills.png")
-	// .createImage();
+	private static final int VARIABLE_PRIORITY = 3000;
+	private static final int ACTION_PRIORITY = 2000;
+	private static final int OTHER_PRIORITY = 1200;
+	private static final int DECLARATION_PRIORITY = 1000;
+	private static final int OPERATOR_PRIORITY = 900;
+	private static final int STATEMENT_PRIORITY = 800;
 
 	/**
 	 * The Class GamlProposalCreator.
@@ -99,40 +111,19 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
 			final ConfigurableCompletionProposal cp = (ConfigurableCompletionProposal) super.apply(candidate);
 			boolean isOperator = false;
-			String doc = candidate.getUserData("doc");
-			final String title = candidate.getUserData("title");
-			if (doc == null) { doc = "Not documented yet"; }
 			if (cp != null) {
-				cp.setAdditionalProposalInfo("<b>" + title + "</b><p/><p>" + doc + "</p>");
-
 				final String type = candidate.getUserData(IKeyword.TYPE);
 				if (type != null) {
 					cp.setDisplayString(cp.getDisplayString().concat(" (Built-in " + type + ") "));
-					switch (type) {
-						case "operator":
-							isOperator = true;
-							cp.setImage(actionImage);
-							break;
-						case "variable":
-						case "field":
-							cp.setImage(varImage);
-							break;
-						case "action":
-							cp.setImage(actionImage);
-							break;
-						case "unit":
-							isOperator = true;
-							cp.setImage(null);
-							break;
-						case IKeyword.TYPE:
-							isOperator = true;
-							cp.setImage(typeImage);
-							break;
-						default:
-							break;
-					}
-					cp.setPriority(1000);
+					isOperator = "operator".equals(type) || "unit".equals(type) || IKeyword.TYPE.equals(type);
 				}
+				final String kind = proposalKind(candidate, defaultProposalKind(candidate));
+				final String origin = proposalOrigin(candidate,
+						EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource()));
+				if (origin != null) cp.setDisplayString(cp.getDisplayString() + " - " + origin);
+				cp.setImage(proposalImage(candidate, kind, context));
+				cp.setPriority(proposalPriority(kind));
+				setProposalDocumentation(cp, candidate, kind, context);
 			}
 
 			if (".".equals(context.getPrefix())) {
@@ -148,6 +139,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 	 * The Class GamlCompletionProposal.
 	 */
 	static class GamlCompletionProposal extends ConfigurableCompletionProposal {
+
+		private Supplier<String> documentation;
 
 		/**
 		 * @param replacementString
@@ -169,7 +162,38 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
 		@Override
 		public IInformationControlCreator getInformationControlCreator() {
-			return parent -> new DefaultInformationControl(parent, true);
+			return parent -> createDocumentationControl(parent, false);
+		}
+
+		private IInformationControl createDocumentationControl(final Shell parent, final boolean resizable) {
+			if (!BrowserInformationControl.isAvailable(parent)) return new DefaultInformationControl(parent, resizable);
+			final var control = new XtextBrowserInformationControl(parent, "org.eclipse.jdt.ui.javadocfont", resizable) {
+				@Override
+				public IInformationControlCreator getInformationPresenterControlCreator() {
+					return shell -> createDocumentationControl(shell, true);
+				}
+			};
+			control.addLocationListener(new LocationAdapter() {
+				@Override
+				public void changing(final LocationEvent event) {
+					if (event.location.startsWith("about:blank")) return;
+					event.doit = false;
+					if (event.location.startsWith("https://") || event.location.startsWith("http://")) {
+						WebHelper.openPage(event.location);
+					}
+				}
+			});
+			return control;
+		}
+
+		@Override
+		public String getAdditionalProposalInfo() {
+			return documentation == null ? super.getAdditionalProposalInfo() : documentation.get();
+		}
+
+		@Override
+		public Object getAdditionalProposalInfo(final IProgressMonitor monitor) {
+			return monitor != null && monitor.isCanceled() ? null : getAdditionalProposalInfo();
 		}
 
 	}
@@ -193,6 +217,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 		/** The documentation. */
 		String documentation;
 
+		final String kind;
+
 		/**
 		 * Instantiates a new built in proposal.
 		 *
@@ -202,11 +228,14 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 		 *            the title
 		 * @param image
 		 *            the image
+		 * @param kind
+		 *            the proposal category
 		 */
-		public BuiltInProposal(final String name, final StyledString title, final Image image) {
+		public BuiltInProposal(final String name, final StyledString title, final Image image, final String kind) {
 			this.name = name;
 			this.title = title;
 			this.image = image;
+			this.kind = kind;
 		}
 
 		/**
@@ -237,8 +266,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 	/** The provider. */
 	@Inject GamlLabelProvider provider;
 
-	// @Inject
-	// private IImageHelper imageHelper;
+	@Inject private IImageHelper imageHelper;
+	@Inject private IEObjectDocumentationProvider documentationProvider;
 	//
 	// @Inject
 	// private GamlJavaValidator validator;
@@ -246,15 +275,268 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 	/** The ga. */
 	@Inject private GamlGrammarAccess ga;
 
+	@Inject private GamlScopeProvider scopeProvider;
+
 	@Override
 	public void createProposals(final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
 		// Disabling for comments (see Issue 786)
 		final EObject grammarElement = context.getCurrentNode().getGrammarElement();
 		if (grammarElement == ga.getML_COMMENTRule() || grammarElement == ga.getSL_COMMENTRule()) return;
-		//
-		addBuiltInElements(context, acceptor);
-		super.createProposals(context, acceptor);
 
+		final GamlCompletionContext completion = GamlCompletionContext.at(context);
+		if (completion.memberAccess()) {
+			addNameProposals(scopeProvider.getMemberCompletionScope(completion.model(), completion.receiver(),
+					completion.receiverName(), GamlPackage.Literals.VARIABLE_REF__REF, context.getOffset()),
+					false, completion, context, acceptor);
+			addNameProposals(scopeProvider.getMemberCompletionScope(completion.model(), completion.receiver(),
+					completion.receiverName(), GamlPackage.Literals.ACTION_REF__REF, context.getOffset()),
+					true, completion, context, acceptor);
+			return;
+		}
+		if (atStatementStart(completion, context)) {
+			addNameProposals(scopeProvider.getCompletionScope(completion.model(),
+					GamlPackage.Literals.VARIABLE_REF__REF, context.getOffset()), false, completion, context, acceptor);
+			addNameProposals(scopeProvider.getCompletionScope(completion.model(),
+					GamlPackage.Literals.ACTION_REF__REF, context.getOffset()), true, completion, context, acceptor);
+		}
+		super.createProposals(context, acceptor);
+		addBuiltInElements(context, acceptor);
+	}
+
+	private boolean atStatementStart(final GamlCompletionContext completion, final ContentAssistContext context) {
+		String previous = null;
+		for (final var leaf : context.getRootNode().getLeafNodes()) {
+			if (leaf.getEndOffset() > completion.replacementOffset()) break;
+			if (!leaf.isHidden()) previous = leaf.getText();
+		}
+		if (!"{".equals(previous) && !";".equals(previous) && !"}".equals(previous)) return false;
+		for (EObject current = completion.model(); current != null; current = current.eContainer()) {
+			if (current instanceof Block block) {
+				final EObject owner = block.eContainer();
+				return owner instanceof Statement && !(owner instanceof S_Species)
+						&& !(owner instanceof S_Global) && !(owner instanceof S_Experiment);
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void completeVariableRef_Ref(final EObject model, final Assignment assignment,
+			final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
+		final GamlCompletionContext completion = GamlCompletionContext.at(context);
+		addNameProposals(scopeProvider.getCompletionScope(completion.model(),
+				GamlPackage.Literals.VARIABLE_REF__REF, context.getOffset()),
+				false, completion, context, acceptor);
+	}
+
+	@Override
+	public void completeActionRef_Ref(final EObject model, final Assignment assignment, final ContentAssistContext context,
+			final ICompletionProposalAcceptor acceptor) {
+		final GamlCompletionContext completion = GamlCompletionContext.at(context);
+		addNameProposals(scopeProvider.getCompletionScope(completion.model(),
+				GamlPackage.Literals.ACTION_REF__REF, context.getOffset()),
+				true, completion, context, acceptor);
+	}
+
+	private void addNameProposals(final IScope scope, final boolean action, final GamlCompletionContext completion,
+			final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
+		final Set<String> names = new HashSet<>();
+		for (final IEObjectDescription candidate : scope.getAllElements()) {
+			if (!acceptor.canAcceptMoreProposals()) return;
+			final String name = candidate.getName().toString();
+			if (!names.add(name) || !context.getMatcher().isCandidateMatchingPrefix(name, completion.prefix())) continue;
+			final String kind = proposalKind(candidate,
+					action ? IKeyword.ACTION : defaultProposalKind(candidate));
+			final EObject definition = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
+			final String label = proposalLabel(kind, definition);
+			final String type = proposalType(candidate, definition);
+			final StyledString display = new StyledString(name);
+			if (type != null && !type.isBlank()) display.append(" : " + type, StyledString.DECORATIONS_STYLER);
+			display.append(" (" + label + ")", StyledString.QUALIFIER_STYLER);
+			final String origin = proposalOrigin(candidate, definition);
+			if (origin != null) display.append(" - " + origin, StyledString.QUALIFIER_STYLER);
+			final ConfigurableCompletionProposal proposal = doCreateProposal(name,
+					display,
+					proposalImage(candidate, kind, context),
+					completion.replacementOffset(), completion.replacementLength());
+			proposal.setMatcher(context.getMatcher());
+			proposal.setReplaceContextLength(completion.prefix().length());
+			proposal.setPriority(proposalPriority(kind));
+			setProposalDocumentation(proposal, candidate, kind, context);
+			acceptor.accept(proposal);
+		}
+	}
+
+	private String proposalLabel(final String kind, final EObject definition) {
+		return switch (kind) {
+			case "variable", "field" -> {
+				if (definition instanceof ArgumentDefinition) yield "Argument";
+				if (definition instanceof S_Loop || definition instanceof S_Definition
+						&& definition.eContainer() instanceof Block block
+						&& !(block.eContainer() instanceof S_Species) && !(block.eContainer() instanceof S_Global)
+						&& !(block.eContainer() instanceof S_Experiment)
+						&& !(block.eContainer() instanceof StandaloneExperiment)) yield "Local variable";
+				yield "Attribute";
+			}
+			case IKeyword.ACTION -> "Action";
+			case IKeyword.TYPE -> "Type";
+			case "constant" -> "Constant";
+			case "operator" -> "Operator";
+			case IKeyword.SKILL -> "Skill";
+			default -> "Other";
+		};
+	}
+
+	private String proposalType(final IEObjectDescription candidate, final EObject definition) {
+		final String builtin = candidate.getUserData(BuiltinGlobalScopeProvider.MEMBER_TYPE);
+		if (builtin != null) return builtin;
+		if (definition instanceof ArgumentDefinition argument) return sourceText(argument.getType());
+		if (definition instanceof S_Definition declaration) {
+			final var facets = EGaml.getInstance().getFacetsMapOf(declaration);
+			final Facet type = facets.get(IKeyword.TYPE);
+			if (type != null && type.getExpr() != null) return sourceText(type.getExpr());
+			if (declaration.getTkey() != null) return sourceText(declaration.getTkey());
+			final Facet returns = facets.get(IKeyword.RETURNS);
+			if (returns != null) return returns.getName();
+			if (declaration instanceof S_Callable) return "void";
+		}
+		return null;
+	}
+
+	private String sourceText(final EObject object) {
+		if (object == null) return null;
+		final var node = NodeModelUtils.findActualNodeFor(object);
+		return node == null ? null : NodeModelUtils.getTokenText(node);
+	}
+
+	private String proposalOrigin(final IEObjectDescription candidate, final EObject definition) {
+		final String builtin = candidate.getUserData(BuiltinGlobalScopeProvider.MEMBER_ORIGIN);
+		if (builtin != null && !builtin.isBlank()) return builtin;
+		final List<String> owners = new ArrayList<>();
+		for (EObject owner = definition.eContainer(); owner != null; owner = owner.eContainer()) {
+			if (owner instanceof S_Callable callable) {
+				owners.add("action " + callable.getName());
+			} else if (owner instanceof S_Species species) {
+				owners.add(EGaml.getInstance().getKeyOf(species) + " " + species.getName());
+			} else if (owner instanceof S_Global) {
+				owners.add("global");
+			} else if (owner instanceof S_Experiment experiment) {
+				owners.add("experiment " + experiment.getName());
+			} else if (owner instanceof StandaloneExperiment experiment) {
+				owners.add("experiment " + experiment.getName());
+			} else if (owner instanceof S_Reflex behavior) {
+				final String name = behavior.getName();
+				owners.add(EGaml.getInstance().getKeyOf(behavior)
+						+ (name == null || name.isBlank() ? "" : " " + name));
+			} else if (owner instanceof Statement statement
+					&& IKeyword.ASPECT.equals(EGaml.getInstance().getKeyOf(statement))) {
+				final String name = sourceText(statement.getExpr());
+				owners.add("aspect" + (name == null || name.isBlank() ? "" : " " + name));
+			} else if (owner instanceof Model model && owners.isEmpty()) {
+				owners.add("model " + model.getName());
+			}
+		}
+		return owners.isEmpty() ? null : String.join(" in ", owners);
+	}
+
+	private void setProposalDocumentation(final ConfigurableCompletionProposal proposal,
+			final IEObjectDescription candidate, final String kind, final ContentAssistContext context) {
+		if (proposal instanceof GamlCompletionProposal completion) {
+			completion.documentation = Suppliers.memoize(() -> {
+				if ("operator".equals(kind)) return operatorDocumentation(candidate.getName().toString());
+				final EObject definition = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
+				final String type = proposalType(candidate, definition);
+				String signature = candidate.getUserData(BuiltinGlobalScopeProvider.MEMBER_SIGNATURE);
+				if (signature == null) {
+					signature = (type == null ? "" : type + " ") + candidate.getName();
+					if (definition instanceof S_Callable callable) {
+						final List<String> arguments = new ArrayList<>();
+						for (final ArgumentDefinition argument : callable.getArgs()) {
+							arguments.add(sourceText(argument.getType()) + " " + argument.getName());
+						}
+						signature += "(" + String.join(", ", arguments) + ")";
+					}
+				}
+				final String title = proposalLabel(kind, definition) + " "
+						+ HtmlEscapers.htmlEscaper().escape(signature);
+				final String comment = NodeModelUtils.findActualNodeFor(definition) == null ? null
+						: documentationProvider.getDocumentation(definition);
+				String body = candidate.getUserData("doc");
+				final String origin = proposalOrigin(candidate, definition);
+				if (origin != null) {
+					body = "<p>Defined in <code>" + HtmlEscapers.htmlEscaper().escape(origin) + "</code></p>"
+							+ (body == null ? "" : body);
+				}
+				if (definition.eResource() != null && !(definition instanceof Model)) {
+					final String location = definition.eResource().getURI().lastSegment();
+					if (location != null) {
+						body = (body == null ? "" : body) + "<p>Declared in <code>"
+								+ HtmlEscapers.htmlEscaper().escape(location) + "</code></p>";
+					}
+				}
+				return "<html><head><style>" + GamlDocStyleHelper.getDocCss() + "</style></head><body>"
+						+ GamlDocStyleHelper.wrapWithCard(title, comment, body) + "</body></html>";
+			});
+		}
+	}
+
+	private String operatorDocumentation(final String name) {
+		final StringBuilder body = new StringBuilder();
+		for (final IArtefact.Operator operator : GAML.getOperatorsNamed(name).values()) {
+			String documentation = operator.getDocumentation().toString();
+			final String plugin = operator.getDefiningPlugin();
+			if (plugin != null && !plugin.isBlank()) {
+				documentation = "<p>Defined in plug-in <code>" + HtmlEscapers.htmlEscaper().escape(plugin)
+						+ "</code></p>" + documentation;
+			}
+			body.append(GamlDocStyleHelper.wrapWithCard(
+					HtmlEscapers.htmlEscaper().escape(operator.getTitle()), null, documentation));
+		}
+		return "<html><head><style>" + GamlDocStyleHelper.getDocCss() + "</style></head><body>" + body + "</body></html>";
+	}
+
+	private String defaultProposalKind(final IEObjectDescription candidate) {
+		if (GamlPackage.Literals.ACTION_DEFINITION.isSuperTypeOf(candidate.getEClass())) return IKeyword.ACTION;
+		if (GamlPackage.Literals.VAR_DEFINITION.isSuperTypeOf(candidate.getEClass())) return "variable";
+		if (GamlPackage.Literals.TYPE_DEFINITION.isSuperTypeOf(candidate.getEClass())) return IKeyword.TYPE;
+		if (GamlPackage.Literals.SKILL_FAKE_DEFINITION.isSuperTypeOf(candidate.getEClass())) return IKeyword.SKILL;
+		if (GamlPackage.Literals.UNIT_FAKE_DEFINITION.isSuperTypeOf(candidate.getEClass())) return "unit";
+		return "other";
+	}
+
+	private String proposalKind(final IEObjectDescription candidate, final String fallback) {
+		final String kind = candidate.getUserData(IKeyword.TYPE);
+		return kind == null ? fallback : kind;
+	}
+
+	private int proposalPriority(final String kind) {
+		return switch (kind) {
+			case "variable", "field" -> VARIABLE_PRIORITY;
+			case IKeyword.ACTION -> ACTION_PRIORITY;
+			case "declaration" -> DECLARATION_PRIORITY;
+			case "operator" -> OPERATOR_PRIORITY;
+			case "statement" -> STATEMENT_PRIORITY;
+			default -> OTHER_PRIORITY;
+		};
+	}
+
+	private Image proposalImage(final IEObjectDescription candidate, final String kind,
+			final ContentAssistContext context) {
+		final EObject definition = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
+		if (definition instanceof Statement) return provider.getImage(definition);
+		if (definition instanceof ArgumentDefinition argument) {
+			return imageHelper.getImage(provider.typeImage(EGaml.getInstance().getKeyOf(argument.getType())));
+		}
+		final String type = proposalType(candidate, definition);
+		if (type != null) return imageHelper.getImage(provider.memberImage(type, IKeyword.ACTION.equals(kind)));
+		final String key = switch (kind) {
+			case IKeyword.TYPE -> candidate.getName().toString();
+			case "variable", "field", "unit", "other" -> IKeyword.VAR;
+			case "constant" -> IKeyword.CONST;
+			case "operator" -> IKeyword.ACTION;
+			default -> kind;
+		};
+		return imageHelper.getImage(provider.typeImage(key));
 	}
 
 	/**
@@ -302,11 +584,16 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			// " (Built-in unit)"), null);
 			// proposals.add(cp);
 			// }
+			for (final String name : GAML.getOperatorsNames()) {
+				proposals.add(new BuiltInProposal(name, new StyledString(name + " (Operator)"),
+						imageHelper.getImage(provider.typeImage(IKeyword.ACTION)), "operator"));
+			}
 			for (final String t : ArtefactRegistry.getStatementArtefactNames()) {
 				final IArtefact s = ArtefactRegistry.getArtefact(t, null);
 				statements.add(t);
 				final String title = " (Statement)";
-				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);
+				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title),
+						imageHelper.getImage(provider.typeImage(t)), "statement");
 				proposals.add(cp);
 				cp.setDoc(s instanceof IArtefact.Symbol symbol
 						? symbol.getDocumentation(t).toString() : s.getDocumentation().toString());
@@ -316,7 +603,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 				final IArtefact s = ArtefactRegistry.getVarArtefact(t, null);
 				statements.add(t);
 				final String title = " (Declaration)";
-				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);
+				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title),
+						imageHelper.getImage(provider.typeImage(t)), "declaration");
 				proposals.add(cp);
 				cp.setDoc(s.getDocumentation().toString());
 
@@ -330,12 +618,16 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
 		}
 		for (final BuiltInProposal bi : proposals) {
-			final ICompletionProposal cp =
-					createCompletionProposal(bi.name, bi.title, bi.image, 1000, context.getPrefix(), context);
+			final ICompletionProposal cp = createCompletionProposal(bi.name, bi.title, bi.image,
+					proposalPriority(bi.kind), context.getPrefix(), context);
 			if (cp == null) {
 				// scope.getGui().debug("GamlProposalProvider.addBuiltInElements
 				// null for " + t);
 			} else {
+				((ConfigurableCompletionProposal) cp).setPriority(proposalPriority(bi.kind));
+				if ("operator".equals(bi.kind) && cp instanceof GamlCompletionProposal completion) {
+					completion.documentation = Suppliers.memoize(() -> operatorDocumentation(bi.name));
+				}
 				if (bi.documentation != null) {
 					((ConfigurableCompletionProposal) cp).setAdditionalProposalInfo(bi.documentation);
 				}

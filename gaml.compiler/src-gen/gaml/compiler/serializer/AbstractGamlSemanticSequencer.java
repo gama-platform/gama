@@ -141,26 +141,26 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0()
 						|| rule == grammarAccess.getOrRule()
 						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0()) {
-					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair_Power(context, (BinaryOperator) semanticObject);
+					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (rule == grammarAccess.getAndRule()
 						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0()) {
-					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject);
+					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (rule == grammarAccess.getCastRule()) {
-					sequence_Addition_Binary_Cast_Comparison_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject);
+					sequence_Addition_Binary_Cast_Comparison_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0()
 						|| rule == grammarAccess.getComparisonRule()) {
-					sequence_Addition_Binary_Comparison_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject);
-					return;
+					sequence_Addition_Binary_Comparison_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject); 
+					return; 
 				}
 				else if (rule == grammarAccess.getPairRule()
 						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0()) {
-					sequence_Addition_Binary_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject);
+					sequence_Addition_Binary_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (action == grammarAccess.getPairAccess().getBinaryOperatorLeftAction_1_0()
@@ -270,8 +270,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_TerminalExpression(context, (ReservedLiteral) semanticObject); 
 				return; 
 			case GamlPackage.SACTION:
-				sequence_ActionArguments_FacetsAndBlock_S_Action(context, (S_Action) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getStatementRule()
+						|| rule == grammarAccess.getS_CallableRule()
+						|| rule == grammarAccess.getGamlDefinitionRule()
+						|| rule == grammarAccess.getActionDefinitionRule()
+						|| rule == grammarAccess.getVarDefinitionRule()) {
+					sequence_ActionArguments_FacetsAndBlock_S_Action(context, (S_Action) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_ActionRule()) {
+					sequence_ActionArguments_S_Action(context, (S_Action) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.SASSIGNMENT:
 				if (rule == grammarAccess.getStatementRule()
 						|| rule == grammarAccess.getS_AssignmentRule()) {
@@ -319,8 +330,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Loop(context, (S_Loop) semanticObject); 
 				return; 
 			case GamlPackage.SMETHOD:
-				sequence_ActionArguments_FacetsAndBlock_S_Method(context, (S_Method) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getStatementRule()
+						|| rule == grammarAccess.getS_CallableRule()
+						|| rule == grammarAccess.getGamlDefinitionRule()
+						|| rule == grammarAccess.getActionDefinitionRule()
+						|| rule == grammarAccess.getVarDefinitionRule()) {
+					sequence_ActionArguments_FacetsAndBlock_S_Method(context, (S_Method) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_MethodRule()) {
+					sequence_ActionArguments_S_Method(context, (S_Method) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.SREFLEX:
 				sequence_FacetsAndBlock_S_Reflex(context, (S_Reflex) semanticObject); 
 				return; 
@@ -449,7 +471,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Action
 	 *     S_Callable returns S_Action
-	 *     S_Action returns S_Action
 	 *     GamlDefinition returns S_Action
 	 *     ActionDefinition returns S_Action
 	 *     VarDefinition returns S_Action
@@ -468,7 +489,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Method
 	 *     S_Callable returns S_Method
-	 *     S_Method returns S_Method
 	 *     GamlDefinition returns S_Method
 	 *     ActionDefinition returns S_Method
 	 *     VarDefinition returns S_Method
@@ -478,6 +498,34 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_ActionArguments_FacetsAndBlock_S_Method(ISerializationContext context, S_Method semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Action returns S_Action
+	 *
+	 * Constraint:
+	 *     (key='action' name=Valid_ID (args+=ArgumentDefinition args+=ArgumentDefinition*)?)
+	 * </pre>
+	 */
+	protected void sequence_ActionArguments_S_Action(ISerializationContext context, S_Action semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Method returns S_Method
+	 *
+	 * Constraint:
+	 *     (tkey=TypeRef name=Valid_ID (args+=ArgumentDefinition args+=ArgumentDefinition*)?)
+	 * </pre>
+	 */
+	protected void sequence_ActionArguments_S_Method(ISerializationContext context, S_Method semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -584,7 +632,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) |
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) | 
 	 *         (left=Or_BinaryOperator_1_0 op='or' right=And) | 
 	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
 	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
@@ -620,7 +668,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) |
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) | 
 	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
 	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
@@ -654,7 +702,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) |
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) | 
 	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
 	 *             left=Comparison_BinaryOperator_1_0_0 
@@ -688,7 +736,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) |
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) | 
 	 *         (
 	 *             left=Comparison_BinaryOperator_1_0_0 
 	 *             (
@@ -721,7 +769,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) |
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Addition) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
 	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
 	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
@@ -1092,11 +1140,11 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         pragmas+=Pragma*
-	 *         key=K_Experiment
-	 *         (name=Valid_ID | name=STRING)
-	 *         importURI=STRING?
-	 *         facets+=Facet*
+	 *         pragmas+=Pragma* 
+	 *         key=K_Experiment 
+	 *         (name=Valid_ID | name=STRING) 
+	 *         importURI=STRING? 
+	 *         facets+=Facet* 
 	 *         block=Block?
 	 *     )
 	 * </pre>

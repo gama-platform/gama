@@ -171,6 +171,8 @@ species building schedules:[]{
 	intersection closest_intersection;
 	int urban_block_id;
 	float distance;
+
+	
 	aspect default {
 		draw shape color: color border: #black depth: 10;
 	}
