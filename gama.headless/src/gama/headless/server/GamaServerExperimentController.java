@@ -51,6 +51,9 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	/** The job. */
 	private final GamaServerExperimentJob _job;
 
+	/** Excludes reload from an execution cycle, including its termination checks. */
+	private final Object executionLock = new Object();
+
 	/**
 	 * Maps each experiment agent to the controller driving it. Several controllers can share the same experiment
 	 * species over the life of a server, so the agent is the only reliable key for the error path to find the
@@ -142,19 +145,22 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			try {
 
 				while (experimentAlive) {
-					if (!experiment.isBatch() && mexp.simulator.isInterrupted()) { break; }
-					if (hasReachedStopCondition()) {
-						final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
-						if (experiment.isBatch() || !"".equals(stopCondition)) {
-							mexp.socket.send(GAMA.getJsonEncoder()
-									.valueOf(new CommandResponse(MessageType.SimulationEnded, "",
-											exp.getAttribute("%%playCommand%%") instanceof ReceivedMessage command
-													? command : Map.of("exp_id", mexp.getExperimentID()),
-											false))
-									.toString());
+					synchronized (executionLock) {
+						if (!experimentAlive) { break; }
+						if (!experiment.isBatch() && mexp.simulator.isInterrupted()) { break; }
+						if (hasReachedStopCondition()) {
+							final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
+							if (experiment.isBatch() || !"".equals(stopCondition)) {
+								mexp.socket.send(GAMA.getJsonEncoder()
+										.valueOf(new CommandResponse(MessageType.SimulationEnded, "",
+												exp.getAttribute("%%playCommand%%") instanceof ReceivedMessage command
+														? command : Map.of("exp_id", mexp.getExperimentID()),
+												false))
+										.toString());
 
+							}
+							break;
 						}
-						break;
 					}
 					step();
 				}
@@ -250,8 +256,14 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				return true;
 			case _RELOAD:
 				lastRuntimeError = null;
+				final boolean wasRunning = !isPaused();
+				paused = true;
+				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
-					experiment.reload();
+					synchronized (executionLock) {
+						experiment.reload();
+					}
+					if (wasRunning) return processUserCommand(_START_CMD);
 				} catch (final GamaRuntimeException e) {
 					e.printStackTrace();
 					closeExperiment(e);
@@ -262,7 +274,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 					return false;
 				} finally {
-					// scope.getGui().updateExperimentState(scope);
+					GAMA.updateExperimentState(experiment);
 				}
 				return true;
 			case _CLOSE:
@@ -348,13 +360,12 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 * Step.
 	 */
 	public void step() {
-		if (paused) {
-			lock.acquire();
-			// experimentAlive = false;
-		}
+		if (paused && !lock.acquire()) return;
 		try {
-			if (!experimentAlive || executionFinished || hasReachedStopCondition()) return;
-			_job.doStep();
+			synchronized (executionLock) {
+				if (!experimentAlive || executionFinished || hasReachedStopCondition()) return;
+				_job.doStep();
+			}
 		} catch (Throwable e) {
 			// e.printStackTrace();
 			serverConfiguration.socket()

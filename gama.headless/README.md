@@ -297,6 +297,9 @@ When the stop condition becomes true, the GUI experiment pauses and emits one `S
 
 Send a `reload` request to initialize another run. Forwarding settings are retained. `reload` can supply new `parameters` in either supported format and `until`; parameters omitted from reload retain their current values. An omitted or empty reload `until` clears the previous stop condition, so resend it to retain a limit.
 
+In headless mode, reloading a running experiment pauses execution and waits for the current experiment
+cycle to finish before rebuilding it, then resumes execution. An experiment that was paused stays paused.
+
 `stop` closes the experiment, unlike `pause` or reaching an `until` condition. Wait for its
 `CommandExecutedSuccessfully` response before sending another lifecycle command, discard the old `exp_id`,
 and use `load` (not `reload`) to open an experiment again. The GUI sends `SimulationStatus` with `content`
