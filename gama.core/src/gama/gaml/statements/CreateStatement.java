@@ -126,7 +126,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 						name = FROM,
 						type = IType.NONE,
 						optional = true,
-						doc = @doc ("a geometry, a container of geometries, a string (the path of a file), a file (shapefile, a .csv, a .asc or a OSM file) or a container returned by a request to a database")),
+						doc = @doc ("a geometry, a container of geometries, a string (the path of a file), a file (shapefile, a .csv, a .asc or a OSM file), or a dataframe such as one returned by a database query. For a dataframe, initialization arguments name columns, rather than providing attribute values.")),
 				@facet (
 						name = NUMBER,
 						type = IType.INT,

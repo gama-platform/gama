@@ -125,6 +125,15 @@ public interface ICreateDelegate {
 	IType<?> fromFacetType();
 
 	/**
+	 * Whether string initialization arguments identify source columns rather than attribute values.
+	 *
+	 * @return true if string arguments are column names
+	 */
+	default boolean usesColumnNamesForInits() {
+		return false;
+	}
+
+	/**
 	 * Indicates whether this delegate handles the complete agent creation process.
 	 * 
 	 * <p>When this method returns true, the platform will call {@link #createAgents(IScope, IPopulation, List, IStatement.Create, IStatement)}

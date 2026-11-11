@@ -30,6 +30,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
+import gama.api.additions.delegates.ICreateDelegate;
+import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
@@ -247,6 +249,19 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 			}
 			return;
 		}
+		final IExpression source = getFacetExpr(FROM);
+		boolean columnNames = false;
+		if (source != null && source.getGamlType() != NO_TYPE) {
+			for (final ICreateDelegate delegate : GamaAdditionRegistry.getCreateDelegates()) {
+				final IType<?> sourceType = delegate.fromFacetType();
+				if (delegate.usesColumnNamesForInits() && sourceType != null && sourceType != NO_TYPE
+						&& sourceType.isAssignableFrom(source.getGamlType())) {
+					columnNames = true;
+					break;
+				}
+			}
+		}
+		final boolean usesColumnNames = columnNames;
 		ca.forEachFacet((nm, exp) -> {
 			// hqnghi check attribute is not exist in both main model and
 			// micro-model
@@ -265,9 +280,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 				final IExpression expr = exp.getExpression();
 				if (expr != null) { initType = expr.getGamlType(); }
 				if (varType != NO_TYPE && !initType.isTranslatableInto(varType)) {
-					final boolean isDB = getFacet(FROM) != null
-							&& getFacet(FROM).getExpression().getGamlType().isAssignableFrom(Types.LIST);
-					if (isDB && initType.equals(Types.STRING)) return true;
+					if (usesColumnNames && initType.equals(Types.STRING)) return true;
 					warning("The type of attribute " + nm + " should be " + varType, SHOULD_CAST, exp.getTarget(),
 							varType.toString());
 				}

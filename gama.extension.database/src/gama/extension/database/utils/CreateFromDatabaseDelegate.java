@@ -89,4 +89,9 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 		return type == null ? Types.NO_TYPE : type;
 	}
 
+	@Override
+	public boolean usesColumnNamesForInits() {
+		return true;
+	}
+
 }
