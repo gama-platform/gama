@@ -148,7 +148,8 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 		omissible = IKeyword.SPECIES)
 @doc (
 		value = "Allows an agent to create one or more agents of a given `species`. Agents can be created with explicit initial attribute values, from a file (shapefile, .csv, .asc, OSM), from a set of geometries, or from a database query result. "
-				+ "When the species is known at compile time, the preferred form is the functional notation `species_name(attribute: value, ...)` rather than the `create` statement with a `with:` facet.",
+				+ "When the species is known at compile time, the preferred form is the functional notation `species_name(attribute: value, ...)` rather than the `create` statement with a `with:` facet. "
+				+ "An experiment declared by an imported comodel can also be created inside an experiment of the model that imports it. This creates an experiment agent in the host experiment's comodel population and immediately initializes that agent and its initial simulation, using the host simulation's topology. The child is not a second top-level GAMA experiment: it does not replace the current experiment or launch an independent GAMA run. This permission applies only to experiments declared by a model directly imported by the host model; it does not grant access to experiments in unrelated models.",
 		usages = { @usage (
 				value = "Simple creation of `n` agents of a known species — the preferred functional form:",
 				examples = @example (
@@ -210,6 +211,22 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 										    location <- myself.location + {rnd(2), rnd(2)}; // position near parent
 										    parent <- myself;                               // back-reference to creator
 										}""",
+								isExecutable = false)),
+				@usage (
+						value = "Creating an experiment defined by an imported comodel from the host experiment's `init`. The alias identifies the imported model, and `Simple` is the experiment declared in that model. `returns:` holds a list of created experiment agents (also a list when there is only one); use that reference to interact with them. Creation registers the child with the current experiment and immediately initializes its agent, initial simulation, and outputs. The child is not a separately loaded top-level experiment, and this does not allow creating an experiment from an unrelated model.",
+						examples = @example (
+								value = """
+										model batchtests
+										import "explorationBatches.gaml" as exploration
+
+										experiment Batchtests type: gui {
+										    init {
+										        create exploration.Simple returns: child_experiments;
+										        ask child_experiments {
+										            write "Created a comodel experiment";
+										        }
+										    }
+										}""",
 								isExecutable = false)), })
 @validator (CreateValidator.class)
 @serializer (CreateSerializer.class)
@@ -264,13 +281,14 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			if (macro == null && !(sd instanceof IModelDescription)) {
 				cd.error("The macro-species of " + speciesExpr + " cannot be determined");
 				return;
-				// hqnghi special case : create instances of model from
-				// model
 			}
-			if (macro instanceof IModelDescription && callerSpecies instanceof IModelDescription) {
-
-				// end-hqnghi
-			} else if (macro instanceof ISpeciesDescription callerSd
+			final boolean creatingModelFromModel =
+					macro instanceof IModelDescription && callerSpecies instanceof IModelDescription;
+			final boolean creatingImportedExperiment = macro instanceof IModelDescription microModel
+					&& callerSpecies instanceof IExperimentDescription hostExperiment
+					&& hostExperiment.getModelDescription() != null
+					&& hostExperiment.getModelDescription().getMicroModel(microModel.getMicroAlias()) == microModel;
+			if (!creatingModelFromModel && !creatingImportedExperiment && macro instanceof ISpeciesDescription callerSd
 					&& callerSpecies instanceof ISpeciesDescription callerSpeciesDesc && callerSpeciesDesc != macro
 					&& !callerSpeciesDesc.hasMacroSpecies(callerSd) && !callerSpeciesDesc.hasParent(macro)) {
 				cd.error("No instance of " + macro.getName() + " available for creating instances of " + sd.getName());
