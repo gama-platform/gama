@@ -406,8 +406,8 @@ public class MovingSkill extends Skill {
 		if (graph != null) {
 			final Integer index = (Integer) agent.getAttribute(MovementAttributes.INDEX_ON_PATH);
 			if (index < graph.getEdges().size()) {
-				agent.setAttribute(MovementAttributes.CURRENT_EDGE,
-						graph instanceof GamaSpatialGraph spatial ? spatial.getEdgeAt(index) : graph.getEdges().get(index));
+				agent.setAttribute(MovementAttributes.CURRENT_EDGE, graph instanceof GamaSpatialGraph spatial
+						? spatial.getEdgeAt(index) : graph.getEdges().get(index));
 			}
 		}
 	}
@@ -576,11 +576,15 @@ public class MovingSkill extends Skill {
 					@arg (
 							name = IKeyword.ON,
 							type = IType.GRAPH,
+							of = IType.GEOMETRY,
+							index = IType.GEOMETRY,
 							optional = true,
 							doc = @doc ("the graph that restrains this move (the agent moves on the graph")),
 					@arg (
 							name = "proba_edges",
 							type = IType.MAP,
+							of = IType.FLOAT,
+							index = IType.GEOMETRY,
 							optional = true,
 							doc = @doc ("When the agent moves on a graph, the probability to choose another edge. If not defined, each edge has the same probability to be chosen")) },
 			doc = @doc (
@@ -785,6 +789,8 @@ public class MovingSkill extends Skill {
 					@arg (
 							name = "move_weights",
 							type = IType.MAP,
+							of = IType.FLOAT,
+							index = IType.GEOMETRY,
 							optional = true,
 							doc = @doc ("Weights used for the moving.")),
 					@arg (
@@ -903,6 +909,8 @@ public class MovingSkill extends Skill {
 					@arg (
 							name = "move_weights",
 							type = IType.MAP,
+							of = IType.FLOAT,
+							index = IType.GEOMETRY,
 							optional = true,
 							doc = @doc ("Weights used for the moving.")) },
 			doc = @doc (

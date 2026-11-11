@@ -15,6 +15,16 @@ import java.util.stream.Stream;
 
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.support.IConcept;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaIntegerType;
 import gama.api.gaml.types.IType;
@@ -32,16 +42,6 @@ import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
-import gama.annotations.action;
-import gama.annotations.arg;
-import gama.annotations.doc;
-import gama.annotations.example;
-import gama.annotations.getter;
-import gama.annotations.setter;
-import gama.annotations.skill;
-import gama.annotations.variable;
-import gama.annotations.vars;
-import gama.annotations.support.IConcept;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialPunctal;
@@ -304,8 +304,9 @@ public class PedestrianRoadSkill extends Skill {
 					@arg (
 							name = "obstacles",
 							type = IType.CONTAINER,
+							of = IType.NONE,
 							optional = true,
-							doc = @doc ("the list of species to consider as obstacles to remove from the free space")),
+							doc = @doc ("the list of geometries, agents or species to consider as obstacles to remove from the free space")),
 					@arg (
 							name = "distance_extremity",
 							type = IType.FLOAT,
@@ -314,11 +315,13 @@ public class PedestrianRoadSkill extends Skill {
 					@arg (
 							name = "bounds",
 							type = IType.CONTAINER,
+							of = IType.GEOMETRY,
 							optional = true,
 							doc = @doc ("the geometries (the localized entity geometries) that restrains the agent movement (the agent moves inside this geometry")),
 					@arg (
 							name = "masked_by",
 							type = IType.CONTAINER,
+							of = IType.NONE,
 							optional = true,
 							doc = @doc ("if defined, keep only the part of the geometry that is visible from the location of the road considering the given obstacles")),
 					@arg (
@@ -446,6 +449,8 @@ public class PedestrianRoadSkill extends Skill {
 			args = { @arg (
 					name = PedestrianSkill.PEDESTRIAN_GRAPH,
 					type = IType.GRAPH,
+					of = IType.GEOMETRY,
+					index = IType.GEOMETRY,
 					optional = false,
 					doc = @doc ("The pedestrian network from which to find connected corridors")) },
 			doc = @doc (
@@ -501,6 +506,8 @@ public class PedestrianRoadSkill extends Skill {
 			args = { @arg (
 					name = PedestrianSkill.PEDESTRIAN_GRAPH,
 					type = IType.GRAPH,
+					of = IType.GEOMETRY,
+					index = IType.GEOMETRY,
 					optional = false,
 					doc = @doc ("The pedestrian network from which to find connected corridors")),
 					@arg (
