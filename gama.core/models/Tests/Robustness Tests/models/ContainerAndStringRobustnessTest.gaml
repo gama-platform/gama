@@ -93,7 +93,6 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		assert numbers - nil = numbers;
 		assert not (numbers contains nil);
 		assert numbers index_of nil = -1;
-
 	}
 
 	test "Searching lists for nil values" {

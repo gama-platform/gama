@@ -87,7 +87,6 @@ import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
-import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Callable;
@@ -215,6 +214,10 @@ public class GamlSyntacticConverter {
 			case StandaloneExperiment he -> {
 				final String path = getAbsoluteContainerFolderPathOf(root.eResource());
 				final SyntacticExperimentModelElement exp = FACTORY.createExperimentModel(root, he, path);
+				final Map<String, List<String>> pragmas = collectPragmas(he.getPragmas());
+				if (pragmas != null) {
+					exp.setFacet(IKeyword.PRAGMA, GAML.getExpressionDescriptionFactory().createConstant(pragmas));
+				}
 				convertFacets(he, exp.getExperiment());
 				exp.setFacet(NAME, GAML.getExpressionDescriptionFactory().createLabel(exp.getExperiment().getName()));
 				convStatements(exp.getExperiment(), EGAML.getStatementsOf(he.getBlock()));
@@ -224,7 +227,7 @@ public class GamlSyntacticConverter {
 				final String path = getAbsoluteContainerFolderPathOf(root.eResource());
 				final SyntacticModelElement model =
 						(SyntacticModelElement) FACTORY.create(MODEL, m, EGAML.hasChildren(m), path);
-				final Map<String, List<String>> prgm = collectPragmas(m);
+				final Map<String, List<String>> prgm = collectPragmas(m.getPragmas());
 				if (prgm != null) {
 					model.setFacet(IKeyword.PRAGMA, GAML.getExpressionDescriptionFactory().createConstant(prgm));
 				}
@@ -238,21 +241,19 @@ public class GamlSyntacticConverter {
 	}
 
 	/**
-	 * Collects pragma declarations from the model and transforms them into a map structure.
+	 * Collects pragma declarations and transforms them into a map structure.
 	 *
 	 * <p>
-	 * Pragmas in GAML provide metadata about the model, including plugin dependencies and configuration information.
+	 * Pragmas in GAML provide metadata, including plugin dependencies and configuration information.
 	 * This method extracts these declarations and converts them into a format suitable for the compilation process.
 	 * </p>
 	 *
-	 * @param m
-	 *            the ModelImpl containing the pragma declarations to collect
+	 * @param pragmas
+	 *            the pragma declarations to collect
 	 * @return a Map where keys are pragma names and values are lists of associated plugin names, or null if no pragmas
-	 *         are defined in the model
+	 *         are defined in the source
 	 */
-	private Map<String, List<String>> collectPragmas(final ModelImpl m) {
-		if (!m.eIsSet(GamlPackage.MODEL__PRAGMAS)) return null;
-		final List<Pragma> pragmas = m.getPragmas();
+	private Map<String, List<String>> collectPragmas(final List<Pragma> pragmas) {
 		if (pragmas.isEmpty()) return null;
 		Map<String, List<String>> result = GamaMapFactory.create();
 		for (final Pragma p : pragmas) {

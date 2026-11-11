@@ -4,6 +4,8 @@
 * Tags: map, list, casting, test
 */
 
+@no_warning
+
 model NestedMapCastingTestModel
 
 experiment NestedMapCastingTest type: test autorun: true {

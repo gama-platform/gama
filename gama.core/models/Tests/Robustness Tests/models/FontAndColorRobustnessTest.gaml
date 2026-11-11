@@ -6,6 +6,7 @@
 * Tags: robustness, font, color, test
 */
 
+@no_warning
 
 experiment FontAndColorRobustnessTest type: test  {
 	

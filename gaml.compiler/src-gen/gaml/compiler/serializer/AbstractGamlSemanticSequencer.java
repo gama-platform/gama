@@ -1102,7 +1102,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     StandaloneExperiment returns StandaloneExperiment
 	 *
 	 * Constraint:
-	 *     (key=K_Experiment (name=Valid_ID | name=STRING) importURI=STRING? facets+=Facet* block=Block?)
+	 *     (
+	 *         pragmas+=Pragma*
+	 *         key=K_Experiment
+	 *         (name=Valid_ID | name=STRING)
+	 *         importURI=STRING?
+	 *         facets+=Facet*
+	 *         block=Block?
+	 *     )
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_StandaloneExperiment(ISerializationContext context, StandaloneExperiment semanticObject) {

@@ -14,7 +14,7 @@ generate gaml 'http://www.compiler.gaml/Gaml'
  * The others are used for dynamically parsing snippets (e.g., UI consoles).
  */
 Entry:
-	->Model | StandaloneExpression | StandaloneBlock | StandaloneExperiment;
+	=> Model | => StandaloneExperiment | StandaloneExpression | StandaloneBlock;
 
 // Parses a raw block without a model wrapper. Example: { do action; }
 StandaloneBlock:
@@ -26,7 +26,7 @@ StandaloneExpression:
 
 // Parses an experiment independently. Example: experiment my_exp type: gui { }
 StandaloneExperiment:
-	key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+	(pragmas+=Pragma)* key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
 
 /******************************************************************************************
  * *****************************************************************************************

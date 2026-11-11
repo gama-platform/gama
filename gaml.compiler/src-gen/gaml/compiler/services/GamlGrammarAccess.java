@@ -27,9 +27,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Entry");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cModelParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cStandaloneExpressionParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cStandaloneBlockParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cStandaloneExperimentParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cStandaloneExperimentParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cStandaloneExpressionParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cStandaloneBlockParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		
 		///******************************************************************************************
 		// * *****************************************************************************************
@@ -42,23 +42,23 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		// * The others are used for dynamically parsing snippets (e.g., UI consoles).
 		// */
 		//Entry:
-		//    ->Model | StandaloneExpression | StandaloneBlock | StandaloneExperiment;
+		//    => Model | => StandaloneExperiment | StandaloneExpression | StandaloneBlock;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//->Model | StandaloneExpression | StandaloneBlock | StandaloneExperiment
+		//=> Model | => StandaloneExperiment | StandaloneExpression | StandaloneBlock
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//->Model
+		//=> Model
 		public RuleCall getModelParserRuleCall_0() { return cModelParserRuleCall_0; }
 		
+		//=> StandaloneExperiment
+		public RuleCall getStandaloneExperimentParserRuleCall_1() { return cStandaloneExperimentParserRuleCall_1; }
+
 		//StandaloneExpression
-		public RuleCall getStandaloneExpressionParserRuleCall_1() { return cStandaloneExpressionParserRuleCall_1; }
+		public RuleCall getStandaloneExpressionParserRuleCall_2() { return cStandaloneExpressionParserRuleCall_2; }
 		
 		//StandaloneBlock
-		public RuleCall getStandaloneBlockParserRuleCall_2() { return cStandaloneBlockParserRuleCall_2; }
-		
-		//StandaloneExperiment
-		public RuleCall getStandaloneExperimentParserRuleCall_3() { return cStandaloneExperimentParserRuleCall_3; }
+		public RuleCall getStandaloneBlockParserRuleCall_3() { return cStandaloneBlockParserRuleCall_3; }
 	}
 	public class StandaloneBlockElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.StandaloneBlock");
@@ -111,58 +111,66 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	public class StandaloneExperimentElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.StandaloneExperiment");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cKeyK_ExperimentParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
-		private final Assignment cNameAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cNameAlternatives_1_0 = (Alternatives)cNameAssignment_1.eContents().get(0);
-		private final RuleCall cNameValid_IDParserRuleCall_1_0_0 = (RuleCall)cNameAlternatives_1_0.eContents().get(0);
-		private final RuleCall cNameSTRINGTerminalRuleCall_1_0_1 = (RuleCall)cNameAlternatives_1_0.eContents().get(1);
-		private final Group cGroup_2 = (Group)cGroup.eContents().get(2);
-		private final Keyword cModelKeyword_2_0 = (Keyword)cGroup_2.eContents().get(0);
-		private final Assignment cImportURIAssignment_2_1 = (Assignment)cGroup_2.eContents().get(1);
-		private final RuleCall cImportURISTRINGTerminalRuleCall_2_1_0 = (RuleCall)cImportURIAssignment_2_1.eContents().get(0);
-		private final RuleCall cFacetsAndBlockParserRuleCall_3 = (RuleCall)cGroup.eContents().get(3);
+		private final Assignment cPragmasAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cPragmasPragmaParserRuleCall_0_0 = (RuleCall)cPragmasAssignment_0.eContents().get(0);
+		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cKeyK_ExperimentParserRuleCall_1_0 = (RuleCall)cKeyAssignment_1.eContents().get(0);
+		private final Assignment cNameAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final Alternatives cNameAlternatives_2_0 = (Alternatives)cNameAssignment_2.eContents().get(0);
+		private final RuleCall cNameValid_IDParserRuleCall_2_0_0 = (RuleCall)cNameAlternatives_2_0.eContents().get(0);
+		private final RuleCall cNameSTRINGTerminalRuleCall_2_0_1 = (RuleCall)cNameAlternatives_2_0.eContents().get(1);
+		private final Group cGroup_3 = (Group)cGroup.eContents().get(3);
+		private final Keyword cModelKeyword_3_0 = (Keyword)cGroup_3.eContents().get(0);
+		private final Assignment cImportURIAssignment_3_1 = (Assignment)cGroup_3.eContents().get(1);
+		private final RuleCall cImportURISTRINGTerminalRuleCall_3_1_0 = (RuleCall)cImportURIAssignment_3_1.eContents().get(0);
+		private final RuleCall cFacetsAndBlockParserRuleCall_4 = (RuleCall)cGroup.eContents().get(4);
 		
 		//// Parses an experiment independently. Example: experiment my_exp type: gui { }
 		//StandaloneExperiment:
-		//    key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+		//    (pragmas+=Pragma)* key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock
+		//(pragmas+=Pragma)* key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock
 		public Group getGroup() { return cGroup; }
 		
+		//(pragmas+=Pragma)*
+		public Assignment getPragmasAssignment_0() { return cPragmasAssignment_0; }
+
+		//Pragma
+		public RuleCall getPragmasPragmaParserRuleCall_0_0() { return cPragmasPragmaParserRuleCall_0_0; }
+
 		//key=K_Experiment
-		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
+		public Assignment getKeyAssignment_1() { return cKeyAssignment_1; }
 		
 		//K_Experiment
-		public RuleCall getKeyK_ExperimentParserRuleCall_0_0() { return cKeyK_ExperimentParserRuleCall_0_0; }
+		public RuleCall getKeyK_ExperimentParserRuleCall_1_0() { return cKeyK_ExperimentParserRuleCall_1_0; }
 		
 		//name=(Valid_ID | STRING)
-		public Assignment getNameAssignment_1() { return cNameAssignment_1; }
+		public Assignment getNameAssignment_2() { return cNameAssignment_2; }
 		
 		//(Valid_ID | STRING)
-		public Alternatives getNameAlternatives_1_0() { return cNameAlternatives_1_0; }
+		public Alternatives getNameAlternatives_2_0() { return cNameAlternatives_2_0; }
 		
 		//Valid_ID
-		public RuleCall getNameValid_IDParserRuleCall_1_0_0() { return cNameValid_IDParserRuleCall_1_0_0; }
+		public RuleCall getNameValid_IDParserRuleCall_2_0_0() { return cNameValid_IDParserRuleCall_2_0_0; }
 		
 		//STRING
-		public RuleCall getNameSTRINGTerminalRuleCall_1_0_1() { return cNameSTRINGTerminalRuleCall_1_0_1; }
+		public RuleCall getNameSTRINGTerminalRuleCall_2_0_1() { return cNameSTRINGTerminalRuleCall_2_0_1; }
 		
 		//('model:' importURI=STRING)?
-		public Group getGroup_2() { return cGroup_2; }
+		public Group getGroup_3() { return cGroup_3; }
 		
 		//'model:'
-		public Keyword getModelKeyword_2_0() { return cModelKeyword_2_0; }
+		public Keyword getModelKeyword_3_0() { return cModelKeyword_3_0; }
 		
 		//importURI=STRING
-		public Assignment getImportURIAssignment_2_1() { return cImportURIAssignment_2_1; }
+		public Assignment getImportURIAssignment_3_1() { return cImportURIAssignment_3_1; }
 		
 		//STRING
-		public RuleCall getImportURISTRINGTerminalRuleCall_2_1_0() { return cImportURISTRINGTerminalRuleCall_2_1_0; }
+		public RuleCall getImportURISTRINGTerminalRuleCall_3_1_0() { return cImportURISTRINGTerminalRuleCall_3_1_0; }
 		
 		//FacetsAndBlock
-		public RuleCall getFacetsAndBlockParserRuleCall_3() { return cFacetsAndBlockParserRuleCall_3; }
+		public RuleCall getFacetsAndBlockParserRuleCall_4() { return cFacetsAndBlockParserRuleCall_4; }
 	}
 	public class ModelElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Model");
@@ -4327,7 +4335,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * The others are used for dynamically parsing snippets (e.g., UI consoles).
 	// */
 	//Entry:
-	//    ->Model | StandaloneExpression | StandaloneBlock | StandaloneExperiment;
+	//    => Model | => StandaloneExperiment | StandaloneExpression | StandaloneBlock;
 	public EntryElements getEntryAccess() {
 		return pEntry;
 	}
@@ -4360,7 +4368,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//// Parses an experiment independently. Example: experiment my_exp type: gui { }
 	//StandaloneExperiment:
-	//    key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+	//    (pragmas+=Pragma)* key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
 	public StandaloneExperimentElements getStandaloneExperimentAccess() {
 		return pStandaloneExperiment;
 	}
