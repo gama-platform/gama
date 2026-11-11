@@ -293,6 +293,12 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 					true, completion, context, acceptor);
 			return;
 		}
+		if (completion.invocationName()) {
+			addNameProposals(scopeProvider.getCompletionScope(completion.model(),
+					GamlPackage.Literals.ACTION_REF__REF, context.getOffset()), true, completion, context, acceptor);
+			addBuiltInElements(context, acceptor, true);
+			return;
+		}
 		if (atStatementStart(completion, context)) {
 			addNameProposals(scopeProvider.getCompletionScope(completion.model(),
 					GamlPackage.Literals.VARIABLE_REF__REF, context.getOffset()), false, completion, context, acceptor);
@@ -300,7 +306,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 					GamlPackage.Literals.ACTION_REF__REF, context.getOffset()), true, completion, context, acceptor);
 		}
 		super.createProposals(context, acceptor);
-		addBuiltInElements(context, acceptor);
+		addBuiltInElements(context, acceptor, false);
 	}
 
 	private boolean atStatementStart(final GamlCompletionContext completion, final ContentAssistContext context) {
@@ -344,9 +350,10 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 		for (final IEObjectDescription candidate : scope.getAllElements()) {
 			if (!acceptor.canAcceptMoreProposals()) return;
 			final String name = candidate.getName().toString();
-			if (!names.add(name) || !context.getMatcher().isCandidateMatchingPrefix(name, completion.prefix())) continue;
 			final String kind = proposalKind(candidate,
 					action ? IKeyword.ACTION : defaultProposalKind(candidate));
+			if (completion.invocationName() && !IKeyword.ACTION.equals(kind) && !"operator".equals(kind)) continue;
+			if (!names.add(name) || !context.getMatcher().isCandidateMatchingPrefix(name, completion.prefix())) continue;
 			final EObject definition = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
 			final String label = proposalLabel(kind, definition);
 			final String type = proposalType(candidate, definition);
@@ -558,7 +565,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 	 *            commented methods below). TODO Build this list at once instead of recomputing it everytime (might be
 	 *            done in a dedicated data structure somewhere) and separate it by types (vars, units, etc.)
 	 */
-	private void addBuiltInElements(final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
+	private void addBuiltInElements(final ContentAssistContext context, final ICompletionProposalAcceptor acceptor,
+			final boolean operatorsOnly) {
 		if (proposals.isEmpty()) {
 			// for ( String t : Types.getTypeNames() ) {
 			// types.add(t);
@@ -618,6 +626,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
 		}
 		for (final BuiltInProposal bi : proposals) {
+			if (operatorsOnly && !"operator".equals(bi.kind)) continue;
 			final ICompletionProposal cp = createCompletionProposal(bi.name, bi.title, bi.image,
 					proposalPriority(bi.kind), context.getPrefix(), context);
 			if (cp == null) {

@@ -21,7 +21,7 @@ import gaml.compiler.gaml.Block;
  * Cursor-based context shared by semantic completion and templates, independent of parser follow alternatives.
  */
 record GamlCompletionContext(EObject model, Expression receiver, String receiverName, boolean memberAccess,
-		String prefix, int replacementOffset, int replacementLength) {
+		boolean invocationName, String prefix, int replacementOffset, int replacementLength) {
 
 	static GamlCompletionContext at(final ContentAssistContext context) {
 		final var root = context.getRootNode();
@@ -40,6 +40,8 @@ record GamlCompletionContext(EObject model, Expression receiver, String receiver
 			previous = leaf;
 		}
 		final boolean member = previous != null && ".".equals(previous.getText());
+		final boolean invocation = previous != null
+				&& ("do".equals(previous.getText()) || "invoke".equals(previous.getText()));
 		final ILeafNode position = NodeModelUtils.findLeafNodeAtOffset(root, Math.max(0, offset - 1));
 		EObject model = position == null ? context.getCurrentModel()
 				: NodeModelUtils.findActualSemanticObjectFor(position);
@@ -57,7 +59,7 @@ record GamlCompletionContext(EObject model, Expression receiver, String receiver
 			}
 		}
 		model = lexicalContextAt(context, model, offset);
-		return new GamlCompletionContext(model, receiver, receiverName, member, text.substring(start, offset),
+		return new GamlCompletionContext(model, receiver, receiverName, member, invocation, text.substring(start, offset),
 				start, Math.max(end - start, context.getReplaceRegion().getOffset()
 						+ context.getReplaceRegion().getLength() - start));
 	}
