@@ -35,7 +35,7 @@ global schedules: people_ordered{
 	float step <-0.5#s;
 	
 	geometry shape <- envelope(buildings_shape_file)  ;
-	graph road_network;
+	graph<geometry, geometry> road_network;
 	
 	float priority_min_road;
 

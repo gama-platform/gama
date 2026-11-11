@@ -13,7 +13,7 @@ model WanderonGraph
 
 global {
 	
-	graph network;
+	graph<geometry, geometry> network;
 	
 	//map that gives the probability to choose a road
 	map<road,float> proba_use_road;

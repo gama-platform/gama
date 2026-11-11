@@ -64,6 +64,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Grid `collect` preserves spatial structure | Use `list(cell) collect expression` when a flat list is required |
 | Grid attribute brackets are typed matrix reads and writes | Replace `matrix_with(cell, "attribute")` with `cell[attribute]` and `set_values` with `cell[attribute] <- matrix;` |
 | Attribute brackets also support ordinary species | `species[attribute]` reads a typed list; assigning a list requires exactly one element per current agent |
+| Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
 
 ## Engine, UI, and Graphics
 
@@ -364,6 +365,43 @@ Work through each section that applies to your plugin. Each section is self-cont
 ## 1. GAML Language Syntax Changes
 
 These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
+
+### Explicit container types for built-in action arguments
+
+**Breaking change for model authors:** built-in actions now check the content and key types
+declared for their container arguments. A bare `graph` declaration is no longer sufficient
+when passing a network to an action expecting `graph<geometry, geometry>`, such as
+`wander`'s `on` argument, driving's `compute_path`/`drive_random` graph arguments, or
+pedestrian network actions.
+
+```gaml
+// Before
+graph road_network;
+
+// After
+graph<geometry, geometry> road_network;
+```
+
+The first parameter is the vertex type; the second is the edge type. Use geometry types
+for these spatial networks even when vertices and edges are intersection and road agents:
+agents are compatible with geometry types. Graph construction is unchanged, for example:
+
+```gaml
+graph<geometry, geometry> road_network;
+init {
+    road_network <- as_driving_graph(road, intersection);
+}
+```
+
+Update every declaration that carries the network, including globals, species attributes,
+local variables and your own action parameters or return types. A later assignment of a
+spatial graph does not refine a variable declared only as `graph`. An argument-type error
+at a call site should therefore be fixed at the relevant declaration, not just by changing
+the graph-building expression.
+
+This is not a blanket change to all graphs: non-spatial graphs should retain their actual
+vertex and edge types. The same stricter checking applies to other annotated container
+arguments; declare compatible list element and map key/value types where required.
 
 ### Lists and maps: absence is not emptiness (#765)
 

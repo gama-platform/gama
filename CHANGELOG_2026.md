@@ -19,6 +19,24 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### BREAKING CHANGE: explicit container types for built-in action arguments
+
+Built-in actions now expose and check the content and key types declared by their Java
+`@arg` annotations (`of` and `index`). Models that previously passed an unparameterized
+`graph` to spatial movement, driving or pedestrian actions may now report an argument-type
+error. Declare these networks as `graph<geometry, geometry>`, not just `graph`; the two
+parameters describe vertices and edges, respectively. Road and intersection agents are
+compatible with geometry types.
+
+Update globals, attributes, local variables and action parameters through which these
+networks are passed. Assigning a spatial graph to a variable declared only as `graph`
+does not refine that variable's declared type. Other container arguments may similarly
+require explicit list element or map key/value types. This does not require non-spatial
+graphs to use geometry types.
+
+See the [migration example](MIGRATION_GUIDE_2026.md#explicit-container-types-for-built-in-action-arguments)
+for the declaration change.
+
 ### Simulation concurrency defaults
 
 The global preference for parallel simulation scheduling has been removed. Experiments without a `parallel:` facet
