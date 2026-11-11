@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Objects;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -128,10 +129,17 @@ public class NavigatorCommonViewer extends CommonViewer {
 					textStyle.foreground = IGamaColors.NICE.color();
 				}
 			};
+			private final StyledString.Styler regularDecorationStyle = new StyledString.Styler() {
+				@Override
+				public void applyStyles(final TextStyle textStyle) {
+					textStyle.foreground = IGamaColors.NICE.color();
+					textStyle.font = JFaceResources.getDefaultFont();
+				}
+			};
 
 			@Override
 			protected StyledString.Styler getDecorationStyle(final Object element) {
-				return decorationStyle;
+				return element instanceof TopLevelFolder ? regularDecorationStyle : decorationStyle;
 			}
 		});
 		initDragAndDrop();

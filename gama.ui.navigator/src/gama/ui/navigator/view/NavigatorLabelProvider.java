@@ -11,20 +11,27 @@
 package gama.ui.navigator.view;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 
+import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.VirtualContent;
+import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaFonts;
 
 /**
  * The Class NavigatorLabelProvider.
  */
 public class NavigatorLabelProvider extends CellLabelProvider
-		implements ILabelProvider, IColorProvider /* IFontProvider */ {
+		implements ILabelProvider, IColorProvider, IFontProvider {
 
 	@Override
 	public String getText(final Object element) {
@@ -46,14 +53,16 @@ public class NavigatorLabelProvider extends CellLabelProvider
 		return false;
 	}
 
-	// @Override
-	// public Font getFont(final Object element) {
-	// if (element instanceof VirtualContent) { return ((VirtualContent<?>) element).getFont(); }
-	// return GamaFonts.getNavigFolderFont();
-	// }
+	@Override
+	public Font getFont(final Object element) {
+		return element instanceof TopLevelFolder ? GamaFonts.inBold(JFaceResources.getDefaultFont()) : null;
+	}
 
 	@Override
 	public Color getForeground(final Object element) {
+		if (element instanceof TopLevelFolder) {
+			return ThemeHelper.isDark() ? GamaColors.get(165, 191, 194).color() : GamaColors.get(63, 101, 112).color();
+		}
 		if (element instanceof VirtualContent) return ((VirtualContent<?>) element).getColor();
 		return null;
 	}
