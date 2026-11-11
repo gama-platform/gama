@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -25,10 +26,17 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.ISelectable;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.Scopes;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+
+import gaml.compiler.gaml.Block;
+import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.Statement;
+import gaml.compiler.gaml.VarDefinition;
 
 /**
  * This class contains custom scoping description.
@@ -75,13 +83,12 @@ public class GamlScopeProvider extends org.eclipse.xtext.scoping.impl.SimpleLoca
 				final boolean ignoreCase) {
 			if (nameToObjects == null) { return Collections.emptyList(); }
 			if (!nameToObjects.containsKey(name)) { return Collections.emptyList(); }
-			
+
+			final List<IEObjectDescription> result = new ArrayList<>();
 			for (final IEObjectDescription desc : nameToObjects.get(name)) {
-				if (EcoreUtil2.isAssignableFrom(type, desc.getEClass())) { 
-					return Collections.singleton(desc); 
-				}
+				if (EcoreUtil2.isAssignableFrom(type, desc.getEClass())) { result.add(desc); }
 			}
-			return Collections.emptyList();
+			return result;
 		}
 
 		@Override
@@ -104,6 +111,29 @@ public class GamlScopeProvider extends org.eclipse.xtext.scoping.impl.SimpleLoca
 			nameToObjects.put(name, e);
 		}
 
+	}
+
+	@Override
+	public IScope getScope(final EObject context, final EReference reference) {
+		final IScope scope = super.getScope(context, reference);
+		if (context == null || reference != GamlPackage.Literals.VARIABLE_REF__REF) return scope;
+
+		final List<Block> enclosingBlocks = new ArrayList<>();
+		for (EObject current = context; current != null; current = current.eContainer()) {
+			if (current instanceof Block block) { enclosingBlocks.add(block); }
+		}
+
+		IScope result = scope;
+		for (int i = enclosingBlocks.size() - 1; i >= 0; i--) {
+			final List<VarDefinition> declarations = new ArrayList<>();
+			for (final Statement statement : enclosingBlocks.get(i).getStatements()) {
+				if (statement instanceof VarDefinition definition && definition.getName() != null) {
+					declarations.add(definition);
+				}
+			}
+			if (!declarations.isEmpty()) { result = Scopes.scopeFor(declarations, result); }
+		}
+		return result;
 	}
 
 	@Override
