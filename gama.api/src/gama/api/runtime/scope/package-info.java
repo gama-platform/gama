@@ -188,6 +188,20 @@
  * }
  * }</pre>
  * 
+ * <h3>Variable ownership and remote contexts</h3>
+ * <p>
+ * Temporary variables follow the enclosing execution frames. Global attribute lookup instead starts at the current
+ * target and follows its hosts, stopping at its simulation: the fixed scope root and outer agents on the call stack
+ * are not fallback owners. Reads and writes use the same lookup, and a declared attribute whose value is
+ * {@code null} is still present. Remote sequences retain the caller's lexical frames and invocation while changing
+ * the current agent, so this lookup does not require replacing the caller's scope.
+ * </p>
+ * <p>
+ * Experiment-to-current-simulation delegation remains a transitional compatibility mechanism. Removing it requires
+ * explicit parameter configuration/evaluation contexts and simulation-owned non-permanent outputs; it must not be
+ * replaced by implicit selection among several simulations.
+ * </p>
+ *
  * <h3>Using Execution Context</h3>
  * <pre>{@code
  * public void executeWithLocalVars(IScope scope) {

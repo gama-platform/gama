@@ -83,7 +83,8 @@ import gama.api.utils.tests.WithTestSummary;
 public interface IStatement extends ISymbol, IExecutable {
 
 	/**
-	 * Marker interface for remote statements that can be executed across network connections.
+	 * A sequence executed on a target agent while retaining the caller's lexical variables. The scope supplies
+	 * {@code myself} through its invocation; {@code self} denotes the target, including across model boundaries.
 	 */
 	public interface Remote extends IStatement {
 

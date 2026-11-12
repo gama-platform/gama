@@ -24,8 +24,6 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.prefs.GamaPreferences;
@@ -93,35 +91,13 @@ public class GlobalVariableExpression extends VariableExpression implements IVar
 
 	@Override
 	public Object _value(final IScope scope) throws GamaRuntimeException {
-		final String name = getName();
-		// We first try in the 'normal' scope (so that regular global vars are still accessed by agents of micro-models,
-		// see #2238)
-		if (scope.hasAccessToGlobalVar(name) && !this.getDefinitionDescription().getModelDescription().isMicroModel())
-			return scope.getGlobalVarValue(name);
-		final IAgent microAgent = scope.getAgent();
-		if (microAgent != null) {
-			final IScope agentScope = microAgent.getScope();
-			if (agentScope != null) {
-				final ITopLevelAgent root = agentScope.getRoot();
-				if (root != null) {
-					final IScope globalScope = root.getScope();
-					if (globalScope != null) return globalScope.getGlobalVarValue(getName());
-				}
-			}
-		}
-
-		return null;
+		return scope.getGlobalVarValue(getName());
 	}
 
 	@Override
 	public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
 		if (isNotModifiable) return;
-		if (scope.hasAccessToGlobalVar(name)) {
-			scope.setGlobalVarValue(name, v);
-		} else {
-			final IAgent sc = scope.getAgent();
-			if (sc != null) { sc.getScope().getRoot().getScope().setGlobalVarValue(name, v); }
-		}
+		scope.setGlobalVarValue(name, v);
 	}
 
 	@Override

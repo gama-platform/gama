@@ -1244,6 +1244,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 */
 		@Override
 		public Object getGlobalVarValue(final String varName) {
+			if (getAgent() != ExperimentAgent.this) return super.getGlobalVarValue(varName);
 
 			// First case: we have the variable inside the experiment.
 			if (ExperimentAgent.this.hasAttribute(varName) || getSpecies().hasVar(varName))
@@ -1282,6 +1283,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 */
 		@Override
 		public boolean hasAccessToGlobalVar(final String varName) {
+			if (getAgent() != ExperimentAgent.this) return super.hasAccessToGlobalVar(varName);
 			if (ExperimentAgent.this.hasAttribute(varName) || getSpecies().hasVar(varName)
 					|| this.getModel().getSpecies().hasVar(varName) || getSpecies().hasParameter(varName))
 				return true;
@@ -1298,6 +1300,10 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 */
 		@Override
 		public void setGlobalVarValue(final String name, final Object v) {
+			if (getAgent() != ExperimentAgent.this) {
+				super.setGlobalVarValue(name, v);
+				return;
+			}
 			if (getSpecies().hasVar(name)) {
 				super.setGlobalVarValue(name, v);
 				return;
@@ -1323,7 +1329,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		@Override
 		public void setAgentVarValue(final IObject a, final String name, final Object value) {
 			if (a == ExperimentAgent.this) {
-				setGlobalVarValue(name, value);
+				final boolean pushed = push(a);
+				try {
+					setGlobalVarValue(name, value);
+				} finally {
+					if (pushed) { pop(a); }
+				}
 			} else {
 				super.setAgentVarValue(a, name, value);
 			}
@@ -1340,7 +1351,14 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 */
 		@Override
 		public Object getAgentVarValue(final IObject a, final String varName) {
-			if (a == ExperimentAgent.this) return getGlobalVarValue(varName);
+			if (a == ExperimentAgent.this) {
+				final boolean pushed = push(a);
+				try {
+					return getGlobalVarValue(varName);
+				} finally {
+					if (pushed) { pop(a); }
+				}
+			}
 			return super.getAgentVarValue(a, varName);
 		}
 

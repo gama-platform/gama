@@ -1168,16 +1168,14 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public Object getGlobalVarValue(final String name) throws GamaRuntimeException {
-		final ITopLevelAgent root = getRoot();
-		if (root == null) return null;
-		return root.getDirectVarValue(this, name);
+		final IObject owner = findAttributeOwner(name);
+		if (owner == null) throw GamaRuntimeException.error("No accessible global variable named " + name, this);
+		return owner.getDirectVarValue(this, name);
 	}
 
 	@Override
 	public boolean hasAccessToGlobalVar(final String name) {
-		final ITopLevelAgent root = getRoot();
-		if (root == null) return false;
-		return root.hasAttribute(name);
+		return findAttributeOwner(name) != null;
 	}
 
 	/**
@@ -1187,9 +1185,29 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public void setGlobalVarValue(final String name, final Object v) throws GamaRuntimeException {
-		final ITopLevelAgent root = getRoot();
-		if (root == null) return;
-		root.setDirectVarValue(this, name, v);
+		final IObject owner = findAttributeOwner(name);
+		if (owner == null) throw GamaRuntimeException.error("No accessible global variable named " + name, this);
+		owner.setDirectVarValue(this, name, v);
+	}
+
+	/**
+	 * Follows ownership, not the call stack: an outer caller is not a host of the current target. Simulation and
+	 * experiment boundaries prevent imported models from falling back to their controller's attributes.
+	 */
+	private IObject findAttributeOwner(final String name) {
+		IObject current = getCurrentObjectOrAgent();
+		if (current == null) { current = getRoot(); }
+		while (current != null) {
+			if (current.getSpecies().hasVar(name)) return current;
+			// Transitional compatibility for experiments; removed once parameters have an explicit evaluation context.
+			if (current instanceof IExperimentAgent experiment) {
+				final ISimulationAgent simulation = experiment.getSimulation();
+				return simulation != null && simulation.getSpecies().hasVar(name) ? simulation : null;
+			}
+			if (current instanceof ITopLevelAgent) return null;
+			current = current instanceof IAgent agent ? agent.getHost() : null;
+		}
+		return null;
 	}
 
 	/**
