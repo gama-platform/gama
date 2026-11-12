@@ -8,7 +8,6 @@
 *   The model includes an optional icon display for individual ants and shows collective path emergence.
 * Tags: gui, fsm, grid, diffusion, pheromone, ants, foraging, stigmergy, collective
 */
-@no_warning
 model ants
 
 global {
@@ -24,6 +23,7 @@ global {
 	//Number of ants
 	int ants_number <- 200 min: 1;
 	//Frequency of update of the grid
+	 
 	int grid_frequency <- 1 min: 1 max: 100;
 	//Number of food places among the grid
 	int number_of_food_places <- 5 min: 1; 
@@ -60,7 +60,7 @@ global {
 		//Creation of the food places placed randomly with a certain distance between each
 		loop times: number_of_food_places { do add_food();}
 		//Creation of the ants that will be placed in the nest
-		create ant number: ants_number with: (location: center);
+		create ant(location: center) number: ants_number;
 	}
 	//Reflex to diffuse the pheromon among the grid
 	reflex diffuse {
@@ -217,7 +217,7 @@ experiment "With Inspector" type: gui parent:base{
 
 		}
 
-		inspect "All ants" type: table value: ant attributes: ['name', 'state'];
+		browse "All ants" value: ant attributes: ['name', 'state'];
 	}
 }
 
@@ -270,8 +270,8 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	// We create 2 supplementary simulations using the species name 'ants_model' (automatically created from the name of the model + '_model')
 	init {
-		create ants_model with: (ants_number: 200, evaporation_per_cycle: 100, diffusion_rate: 0.2);
-		create ants_model with: (ants_number: 10, evaporation_per_cycle: 72, diffusion_rate: 0.6);
+		create ants_model(ants_number: 200, evaporation_per_cycle: 100, diffusion_rate: 0.2);
+		create ants_model(ants_number: 10, evaporation_per_cycle: 72, diffusion_rate: 0.6);
 	}
 
 
