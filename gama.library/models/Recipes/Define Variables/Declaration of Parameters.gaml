@@ -25,7 +25,7 @@ global {
 
 experiment base_experiment virtual:true {
 	// This parameter definition in an experiment will be found in all the experiments that inherit from it
-	parameter "Experiment attribute directly declared as parameter" var:attribute_2;	
+	parameter "Inherited simulation parameter" var: attribute_2;
 }
 
 experiment "Show Parameters" parent:base_experiment{
@@ -33,20 +33,20 @@ experiment "Show Parameters" parent:base_experiment{
 	float attribute_1 <- 100.0 on_change: {write attribute_1;};
 	
 
-	// This attribute sports the same name as one in simulation, and it cannot become a parameter unless the parameter: facet is declared directly on it
+	// Homonymous attributes remain independent; of: selects which owner a parameter targets.
 	int attribute_3 <- 100;
 
-	// This direct definition of parameters allows to declare the seed of the experiment as a parameter (otherwise the seed of the simulation is used by default)
-	float seed;
-	parameter "The random seed of the experiment" var:seed <- 100.0 unit: "is the seed";
+	// The built-in experiment seed can be targeted without redeclaring it.
+	parameter "The random seed of the experiment" of: experiment var: seed <- 100.0;
 	
 	
 	
 	// The following parameter targets an experiment attribute
-	parameter "Int attribute used by a parameter" var: attribute_1 unit: "(attribute_1)";
-	// The following parameter targets the seed of the random number generation. The lookup for this attribute begins in the simulation (not in the experiment). 
-	parameter "The random seed of the simulation" var: seed <- 0.0;
-	// Like the seed, the following parameter targets attribute_3, and the one in the simulation will be used by default. 
+	parameter "Int attribute used by a parameter" of: experiment var: attribute_1 unit: "(attribute_1)";
+	// Omitting of: is exactly equivalent to of: simulation, without an experiment fallback.
+	parameter "The random seed of the simulation" of: simulation var: seed <- 123.0;
+	parameter "Experiment attribute used by a parameter" of: experiment var: attribute_3;
+	// This parameter targets the simulation's attribute_3.
 	parameter "Simulation attribute used by a parameter" var: attribute_3;
 
 	// Without a unit facet this slider displays the stored value in seconds.

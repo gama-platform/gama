@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.IExperimentAgent;
@@ -29,6 +30,7 @@ import gama.api.ui.IOutput;
 import gama.api.ui.IOutputManager;
 import gama.api.utils.interfaces.ICategory;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.core.experiment.parameters.ExperimentParameter;
 import gama.core.experiment.parameters.TextStatement;
 import gama.core.outputs.MonitorOutput;
 import gama.gaml.statements.UserCommandStatement;
@@ -105,7 +107,7 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	public boolean isEnabled(final IParameterEditor<?> gpParam) {
 		final IParameter p = gpParam.getParam();
 		if (p == null) return true;
-		final Boolean b = activations.get(p.getName());
+		final Boolean b = activations.get(IExperimentDescription.parameterKey(p.getName(), p.isDefinedInExperiment()));
 		return b == null ? true : b;
 	}
 
@@ -131,7 +133,8 @@ public class ExperimentsParametersList extends EditorsList<String> {
 		for (final Map<String, IParameterEditor<?>> m : sections.values()) {
 			for (final IParameterEditor<?> ed : m.values()) {
 				final IParameter param = ed.getParam();
-				if (param != null && param.getName().equals(var)) return ed;
+				if (param != null && IExperimentDescription.parameterKey(param.getName(),
+						param.isDefinedInExperiment()).equals(var)) return ed;
 			}
 		}
 		return null;
@@ -161,20 +164,26 @@ public class ExperimentsParametersList extends EditorsList<String> {
 					final String[] refreshments = param.getRefreshment();
 					if (enablements.length > 0) {
 						final boolean value = Cast.asBool(scope, param.getInitialValue(scope));
-						for (final String other : enablements) { activations.put(other, value); }
+						for (final String other : enablements) {
+							activations.put(IExperimentDescription.parameterKey(other, param.isDefinedInExperiment()), value);
+						}
 						param.addChangedListener((s, val) -> {
 							for (final String enabled : enablements) {
-								final IParameterEditor ed = getEditorForVar(enabled);
+								final IParameterEditor ed = getEditorForVar(
+										IExperimentDescription.parameterKey(enabled, param.isDefinedInExperiment()));
 								if (ed != null && !ed.isDisposed()) { ed.setActive(Cast.asBool(scope, val)); }
 							}
 						});
 					}
 					if (disablements.length > 0) {
 						final boolean value = Cast.asBool(scope, param.getInitialValue(scope));
-						for (final String other : disablements) { activations.put(other, !value); }
+						for (final String other : disablements) {
+							activations.put(IExperimentDescription.parameterKey(other, param.isDefinedInExperiment()), !value);
+						}
 						param.addChangedListener((s, val) -> {
 							for (final String disabled : disablements) {
-								final IParameterEditor ed = getEditorForVar(disabled);
+								final IParameterEditor ed = getEditorForVar(
+										IExperimentDescription.parameterKey(disabled, param.isDefinedInExperiment()));
 								if (ed != null && !ed.isDisposed()) { ed.setActive(!Cast.asBool(scope, val)); }
 							}
 						});
@@ -182,7 +191,8 @@ public class ExperimentsParametersList extends EditorsList<String> {
 					if (refreshments.length > 0) {
 						param.addChangedListener((s, val) -> {
 							for (final String other : refreshments) {
-								final IParameterEditor ed = getEditorForVar(other);
+								final IParameterEditor ed = getEditorForVar(
+										IExperimentDescription.parameterKey(other, param.isDefinedInExperiment()));
 								if (ed != null) { ed.updateWithValueOfParameter(false, true); }
 							}
 						});
@@ -240,7 +250,10 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	private void addEditor(final IExperimentDisplayable var, final IParameterEditor gp) {
 		String cat = var.getCategory();
 		addItem(cat);
-		sections.get(cat).put(var.getName(), gp);
+		final String key = var instanceof IParameter parameter
+				? IExperimentDescription.parameterKey(parameter.getName(), parameter.isDefinedInExperiment())
+				: var.getName();
+		sections.get(cat).put(key, gp);
 	}
 
 	/**
@@ -315,7 +328,9 @@ public class ExperimentsParametersList extends EditorsList<String> {
 		Map<String, Object> result = new HashMap<>();
 		for (final Map.Entry<String, Map<String, IParameterEditor<?>>> entry : sections.entrySet()) {
 			for (final IParameterEditor gp : entry.getValue().values()) {
-				result.put(gp.getParam().getName(), gp.getCurrentValue());
+				if (!gp.getParam().isDefinedInExperiment()) {
+					result.put(gp.getParam().getName(), gp.getCurrentValue());
+				}
 			}
 		}
 		return result;
@@ -333,8 +348,12 @@ public class ExperimentsParametersList extends EditorsList<String> {
 		for (String key : values.keySet()) {
 			IParameterEditor editor = getEditorForVar(key);
 			if (editor != null) {
-				editor.getParam().setValueNoCheckNoNotification(values.get(key));
-				editor.updateWithValueOfParameter(false, false);
+				if (editor.getParam() instanceof ExperimentParameter) {
+					editor.updateWithValueOfParameter(false, true);
+				} else {
+					editor.getParam().setValueNoCheckNoNotification(values.get(key));
+					editor.updateWithValueOfParameter(false, false);
+				}
 			}
 		}
 	}

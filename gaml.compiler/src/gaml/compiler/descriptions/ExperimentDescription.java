@@ -130,37 +130,37 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	 */
 	private void addParameter(final IVariableDescription var) {
 		if (parameters == null) { parameters = GamaMapFactory.create(); }
-		String vName = var.getName();
+		String vName = IExperimentDescription.parameterKey(var.getName(),
+				IExperimentDescription.isExperimentContext(var));
 		IVariableDescription existing = parameters.get(vName);
 		if (existing != null) {
 			existing.warning("'" + vName + "' is overwritten in this experiment and will not be used.",
 					DUPLICATE_DEFINITION, NAME);
 			var.warning("'" + vName + "' overwrites a previous definition.", DUPLICATE_DEFINITION, NAME);
 		}
-		IModelDescription md = this.getModelDescription();
-		md.visitAllAttributes(d -> {
-			VariableDescription vd = (VariableDescription) d;
-			if (vName.equals(vd.getParameterName())) {
-				// Possibly different resources
-				final Resource newResource =
-						var.getUnderlyingElement() == null ? null : var.getUnderlyingElement().eResource();
-				final Resource existingResource =
-						vd.getUnderlyingElement() == null ? null : vd.getUnderlyingElement().eResource();
-				if (Objects.equals(newResource, existingResource)) {
-					var.info("'" + vName + "' supersedes the parameter declaration in " + vd.getOriginName(), REDEFINES,
-							NAME);
-					vd.info("Parameter '" + vName + "' is redefined in experiment "
-							+ var.getEnclosingDescription().getName(), DUPLICATE_DEFINITION, NAME);
-				} else if (existingResource != null) {
-					var.info("Redefinition of '" + vName + "' imported from " + existingResource.getURI().lastSegment(),
-							REDEFINES, NAME);
+		if (!IExperimentDescription.isExperimentContext(var)) {
+			getModelDescription().visitAllAttributes(d -> {
+				VariableDescription vd = (VariableDescription) d;
+				if (vName.equals(vd.getParameterName())) {
+					// Possibly different resources
+					final Resource newResource =
+							var.getUnderlyingElement() == null ? null : var.getUnderlyingElement().eResource();
+					final Resource existingResource =
+							vd.getUnderlyingElement() == null ? null : vd.getUnderlyingElement().eResource();
+					if (Objects.equals(newResource, existingResource)) {
+						var.info("'" + vName + "' supersedes the parameter declaration in " + vd.getOriginName(),
+								REDEFINES, NAME);
+						vd.info("Parameter '" + vName + "' is redefined in experiment "
+								+ var.getEnclosingDescription().getName(), DUPLICATE_DEFINITION, NAME);
+					} else if (existingResource != null) {
+						var.info("Redefinition of '" + vName + "' imported from " + existingResource.getURI().lastSegment(),
+								REDEFINES, NAME);
+					}
 				}
-			}
-			return true;
+				return true;
+			});
 		}
-
-		);
-		parameters.put(var.getName(), var);
+		parameters.put(vName, var);
 	}
 
 	/**
@@ -207,7 +207,8 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	 */
 	public void addInheritedParameter(final IVariableDescription vd) {
 
-		final String inheritedVarName = vd.getName();
+		final String inheritedVarName = IExperimentDescription.parameterKey(vd.getName(),
+				IExperimentDescription.isExperimentContext(vd));
 
 		// If no previous definition is found, just add the parameter
 		if (!hasParameter(inheritedVarName)) {
@@ -375,9 +376,9 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 
 	@Override
 	protected void addBehavior(final IStatementDescription r) {
-		if (IKeyword.OUTPUT.equals(r.getKeyword())) {
+		if (IKeyword.OUTPUT.equals(r.getKeyword()) && !IExperimentDescription.isExperimentContext(r)) {
 			output = r;
-		} else if (IKeyword.PERMANENT.equals(r.getKeyword())) {
+		} else if (IKeyword.PERMANENT.equals(r.getKeyword()) || IKeyword.OUTPUT.equals(r.getKeyword())) {
 			permanent = r;
 		} else {
 			super.addBehavior(r);

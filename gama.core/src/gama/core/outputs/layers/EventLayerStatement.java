@@ -85,17 +85,17 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 						name = IKeyword.ACTION,
 						type = IType.ACTION,
 						optional = true,
-						doc = @doc ("An action without arguments, defined in global for a normal output or in the experiment for a permanent output. It executes on that output's owner. Use #user_location for the originating display's mouse position.")) },
+						doc = @doc ("An action without arguments, defined in the owner selected by output of: simulation (default) or output of: experiment (also spelled permanent). It executes on that output's owner. Use #user_location for the originating display's mouse position.")) },
 		omissible = ILayerStatement.Event.TRIGGER)
 @validator (EventLayerValidator.class)
 @doc (
 		value = "`" + IKeyword.EVENT
-				+ "` allows interaction through mouse or key events. A normal output's event blocks and named actions execute in its owning simulation, with model attributes/actions and simulation self. A permanent output's events execute in the experiment. A named action must be defined in that context and accept no arguments."
+				+ "` allows interaction through mouse or key events. Event blocks and named actions execute in the context selected by output of: simulation (the default) or output of: experiment (also spelled permanent). A named action must be defined in that context and accept no arguments."
 				+ " The location of the mouse in the world can be retrieved with #user_location. Use an explicit 'ask experiment' block inside a simulation event to access experiment-only members. "
 				+ "Use `event #key_listener` to observe each key press reaching the focused display. Inside its block or called actions, #key_pressed is the produced character (a literal space for the space bar), a named key such as #enter or #arrow_up, or `key_<native code>` for an unrecognized key. Character case follows the input; when a modifier produces a control character, the unmodified key is used. Function keys are named f1, f2, etc. Pressing a modifier can generate its own event, and holding a key can generate repeated events. "
 				+ "Use `event #mouse_listener` to observe mouse input. #mouse_action is one of #mouse_down, #mouse_up, #mouse_click, #mouse_move, #mouse_drag, #mouse_enter, #mouse_exit or #mouse_menu. #mouse_button is 'left', 'middle', 'right', 'button_N' for another button, or 'none' when no button is associated. A drag reports the first pressed button known to the backend; a menu can report 'none'. A click follows its press and release; click detection and menu delivery depend on the platform. "
 				+ "These three input values belong only to the current generic-listener callback, including actions it calls and nested ask blocks; outside the corresponding listener they are empty strings, not the last input. During a mouse listener, #user_location and #user_location_in_display are snapshots for the originating display. Store values in a model variable if they are needed later. "
-				+ "Normal output callbacks are scheduled on the owning simulation thread between steps; permanent output callbacks use the experiment thread even when simulations exist. They do not block the display thread. Mouse events retain the position at which they were received, even if execution is delayed. "
+				+ "Simulation output callbacks are scheduled on the owning simulation thread between steps; experiment output callbacks use the experiment thread even when simulations exist. They do not block the display thread. Mouse events retain the position at which they were received, even if execution is delayed. "
 				+ "Consecutive specific #mouse_move or #mouse_drag events for the same layer may be coalesced to the latest position, normally at most once every 33 milliseconds; an intervening event flushes the pending position first. Other events are not coalesced; #mouse_listener continues to observe every supported mouse event. "
 				+ "Generic listeners observe rather than consume input: existing specific event layers, display navigation and contextual menus continue to operate. Mouse movement and drag callbacks can be frequent. Mouse wheel and key-release events are not included. Keyboard and mouse events intercepted by the operating system or workbench may never reach the display. "
 				+ "Keyboard combinations can be written as strings, e.g. 'ctrl+shift+a', 'alt+arrow_up' or 'cmd+enter'. "
@@ -113,7 +113,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 				+ "Standalone #ctrl, #cmd, #shift and #alt events retain their existing behavior; adding combination events does not change legacy character or special-key dispatch. "
 				+ "Shortcuts intercepted by the operating system or workbench may not reach the display. On Windows, CTRL-based events receive an additional warning about conflicts with OpenGL camera interaction. "
 				+ "OpenGL camera controls use CMD only on macOS and CTRL only on Windows/Linux; macOS CTRL is not a camera modifier. CTRL-click on macOS retains its contextual-menu behavior. "
-				+ "An action defined in 'global' must be called on the simulation from this block (e.g. `ask simulation { do myAction(); }`).",
+				+ "From an experiment output, calling an action defined in global requires an explicit simulation target (e.g. `ask simulation { do myAction(); }`).",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (

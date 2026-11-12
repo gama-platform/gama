@@ -494,7 +494,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			for (final IVariable v : getVars()) {
 				if (v.isParameter()) {
 					final ExperimentParameter p = new ExperimentParameter(myScope, v);
-					final String parameterName = "(Experiment) " + p.getName();
+					final String parameterName = IExperimentDescription.parameterKey(p.getName(), true);
 					final boolean already = parameters.containsKey(parameterName);
 					if (!already) {
 						parameters.put(parameterName, p);
@@ -522,7 +522,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 * Adds the default parameters.
 	 */
 	protected void addDefaultParameters() {
-		for (final IParameter.Batch p : agent.getDefaultParameters()) { addParameter(p); }
+		for (final IParameter.Batch p : agent.getDefaultParameters()) {
+			if (!parameters.containsKey(IExperimentDescription.parameterKey(p.getName(), p.isDefinedInExperiment()))) {
+				addParameter(p);
+			}
+		}
 	}
 
 	@Override
@@ -550,7 +554,12 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 					exploration = ie;
 					break;
 				case SimulationOutputManager som: {
-					if (originalSimulationOutputs != null) {
+					if (IExperimentDescription.isExperimentContext(som.getDescription())) {
+						final ExperimentOutputManager outputs = new ExperimentOutputManager(som.getDescription());
+						outputs.setChildren(som);
+						outputs.setLayout(som.getLayout());
+						addExperimentOutputs(outputs);
+					} else if (originalSimulationOutputs != null) {
 						originalSimulationOutputs.setChildren(som);
 					} else {
 						originalSimulationOutputs = som;
@@ -564,7 +573,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 						displayables.add(pb);
 						continue;
 					}
-					final String parameterName = pb.getName();
+					final String parameterName =
+							IExperimentDescription.parameterKey(pb.getName(), pb.isDefinedInExperiment());
 					final boolean already = parameters.containsKey(parameterName);
 					if (!already) {
 						displayables.add(pb);
@@ -573,11 +583,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 				}
 					break;
 				case ExperimentOutputManager eom:
-					if (experimentOutputs != null) {
-						experimentOutputs.setChildren(eom);
-					} else {
-						experimentOutputs = eom;
-					}
+					addExperimentOutputs(eom);
 					break;
 				default:
 					continue;
@@ -596,6 +602,15 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		displayables.addAll(getUserCommands());
 	}
 
+	private void addExperimentOutputs(final ExperimentOutputManager outputs) {
+		if (experimentOutputs == null) {
+			experimentOutputs = outputs;
+		} else {
+			experimentOutputs.setChildren(outputs);
+			if (outputs.getLayout() != null) { experimentOutputs.setLayout(outputs.getLayout()); }
+		}
+	}
+
 	/**
 	 * Open.
 	 *
@@ -611,13 +626,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// evaluate variables in the opening of the
 		// experiment
 		// Make sure that the attributes in experiment are initialized (see #3842)
-		agent.getParameterValues().forEach((n, v) -> {
-			final var target = getDescription().getParameterTarget(n);
-			if (hasVar(n) && (target != null && target.isDefinedInExperiment()
-					|| IKeyword.SEED.equals(n) || IKeyword.RNG.equals(n))) {
-				agent.setDirectVarValue(myScope, n, v);
+		for (final IParameter parameter : parameters.values()) {
+			if (parameter.isDefinedInExperiment()) {
+				agent.setDirectVarValue(agent.getScope(), parameter.getName(), parameter.value(agent.getScope()));
 			}
-		});
+		}
 		myScope.push(agent);
 		prepareGui(); // TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
@@ -802,7 +815,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 *            the p
 	 */
 	public void addParameter(final IParameter p) {
-		final String parameterName = p.getName();
+		final String parameterName = IExperimentDescription.parameterKey(p.getName(), p.isDefinedInExperiment());
 		final IParameter already = parameters.get(parameterName);
 		if (already != null) { p.setValue(myScope, already.getInitialValue(myScope)); }
 		parameters.put(parameterName, p);

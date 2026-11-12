@@ -484,7 +484,8 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public ParametersSet getParameterValues() {
 		final Map<String, IParameter> parameters = getSpecies().getParameters();
-		final ParametersSet ps = new ParametersSet(ownScope, parameters, false);
+		final ParametersSet ps = new ParametersSet(ownScope,
+				parameters.values().stream().filter(p -> !p.isDefinedInExperiment()).toList(), false);
 		ps.putAll(extraParametersMap);
 		return ps;
 	}

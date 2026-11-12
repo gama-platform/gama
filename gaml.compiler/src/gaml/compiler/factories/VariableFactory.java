@@ -59,11 +59,12 @@ public class VariableFactory implements ISymbolDescriptionFactory {
 			// We copy the relevant facets from the targeted var of the
 			// parameter
 			final IVariableDescription targetedVar = enclosing instanceof IExperimentDescription exp
-					? exp.getParameterTarget(facets.getLabel(VAR))
+					? exp.getParameterTarget(facets.getLabel(VAR),
+							IKeyword.EXPERIMENT.equals(facets.getLabel(IKeyword.OF)))
 					: enclosing.getModelDescription().getAttribute(facets.getLabel(VAR));
 			if (targetedVar != null) {
 				for (final String key : possibleFacets.keySet()) {
-					if (ON_CHANGE.equals(key)) { continue; }
+					if (ON_CHANGE.equals(key) || IKeyword.OF.equals(key)) { continue; }
 					final IExpressionDescription expr = targetedVar.getFacet(key);
 					if (expr != null) {
 						IExpressionDescription copy = expr.cleanCopy();

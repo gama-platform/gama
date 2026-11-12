@@ -108,11 +108,26 @@ public interface IExperimentDescription extends ISpeciesDescription {
 	 */
 	boolean isTest();
 
-	/** Resolves parameter targets model-first, including names shared with built-in experiment attributes. */
+	/** Whether a declaration explicitly belongs to the experiment, including the legacy permanent output block. */
+	static boolean isExperimentContext(final IDescription description) {
+		return IKeyword.PERMANENT.equals(description.getKeyword())
+				|| IKeyword.EXPERIMENT.equals(description.getLitteral(IKeyword.OF));
+	}
+
+	/** Keeps experiment parameters separate from simulation parameters with the same target name. */
+	static String parameterKey(final String name, final boolean experiment) {
+		return experiment ? "(Experiment) " + name : name;
+	}
+
+	/** An omitted owner always means simulation, without an implicit experiment fallback. */
 	default IVariableDescription getParameterTarget(final String name) {
+		return getParameterTarget(name, false);
+	}
+
+	default IVariableDescription getParameterTarget(final String name, final boolean experiment) {
+		if (experiment) return getAttribute(name);
 		final IModelDescription model = getModelDescription();
-		final IVariableDescription variable = model == null ? null : model.getAttribute(name);
-		return variable == null ? getAttribute(name) : variable;
+		return model == null ? null : model.getAttribute(name);
 	}
 
 }

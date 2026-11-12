@@ -232,7 +232,8 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 			final IScope evaluation = getScope();
 			if (param instanceof ExperimentParameter parameter) {
 				final var target = parameter.isDefinedInExperiment() ? evaluation.getExperiment()
-						: retrieveVarValue ? evaluation.getSimulation() : null;
+						: evaluation.getRoot() instanceof ISimulationAgent simulation
+								? simulation : null;
 				result = target == null ? param.value(evaluation) : evaluation.getAgentVarValue(target, param.getName());
 			} else if (getScope() != null /* && agent == null */ && retrieveVarValue
 					|| agent.getSpecies().hasVar(param.getName())) {
@@ -263,9 +264,11 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	private final void modifyValueOfParameterWith(final Object newValue) throws GamaRuntimeException {
 		if (param instanceof ExperimentParameter parameter) {
 			final IScope evaluation = getScope();
-			final var target = parameter.isDefinedInExperiment() ? evaluation.getExperiment() : evaluation.getSimulation();
-			if (target != null) { evaluation.setAgentVarValue(target, param.getName(), newValue); }
-			param.setValue(evaluation, newValue);
+			if (parameter.isDefinedInExperiment() || evaluation.getRoot() instanceof ISimulationAgent) {
+				parameter.setAgentValue(evaluation, newValue);
+			} else {
+				parameter.setValue(evaluation, newValue);
+			}
 			return;
 		} else if (param instanceof AttributeDeclaration) {
 			((AttributeDeclaration) param).setVal(getScope(), agent, newValue);

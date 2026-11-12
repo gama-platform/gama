@@ -61,7 +61,7 @@ import gama.dev.DEBUG;
 				doc = @doc ("Allows to save the whole screen on disk. A value of true/false will save it with the resolution of the physical screen. Passing it a string allows to define the filename "
 						+ "Note that setting autosave to true (or to any other value than false) will synchronize all the displays defined in the experiment")) })
 @doc (
-		value = "Represents the outputs of the experiment itself. In a batch experiment, the permanent section allows to define an output block that will NOT be re-initialized at the beginning of each simulation but will be filled at the end of each simulation.",
+		value = "Legacy spelling of output of: experiment. Represents the outputs of the experiment itself, evaluated in the experiment context. In a batch experiment, these outputs are not re-initialized at the beginning of each simulation.",
 		usages = { @usage (
 				value = "For instance, this permanent section will allow to display for each simulation the end value of the food_gathered variable:",
 				examples = { @example (

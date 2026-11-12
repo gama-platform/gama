@@ -27,6 +27,7 @@ import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.IType;
@@ -54,6 +55,12 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 		with_sequence = true,
 		concept = { IConcept.DISPLAY, IConcept.OUTPUT })
 @facets ({ @facet (
+		name = IKeyword.OF,
+		type = IType.LABEL,
+		values = { IKeyword.EXPERIMENT, IKeyword.SIMULATION },
+		optional = true,
+		doc = @doc ("The owner of these outputs: simulation (default, independent outputs for each simulation) or experiment (shared outputs lasting for the experiment).")),
+		@facet (
 		name = "synchronized",
 		type = IType.BOOL,
 		optional = true,
@@ -70,8 +77,8 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 		kinds = { ISymbolKind.MODEL, ISymbolKind.EXPERIMENT })
 @doc (
 		value = "`output` blocks define how to visualize a simulation (with one or more display blocks that define separate windows). It will include a set of displays, monitors and files statements. It will be taken into account only if the experiment type is `gui`. "
-				+ "Although declared inside an experiment, their expressions are compiled and evaluated in the owning simulation's context: self denotes that simulation and unqualified attributes and actions belong to its model. "
-				+ "Use experiment.attribute or ask experiment to access the experiment itself. Each simulation, including those of imported models, owns independent output instances. Permanent outputs remain in the experiment context.",
+				+ "of: simulation (the default) compiles and evaluates expressions in the owning simulation's context. Each simulation owns independent output instances. "
+				+ "of: experiment compiles and evaluates them in the declaring experiment, with the same lifetime as the legacy permanent block. All layers and their callbacks inherit the selected context.",
 		usages = { @usage (
 				value = "Its basic syntax is: ",
 				examples = { @example (
@@ -106,6 +113,11 @@ public class SimulationOutputManager extends AbstractOutputManager {
 
 		@Override
 		public void validate(final IDescription description) {
+			if (IExperimentDescription.isExperimentContext(description)
+					&& !description.getEnclosingDescription().isExperiment()) {
+				description.error("output of: experiment must be declared inside an experiment.",
+						IGamlIssue.WRONG_CONTEXT, IKeyword.OF);
+			}
 			Iterable<IDescription> displays = description.getChildrenWithKeyword(DISPLAY);
 			Map<String, IDescription> map = new HashMap<>();
 			for (IDescription display : displays) {

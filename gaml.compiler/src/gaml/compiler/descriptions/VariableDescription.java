@@ -55,6 +55,7 @@ import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.GamaIntegerType;
+import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
@@ -123,8 +124,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	public IDescription getEnclosingContext() {
 		final IDescription enclosing = getEnclosingDescription();
 		if (isExperimentParameter() && enclosing instanceof IExperimentDescription experiment) {
-			final IVariableDescription target = experiment.getParameterTarget(getLitteral(IKeyword.VAR));
-			if (target != null) return target.getEnclosingDescription();
+			return IExperimentDescription.isExperimentContext(this) ? experiment : experiment.getModelDescription();
 		}
 		return enclosing;
 	}
@@ -535,6 +535,17 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	 */
 	@Override
 	protected IType<?> computeType() {
+		if (isExperimentParameter() && getEnclosingDescription() instanceof IExperimentDescription experiment) {
+			final IVariableDescription target = experiment.getParameterTarget(getLitteral(IKeyword.VAR),
+					IExperimentDescription.isExperimentContext(this));
+			final IType<?> targetType = target == null ? Types.NO_TYPE : target.getGamlType();
+			final IType<?> declaredType = getTypeDenotedByFacet(TYPE, targetType);
+			// Here of: selects an owner, not a container's content type.
+			return declaredType.isContainer()
+					? GamaType.from(declaredType, getTypeDenotedByFacet(IKeyword.INDEX, targetType.getKeyType()),
+							targetType.getContentType())
+					: declaredType;
+		}
 		return computeType(false);
 	}
 

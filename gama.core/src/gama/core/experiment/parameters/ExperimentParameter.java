@@ -105,10 +105,16 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 						optional = true,
 						doc = @doc ("a category label, used to group parameters in the interface")),
 				@facet (
+						name = IKeyword.OF,
+						type = IType.LABEL,
+						values = { IKeyword.EXPERIMENT, IKeyword.SIMULATION },
+						optional = true,
+						doc = @doc ("The owner of the target variable and parameter expressions: simulation (default) or experiment. There is no implicit fallback between owners.")),
+				@facet (
 						name = IKeyword.VAR,
 						type = IType.ID,
 						optional = false,
-						doc = @doc ("The target variable, looked up in global first, then in the experiment. Parameter expressions use that variable's context.")),
+						doc = @doc ("The target variable, looked up only in the owner selected by of: (simulation by default).")),
 				@facet (
 						name = IKeyword.UNIT,
 						type = { IType.STRING, IType.FLOAT, IType.INT },
@@ -212,8 +218,8 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 @doc (
 		value = """
 				The parameter statement specifies which global or experiment attributes can change between batch simulations \
-				or through the GUI. A target declared in global is evaluated in the model context, even when the experiment \
-				declares an attribute with the same name. Before a simulation is selected, expressions use configured parameter \
+				or through the GUI. of: simulation (the default) selects the model context; of: experiment selects the \
+				experiment context, including for names shared by both owners such as seed. Before a simulation is selected, expressions use configured parameter \
 				values and the initial values of other globals, never values borrowed from a running simulation; self and world \
 				are unavailable in that configuration context. Dynamic bounds and display facets use the selected simulation \
 				when explicitly evaluated in its scope. Experiment-owned parameters retain their experiment context.""",
@@ -403,7 +409,8 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 * @return the variable description
 	 */
 	public static IVariableDescription findTargetedVar(final IDescription parameterDescription, final String varName) {
-		return ((IExperimentDescription) parameterDescription.getEnclosingDescription()).getParameterTarget(varName);
+		return ((IExperimentDescription) parameterDescription.getEnclosingDescription()).getParameterTarget(varName,
+				IExperimentDescription.isExperimentContext(parameterDescription));
 	}
 
 	private Object evaluate(final IScope scope, final IExpression expression, final boolean configuration) {
@@ -669,14 +676,34 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	public void setAndVerifyValue(final IScope scope, final Object val) {
 		try {
 			if (scope != null) { scope.push(this); }
-			Object newValue = verifyMin(scope, verifyMax(scope, type.cast(scope, val, null, false)));
-			newValue = filterWithAmong(scope, newValue);
+			final Object newValue = verifiedValue(scope, val);
 			if (value != UNDEFINED) {
 				for (final ParameterChangeListener listener : listeners) { listener.changed(scope, newValue); }
 			}
 			value = newValue;
 		} finally {
 			if (scope != null) { scope.pop(this); }
+		}
+	}
+
+	private Object verifiedValue(final IScope scope, final Object val) {
+		return filterWithAmong(scope, verifyMin(scope, verifyMax(scope, type.cast(scope, val, null, false))));
+	}
+
+	/** Editing a live simulation must not replace the configuration of future simulations. */
+	public void setAgentValue(final IScope scope, final Object val) {
+		final ITopLevelAgent target = isExperiment ? scope.getExperiment()
+				: scope.getRoot() instanceof ISimulationAgent simulation ? simulation : null;
+		if (target == null)
+			throw GamaRuntimeException.error("No explicit parameter target is available for " + getName(), scope);
+		try {
+			scope.push(this);
+			final Object newValue = verifiedValue(scope, val);
+			scope.setAgentVarValue(target, getName(), newValue);
+			for (final ParameterChangeListener listener : listeners) { listener.changed(scope, newValue); }
+			if (isExperiment) { value = newValue; }
+		} finally {
+			scope.pop(this);
 		}
 	}
 

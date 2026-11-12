@@ -34,6 +34,7 @@ import gama.api.additions.delegates.ICreateDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
@@ -99,7 +100,8 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	@Override
 	public IDescription getEnclosingContext() {
 		final IDescription enclosing = getEnclosingDescription();
-		if (IKeyword.OUTPUT.equals(getKeyword()) && enclosing != null && enclosing.isExperiment())
+		if (IKeyword.OUTPUT.equals(getKeyword()) && enclosing != null && enclosing.isExperiment()
+				&& !IExperimentDescription.isExperimentContext(this))
 			return enclosing.getModelDescription();
 		return enclosing;
 	}
