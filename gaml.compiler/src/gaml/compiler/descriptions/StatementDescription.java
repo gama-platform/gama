@@ -97,6 +97,14 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	}
 
 	@Override
+	public IDescription getEnclosingContext() {
+		final IDescription enclosing = getEnclosingDescription();
+		if (IKeyword.OUTPUT.equals(getKeyword()) && enclosing != null && enclosing.isExperiment())
+			return enclosing.getModelDescription();
+		return enclosing;
+	}
+
+	@Override
 	public void dispose() {
 		if (isBuiltIn()) return;
 		super.dispose();

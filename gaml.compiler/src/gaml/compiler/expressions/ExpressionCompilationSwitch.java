@@ -1524,7 +1524,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 */
 	private IExpression resolveSpecialVariable(final String varName, final EObject object) {
 		return switch (varName) {
-			case EXPERIMENT -> CurrentExperimentExpression.create();
+			case EXPERIMENT -> CurrentExperimentExpression.create(context.getContext());
 			case IKeyword.GAMA -> GAMA.getPlatformAgent();
 			case EACH -> getEachExpr(object);
 			case NULL -> GAML.getExpressionFactory().getNil();

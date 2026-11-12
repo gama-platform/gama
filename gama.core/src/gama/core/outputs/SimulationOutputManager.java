@@ -69,7 +69,9 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 @inside (
 		kinds = { ISymbolKind.MODEL, ISymbolKind.EXPERIMENT })
 @doc (
-		value = "`output` blocks define how to visualize a simulation (with one or more display blocks that define separate windows). It will include a set of displays, monitors and files statements. It will be taken into account only if the experiment type is `gui`.",
+		value = "`output` blocks define how to visualize a simulation (with one or more display blocks that define separate windows). It will include a set of displays, monitors and files statements. It will be taken into account only if the experiment type is `gui`. "
+				+ "Although declared inside an experiment, their expressions are compiled and evaluated in the owning simulation's context: self denotes that simulation and unqualified attributes and actions belong to its model. "
+				+ "Use experiment.attribute or ask experiment to access the experiment itself. Each simulation, including those of imported models, owns independent output instances. Permanent outputs remain in the experiment context.",
 		usages = { @usage (
 				value = "Its basic syntax is: ",
 				examples = { @example (

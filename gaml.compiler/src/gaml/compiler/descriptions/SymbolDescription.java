@@ -905,7 +905,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 */
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String aName) {
-		IDescription enc = getEnclosingDescription();
+		IDescription enc = getEnclosingContext();
 		return enc == null ? null : enc.getDescriptionDeclaringVar(aName);
 	}
 
@@ -921,7 +921,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 */
 	@Override
 	public ITypeDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
-		IDescription enc = getEnclosingDescription();
+		IDescription enc = getEnclosingContext();
 		return enc == null ? null : enc.getDescriptionDeclaringAction(aName, superInvocation);
 	}
 
@@ -1073,7 +1073,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 */
 	@Override
 	public ITypeDescription getTypeContext() {
-		IDescription desc = getEnclosingDescription();
+		IDescription desc = getEnclosingContext();
 		if (desc == null) return null;
 		return desc.getTypeContext();
 	}
