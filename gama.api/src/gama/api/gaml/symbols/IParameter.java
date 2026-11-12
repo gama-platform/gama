@@ -243,6 +243,9 @@ public interface IParameter extends IExperimentDisplayable {
 	 */
 	boolean isEditable();
 
+	/** Evaluates contextual editability. Dynamic read_only facets require this overload rather than isEditable(). */
+	default boolean isEditable(final IScope scope) { return isEditable(); }
+
 	/**
 	 * Checks if this parameter can be displayed with a slider widget.
 	 * 
@@ -454,6 +457,9 @@ public interface IParameter extends IExperimentDisplayable {
 	 * @return true if restricted to workspace, false to allow any location
 	 */
 	default boolean isWorkspace() { return false; }
+
+	/** Evaluates contextual workspace restrictions. Dynamic facets require this overload rather than isWorkspace(). */
+	default boolean isWorkspace(final IScope scope) { return isWorkspace(); }
 
 	/**
 	 * Sets whether this parameter has been defined (given a value).

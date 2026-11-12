@@ -123,10 +123,10 @@ public final class ParameterScope extends ExecutionScope {
 	@Override
 	public void setGlobalVarValue(final String name, final Object value) {
 		final IParameter parameter = getParameter(name);
-		if (parameter != null && !parameter.isDefinedInExperiment()) {
-			parameter.setValue(this, value);
-		} else if (getModel().hasVar(name) && getExperiment() instanceof ExperimentAgent agent) {
+		if (getModel().hasVar(name) && getExperiment() instanceof ExperimentAgent agent) {
 			agent.extraParametersMap.put(name, value);
+		} else if (parameter != null && !parameter.isDefinedInExperiment()) {
+			parameter.setValue(this, value);
 		} else {
 			throw GamaRuntimeException.error("No configurable global variable named " + name, this);
 		}

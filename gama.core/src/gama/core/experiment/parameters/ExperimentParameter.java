@@ -319,7 +319,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	boolean isExperiment = false;
 
 	/** The on change. */
-	final IExpression init, among, min, max, step, slider, onChange, inWorkspace;
+	final IExpression init, among, min, max, step, slider, onChange, inWorkspace, readOnly;
 
 	/** The listeners. */
 	final List<ParameterChangeListener> listeners = new ArrayList<>();
@@ -369,6 +369,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
 		}
 		inWorkspace = getFacet("in_workspace");
+		readOnly = getFacet("read_only");
 
 		slider = getFacet("slider");
 		final IExpressionDescription d = getDescription().getFacet(IKeyword.DISABLES);
@@ -386,9 +387,8 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		final IVariableDescription targetedGlobalVar = findTargetedVar(sd, varName);
 		init = hasFacet(IKeyword.INIT) ? getFacet(IKeyword.INIT) : targetedGlobalVar.getFacetExpr(IKeyword.INIT);
 		isEditable = !targetedGlobalVar.isUnmodifiable();
-		if (isEditable) {
-			final IExpression ed = getFacet("read_only");
-			if (ed != null) { isEditable = !Cast.asBool(runtimeScope, ed.value(runtimeScope)); }
+		if (isEditable && readOnly != null && readOnly.isConst()) {
+			isEditable = !Cast.asBool(runtimeScope, readOnly.value(runtimeScope));
 		}
 		isExperiment = targetedGlobalVar.isDefinedInExperiment();
 
@@ -539,9 +539,10 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			init = null;
 			setValue(scope, p.getInitialValue(scope));
 		}
-		setEditable(p.isEditable());
+		setEditable(p.isEditable(scope));
 		this.isExperiment = p.isDefinedInExperiment();
 		inWorkspace = null;
+		readOnly = null;
 		extensions = EMPTY_STRINGS;
 		updates = EMPTY_STRINGS;
 	}
@@ -591,7 +592,17 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	private void setType(final IType iType) { type = iType; }
 
 	@Override
-	public boolean isEditable() { return isEditable; }
+	public boolean isEditable() {
+		if (readOnly != null && !readOnly.isConst())
+			throw GamaRuntimeException.error("Dynamic parameter editability requires an explicit evaluation scope.", null);
+		return isEditable;
+	}
+
+	@Override
+	public boolean isEditable(final IScope scope) {
+		return isEditable && (readOnly == null || readOnly.isConst()
+				|| !Cast.asBool(scope, evaluate(scope, readOnly, false)));
+	}
 
 	@Override
 	public boolean isDefined() { return isDefined; }
@@ -1140,7 +1151,14 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	@Override
 	public boolean isWorkspace() {
 		if (inWorkspace == null) return false;
-		return GAMA.run(s -> Cast.asBool(s, inWorkspace.value(s)));
+		if (!inWorkspace.isConst())
+			throw GamaRuntimeException.error("Dynamic workspace restrictions require an explicit evaluation scope.", null);
+		return Cast.asBool(null, inWorkspace.value(null));
+	}
+
+	@Override
+	public boolean isWorkspace(final IScope scope) {
+		return inWorkspace != null && Cast.asBool(scope, evaluate(scope, inWorkspace, false));
 	}
 
 	@Override

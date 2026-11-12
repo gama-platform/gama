@@ -1199,11 +1199,6 @@ public class ExecutionScope implements IScope {
 		if (current == null) { current = getRoot(); }
 		while (current != null) {
 			if (current.getSpecies().hasVar(name)) return current;
-			// Transitional compatibility for experiments; removed once parameters have an explicit evaluation context.
-			if (current instanceof IExperimentAgent experiment) {
-				final ISimulationAgent simulation = experiment.getSimulation();
-				return simulation != null && simulation.getSpecies().hasVar(name) ? simulation : null;
-			}
 			if (current instanceof ITopLevelAgent) return null;
 			current = current instanceof IAgent agent ? agent.getHost() : null;
 		}

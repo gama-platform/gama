@@ -191,15 +191,20 @@
  * <h3>Variable ownership and remote contexts</h3>
  * <p>
  * Temporary variables follow the enclosing execution frames. Global attribute lookup instead starts at the current
- * target and follows its hosts, stopping at its simulation: the fixed scope root and outer agents on the call stack
+ * target and follows its hosts, stopping at a simulation or experiment: the fixed scope root and outer agents on the call stack
  * are not fallback owners. Reads and writes use the same lookup, and a declared attribute whose value is
  * {@code null} is still present. Remote sequences retain the caller's lexical frames and invocation while changing
  * the current agent, so this lookup does not require replacing the caller's scope.
  * </p>
  * <p>
- * Experiment-to-current-simulation delegation remains a transitional compatibility mechanism. Removing it requires
- * explicit parameter configuration/evaluation contexts and simulation-owned non-permanent outputs; it must not be
- * replaced by implicit selection among several simulations.
+ * Ordinary experiment scopes do not expose simulation globals or their initial values. Parameter configuration
+ * uses an explicit values-only context, independently of live simulations. Non-permanent outputs and per-simulation
+ * experiment predicates are evaluated in the owning simulation; permanent outputs stay experiment-owned.
+ * </p>
+ * <p>
+ * Attribute ownership does not change the fixed-root services: clock, random generator, model and experiment
+ * identity keep their existing scope-root semantics. Entering a remote context does not replace these services
+ * or the caller's lexical frames.
  * </p>
  *
  * <h3>Using Execution Context</h3>

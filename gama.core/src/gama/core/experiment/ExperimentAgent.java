@@ -35,14 +35,12 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.ISymbol;
-import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationFactory;
-import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentController;
@@ -1146,10 +1144,8 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	/**
 	 *
-	 * The class ExperimentAgentScope. A "pass through" class used when the simulation is not yet computed and when an
-	 * experiment tries to have access to simulation attributes (which is the case in most of the models). It returns
-	 * and sets the values of parameters when they are defined in the experiment, and also allows extra parameters to be
-	 * set. TODO Allow this class to read the init values of global variables that are not defined as parameters.
+	 * Experiment-owned execution context. Variable lookup follows the same ownership boundaries as other scopes;
+	 * simulation configuration is evaluated separately in {@link ParameterScope}.
 	 *
 	 * @author drogoul
 	 * @since 22 avr. 2013
@@ -1180,14 +1176,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		public void setServerConfiguration(final IServerConfiguration config) { serverConfig = config; }
 
 		/**
-		 * Method getRandom()
-		 *
-		 * @see msi.gama.runtime.IScope#getRandom()
-		 */
-		@Override
-		public IRandom getRandom() { return ExperimentAgent.this.random; }
-
-		/**
 		 * Instantiates a new experiment agent scope.
 		 *
 		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -1205,161 +1193,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 */
 		public ExperimentAgentScope(final String name) {
 			super(ExperimentAgent.this, name);
-		}
-
-		/**
-		 * Copy.
-		 *
-		 * @param additionalName
-		 *            the additional name
-		 * @return the i scope
-		 */
-		@Override
-		public IScope copy(final String additionalName) {
-			ExperimentAgentScope copy = new ExperimentAgentScope(additionalName);
-			copy.push(getCurrentSymbol());
-			return copy;
-		}
-
-		@Override
-		public IScope detachedCopy(final String additionalName) {
-			// Copies never share the frames of this scope
-			return copy(additionalName);
-		}
-
-		/**
-		 * Gets the experiment.
-		 *
-		 * @return the experiment
-		 */
-		@Override
-		public IExperimentAgent getExperiment() { return ExperimentAgent.this; }
-
-		/**
-		 * Gets the global var value.
-		 *
-		 * @param varName
-		 *            the var name
-		 * @return the global var value
-		 */
-		@Override
-		public Object getGlobalVarValue(final String varName) {
-			if (getAgent() != ExperimentAgent.this) return super.getGlobalVarValue(varName);
-
-			// First case: we have the variable inside the experiment.
-			if (ExperimentAgent.this.hasAttribute(varName) || getSpecies().hasVar(varName))
-				return super.getGlobalVarValue(varName);
-			// Second case: the simulation is not null, so it should handle it
-			final ISimulationAgent sim = getSimulation();
-			if (sim != null && !sim.dead()) return sim.getScope().getGlobalVarValue(varName);
-			// Third case, the simulation is null but the model defines this variable (see #2044). We then grab its
-			// initial value if possible
-			// However, if the experiment is defined with keep_simulations: false, we should not give access to the
-			// value, as no simulations can be made available (see #2727)
-			if (this.getModel().getSpecies().hasVar(varName)) {
-				final IVariable var = getModel().getSpecies().getVar(varName);
-				boolean variableIsNotConst = !var.isNotModifiable();
-				boolean simulationsAreNotKept = !getExperiment().getSpecies().keepsSimulations();
-				// Addition of a condition for #287, in order to not trigger the error when we compute parameters
-				boolean isInParametersUpdate = getCurrentSymbol() instanceof ExperimentParameter;
-
-				if (variableIsNotConst && simulationsAreNotKept && !isInParametersUpdate)
-					throw GamaRuntimeException.error("This experiment does not keep its simulations. " + varName
-							+ " cannot be retrieved in this context", this);
-				return var.getInitialValue(this);
-			}
-			// Fourth case: this is a parameter, so we get it from the species
-			if (getSpecies().hasParameter(varName)) return getSpecies().getExperimentScope().getGlobalVarValue(varName);
-			// Fifth case: it is an extra parameter
-			return extraParametersMap.get(varName);
-		}
-
-		/**
-		 * Checks for access to global var.
-		 *
-		 * @param varName
-		 *            the var name
-		 * @return true, if successful
-		 */
-		@Override
-		public boolean hasAccessToGlobalVar(final String varName) {
-			if (getAgent() != ExperimentAgent.this) return super.hasAccessToGlobalVar(varName);
-			if (ExperimentAgent.this.hasAttribute(varName) || getSpecies().hasVar(varName)
-					|| this.getModel().getSpecies().hasVar(varName) || getSpecies().hasParameter(varName))
-				return true;
-			return extraParametersMap.containsKey(varName);
-		}
-
-		/**
-		 * Sets the global var value.
-		 *
-		 * @param name
-		 *            the name
-		 * @param v
-		 *            the v
-		 */
-		@Override
-		public void setGlobalVarValue(final String name, final Object v) {
-			if (getAgent() != ExperimentAgent.this) {
-				super.setGlobalVarValue(name, v);
-				return;
-			}
-			if (getSpecies().hasVar(name)) {
-				super.setGlobalVarValue(name, v);
-				return;
-			}
-			final ISimulationAgent sim = getSimulation();
-			if (sim != null && !sim.dead() && sim.getSpecies().hasVar(name)) {
-				sim.getScope().setGlobalVarValue(name, v);
-			} else {
-				extraParametersMap.put(name, v);
-			}
-		}
-
-		/**
-		 * Sets the agent var value.
-		 *
-		 * @param a
-		 *            the a
-		 * @param name
-		 *            the name
-		 * @param value
-		 *            the value
-		 */
-		@Override
-		public void setAgentVarValue(final IObject a, final String name, final Object value) {
-			if (a == ExperimentAgent.this) {
-				final boolean pushed = push(a);
-				try {
-					setGlobalVarValue(name, value);
-				} finally {
-					if (pushed) { pop(a); }
-				}
-			} else {
-				super.setAgentVarValue(a, name, value);
-			}
-		}
-
-		/**
-		 * Gets the agent var value.
-		 *
-		 * @param a
-		 *            the a
-		 * @param varName
-		 *            the var name
-		 * @return the agent var value
-		 */
-		@Override
-		public Object getAgentVarValue(final IObject a, final String varName) {
-			if (a == ExperimentAgent.this) {
-				final boolean pushed = push(a);
-				try {
-					return getGlobalVarValue(varName);
-				} finally {
-					if (pushed) { pop(a); }
-				}
-			}
-			return super.getAgentVarValue(a, varName);
 		}
 
 		/**

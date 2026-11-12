@@ -80,9 +80,6 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 	/** The is folder. */
 	private final boolean isFolder;
 
-	/** The is workspace. */
-	private final boolean isWorkspace;
-
 	/**
 	 * Instantiates a new file editor.
 	 *
@@ -100,7 +97,6 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 	FileEditor(final IAgent agent, final IParameter param, final EditorListener l, final boolean isFolder) {
 		super(agent, param, l);
 		this.isFolder = isFolder;
-		this.isWorkspace = param.isWorkspace();
 		this.fileExtensions = param.getFileExtensions() == null || param.getFileExtensions().length == 0 ? null
 				: new HashSet(Arrays.asList(param.getFileExtensions()));
 	}
@@ -116,7 +112,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 	@Override
 	public void widgetSelected(final SelectionEvent e) {
 		IGamaFile file = currentValue;
-		if (isWorkspace) {
+		if (param.isWorkspace(getScope())) {
 			if (!isFolder) {
 				IFile result = WorkspaceResourceDialog.openFileSelection(null, "Choose file",
 						"Choose a file for parameter '" + param.getTitle() + "'", false,

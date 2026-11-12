@@ -390,7 +390,7 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	@SuppressWarnings ("rawtypes")
 	EditorControl createEditorControl() {
 		boolean isCombo = param.getAmongValue(getScope()) != null;
-		boolean isEditable = param.isEditable();
+		boolean isEditable = param.isEditable(getScope());
 		if (isEditable) {
 			if (isCombo) {
 				editorControl =

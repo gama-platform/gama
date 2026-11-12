@@ -54,6 +54,25 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	/** The permanent. */
 	private IStatementDescription permanent;
 
+	private IDescription simulationFacetContext;
+
+	/** Ordinary experiment members cannot inherit the structurally enclosing model's evaluation context. */
+	@Override
+	public IDescription getEnclosingContext() { return null; }
+
+	@Override
+	protected IDescription getFacetCompilationContext(final String facet) {
+		if (!IKeyword.UNTIL.equals(facet) && !IKeyword.RECORD.equals(facet)) return this;
+		if (simulationFacetContext == null) {
+			// These predicates run on each simulation; retain the declaration for explicit experiment references.
+			simulationFacetContext = new StatementDescription(IKeyword.EXPERIMENT, this, false, element, null, null) {
+				@Override
+				public IDescription getEnclosingContext() { return getModelDescription(); }
+			};
+		}
+		return simulationFacetContext;
+	}
+
 	/**
 	 * Instantiates a new experiment description.
 	 *

@@ -334,14 +334,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 					var.initializeWith(scope, agent, initGet, inits.containsKey(s));
 					names.remove(s);
 				}
-				// Trick to initialize the simulation variables (and not only
-				// the experiment's variables)
-				// See discussion in #3198
-				for (final String s : names) {
-					final Object initGet = empty/*
-												 * || !allowVarInitToBeOverridenByExternalInit(var)
-												 */ ? null : inits.get(s);
-					agent.getScope().setAgentVarValue(agent, s, initGet);
+				if (!names.isEmpty()) {
+					try (IScope configuration = new ParameterScope(ExperimentSpecies.this, agent)) {
+						for (final String name : names) { configuration.setGlobalVarValue(name, inits.get(name)); }
+					}
 				}
 				if (sequence != null && !sequence.isEmpty()) { scope.execute(sequence, agent, null); }
 				scope.pop(agent);
@@ -858,9 +854,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	}
 
 	/**
-	 * A short-circuited scope that represents the scope of the experiment plan, before any agent is defined. If a
-	 * simulation is available, it refers to it and gains access to its global scope. If not, it throws the appropriate
-	 * runtime exceptions when a feature dependent on the existence of a simulation is accessed
+	 * Configuration context of the experiment plan, including before its agent exists. It never borrows a simulation's
+	 * globals; ordinary experiment execution uses the agent's separate scope.
 	 *
 	 * @author Alexis Drogoul
 	 * @since November 2011
@@ -895,9 +890,16 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		@Override
 		public void setGlobalVarValue(final String name, final Object v) throws GamaRuntimeException {
-			if (hasParameter(name)) { setParameterValue(this, name, v); }
-			// final SimulationAgent a = getCurrentSimulation();
-			// if (a != null) { a.setDirectVarValue(this, name, v); }
+			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
+				configuration.setGlobalVarValue(name, v);
+			}
+		}
+
+		@Override
+		public boolean hasAccessToGlobalVar(final String name) {
+			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
+				return configuration.hasAccessToGlobalVar(name);
+			}
 		}
 
 		/**

@@ -71,7 +71,6 @@ import gaml.compiler.EGaml;
 import gaml.compiler.descriptions.DoDescription;
 import gaml.compiler.descriptions.ModelDescription;
 import gaml.compiler.descriptions.PlatformSpeciesDescription;
-import gaml.compiler.descriptions.UiControlDescription;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
@@ -1292,7 +1291,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		IActionDescription action = species == null ? null
 				: isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
 				: species.getAction(op);
-		if (action == null && !isSuper) {
+		if (action == null && !isSuper && !(species instanceof IExperimentDescription)) {
 			final ITypeDescription model = callerContext.getModelDescription();
 			if (model != null && model != species) { action = model.getAction(op); }
 		}
@@ -1366,9 +1365,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		IActionDescription ad = td.getAction(s);
 		if (ad == null) {
 			boolean isExp = td instanceof IExperimentDescription;
-			if (isExp && context.getContext() instanceof UiControlDescription) {
-				ad = context.getContext().getModelDescription().getAction(s);
-			}
 			if (!isExp) {
 				IDescription host = td.getEnclosingDescription();
 				if (host != null) { ad = host.getAction(s); }

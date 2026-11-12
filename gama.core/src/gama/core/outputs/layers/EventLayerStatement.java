@@ -85,17 +85,17 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 						name = IKeyword.ACTION,
 						type = IType.ACTION,
 						optional = true,
-						doc = @doc ("The identifier of the action to be executed in the context of the simulation. This action needs to be defined in 'global' or in the current experiment, without any arguments. The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location")) },
+						doc = @doc ("An action without arguments, defined in global for a normal output or in the experiment for a permanent output. It executes on that output's owner. Use #user_location for the originating display's mouse position.")) },
 		omissible = ILayerStatement.Event.TRIGGER)
 @validator (EventLayerValidator.class)
 @doc (
 		value = "`" + IKeyword.EVENT
-				+ "` allows to interact with the simulation by capturing mouse or key events and doing an action. The name of this action can be defined with the 'action:' facet, in which case the action needs to be defined in 'global' or in the current experiment, without any arguments."
-				+ " The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location. The statements to execute can also be defined in the block at the end of this statement, in which case they will be executed in the context of the experiment. "
+				+ "` allows interaction through mouse or key events. A normal output's event blocks and named actions execute in its owning simulation, with model attributes/actions and simulation self. A permanent output's events execute in the experiment. A named action must be defined in that context and accept no arguments."
+				+ " The location of the mouse in the world can be retrieved with #user_location. Use an explicit 'ask experiment' block inside a simulation event to access experiment-only members. "
 				+ "Use `event #key_listener` to observe each key press reaching the focused display. Inside its block or called actions, #key_pressed is the produced character (a literal space for the space bar), a named key such as #enter or #arrow_up, or `key_<native code>` for an unrecognized key. Character case follows the input; when a modifier produces a control character, the unmodified key is used. Function keys are named f1, f2, etc. Pressing a modifier can generate its own event, and holding a key can generate repeated events. "
 				+ "Use `event #mouse_listener` to observe mouse input. #mouse_action is one of #mouse_down, #mouse_up, #mouse_click, #mouse_move, #mouse_drag, #mouse_enter, #mouse_exit or #mouse_menu. #mouse_button is 'left', 'middle', 'right', 'button_N' for another button, or 'none' when no button is associated. A drag reports the first pressed button known to the backend; a menu can report 'none'. A click follows its press and release; click detection and menu delivery depend on the platform. "
 				+ "These three input values belong only to the current generic-listener callback, including actions it calls and nested ask blocks; outside the corresponding listener they are empty strings, not the last input. During a mouse listener, #user_location and #user_location_in_display are snapshots for the originating display. Store values in a model variable if they are needed later. "
-				+ "Event callbacks are scheduled on the simulation thread between simulation steps; they do not block the display thread. Mouse events retain the position at which they were received, even if execution is delayed. When there is no simulation, callbacks are scheduled on the experiment instead. "
+				+ "Normal output callbacks are scheduled on the owning simulation thread between steps; permanent output callbacks use the experiment thread even when simulations exist. They do not block the display thread. Mouse events retain the position at which they were received, even if execution is delayed. "
 				+ "Consecutive specific #mouse_move or #mouse_drag events for the same layer may be coalesced to the latest position, normally at most once every 33 milliseconds; an intervening event flushes the pending position first. Other events are not coalesced; #mouse_listener continues to observe every supported mouse event. "
 				+ "Generic listeners observe rather than consume input: existing specific event layers, display navigation and contextual menus continue to operate. Mouse movement and drag callbacks can be frequent. Mouse wheel and key-release events are not included. Keyboard and mouse events intercepted by the operating system or workbench may never reach the display. "
 				+ "Keyboard combinations can be written as strings, e.g. 'ctrl+shift+a', 'alt+arrow_up' or 'cmd+enter'. "
@@ -154,7 +154,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 										value = "}",
 										isExecutable = false) }),
 				@usage (
-						value = "Keyboard combinations use one or more modifiers and a final key. These forms can be used inside a display; event blocks execute in the experiment context:",
+						value = "Keyboard combinations use one or more modifiers and a final key. These forms can be used inside a display; event blocks execute on the output's owner:",
 						examples = { @example (
 								value = "event 'ctrl+shift+a' { write 'CTRL+SHIFT+A'; }",
 								isExecutable = false),
@@ -295,14 +295,10 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 							"This use of 'action' is deprecated. Move the sequence to execute at the end of the 'event' statement instead.",
 							IGamlIssue.DEPRECATED, ACTION);
 				}
-				IActionDescription sd = description.getModelDescription().getAction(actionName);
+				final IActionDescription sd = description.getTypeContext().getAction(actionName);
 				if (sd == null) {
-					// we look into the experiment
-					final IDescription superDesc = description.getTypeContext();
-					sd = superDesc.getAction(actionName);
-				}
-				if (sd == null) {
-					description.error("Action '" + actionName + "' is not defined in neither 'global' nor 'experiment'",
+					description.error("Action '" + actionName + "' is not defined in "
+							+ description.getTypeContext().getName(),
 							IGamlIssue.UNKNOWN_ACTION, ACTION);
 				} else if (sd.getPassedArgs().size() > 0) {
 					description.error("Action '" + actionName
@@ -315,7 +311,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 	}
 
 	/** The executes in simulation. */
-	private boolean executesInSimulation;
+	private final boolean executesInSimulation;
 
 	/** The type. */
 	private final IExpression type;
@@ -339,11 +335,9 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 	 */
 	public EventLayerStatement(final IDescription desc) throws GamaRuntimeException {
 		super(/* context, */desc);
-		executesInSimulation = false;
+		executesInSimulation = !description.getTypeContext().isExperiment();
 		if (description.hasFacet(IKeyword.ACTION)) {
 			actionName = description.getLitteral(IKeyword.ACTION);
-			final IActionDescription sd = description.getTypeContext().getAction(actionName);
-			executesInSimulation = sd == null;
 		}
 		trigger = description.getLitteral(TRIGGER);
 
