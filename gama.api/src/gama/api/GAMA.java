@@ -372,14 +372,14 @@ public class GAMA {
 	 *            the model containing the experiment
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
-		runGuiExperiment(id, model, null, null, true);
+		runGuiExperiment(id, model, null, null, null, true);
 	}
 
 	/**
 	 * Opens a GUI experiment, optionally asking before closing an active experiment.
 	 */
 	public static boolean runGuiExperiment(final String id, final IModelSpecies model, final boolean confirmClose) {
-		return runGuiExperiment(id, model, null, null, confirmClose);
+		return runGuiExperiment(id, model,null, null, null, confirmClose);
 	}
 
 	/**
