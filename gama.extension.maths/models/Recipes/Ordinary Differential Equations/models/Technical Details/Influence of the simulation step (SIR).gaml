@@ -58,7 +58,7 @@ experiment examples type: gui {
 	output {
 		layout #split tabs: true;	
 		display SIR toolbar: false  type: 2d {
-			chart 'Time Teries ('+step_string+' per cycle)' type: series 
+			chart 'Time Teries ('+step_string+' per cycle)' kind: series 
 			background: rgb(47,47,47) color: #white y_label: "pop" x_tick_line_visible: false{
 				data "S" value: first(userSIR).S[] color: rgb(46,204,113) marker: false thickness: 2;
 				data "I" value: first(userSIR).I[] color: rgb(231,76,60) marker: false thickness: 2;
@@ -66,7 +66,7 @@ experiment examples type: gui {
 			}			
 		}
 		display "Phase Portrait" toolbar: false  type: 2d  {
-		chart 'Phase Portrait ('+step_string+' per cycle)' type: xy 
+		chart 'Phase Portrait ('+step_string+' per cycle)' kind: xy 
 		background: rgb(47,47,47) color: #white y_label: "y" x_label: "x"
 			x_range: {0,500} y_range: {0,450}{
 				data "I vs S" value: rows_list(matrix(first(userSIR).S[],first(userSIR).I[])) color: rgb(52,152,219) marker: false;			

@@ -43,6 +43,9 @@ public class MeshLayerData extends LayerData {
 	/** The values. */
 	IField values;
 
+	private Object evaluatedSource;
+	private boolean reuseEvaluatedSource;
+
 	/** The line. */
 	final Attribute<IColor> line;
 
@@ -100,7 +103,10 @@ public class MeshLayerData extends LayerData {
 		}, Types.POINT, GamaPointFactory.create(1, 1, 1));
 		line = create(IKeyword.BORDER, Types.COLOR, null);
 		elevation = create(IKeyword.SOURCE, (scope, exp) -> {
-			if (exp != null) return buildValues(scope, exp.value(scope));
+			if (exp != null) {
+				if (!reuseEvaluatedSource) { evaluatedSource = exp.value(scope); }
+				return buildValues(scope, evaluatedSource);
+			}
 			return null;
 		}, Types.NO_TYPE, (IField) null);
 		triangulation = create(IKeyword.TRIANGULATION, Types.BOOL, false);
@@ -127,9 +133,19 @@ public class MeshLayerData extends LayerData {
 
 	@Override
 	public boolean compute(final IScope scope, final IGraphics g) throws GamaRuntimeException {
-		boolean result = super.compute(scope, g);
-		shouldComputeValues = super.getRefresh();
-		return result;
+		try {
+			boolean result = super.compute(scope, g);
+			shouldComputeValues = super.getRefresh() || result;
+			if (result) {
+				// Recast the source already evaluated by super.compute, without evaluating it twice.
+				reuseEvaluatedSource = true;
+				elevation.refresh(null, scope);
+			}
+			return result;
+		} finally {
+			reuseEvaluatedSource = false;
+			evaluatedSource = null;
+		}
 	}
 
 	/**

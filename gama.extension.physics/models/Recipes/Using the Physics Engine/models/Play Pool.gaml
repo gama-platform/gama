@@ -2,7 +2,8 @@
 * Name: Play Pool
 * Author: Arnaud Grignard, Alexis Drogoul
 * Description: An interactive billiards (pool) simulation using the physics engine. The user aims and
-*   shoots the cue ball by clicking; balls collide, roll, and eventually stop due to friction. Demonstrates
+*   shoots the cue ball by clicking; an aiming arrow follows the mouse above the table. Balls collide,
+*   roll, and eventually stop due to friction. Demonstrates
 *   various physical properties: friction, restitution, angular velocity, and rolling resistance. The table
 *   cushions are static bodies with high restitution. Shows how to implement a playable physics-based mini
 *   game entirely within GAMA.
@@ -186,22 +187,18 @@ experiment "Play !" type: gui autorun: true   {
 			camera #default location: {100.0,400.0,300.0} target: {width/2,height/2,-20.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			graphics user {
-				if (white != nil) and (target != nil) {
-					draw line(white, target) color: #white end_arrow: 3;
-				}
-				if target = nil {
-					draw "Choose a target" color: #white font: font("Helvetica", 30, #bold) at: location + {0, 0, 10} perspective: false anchor: #center;
-				}
-			}
-
 			event #mouse_down  {
 				target <- #user_location;
-				float divisor <- distance_to(target, white.location);
-				point direction <- (target - white.location) /divisor;
-				// When the user hits the mouse, we apply an impulse to the while ball, in the direction of the target. 'velocity' could also be used here
-				ask white {
-					do apply(impulse: {strength * direction.x * 4, strength * direction.y * 4, 0});
+				if (white != nil) {
+					point ball_location <- white.location;
+					point direction <- {target.x - ball_location.x, target.y - ball_location.y, 0};
+					float divisor <- norm(direction);
+					if (divisor > 0) {
+						direction <- direction / divisor;
+						ask white {
+							do apply(impulse: {strength * direction.x * 4, strength * direction.y * 4, 0});
+						}
+					}
 				}
 			}
 			event #mouse_move {
@@ -213,9 +210,19 @@ experiment "Play !" type: gui autorun: true   {
 			}
 			species wall refresh:false;
 			species ball;
+			graphics user {
+				if (white != nil) and (target != nil) {
+					// sphere(5) is drawn with its center 5 units above the ball's location.
+					point ball_center <- white.location + {0, 0, 5};
+					draw line([ball_center, {target.x, target.y, ball_center.z}])
+						color: #white width: 3 end_arrow: 6 lighted: false;
+				}
+				if target = nil {
+					draw "Choose a target" color: #white font: font("Helvetica", 30, #bold) at: location + {0, 0, 10} perspective: false anchor: #center;
+				}
+			}
 		}
 
 	}
 
 }
-

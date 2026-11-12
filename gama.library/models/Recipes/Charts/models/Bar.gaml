@@ -19,8 +19,8 @@ experiment "Multiple displays" type: gui {
 	
 	output synchronized: false {
 		layout #split parameters: false navigator: false editors: false consoles: false toolbars: false tray: false tabs: false;	
-		display "nice_bar_chart"  type: 2d {
-			chart "Nice Cumulative Bar Chart" type:histogram 
+		display "nice_bar_chart"  type: 3d {
+			chart "Nice Cumulative Bar Chart" kind: histogram 
 			 	background: #darkblue
 			 	color: #lightgreen 
 			 	axes: #lightgreen
@@ -47,8 +47,8 @@ experiment "Multiple displays" type: gui {
 					marker_shape:marker_circle ;
 			}
 		} 
-		display "Cumulative bar chart" type:2d {
-			chart "Cumulative bar chart" type:histogram 
+		display "Cumulative bar chart" type:3d {
+			chart "Cumulative bar chart" kind: histogram 
 			style:stack
 			x_serie_labels:("cycle"+cycle)
 			x_range:5
@@ -65,8 +65,8 @@ experiment "Multiple displays" type: gui {
 			}
 		} 
  		
-		display "Non cumulative bar chart" type: 2d {
-			chart "Non cumulative bar chart" type:histogram 
+		display "Non cumulative bar chart" type: 3d {
+			chart "Non cumulative bar chart" kind: histogram 
 			x_serie_labels: ["categ1","categ2"]
 			style:"3d"
 			series_label_position: xaxis
@@ -83,8 +83,8 @@ experiment "Multiple displays" type: gui {
 			}
 		} 
  		
-		display "Datalist bar chart" type:2d {
-			chart "Datalist bar chart" type:histogram 
+		display "Datalist bar chart" type:3d {
+			chart "Datalist bar chart" kind: histogram 
 			series_label_position: onchart
 			{
 				datalist legend:["cycle","cosinus normalized","offsetted cosinus normalized"] 
@@ -94,8 +94,8 @@ experiment "Multiple displays" type: gui {
 			}
 		}
 
-		display "onvalue_cumulative_bar_chart" type:2d {
-			chart "Onvalue cumulative bar chart" type:histogram 
+		display "onvalue_cumulative_bar_chart" type:3d {
+			chart "Onvalue cumulative bar chart" kind: histogram 
 			series_label_position: yaxis
 			x_label: "my_time_label"
 			{
@@ -105,8 +105,8 @@ experiment "Multiple displays" type: gui {
 					color: #red;
 			}
 		}
-		display "data_cumulative_style_chart" type:2d {
-			chart "Style Cumulative chart" type:histogram style:stack
+		display "data_cumulative_style_chart" type:3d {
+			chart "Style Cumulative chart" kind: histogram style:stack
 			 	{ 
 				data "Step" value:cos(100*cycle+40)
 					accumulate_values: true						

@@ -90,6 +90,9 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 */
 	default boolean isPaused() { return false; }
 
+	/** Whether this controller supports interactive execution commands rather than running to completion. */
+	default boolean supportsInteractiveControl() { return false; }
+
 	/**
 	 * Schedule.
 	 *

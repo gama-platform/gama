@@ -32,6 +32,19 @@ public interface IChart {
 	BufferedImage getImage(int x, int y, boolean antialias);
 
 	/**
+	 * Renders a chart laid out in logical pixels into an independently sized raster.
+	 * Fonts and strokes retain their logical size when the raster is displayed in that frame.
+	 *
+	 * @param width logical layout width
+	 * @param height logical layout height
+	 * @param rasterWidth physical raster width
+	 * @param rasterHeight physical raster height
+	 * @param antialias whether anti-aliasing should be enabled
+	 * @return rendered BufferedImage
+	 */
+	BufferedImage getImage(int width, int height, int rasterWidth, int rasterHeight, boolean antialias);
+
+	/**
 	 * Returns the underlying native chart object (e.g. JFreeChart instance or other chart engine object).
 	 *
 	 * @return native chart object or null

@@ -39,7 +39,7 @@ global {
 		}
 	}
 	reflex end_simulation when: infected_rate = 1.0 {
-		do pause();
+		experiment.pause();
 	}  
 }
 
@@ -93,13 +93,13 @@ experiment main_experiment type:gui{
 	output {
 		monitor "Current hour" value: current_date.hour;
 		monitor "Infected people rate" value: infected_rate;
-		display map {
+		display map map_order: true {
 			species road ;
 			species building ;
 			species people ;			
 		}
-		display chart refresh: every(10#cycles)  type: 2d {
-			chart "Disease spreading" type: series style: spline{
+		display chart refresh: every(10#cycles)  type: 3d {
+			chart "Disease spreading" kind: series style: spline{
 				data "susceptible" value: nb_people_not_infected color: #green marker: false;
 				data "infected" value: nb_people_infected color: #red marker: false;
 			}

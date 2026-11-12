@@ -362,6 +362,8 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	/**
 	 * Builds metadata for {@code file} using the registered builder for {@code contentType}, stores it, and returns it.
 	 * Falls back to a generic descriptor when no builder is registered.
+	 * Does not refresh workspace resources: navigator labels can call this on the UI thread while a build holds
+	 * the workspace scheduling rule. File-system stamps already handle metadata invalidation.
 	 *
 	 * @param contentType
 	 *            the content-type identifier
@@ -383,11 +385,6 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 			if (data == null) { data = createGenericFileMetaData(file); }
 
 			storeMetaData(file, data, true);
-			try {
-				file.refreshLocal(IResource.DEPTH_ZERO, null);
-			} catch (final CoreException e) {
-				DEBUG.ERR("Error refreshing file " + file.getName() + ": " + e.getMessage());
-			}
 			return data;
 		} catch (Exception e) {
 			DEBUG.ERR("Error building metadata for " + file.getName() + ": " + e.getMessage());

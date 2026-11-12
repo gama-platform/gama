@@ -130,6 +130,9 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 			result = Types.get(typeProvider);
 		} else if (exprs != null) {
 			switch (typeProvider) {
+				case ITypeProvider.SPECIES_COLLECT_TYPE:
+					result = exprs[1].getGamlType().isGridSpecies() ? Types.MATRIX : Types.LIST;
+					break;
 				case WRAPPED:
 					result = exprs[0].getGamlType().getWrappedType();
 					break;

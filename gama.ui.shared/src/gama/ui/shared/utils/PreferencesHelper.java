@@ -13,7 +13,7 @@ package gama.ui.shared.utils;
 import static gama.api.utils.prefs.GamaPreferences.create;
 import static gama.api.utils.prefs.GamaPreferences.Interface.APPEARANCE;
 import static gama.api.utils.prefs.GamaPreferences.Interface.NAME;
-import static gama.api.utils.prefs.GamaPreferences.Interface.NAVIGATOR;
+import static gama.api.utils.prefs.GamaPreferences.Interface.WORKSPACE;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -68,7 +68,8 @@ public class PreferencesHelper {
 	// () -> new GamaFont(getBaseFont(), SWT.BOLD, baseSize), IType.FONT, false).in(NAME, APPEARANCE)
 	// .onChange(GamaFonts::setLabelFont);
 
-	/** The color menu sort. */
+	/** The Constant COLOR_MENU_SORT. */
+	// /** The color menu sort. */
 	public static final Pref<String> COLOR_MENU_SORT =
 			create("pref_menu_colors_sort", "Sort colors menu by", "RGB value", IType.STRING, false)
 					.among(GamaColorMenu.SORT_NAMES).activates("menu.colors.reverse", "menu.colors.group")
@@ -82,8 +83,8 @@ public class PreferencesHelper {
 						} else {
 							GamaColorMenu.colorComp = GamaColorMenu.byLuminescence;
 						}
-					});
-
+					}).hidden();
+	//
 	/** The color menu reverse. */
 	public static final Pref<Boolean> COLOR_MENU_REVERSE =
 			create("pref_menu_colors_reverse", "Reverse order", false, IType.BOOL, false)
@@ -99,7 +100,7 @@ public class PreferencesHelper {
 	/** The Constant NAVIGATOR_METADATA. */
 	public static final Pref<Boolean> NAVIGATOR_METADATA =
 			create("pref_navigator_display_metadata", "Display metadata in navigator", true, IType.BOOL, false)
-					.in(NAME, NAVIGATOR).inPlayer(false).onChange(newValue -> {
+					.in(NAME, WORKSPACE).inPlayer(false).onChange(newValue -> {
 						final var mgr = WorkbenchHelper.getWorkbench().getDecoratorManager();
 						try {
 							mgr.setEnabled(IGui.NAVIGATOR_LIGHTWEIGHT_DECORATOR_ID, newValue);
@@ -112,33 +113,41 @@ public class PreferencesHelper {
 	/** The keep navigator state. */
 	public static final Pref<Boolean> KEEP_NAVIGATOR_STATE =
 			create("pref_keep_navigator_state", "Maintain the state of the navigator across sessions", true, IType.BOOL,
-					false).in(NAME, NAVIGATOR).inPlayer(false).hidden();
+					false).in(NAME, WORKSPACE).inPlayer(false).hidden();
 	/** Whether cleaning and updating the workspace requires confirmation. */
 	public static final Pref<Boolean> CONFIRM_CLEAN_AND_UPDATE =
 			create("pref_confirm_clean_and_update", "Confirm before cleaning and updating the workspace", true,
-					IType.BOOL, false).in(NAME, NAVIGATOR).inPlayer(false);
+					IType.BOOL, false).in(NAME, WORKSPACE).inPlayer(false);
 	/** Whether the navigator stays in sync with the active editor. */
 	public static final Pref<Boolean> NAVIGATOR_LINK_WITH_EDITOR =
 			create("pref_navigator_link_with_editor", "Keep the navigator in sync with the editor", true, IType.BOOL,
-					false).in(NAME, NAVIGATOR).inPlayer(false).hidden();
+					false).in(NAME, WORKSPACE).inPlayer(false).hidden();
+
+	public static final Pref<String> NAVIGATOR_ICON_SET =
+			create("pref_navigator_icon_set", "Navigator icons", "Outline", IType.STRING, false)
+					.among("Current", "Duotone", "Retro", "Petrol", "Outline", "Mosaic", "Orbit", "Orbit Outline", "Folio",
+							"Folio Color")
+					.in(NAME, WORKSPACE).inPlayer(false)
+					.onChange(newValue -> WorkbenchHelper.refreshNavigator());
+
 	/** The Constant NAVIGATOR_HIDDEN. */
 	public static final Pref<Boolean> NAVIGATOR_HIDDEN =
 			create("pref_navigator_display_hidden", "Display hidden files in navigator", false, IType.BOOL, false)
-					.in(NAME, NAVIGATOR).inPlayer(false).onChange(newValue -> {
+					.in(NAME, WORKSPACE).inPlayer(false).onChange(newValue -> {
 						WorkbenchHelper.refreshNavigator();
 					}).hidden();
 
 	/** The Constant NAVIGATOR_OUTLINE. */
 	public static final Pref<Boolean> NAVIGATOR_OUTLINE =
 			create("pref_navigator_display_outline", "Display the outline of GAML files in navigator", false,
-					IType.BOOL, false).in(NAME, NAVIGATOR).inPlayer(false).onChange(newValue -> {
+					IType.BOOL, false).in(NAME, WORKSPACE).inPlayer(false).onChange(newValue -> {
 						WorkbenchHelper.refreshNavigator();
 					}).hidden();
 
 	/** Whether project labels show the plugin contributing them. */
 	public static final Pref<Boolean> NAVIGATOR_PLUGIN =
 			create("pref_navigator_display_plugin", "Display contributing plugin in navigator", false, IType.BOOL,
-					false).in(NAME, NAVIGATOR).inPlayer(false).onChange(newValue -> {
+					false).in(NAME, WORKSPACE).inPlayer(false).onChange(newValue -> {
 						WorkbenchHelper.getWorkbench().getDecoratorManager()
 								.update("gama.ui.navigator.plugin.decorator");
 						WorkbenchHelper.refreshNavigator();
@@ -146,8 +155,8 @@ public class PreferencesHelper {
 
 	/** Whether resource labels show their modification date. */
 	public static final Pref<Boolean> NAVIGATOR_DATE =
-			create("pref_navigator_display_date", "Display modification dates in navigator", false, IType.BOOL,
-					false).in(NAME, NAVIGATOR).inPlayer(false).onChange(newValue -> {
+			create("pref_navigator_display_date", "Display modification dates in navigator", false, IType.BOOL, false)
+					.in(NAME, WORKSPACE).inPlayer(false).onChange(newValue -> {
 						final var mgr = WorkbenchHelper.getWorkbench().getDecoratorManager();
 						try {
 							mgr.setEnabled("gama.ui.application.date.decorator", newValue);
@@ -159,19 +168,19 @@ public class PreferencesHelper {
 					}).hidden();
 
 	/** Whether resources are sorted newest first when dates are displayed. */
-	public static final Pref<Boolean> NAVIGATOR_RECENT_FIRST =
-			create("pref_navigator_recent_first", "Sort most recent resources first in navigator", false, IType.BOOL,
-					false).in(NAME, NAVIGATOR).inPlayer(false).onChange(newValue -> WorkbenchHelper.refreshNavigator()).hidden();
+	public static final Pref<Boolean> NAVIGATOR_RECENT_FIRST = create("pref_navigator_recent_first",
+			"Sort most recent resources first in navigator", false, IType.BOOL, false).in(NAME, WORKSPACE)
+					.inPlayer(false).onChange(newValue -> WorkbenchHelper.refreshNavigator()).hidden();
 
 	/** Whether the navigator search looks only into names and tags rather than into model source. */
 	public static final Pref<Boolean> NAVIGATOR_SEARCH_TITLES =
 			create("pref_navigator_search_titles", "Search only titles in navigator", true, IType.BOOL, false)
-					.in(NAME, NAVIGATOR).inPlayer(false).hidden();
+					.in(NAME, WORKSPACE).inPlayer(false).hidden();
 
 	/** Whether the navigator title search is restricted to model files. */
 	public static final Pref<Boolean> NAVIGATOR_SEARCH_MODELS_ONLY =
-			create("pref_navigator_search_models_only", "Restrict navigator title search to models", false,
-					IType.BOOL, false).in(NAME, NAVIGATOR).inPlayer(false).hidden();
+			create("pref_navigator_search_models_only", "Restrict navigator title search to models", false, IType.BOOL,
+					false).in(NAME, WORKSPACE).inPlayer(false).hidden();
 
 	/**
 	 * Initialize.

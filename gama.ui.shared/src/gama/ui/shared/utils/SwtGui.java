@@ -15,8 +15,14 @@ import static gama.ui.shared.utils.WorkbenchHelper.getClipboard;
 import java.awt.EventQueue;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.ParameterizedCommand;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -29,6 +35,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
@@ -541,6 +548,35 @@ public class SwtGui implements IGui {
 	 */
 	@Override
 	public IModelsManager getModelsManager() { return WorkbenchHelper.getService(IModelsManager.class); }
+
+	@Override
+	public boolean openSimulationPackage(final String path) {
+		final AtomicReference<RuntimeException> failure = new AtomicReference<>();
+		final Runnable open = () -> {
+			try {
+				final var command = WorkbenchHelper.getCommand("gama.ui.export.openPackage");
+				final var handler = WorkbenchHelper.getService(IHandlerService.class);
+				handler.executeCommand(
+						ParameterizedCommand.generateCommand(command,
+								Map.of("gama.ui.export.packagePath", path)),
+						null);
+			} catch (final ExecutionException | NotDefinedException | NotEnabledException
+					| NotHandledException e) {
+				failure.set(new IllegalStateException("Unable to start the playable model player: " + e.getMessage(),
+						e));
+			}
+		};
+		final Display display = WorkbenchHelper.getDisplay();
+		if (display == null || display.isDisposed())
+			throw new IllegalStateException("The GAMA workbench is not available");
+		if (display.getThread() == Thread.currentThread()) {
+			open.run();
+		} else {
+			display.syncExec(open);
+		}
+		if (failure.get() != null) throw failure.get();
+		return true;
+	}
 
 	@Override
 	public void updateSynchronizedState() {

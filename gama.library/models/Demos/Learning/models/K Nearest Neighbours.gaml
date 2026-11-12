@@ -109,7 +109,7 @@ experiment KNearestNeighbors {
 				}
 			}
 			event #mouse_down {ask simulation {do createAgent();}} 
-			overlay position: {16#px, 16#px} size: {345#px, 118#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {16, 16} size: {345, 118} background: backdrop rounded: true {
 				draw "K-NEAREST NEIGHBORS" at: {14#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Click to classify a new point" at: {14#px, 49#px} color: colours[0] font: font("Helvetica", 11);
 				draw "K = " + string(k) + " / Points = " + string(length(special_point))

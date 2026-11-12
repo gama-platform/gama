@@ -47,7 +47,6 @@ import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.ISerialisedPopulation;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
-import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IProjectionFactory;
@@ -139,15 +138,29 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 		@variable (
 				name = ISimulationAgent.USAGE,
 				type = IType.INT,
-				doc = @doc ("Counts raw draws from the simulation RNG, not operator calls. Float draws usually consume "
-						+ "two raw draws, bounded integer draws usually one (more if rejection sampling is needed). "
-						+ "Assigning a value reinitializes the RNG with its current seed and advances it to that usage; "
-						+ "negative values reset it to zero. Cached Gaussian values are not restored. "
-						+ "The threaded RNG always reports zero and cannot be restored.")),
+				doc = @doc ("""
+						Counts raw draws from the simulation RNG, not operator calls. Float draws usually consume \
+						two raw draws, bounded integer draws usually one (more if rejection sampling is needed). \
+						Assigning a value reinitializes the RNG with its current seed and advances it to that usage; \
+						negative values reset it to zero. Cached Gaussian values are not restored. \
+						The threaded RNG always reports zero and cannot be restored.""")),
 		@variable (
 				name = ISimulationAgent.PAUSED,
 				type = IType.BOOL,
-				doc = @doc ("Returns the current pausing state of the simulation")),
+				constant = true,
+				doc = @doc (
+						value = "Read-only compatibility query combining the owning experiment controller's pause state and this simulation's user hold.",
+						deprecated = "Use experiment.is_paused for scheduler pause and is_on_user_hold for this simulation's user hold. Assigning paused is no longer allowed; its former setter had no effect.",
+						comment = "With an active experiment controller, equivalent to experiment.is_paused or is_on_user_hold. Without a controller, reports only the user hold. A true result does not mean that a currently executing cycle has already finished.",
+						see = { "is_paused", "is_on_user_hold" })),
+		@variable (
+				name = "is_on_user_hold",
+				type = IType.BOOL,
+				constant = true,
+				doc = @doc (
+						value = "Read-only flag indicating that this simulation is held for user interaction, for example by a user panel. Does not include the owning experiment controller's pause state.",
+						comment = "Initially false. User-interaction controls manage this flag while waiting for input and clear it when released. Reports this simulation's hold, not another simulation's or the experiment agent's hold. A user panel may wait within a cycle while experiment.status remains RUNNING; play does not dismiss that panel. This is not an independent simulation scheduler switch; use experiment pause/play for execution control.",
+						see = { "is_paused", "pause", "play" })),
 		@variable (
 				name = ISimulationAgent.DURATION,
 				type = IType.STRING,
@@ -330,8 +343,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		final Set<IDescription> visited = Collections.newSetFromMap(new IdentityHashMap<>());
 		final boolean parallel = experiment != null && !experiment.isHeadless()
 				|| requiresSpatialIndexSynchronization(scope, getSpecies().getDescription(), visited)
-				|| experiment != null
-						&& requiresSpatialIndexSynchronization(scope, experiment.getSpecies().getDescription(), visited);
+				|| experiment != null && requiresSpatialIndexSynchronization(scope,
+						experiment.getSpecies().getDescription(), visited);
 
 		if (topology != null) {
 			topology.updateEnvironment(scope, shape, parallel);
@@ -350,9 +363,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 */
 	private boolean requiresSpatialIndexSynchronization(final IScope scope, final IDescription description,
 			final Set<IDescription> visited) {
-		if (!visited.add(description)) return false;
-		if (description instanceof IExperimentDescription
-				&& (getExperiment() == null || description != getExperiment().getSpecies().getDescription())) return false;
+		if (!visited.add(description) || description instanceof IExperimentDescription
+				&& (getExperiment() == null || description != getExperiment().getSpecies().getDescription()))
+			return false;
 		if (IKeyword.DISPLAY.equals(description.getKeyword()) || IKeyword.EVENT.equals(description.getKeyword()))
 			return true;
 		Caller caller = Caller.NONE;
@@ -366,8 +379,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		}
 		if (caller != Caller.NONE || IKeyword.ASK.equals(description.getKeyword())) {
 			final IExpression parallel = description.getFacetExpr(IKeyword.PARALLEL);
-			if ((parallel != null && !parallel.isConst())
-					|| GamaExecutorService.getParallelism(scope, parallel, caller) > 0) return true;
+			if (parallel != null && !parallel.isConst()
+					|| GamaExecutorService.getParallelism(scope, parallel, caller) > 0)
+				return true;
 		}
 		return !description.visitChildren(child -> !requiresSpatialIndexSynchronization(scope, child, visited));
 	}
@@ -587,34 +601,13 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @return true, if is paused
 	 */
 	@getter (PAUSED)
+	@Deprecated
 	public boolean isPaused(final IScope scope) {
-		// The second case is mostly useless for the moment as it corresponds
-		// to the global pause of the experiment...
 		return getScope().isPaused();
 	}
 
-	/**
-	 * Sets the paused.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param state
-	 *            the state
-	 */
-	@setter (PAUSED)
-	public void setPaused(final IScope scope, final boolean state) {
-		// Not used for the moment, but it might allow to set this state
-		// explicitly (ie pause a simulation without pausing the experiment)
-		// For that, however, we need to check the condition in the step of the
-		// simulation and maybe skip it (or put the thread on sleep ?) when its
-		// scope is on user hold... The question of what to do with the
-		// experiment
-		// is also important: should the experiment continue stepping while its
-		// simulations are paused ?
-		// getScope().setOnUserHold(state);
-	}
-
 	@Override
+	@getter ("is_on_user_hold")
 	public boolean isOnUserHold() { return isOnUserHold; }
 
 	@Override
@@ -748,16 +741,17 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @return the object
 	 */
 	@Override
+	@Deprecated
 	@action (
 			name = "pause",
-			doc = @doc ("Allows to pause the current simulation **ACTUALLY EXPERIMENT FOR THE MOMENT**. It can be resumed with the manual intervention of the user or the 'resume' action."))
+			doc = @doc (
+					value = "Compatibility alias that delegates to the owning experiment's pause action. Pauses all simulations scheduled by that experiment, not only this simulation. A cycle already running may finish.",
+					deprecated = "Use experiment.pause(); instead. Execution control belongs to the experiment.",
+					returns = "nil",
+					see = { "pause", "play" }))
 
 	public Object pause(final IScope scope) {
-		// if (!GAMA.isPaused()) { GAMA.pauseFrontmostExperiment(); }
-		final IExperimentController controller = scope.getExperiment().getSpecies().getController();
-		if (controller != null && !controller.isPaused()) {
-			controller.processPause(!GAMA.getGui().isInDisplayThread());
-		}
+		getExperiment().pause(scope);
 		return null;
 	}
 
@@ -799,14 +793,17 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 * @return the object
 	 */
 	@Override
+	@Deprecated
 	@action (
 			name = "resume",
-			doc = @doc ("Allows to resume the current simulation **ACTUALLY EXPERIMENT FOR THE MOMENT**. It can then be paused with the manual intervention of the user or the 'pause' action."))
+			doc = @doc (
+					value = "Compatibility alias that delegates to the owning experiment's resume action. Resumes all simulations scheduled by that experiment, not only this simulation.",
+					deprecated = "Use  experiment.resume(); instead. Execution control belongs to the experiment.",
+					returns = "nil",
+					see = { "play", "pause" }))
 
 	public Object resume(final IScope scope) {
-		// if (GAMA.isPaused()) { GAMA.resumeFrontmostExperiment(); }
-		final IExperimentController controller = scope.getExperiment().getSpecies().getController();
-		if (controller != null && controller.isPaused()) { controller.processStart(false); }
+		getExperiment().play(scope);
 		return null;
 	}
 

@@ -151,7 +151,6 @@ public class GamaPreferencesView {
 		prefs_images.put(GamaPreferences.Runtime.NAME, GamaIcon.named(IGamaIcons.PREFS_SIMULATION).image());
 		prefs_images.put(GamaPreferences.Displays.NAME, GamaIcon.named(IGamaIcons.PREFS_UI).image());
 		prefs_images.put(GamaPreferences.External.NAME, GamaIcon.named(IGamaIcons.PREFS_LIBS).image());
-		prefs_images.put(GamaPreferences.Theme.NAME, GamaIcon.named(IGamaIcons.PREFS_THEME).image());
 		prefs_images.put(GamaPreferences.Network.NAME, GamaIcon.named(IGamaIcons.PREFS_NETWORK).image());
 	}
 
@@ -703,8 +702,12 @@ public class GamaPreferencesView {
 		var width = (int) size.getX();
 		var height = (int) size.getY();
 		Rectangle savedBounds = new Rectangle(x, y, width, height);
-		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
-		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();
+		// Native menu commands can run without an active SWT shell.
+		Shell referenceShell = WorkbenchHelper.getShell();
+		if (referenceShell == null || referenceShell.isDisposed()) { referenceShell = parentShell; }
+		if (referenceShell == null || referenceShell.isDisposed()) { referenceShell = shell; }
+		Rectangle monitorBounds = referenceShell.getMonitor().getBounds();
+		Rectangle shellBounds = referenceShell == shell ? monitorBounds : referenceShell.getBounds();
 		if (!savedBounds.intersects(monitorBounds)) {
 			// final Point p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 			x = shellBounds.x + 100;

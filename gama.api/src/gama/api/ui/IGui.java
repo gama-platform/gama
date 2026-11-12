@@ -313,6 +313,16 @@ public interface IGui {
 	}
 
 	/**
+	 * Opens a playable {@code .gamx} package in its isolated player process.
+	 *
+	 * @param path absolute path to the package
+	 * @return whether the player command was accepted
+	 */
+	default boolean openSimulationPackage(final String path) {
+		throw new UnsupportedOperationException("Playable model packages are not supported by this GUI");
+	}
+
+	/**
 	 * Gets the frontmost display surface.
 	 *
 	 * @return the frontmost display surface

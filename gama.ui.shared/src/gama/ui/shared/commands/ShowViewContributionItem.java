@@ -12,10 +12,6 @@ package gama.ui.shared.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Set;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
@@ -27,12 +23,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
-import org.eclipse.ui.views.IViewDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import gama.api.GAMA;
 import gama.api.ui.IGui;
-import gama.ui.application.workbench.PerspectiveHelper;
 
 /**
  * The Class ShowViewContributionItem.
@@ -57,27 +50,22 @@ public class ShowViewContributionItem extends CompoundContributionItem {
 	@Override
 	protected IContributionItem[] getContributionItems() {
 		final List<IContributionItem> menuContributionList = new ArrayList<>();
-		menuContributionList.add(createViewItem("Console", IGui.CONSOLE_VIEW_ID,
-				"icons_svg/light/views/tabs/view.console.svg"));
-		menuContributionList.add(createViewItem("Interactive Console", IGui.INTERACTIVE_CONSOLE_VIEW_ID,
-				"icons_svg/light/views/tabs/view.interactive.svg"));
-		menuContributionList.add(createViewItem("Server Console", IGui.SERVER_CONSOLE_VIEW_ID,
-				"icons_svg/light/views/tabs/view.server.svg"));
-		if (PerspectiveHelper.isSimulationPerspective()) return menuContributionList.toArray(new IContributionItem[0]);
+		addView(menuContributionList, IGui.NAVIGATOR_VIEW_ID);
+		menuContributionList.add(new Separator());
+		addView(menuContributionList, IGui.CONSOLE_VIEW_ID);
+		addView(menuContributionList, IGui.INTERACTIVE_CONSOLE_VIEW_ID);
+		addView(menuContributionList, IGui.SERVER_CONSOLE_VIEW_ID);
+		menuContributionList.add(new Separator());
+		addView(menuContributionList, IGui.OUTLINE_VIEW_ID);
+		addView(menuContributionList, "gama.ui.navigator.view.PreviousVersions");
+		addView(menuContributionList, IGui.MINIMAP_VIEW_ID);
+		addView(menuContributionList, "gama.ui.navigator.view.Dependencies");
+		menuContributionList.add(new Separator());
+		addView(menuContributionList, IGui.VALIDATION_VIEW_ID);
+		addView(menuContributionList, IGui.TEST_VIEW_ID);
 		final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (window != null && window.getActivePage() != null) {
 			menuContributionList.add(new Separator());
-			final Set<String> consoles =
-					Set.of(IGui.CONSOLE_VIEW_ID, IGui.INTERACTIVE_CONSOLE_VIEW_ID, IGui.SERVER_CONSOLE_VIEW_ID);
-			Arrays.stream(window.getActivePage().getShowViewShortcuts()).distinct()
-					.filter(id -> !consoles.contains(id))
-					.map(id -> window.getWorkbench().getViewRegistry().find(id)).filter(Objects::nonNull)
-					.sorted(Comparator.comparing(IViewDescriptor::getLabel, String.CASE_INSENSITIVE_ORDER))
-					.forEach(descriptor -> {
-						final Action action = createViewAction(descriptor.getLabel(), descriptor.getId());
-						action.setImageDescriptor(descriptor.getImageDescriptor());
-						menuContributionList.add(new ActionContributionItem(action));
-					});
 			final CommandContributionItemParameter other = new CommandContributionItemParameter(window,
 					"gama.showView.other", "org.eclipse.ui.views.showView", CommandContributionItem.STYLE_PUSH);
 			other.label = "Other...";
@@ -86,10 +74,12 @@ public class ShowViewContributionItem extends CompoundContributionItem {
 		return menuContributionList.toArray(new IContributionItem[0]);
 	}
 
-	private static IContributionItem createViewItem(final String label, final String viewId, final String iconPath) {
-		final Action action = createViewAction(label, viewId);
-		action.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin("gama.ui.shared", iconPath));
-		return new ActionContributionItem(action);
+	private static void addView(final List<IContributionItem> items, final String viewId) {
+		final var descriptor = PlatformUI.getWorkbench().getViewRegistry().find(viewId);
+		if (descriptor == null) return;
+		final Action action = createViewAction(descriptor.getLabel(), viewId);
+		action.setImageDescriptor(descriptor.getImageDescriptor());
+		items.add(new ActionContributionItem(action));
 	}
 
 	private static Action createViewAction(final String label, final String viewId) {

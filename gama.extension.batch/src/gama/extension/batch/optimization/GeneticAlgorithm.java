@@ -37,7 +37,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
-import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.core.experiment.parameters.ParameterAdapter;
@@ -258,7 +257,7 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 				}
 			}
 			population.addAll(mutatePop);
-			if (GamaExecutorService.shouldRunAllSimulationsInParallel(getCurrentExperiment())) {
+			if (BatchAgent.shouldGroupParameterSets(getCurrentExperiment())) {
 				computePopFitnessAll(scope, population);
 			} else {
 				computePopFitness(scope, population);
@@ -467,7 +466,7 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 			if (neighbors.isEmpty()) { break; }
 			ParametersSet bestNeighbor = null;
 
-			if (GamaExecutorService.shouldRunAllSimulationsInParallel(getCurrentExperiment())
+			if (BatchAgent.shouldGroupParameterSets(getCurrentExperiment())
 					&& !getCurrentExperiment().getParametersToExplore().isEmpty()) {
 				Map<ParametersSet, Double> result = testSolutions(neighbors);
 				for (ParametersSet p : result.keySet()) {

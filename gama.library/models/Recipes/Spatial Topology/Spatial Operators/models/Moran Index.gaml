@@ -30,7 +30,7 @@ global {
 				match "blocks" {color <- grid_x < grid_size/2 ? #white: #black;}
 			}	
 		}
-		vals <- cell collect (each.color = #white ? 0.0 : 1.0);
+		vals <- list(cell) collect (each.color = #white ? 0.0 : 1.0);
 		weights <- 0.0 as_matrix {length(vals), length(vals)};
 		ask cell {
 			switch weight_type {

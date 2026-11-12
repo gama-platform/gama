@@ -90,7 +90,7 @@ public class AssetDrawer implements IDrawDelegate {
 	 */
 	AssetDrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final boolean isImage,
 			final boolean isGIS, final boolean twoD) {
-		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(Scaling3D.of(data.size.get()),
+		final AssetDrawingAttributes attributes = new AssetDrawingAttributes(Scaling3D.of(data.getSize()),
 				data.rotation.get(), data.getLocation(), data.color.get(), data.border.get(), scope.getAgent(),
 				data.lineWidth.get(), isImage, data.lighting.get());
 		// We push the location of the agent if none has been provided and if it is not a GIS file (where coordinates

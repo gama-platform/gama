@@ -24,9 +24,9 @@ experiment "Different series" type: gui
 	output synchronized: true
 	{
 		layout #split toolbars: false;
-		display "data_cumulative_serie_spline_chart" type: 2d
+		display "data_cumulative_serie_spline_chart" type: 3d
 		{
-			chart "Nice cumulative series chart" type: series background: # darkblue color: # lightgreen axes: # lightgreen title_font: font( 'Serif' , 32.0, #italic)
+			chart "Nice cumulative series chart" kind: series background: # darkblue color: # lightgreen axes: # lightgreen title_font: font( 'Serif' , 32.0, #italic)
 			 tick_font: font('Monospaced' , 14 #bold) label_font: font('Serif', 18 #plain) legend_font: font('SanSerif', 18 #bold) x_range: 50 x_tick_unit: 5 x_serie_labels: ("T+" + cycle) x_label: 'Nice Xlabel' y_label: 'Nice Ylabel'
 			{
 				data "Spline" value: cos(100 * cycle) * cycle * cycle color: # orange marker_shape: marker_empty style: spline;
@@ -36,9 +36,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "style_cumulative_style_chart" type: 2d
+		display "style_cumulative_style_chart" type: 3d
 		{
-			chart "Style Cumulative chart" type: series
+			chart "Style Cumulative chart" kind: series
 			{
 				data "Spline" value: cos(100 * cycle) color: # orange style: spline;
 				data "area" value: cos(100 * cycle) * 0.3 color: # red style: "area";
@@ -47,9 +47,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "style_cumulative_style_chart_without_axes" type: 2d
+		display "style_cumulative_style_chart_without_axes" type: 3d
 		{
-			chart "Style Cumulative chart Without axes" type: series 
+			chart "Style Cumulative chart Without axes" kind: series 
 				y_tick_values_visible: false y_tick_line_visible: false x_tick_values_visible: false x_tick_line_visible: false
 			{
 				data "Spline" value: cos(100 * cycle) color: # orange style: spline;
@@ -59,9 +59,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "datalist_xy_chart" type: 2d
+		display "datalist_xy_chart" type: 3d
 		{
-			chart "datalist_xy_cumulative_chart" type: xy
+			chart "datalist_xy_cumulative_chart" kind: xy
 			{
 				datalist legend: ["A", "B", "C"] value:
 				[[cycle * cos(cycle * 100), cycle * sin(cycle * 100), 2], [cycle / 2 * sin(cycle * 100), cycle * 2 * cos(cycle * 100), 1], [cycle + 2, cycle - 2, cos(cycle * 100)]]
@@ -71,9 +71,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "datalist_xy_line_chart" type: 2d
+		display "datalist_xy_line_chart" type: 3d
 		{
-			chart "datalist_xy_cumulative_chart" type: xy
+			chart "datalist_xy_cumulative_chart" kind: xy
 			{
 				datalist legend: ["A", "B"] value: [[cycle * cos(cycle * 100), cycle * sin(cycle * 100), 2], [cycle / 2 * sin(cycle * 100), cycle * 2 * cos(cycle * 100), 1]] marker_shape:
 				marker_circle // same for all
@@ -82,9 +82,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "datalist_xy_non_cumulative_chart" type: 2d
+		display "datalist_xy_non_cumulative_chart" type: 3d
 		{
-			chart "datalist_xy_non_cumulative_chart" type: xy
+			chart "datalist_xy_non_cumulative_chart" kind: xy
 			{
 				datalist legend: ["A", "B", "C"] value: [[10, 10], [12, 10], [20 + cycle, 10]] accumulate_values: false x_err_values: [3, 1, 2] y_err_values:
 				[[9, 20], [5, 11], [8, 10 + cycle / 2]] // different low/high values for yerr
@@ -95,9 +95,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "data_cumulative_serie_chart" type: 2d
+		display "data_cumulative_serie_chart" type: 3d
 		{
-			chart "data_cumulative_serie_chart" type: series x_serie_labels: (cycle * cycle)
+			chart "data_cumulative_serie_chart" kind: series x_serie_labels: (cycle * cycle)
 			{
 				data "A" value: [1, 2];
 				data "ABC" value: [cycle, cycle] marker_shape: marker_circle x_err_values: 2 * cos(cycle * 100) y_err_values: 2 * sin(cycle * 100) color: # black;
@@ -107,9 +107,9 @@ experiment "Different series" type: gui
 
 		}
 
-		display "my_data_cumulative_xy" type: 2d
+		display "my_data_cumulative_xy" type: 3d
 		{
-			chart "my_data_cumulative_xy" type: xy
+			chart "my_data_cumulative_xy" kind: xy
 			{
 				data "123" value: [1 + cycle, 2, 3] marker_shape: marker_down_triangle;
 				data "ABC" value: [cycle + 1, cycle * 2, cos(cycle)] marker_shape: marker_circle fill: false line_visible: false color: # black x_err_values: ln(cycle) y_err_values:
@@ -118,14 +118,14 @@ experiment "Different series" type: gui
 
 		}
 		
-		display "double axes"  type: 2d {
+		display "double axes"  type: 3d {
 			chart "double Y axes" y_label: "axis 1" y2_label: "axis 2" y_range: {-1,1} y2_range: {0,1000} y2_log_scale: true {
 				data "cos" value: cos(100 * cycle) color: #red;
 				data "cycle" value: cycle color: #green use_second_y_axis: true;
 			}
 		}
 
-		display "double axes y2 tick values hidden" type: 2d {
+		display "double axes y2 tick values hidden" type: 3d {
 			chart "double Y axes (y2 ticks hidden)" y_label: "axis 1" y2_label: "axis 2" y2_tick_values_visible: false {
 				data "cos" value: cos(100 * cycle) color: #red;
 				data "cycle" value: cycle color: #green use_second_y_axis: true;

@@ -10,16 +10,18 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.layers;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.annotations.constants.IKeyword;
-import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.AdaptiveColor;
+import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
@@ -28,15 +30,19 @@ import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerData;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;
+import gama.core.outputs.layers.OverlayStatement;
 import gama.core.util.file.GamaGeometryFile;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.geometry.GeometryObject;
+import gama.ui.display.opengl.scene.geometry.PrimitiveObject;
 import gama.ui.display.opengl.scene.mesh.MeshObject;
 import gama.ui.display.opengl.scene.resources.ResourceObject;
 import gama.ui.display.opengl.scene.text.StringObject;
@@ -51,6 +57,26 @@ import gama.ui.display.opengl.scene.text.StringObject;
 @SuppressWarnings ({ "rawtypes" })
 public class LayerObject {
 
+	public record LayerState(LayerCoordinates coordinates, LayerCoordinates contentCoordinates,
+			int x, int y, int width, int height, double contentRatio, IColor background, IColor border,
+			boolean rounded, boolean selectable, boolean dynamic, boolean fading, int trace, boolean adaptive) {}
+
+	private LayerState captureLayerState() {
+		if (layer == null) return new LayerState(LayerCoordinates.WORLD, LayerCoordinates.WORLD,
+				0, 0, 0, 0, 0, null, null, false, false, false, false, 0, false);
+		final ILayerData data = layer.getData();
+		final java.awt.Point position = data.getPositionInPixels(), size = data.getSizeInPixels();
+		final FramedLayerData frame = data instanceof FramedLayerData f ? f : null;
+		final gama.core.outputs.layers.OverlayLayerData overlay =
+				data instanceof gama.core.outputs.layers.OverlayLayerData o ? o : null;
+		return new LayerState(data.getCoordinates(), data.getContentCoordinates(), position.x, position.y,
+				size.x, size.y, overlay == null ? 0 : overlay.getContentRatio(),
+				frame == null ? null : frame.getBackgroundColor(), frame == null ? null : frame.getBorderColor(),
+				overlay != null && overlay.isRounded(), Boolean.TRUE.equals(data.isSelectable()), data.isDynamic(),
+				Boolean.TRUE.equals(data.getFading()), data.getTrace() == null ? 0 : data.getTrace(),
+				layer.getDefinition() instanceof OverlayStatement o && o.mayUseAdaptiveText());
+	}
+
 	/** The Constant NULL_OFFSET. */
 	final static IPoint NULL_OFFSET = GamaPointFactory.createImmutable(0, 0, 0);
 
@@ -64,6 +90,7 @@ public class LayerObject {
 	 * The Class Trace.
 	 */
 	class Trace extends ArrayList<AbstractObject<?, ?>> {
+		LayerState state;
 		/** The offset. */
 		final IPoint offset = GamaPointFactory.create(NULL_OFFSET);
 		/** The scale. */
@@ -76,9 +103,16 @@ public class LayerObject {
 		 * Instantiates a new trace.
 		 */
 		Trace() {
-			computeOffset();
-			computeScale();
-			computeRotation();
+			state = currentList == null ? captureLayerState() : currentList.state;
+			if (currentList == null) {
+				computeOffset();
+				computeScale();
+				computeRotation();
+			} else {
+				offset.setLocation(currentList.offset);
+				scale.setLocation(currentList.scale);
+				rotation = currentList.rotation;
+			}
 		}
 
 		/**
@@ -127,13 +161,9 @@ public class LayerObject {
 		 */
 		public AxisAngle getRotation() { return rotation; }
 
-		/**
-		 * As array.
-		 *
-		 * @return the abstract object[]
-		 */
-		/** Cached backing array — reallocated only when the list size changes. */
+		/** Cached backing array; reallocated only when the list size changes. */
 		private AbstractObject[] cachedArray = {};
+		private int cachedRevision = -1;
 
 		/**
 		 * As array.
@@ -141,9 +171,31 @@ public class LayerObject {
 		 * @return the abstract object[]
 		 */
 		public AbstractObject[] asArray() {
-			final int n = size();
+			int n = 0;
+			for (final AbstractObject object : this) {
+				n += object instanceof StringObject text ? text.numberOfLines() : 1;
+			}
 			if (cachedArray.length != n) { cachedArray = new AbstractObject[n]; }
-			return toArray(cachedArray);
+			if (cachedRevision != modCount) {
+				int index = 0;
+				for (final AbstractObject object : this) {
+					if (object instanceof StringObject text) {
+						for (final StringObject line : text.realizeLines(
+								renderer.getAbsoluteRatioBetweenPixelsAndModelsUnits())) { cachedArray[index++] = line; }
+					} else {
+						cachedArray[index++] = object;
+					}
+				}
+				cachedRevision = modCount;
+			}
+			return cachedArray;
+		}
+
+		@Override
+		public void clear() {
+			super.clear();
+			java.util.Arrays.fill(cachedArray, null);
+			cachedRevision = -1;
 		}
 	}
 
@@ -155,6 +207,11 @@ public class LayerObject {
 
 	/** The is animated. */
 	volatile boolean isAnimated;
+	private boolean shared;
+
+	public void markShared() { shared = true; }
+
+	public boolean wasShared() { return shared; }
 
 	/** The renderer. */
 	protected final IOpenGLRenderer renderer;
@@ -164,6 +221,9 @@ public class LayerObject {
 
 	/** The open GL list index. */
 	protected volatile Integer openGLListIndex;
+
+	private double listStartZTranslation, listZIncrement, drawingStartZTranslation;
+	private long drawingObjectIndex;
 
 	/** The is fading. */
 	protected volatile boolean isFading;
@@ -212,25 +272,8 @@ public class LayerObject {
 	 * Compute offset.
 	 */
 	public void computeOffset(final Trace list) {
-		final IScope scope = renderer.getSurface().getScope();
-		final IExpression expr = layer.getDefinition().getFacet(IKeyword.POSITION);
-
-		if (expr != null) {
-			final boolean containsPixels = expr.containsPixels();
-			IPoint offset = list.offset;
-			offset.setLocation(GamaPointFactory.castToPoint(scope, expr.value(scope)));
-			if (Math.abs(offset.getX()) <= 1 && !containsPixels) {
-				offset.setX(offset.getX() * renderer.getEnvWidth());
-			}
-			if (Math.abs(offset.getY()) <= 1 && !containsPixels) {
-				offset.setY(offset.getY() * renderer.getEnvHeight());
-			}
-
-			// REMOVE TO FIX #3342
-			// if (offset.x < 0) { offset.x = renderer.getEnvWidth() - offset.x; }
-			// if (offset.y < 0) { offset.y = renderer.getEnvHeight() - offset.y; }
-
-		}
+		if (isScreenLayer()) return;
+		list.offset.setLocation(layer.getData().getPosition());
 		computeZ(list);
 	}
 
@@ -254,7 +297,7 @@ public class LayerObject {
 	 *
 	 * @return true, if is pickable
 	 */
-	public boolean isPickable() { return layer != null && layer.getData().isSelectable(); }
+	public boolean isPickable() { return layer != null && currentList.state.selectable(); }
 
 	/**
 	 * Draw.
@@ -263,18 +306,76 @@ public class LayerObject {
 	 *            the gl
 	 */
 	public void draw(final IOpenGL gl) {
-		if (hasDepth()) {
+		final ILayer previousLayer = renderer.setRenderingLayer(layer);
+		final LayerState previousState = renderer.setRenderingLayerState(currentList.state);
+		final LayerCoordinates previous = renderer.setCoordinateSystem(
+				currentList.state.contentCoordinates());
+		try {
+			final LayerState state = currentList.state;
+			if (state.adaptive() && !renderer.getPickingHelper().isPicking()) {
+				final List<TextDrawingAttributes> texts = new ArrayList<>();
+				for (final AbstractObject object : currentList.asArray()) {
+					if (object instanceof StringObject string
+							&& string.getAttributes() instanceof TextDrawingAttributes text
+							&& text.getAdaptiveTextBounds() != null) {
+						texts.add(text);
+					}
+				}
+				final IColor background = state.background();
+				final AdaptiveColor.Background adaptiveBackground = background == null ? null
+						: new AdaptiveColor.Background(new Rectangle2D.Double(0, 0,
+								state.width(), state.height()), background, 1);
+				renderer.getAdaptiveTextHelper().resolve(texts, state.x(), state.y(), adaptiveBackground, alpha);
+			}
+			drawInCoordinates(gl);
+		} finally {
+			renderer.setCoordinateSystem(previous);
+			renderer.setRenderingLayerState(previousState);
+			renderer.setRenderingLayer(previousLayer);
+		}
+	}
+
+	private void drawInCoordinates(final IOpenGL gl) {
+		final boolean depthTest = gl.getGL().glIsEnabled(GL.GL_DEPTH_TEST);
+		final boolean mapOrder = hasDepth() && renderer.getData().isMapOrder();
+		final byte[] depthWrite = new byte[1];
+		if (mapOrder) {
+			gl.getGL().glGetBooleanv(GL.GL_DEPTH_WRITEMASK, depthWrite, 0);
+			gl.getGL().glDepthMask(false);
+		}
+		if (hasDepth() && !mapOrder) {
 			gl.getGL().glEnable(GL.GL_DEPTH_TEST);
 		} else {
 			// Addition to fix #2228 and #2222
-			gl.suspendZTranslation();
+			if (!hasDepth()) { gl.suspendZTranslation(); }
 			gl.getGL().glDisable(GL.GL_DEPTH_TEST);
 		}
-		gl.push(GLMatrixFunc.GL_MODELVIEW);
+		if (isScreenLayer()) {
+			gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
+			if (renderer.getPickingHelper().isBeginningPicking()) {
+				renderer.getPickingHelper().applyPickTransform();
+			}
+			gl.ortho(0, gl.getViewWidth(), -gl.getViewHeight(), 0, -1, 1);
+			// Flatten clip-space depth, not object transforms: elevation must not clip screen contents.
+			gl.scaleBy(1, 1, 0);
+			// Keep object transforms off the projection stack and independent of the world camera.
+			gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW);
+		} else {
+			gl.push(GLMatrixFunc.GL_MODELVIEW);
+		}
 		try {
 			doDrawing(gl);
 		} finally {
-			stopDrawing(gl);
+			try {
+				stopDrawing(gl);
+			} finally {
+				if (mapOrder) { gl.getGL().glDepthMask(depthWrite[0] != 0); }
+				if (depthTest) {
+					gl.getGL().glEnable(GL.GL_DEPTH_TEST);
+				} else {
+					gl.getGL().glDisable(GL.GL_DEPTH_TEST);
+				}
+			}
 		}
 	}
 
@@ -287,24 +388,53 @@ public class LayerObject {
 	 *            the picking
 	 */
 	protected void doDrawing(final IOpenGL gl) {
-		if (renderer.getPickingHelper().isPicking()) {
+		drawingStartZTranslation = gl.getCurrentZTranslation();
+		drawingObjectIndex = 0;
+		final boolean picking = renderer.getPickingHelper().isPicking() && isPickable();
+		if (isScreenLayer()) {
+			if (picking) {
+				gl.runWithNames(() -> drawAllObjects(gl, true));
+			} else {
+				drawAllObjects(gl, false);
+			}
+			return;
+		}
+		if (picking) {
 			gl.runWithNames(() -> drawAllObjects(gl, true));
-		} else if (isAnimated) {
+		} else if (isAnimated || hasAdaptiveDraws()) {
 			drawAllObjects(gl, false);
 		} else {
+			final boolean stored = gl.isDrawingStored();
+			if (stored && openGLListIndex != null
+					&& (Double.compare(listStartZTranslation, gl.getCurrentZTranslation()) != 0
+							|| Double.compare(listZIncrement, gl.getCurrentZIncrement()) != 0)) {
+				gl.deleteList(openGLListIndex);
+				openGLListIndex = null;
+			}
 			if (openGLListIndex == null) {
-				if (gl.isDrawingStored()) {
+				if (stored) {
 					for (final AbstractObject object : currentList.asArray()) {
 						if (!object.areTexturesAvailable(gl)) {
 							drawAllObjects(gl, false);
 							return;
 						}
 					}
+					listStartZTranslation = gl.getCurrentZTranslation();
+					listZIncrement = gl.getCurrentZIncrement();
 				}
 				openGLListIndex = gl.compileAsList(() -> drawAllObjects(gl, false));
 			}
 			gl.drawList(openGLListIndex);
 		}
+	}
+
+	protected boolean hasAdaptiveDraws() { return hasAdaptiveDraws(currentList); }
+
+	protected final boolean hasAdaptiveDraws(final Trace list) {
+		for (final AbstractObject object : list.asArray()) {
+			if (object.getAttributes() instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) return true;
+		}
+		return false;
 	}
 
 	/**
@@ -314,20 +444,30 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
+		if (isScreenLayer()) {
+			final LayerState d = list.state;
+			gl.translateBy(d.x(), -d.y(), 0);
+			addScreenFrame(gl);
+			if (d.contentCoordinates() != LayerCoordinates.SCREEN) {
+				gl.scaleBy(d.width() / renderer.getEnvWidth(),
+						d.height() / renderer.getEnvHeight(), list.getScale().getZ());
+			}
+			return;
+		}
 		final IPoint nonNullOffset = list.getOffset();
 		gl.translateBy(nonNullOffset.getX(), -nonNullOffset.getY(), hasDepth() ? nonNullOffset.getZ() : 0);
 		final IPoint nonNullScale = list.getScale();
 		gl.scaleBy(nonNullScale.getX(), nonNullScale.getY(), nonNullScale.getZ());
 		final AxisAngle nonNullRotation = list.getRotation();
 
-		// Rotation
-		double x = nonNullOffset.getX() + renderer.getEnvWidth() * nonNullScale.getX() / 2;
-		double y = nonNullOffset.getY() + renderer.getEnvHeight() * nonNullScale.getY() / 2;
-
-		gl.translateBy(x, -y, 0d);
-		IPoint p = nonNullRotation.getAxis();
-		gl.rotateBy(nonNullRotation.getAngle(), p.getX(), p.getY(), p.getZ());
-		gl.translateBy(-x, y, 0d);
+		if (nonNullRotation.getAngle() != 0d) {
+			final double x = nonNullOffset.getX() + renderer.getEnvWidth() * nonNullScale.getX() / 2;
+			final double y = nonNullOffset.getY() + renderer.getEnvHeight() * nonNullScale.getY() / 2;
+			gl.translateBy(x, -y, 0d);
+			final IPoint p = nonNullRotation.getAxis();
+			gl.rotateBy(nonNullRotation.getAngle(), p.getX(), p.getY(), p.getZ());
+			gl.translateBy(-x, y, 0d);
+		}
 		addFrame(gl);
 	}
 
@@ -338,37 +478,44 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void addFrame(final IOpenGL gl) {
-		if (layer == null) return;
-		ILayerData d = layer.getData();
-		if (d instanceof FramedLayerData data) {
-			IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
-			final IScope scope = renderer.getSurface().getScope();
-			final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
-			if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
-			double sx = size.getX();
-			double sy = size.getY();
-			if (sx <= 1) { sx *= renderer.getEnvWidth(); }
-			if (sy <= 1) { sy *= renderer.getEnvHeight(); }
-			gl.pushMatrix();
-			boolean previous = gl.setObjectWireframe(false);
-			try {
-				gl.translateBy(sx / 2, -sy / 2, 0);
-				gl.scaleBy(sx, sy, 1);
-				if (data.getBackgroundColor(scope) != null) {
-					gl.setCurrentColor(data.getBackgroundColor(scope), 1 - data.getTransparency(scope));
-					gl.drawCachedGeometry(IShape.Type.SQUARE, null);
-				}
-				if (data.getBorderColor() != null) {
-					gl.setObjectWireframe(true);
-					gl.drawCachedGeometry(IShape.Type.SQUARE, data.getBorderColor());
-				}
+		addFrame(gl, renderer.getEnvWidth(), renderer.getEnvHeight());
+	}
 
-			} finally {
-				gl.setObjectWireframe(previous);
-				gl.popMatrix();
+	private void addFrame(final IOpenGL gl, final double width, final double height) {
+		final LayerState data = currentList.state;
+		final IColor background = data.background();
+		final IColor border = data.border();
+		if (background == null && border == null) return;
+		final boolean previous = gl.setObjectWireframe(false);
+		final double previousAlpha = gl.getCurrentObjectAlpha();
+		gl.pushMatrix();
+		try {
+			gl.translateBy(width / 2, -height / 2, 0);
+			gl.scaleBy(width, height, 1);
+			if (background != null) {
+				// FramedLayerData has already applied the layer's transparency to this colour.
+				gl.setCurrentObjectAlpha(1);
+				gl.setCurrentColor(background, 1);
+				gl.drawCachedGeometry(IShape.Type.SQUARE, null);
 			}
+			gl.setCurrentObjectAlpha(previousAlpha);
+			if (border != null) {
+				gl.setObjectWireframe(true);
+				gl.setCurrentColor(border);
+				// Cached border drawing multiplies the current colour alpha again.
+				gl.beginDrawing(GL.GL_LINE_LOOP);
+				gl.outputNormal(0, 0, 1);
+				gl.outputVertex(-0.5, -0.5, 0);
+				gl.outputVertex(0.5, -0.5, 0);
+				gl.outputVertex(0.5, 0.5, 0);
+				gl.outputVertex(-0.5, 0.5, 0);
+				gl.endDrawing();
+			}
+		} finally {
+			gl.setCurrentObjectAlpha(previousAlpha);
+			gl.setObjectWireframe(previous);
+			gl.popMatrix();
 		}
-
 	}
 
 	/**
@@ -377,7 +524,7 @@ public class LayerObject {
 	 * @return true, if successful
 	 */
 	protected boolean hasDepth() {
-		return true;
+		return !isScreenLayer();
 	}
 
 	/**
@@ -387,7 +534,21 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void stopDrawing(final IOpenGL gl) {
+		if (isScreenLayer()) {
+			gl.resumeZTranslation();
+			gl.pop(GLMatrixFunc.GL_PROJECTION);
+		}
 		gl.pop(GLMatrixFunc.GL_MODELVIEW);
+	}
+
+	private boolean isScreenLayer() {
+		return layer != null && (currentList == null ? layer.getData().getCoordinates()
+				: currentList.state.coordinates()) == LayerCoordinates.SCREEN;
+	}
+
+	private void addScreenFrame(final IOpenGL gl) {
+		final LayerState data = currentList.state;
+		addFrame(gl, data.width(), data.height());
 	}
 
 	/**
@@ -415,9 +576,27 @@ public class LayerObject {
 	 *            the picking
 	 */
 	protected final void drawObjects(final IOpenGL gl, final Trace list, final double alpha, final boolean picking) {
-		prepareDrawing(gl, list);
 		gl.setCurrentObjectAlpha(alpha);
-		for (final AbstractObject object : list.asArray()) { gl.getDrawerFor(object).draw(object, picking); }
+		prepareDrawing(gl, list);
+		final AbstractObject<?, ?>[] objects = list.asArray();
+		final long firstObject = drawingObjectIndex;
+		gl.drawLayerObjects(objects, isStatic(), () -> drawObjectList(gl, objects, picking));
+		if (layer != null && hasDepth()) { drawingObjectIndex = firstObject + objects.length; }
+	}
+
+	private void drawObjectList(final IOpenGL gl, final AbstractObject<?, ?>[] objects, final boolean picking) {
+		for (final AbstractObject object : objects) {
+			if (layer != null && hasDepth()) {
+				gl.setCurrentZTranslation(drawingStartZTranslation + drawingObjectIndex * gl.getCurrentZIncrement());
+				drawingObjectIndex++;
+			}
+			if (picking && object instanceof StringObject string
+					&& string.getAttributes() instanceof TextDrawingAttributes text
+					&& text.getAdaptiveTextBounds() != null) {
+				continue;
+			}
+			gl.getDrawerFor(object).draw(object, picking);
+		}
 	}
 
 	/**
@@ -425,7 +604,7 @@ public class LayerObject {
 	 *
 	 * @return true, if is static
 	 */
-	public boolean isStatic() { return layer == null || !layer.getData().isDynamic(); }
+	public boolean isStatic() { return layer == null || !currentList.state.dynamic(); }
 
 	/**
 	 * Sets the alpha.
@@ -468,7 +647,7 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addString(final String string, final IDrawingAttributes attributes) {
-		currentList.add(new StringObject(string, attributes));
+		currentList.add(StringObject.collected(string, attributes.snapshot()));
 	}
 
 	/**
@@ -480,7 +659,11 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
-		currentList.add(new ResourceObject(file, attributes));
+		currentList.add(new ResourceObject(file, attributes.snapshot()));
+	}
+
+	public void addFile(final GamaGeometryFile file, final IDrawingAttributes attributes, final String key) {
+		currentList.add(new ResourceObject(file, attributes.snapshot(), key));
 	}
 
 	/**
@@ -500,13 +683,11 @@ public class LayerObject {
 		}
 		final IPoint loc = attributes.getLocation();
 		final IPoint newLoc = loc == null ? size.toGamaPoint().dividedBy(2) : loc;
-		// We build a rectangle that will serve as a "support" for the image (which will become its texture)
-		final Geometry geometry =
-				GamaShapeFactory.buildRectangle(size.getX(), size.getY(), GamaPointFactory.create()).getInnerGeometry();
 		attributes.setLocation(newLoc);
 		attributes.setTexture(o);
 		attributes.setSynthetic(true);
-		addGeometry(geometry, attributes);
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new gama.ui.display.opengl.scene.geometry.ImageObject(attributes.snapshot()));
 	}
 
 	/**
@@ -518,7 +699,8 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
-		currentList.add(new MeshObject(fieldValues, attributes));
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new MeshObject(fieldValues, attributes.snapshot()));
 	}
 
 	/**
@@ -530,8 +712,23 @@ public class LayerObject {
 	 *            the attributes
 	 */
 	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
-		isAnimated = /* isAnimated || ?? */attributes.isAnimated();
-		currentList.add(new GeometryObject(geometry, attributes));
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new GeometryObject(geometry, attributes.snapshot()));
+	}
+
+	public void addGeometry(final gama.api.ui.displays.GeometryDrawing command, final IDrawingAttributes attributes) {
+		isAnimated = isAnimated || attributes.isAnimated();
+		currentList.add(new GeometryObject(command, attributes.snapshot()));
+	}
+
+	public void addPrimitive(final PrimitiveObject object) {
+		isAnimated = isAnimated || object.getAttributes().isAnimated();
+		currentList.add(object);
+	}
+
+	public void addGeometryObject(final GeometryObject object) {
+		isAnimated = isAnimated || object.getAttributes().isAnimated();
+		currentList.add(object);
 	}
 
 	/**
@@ -547,9 +744,7 @@ public class LayerObject {
 	 * @return the fading
 	 */
 	protected boolean getFading() {
-		if (layer == null) return false;
-		final Boolean fading = layer.getData().getFading();
-		return fading == null ? false : fading;
+		return currentList.state.fading();
 	}
 
 	/**
@@ -568,6 +763,20 @@ public class LayerObject {
 
 	}
 
+	public void resetForReuse() {
+		isAnimated = false;
+		isFading = false;
+		captureState();
+	}
+
+	/** Called only while the producer owns the empty trace. */
+	public void captureState() {
+		currentList.state = captureLayerState();
+		currentList.computeOffset();
+		currentList.computeScale();
+		currentList.computeRotation();
+	}
+
 	/**
 	 * Checks for trace.
 	 *
@@ -582,7 +791,7 @@ public class LayerObject {
 	 *
 	 * @return true, if is overlay
 	 */
-	public boolean isOverlay() { return false; }
+	public boolean isOverlay() { return isScreenLayer(); }
 
 	/**
 	 * Number of traces.
@@ -591,6 +800,20 @@ public class LayerObject {
 	 */
 	public int numberOfActualTraces() {
 		return 1;
+	}
+
+	/** Number of objects that advance the world-space Z translation when this layer is drawn. */
+	public long numberOfZTranslatedObjects() {
+		if (layer == null || isScreenLayer()) return 0;
+		return numberOfObjects(currentList);
+	}
+
+	protected long numberOfObjects(final Trace trace) {
+		long count = 0;
+		for (final AbstractObject object : trace) {
+			count += object instanceof StringObject text ? text.numberOfLines() : 1;
+		}
+		return count;
 	}
 
 	/**

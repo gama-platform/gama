@@ -65,6 +65,13 @@ retain their existing handling, including the headless application's status 2 wh
 
 ## Desktop startup
 
+The [`gama` platform agent](https://github.com/gama-platform/gama/wiki/PlatformAgent) exposes preference inspection
+and updates, model/test operations, playable-package launching, and model validation.
+
+The [experiment agent guide](https://github.com/gama-platform/gama/wiki/ExperimentAgent)
+([local copy](EXPERIMENT_AGENT.md)) documents execution controls, server-compatible status,
+display synchronization, maintenance actions, and migration from simulation `pause`/`resume`.
+
 See [Vintage color palettes](PALETTES.md) for Swiss, Warm Amber and Mineral
 simulation/chart palettes, optional editor configurations and paper-and-ink demos.
 

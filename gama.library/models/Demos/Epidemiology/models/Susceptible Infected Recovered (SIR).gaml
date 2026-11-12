@@ -163,8 +163,8 @@ experiment Simulation type: gui {
 	        species Host aspect: basic;
 	    }
 	        
-	    display chart background: paper refresh: every(10#cycles) type: 2d {
-			chart "Susceptible" type: series background: paper axes: rgb(57, 66, 61) style: exploded {
+	    display chart background: paper refresh: every(10#cycles) type: 3d {
+			chart "Susceptible" kind: series background: paper axes: rgb(57, 66, 61) style: exploded {
 				data "susceptible" value: Host count (each.is_susceptible) color: susceptible_ink;
 				data "infected" value: Host count (each.is_infected) color: infected_ink;
 				data "immune" value: Host count (each.is_immune) color: immune_ink;

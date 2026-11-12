@@ -36,10 +36,12 @@ import java.awt.Image;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.util.List;
@@ -52,24 +54,35 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.Puntal;
 
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
 import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.GeometryDrawing;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
+import gama.core.outputs.layers.FramedLayerData;
 import gama.core.outputs.layers.OverlayLayer;
+import gama.core.outputs.layers.OverlayStatement;
 import gama.core.util.file.GamaGeometryFile;
 import gama.gaml.operators.Maths;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 
 /**
  *
@@ -88,6 +101,31 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	/** The normal renderer. */
 	private Graphics2D currentRenderer, overlayRenderer, normalRenderer;
+
+	private BufferedImage frameBuffer, sceneBeforeOverlay;
+	private boolean adaptiveOverlay;
+	private AdaptiveColor.Background adaptiveOverlayBackground;
+	private Boolean adaptiveDraws;
+
+	public void setFrameBuffer(final BufferedImage image) { frameBuffer = image; }
+
+	public boolean needsAdaptiveText() {
+		if (adaptiveDraws == null) {
+			final boolean[] found = { false };
+			getSurface().getScope().getModel().getDescription().visitOwnChildrenRecursively(child -> {
+				if (!"draw".equals(child.getKeyword())) return true;
+				final var item = child.getFacetExpr("geometry");
+				if (item == null || !item.getGamlType().isAssignableFrom(Types.STRING)) return true;
+				final var color = child.getFacetExpr("color");
+				found[0] |= color != null && (!color.isConst() || color.getConstValue() == AdaptiveColor.INSTANCE);
+				return true;
+			});
+			adaptiveDraws = found[0];
+		}
+		if (adaptiveDraws) return true;
+		return getSurface().getManager().getItems().stream()
+				.anyMatch(layer -> layer.getDefinition() instanceof OverlayStatement overlay && overlay.mayUseAdaptiveText());
+	}
 
 	/** The temporary envelope. */
 	private Rectangle2D temporaryEnvelope = null;
@@ -166,18 +204,54 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		if (currentRenderer != null) { currentRenderer.dispose(); }
 		if (normalRenderer != null) { normalRenderer.dispose(); }
 		if (overlayRenderer != null) { overlayRenderer.dispose(); }
+		if (sceneBeforeOverlay != null) { sceneBeforeOverlay.flush(); }
+		frameBuffer = sceneBeforeOverlay = null;
 	}
 
 	@Override
 	public boolean beginDrawingLayers() {
-		currentRenderer.setRenderingHints(data.isAntialias() ? QUALITY_RENDERING : SPEED_RENDERING);
+		final var hints = data.isAntialias() ? QUALITY_RENDERING : SPEED_RENDERING;
+		normalRenderer.setRenderingHints(hints);
+		if (overlayRenderer != null) { overlayRenderer.setRenderingHints(hints); }
 		return true;
 	}
 
 	@Override
 	public void beginDrawingLayer(final ILayer layer) {
 		super.beginDrawingLayer(layer);
+		if (layer.getData().getCoordinates() == LayerCoordinates.SCREEN) {
+			currentRenderer = overlayRenderer;
+			currentRenderer.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) currentLayerAlpha));
+		}
 		pf.adapt();
+		if (!(layer instanceof OverlayLayer overlay && overlay.isOverlay())
+				&& layer.getData() instanceof FramedLayerData frame) {
+			final int x = (int) getXOffsetInPixels();
+			final int y = (int) getYOffsetInPixels();
+			final int w = getLayerWidth();
+			final int h = getLayerHeight();
+			final IColor background = frame.getBackgroundColor(getSurface().getScope());
+			if (background != null) {
+				final var composite = currentRenderer.getComposite();
+				try {
+					currentRenderer.setComposite(AlphaComposite.SrcOver);
+					currentRenderer.setColor(IColor.toAWTColor(background));
+					currentRenderer.fillRect(x, y, w, h);
+				} finally {
+					currentRenderer.setComposite(composite);
+				}
+			}
+			if (frame.getBorderColor() != null) {
+				currentRenderer.setColor(IColor.toAWTColor(frame.getBorderColor()));
+				currentRenderer.drawRect(x, y, w, h);
+			}
+		}
+	}
+
+	@Override
+	public void endDrawingLayer(final ILayer layer) {
+		super.endDrawingLayer(layer);
+		currentRenderer = normalRenderer;
 	}
 
 	@Override
@@ -336,16 +410,59 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	@Override
 	public Rectangle2D drawString(final String string, final IDrawingAttributes attributes) {
-		// Multiline: Issue #780
-		if (string.contains("\n")) {
-			final Rectangle2D result = new Rectangle2D.Double();
-			for (final String s : string.split("\n")) {
-				final Rectangle2D r = drawString(s, attributes);
-				attributes.getLocation().setY(attributes.getLocation().getY() + r.getHeight());
+		if (attributes instanceof TextDrawingAttributes text && text.getAdaptiveTextBounds() != null) {
+			if (!adaptiveOverlay) {
+				throw new IllegalStateException("Adaptive text requires a pre-overlay scene capture");
+			}
+			text.resolveAdaptiveText(sceneBeforeOverlay, new Rectangle2D.Double(
+					-getXOffsetInPixels(), -getYOffsetInPixels(), getViewWidth(), getViewHeight()),
+					adaptiveOverlayBackground, currentLayerAlpha);
+		}
+		setFont(attributes.getFont().getAwtFont());
+		final String[] lines = string.split("\\r?\\n", -1);
+		final double lineHeight = currentRenderer.getFont().getLineMetrics("Ag",
+				currentRenderer.getFontRenderContext()).getHeight();
+		if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+			if (frameBuffer == null) {
+				throw new IllegalStateException("Adaptive text requires an image-backed Java2D renderer");
+			}
+			Rectangle2D textBounds = null;
+			final var location = attributes.getLocation();
+			final double atX = location == null ? getXOffsetInPixels() : xFromModelUnitsToPixels(location.getX());
+			final double atY = location == null ? getYOffsetInPixels() : yFromModelUnitsToPixels(location.getY());
+			for (int i = 0; i < lines.length; i++) {
+				if (lines[i].isEmpty()) continue;
+				final Rectangle2D bounds = new TextLayout(lines[i], currentRenderer.getFont(),
+						currentRenderer.getFontRenderContext()).getBounds();
+				final double x = atX - bounds.getWidth() * attributes.getAnchor().getX();
+				final double y = atY + lineHeight * i - bounds.getHeight() * (1 - attributes.getAnchor().getY());
+				bounds.setRect(x, y, bounds.getWidth(), bounds.getHeight());
+				if (attributes.getAngle() != null && attributes.getAngle() != 0d) {
+					final var rotation = AffineTransform.getRotateInstance(Maths.toRad * attributes.getAngle(),
+							atX, atY + lineHeight * i);
+					final var rotated = rotation.createTransformedShape(bounds).getBounds2D();
+					bounds.setRect(rotated);
+				}
+				final Rectangle2D pixels = currentRenderer.getTransform().createTransformedShape(bounds).getBounds2D();
+				if (textBounds == null) textBounds = pixels; else textBounds.add(pixels);
+			}
+			text.resolveAdaptiveDraw(frameBuffer, new Rectangle2D.Double(
+					0, 0, frameBuffer.getWidth(), frameBuffer.getHeight()),
+					textBounds == null ? new Rectangle2D.Double() : textBounds);
+		}
+		Rectangle2D result = null;
+		for (int i = 0; i < lines.length; i++) {
+			final Rectangle2D r = drawTextLine(lines[i], attributes, lineHeight * i);
+			if (result == null) {
+				result = r;
+			} else {
 				result.add(r);
 			}
-			return result;
 		}
+		return result;
+	}
+
+	private Rectangle2D drawTextLine(final String string, final IDrawingAttributes attributes, final double yOffset) {
 		currentRenderer.setColor(IColor.toAWTColor(highlight ? data.getHighlightColor() : attributes.getColor()));
 		double curX, curY;
 		// final double curZ;
@@ -357,27 +474,36 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			curX = xFromModelUnitsToPixels(attributes.getLocation().getX());
 			curY = yFromModelUnitsToPixels(attributes.getLocation().getY());
 		}
-		setFont(attributes.getFont().getAwtFont());
-		final Rectangle2D r = currentRenderer.getFontMetrics().getStringBounds(string, currentRenderer);
-		final float ascent = currentRenderer.getFontMetrics().getLineMetrics(string, currentRenderer).getAscent();
-		final float descent = currentRenderer.getFontMetrics().getLineMetrics(string, currentRenderer).getDescent();
-		r.setFrame(r.getX(), r.getY(), r.getWidth(), Math.min(r.getHeight(), ascent + descent));
-
-		final double rWidth = r.getWidth();
-		final double rHeight = r.getHeight();
-		curX -= rWidth * attributes.getAnchor().getX();
-		curY += (rHeight - descent) * attributes.getAnchor().getY();
-		final AffineTransform saved = currentRenderer.getTransform();
-		if (attributes.getAngle() != null) {
-			currentRenderer.rotate(Maths.toRad * attributes.getAngle(), curX + r.getWidth() / 2,
-					curY + r.getHeight() / 2);
+		curY += yOffset;
+		if (string.isEmpty()) return new Rectangle2D.Double(curX, curY, 0, 0);
+		final double atX = curX;
+		final double atY = curY;
+		final TextLayout layout =
+				new TextLayout(string, currentRenderer.getFont(), currentRenderer.getFontRenderContext());
+		final Rectangle2D bounds = layout.getBounds();
+		curX -= bounds.getX() + bounds.getWidth() * attributes.getAnchor().getX();
+		curY -= bounds.getMaxY() - bounds.getHeight() * attributes.getAnchor().getY();
+		final boolean rotated = attributes.getAngle() != null && attributes.getAngle() != 0d;
+		final AffineTransform saved = rotated ? currentRenderer.getTransform() : null;
+		final Stroke stroke = currentRenderer.getStroke();
+		final AffineTransform transform = rotated
+				? AffineTransform.getRotateInstance(Maths.toRad * attributes.getAngle(), atX, atY) : null;
+		try {
+			if (rotated) { currentRenderer.transform(transform); }
+			if (!attributes.isEmpty()) { layout.draw(currentRenderer, (float) curX, (float) curY); }
+			if (attributes.isEmpty() || attributes.getBorder() != null) {
+				if (!highlight && attributes.getBorder() != null) {
+					currentRenderer.setColor(IColor.toAWTColor(attributes.getBorder()));
+				}
+				currentRenderer.setStroke(new BasicStroke(attributes.getLineWidth().floatValue()));
+				currentRenderer.draw(layout.getOutline(AffineTransform.getTranslateInstance(curX, curY)));
+			}
+		} finally {
+			if (rotated) { currentRenderer.setTransform(saved); }
+			currentRenderer.setStroke(stroke);
 		}
-
-		currentRenderer.drawString(string, (int) curX, (int) curY);
-		// currentRenderer.drawRect((int) curX, (int) (curY - rHeight), (int) rWidth, (int) rHeight);
-		currentRenderer.setTransform(saved);
-		r.setFrame(curX, curY, r.getWidth(), r.getHeight());
-		return r;
+		bounds.setRect(curX + bounds.getX(), curY + bounds.getY(), bounds.getWidth(), bounds.getHeight());
+		return rotated ? transform.createTransformedShape(bounds).getBounds2D() : bounds;
 	}
 
 	/**
@@ -402,11 +528,64 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	 */
 	@Override
 	public Rectangle2D drawShape(final Geometry gg, final IDrawingAttributes attributes) {
+		return drawShape(gg, attributes, sw);
+	}
+
+	@Override
+	public boolean supportsGeometryCommands() { return true; }
+
+	@Override
+	public Rectangle2D drawGeometry(final GeometryDrawing command, final IDrawingAttributes attributes) {
+		Geometry source = command.normalizedSource();
+		final IPoint center = GamaCoordinateSequenceFactory.pointsOf(source).getCenter();
+		final var size = attributes.getSize();
+		double scale = 1;
+		boolean scaled = false;
+		if (size != null && source.getNumPoints() != 1) {
+			final var envelope = source.getEnvelopeInternal();
+			final double factor = Math.min(envelope.getWidth() == 0 ? Double.POSITIVE_INFINITY
+					: size.getX() / envelope.getWidth(), envelope.getHeight() == 0 ? Double.POSITIVE_INFINITY
+							: size.getY() / envelope.getHeight());
+			if (Double.isFinite(factor)) { scale = factor; scaled = true; }
+		}
+		final double factor = scale;
+		final AxisAngle angle = attributes.getRotation();
+		final Rotation3D rotation = angle == null ? null
+				: new Rotation3D.CenteredOn(new AxisAngle(angle.getAxis(), -angle.getAngle()), center);
+		final IPoint location = attributes.getLocation();
+		if (!scaled && (angle != null || location != null)
+				&& source instanceof org.locationtech.jts.geom.Polygonal && !source.isValid()) {
+			source = source.buffer(0);
+		}
+		final IPoint working = GamaPointFactory.create();
+		final org.locationtech.jts.geom.CoordinateFilter transform = coordinate -> {
+			working.setLocation(center.getX() + factor * (coordinate.x - center.getX()),
+					center.getY() + factor * (coordinate.y - center.getY()), coordinate.getZ());
+			if (rotation != null) { rotation.filter(working.toCoordinate()); }
+			if (location != null) { working.add(location).subtract(center); }
+			coordinate.setCoordinate(working.toCoordinate());
+		};
+		// Arrowheads and artificial line depth are defined after Java2D object transforms.
+		if (command.hasArrows() || source instanceof Lineal && attributes.getDepth() != null) {
+			final Geometry transformed = source.copy();
+			transformed.apply(transform);
+			transformed.geometryChanged();
+			return drawShape(command.addArrows(transformed), attributes);
+		}
+		final ShapeWriter writer = new ShapeWriter((coordinate, destination) -> {
+			working.setLocation(coordinate.x, coordinate.y, coordinate.getZ());
+			transform.filter(working.toCoordinate());
+			destination.setLocation(xFromModelUnitsToPixels(working.getX()), yFromModelUnitsToPixels(working.getY()));
+		});
+		return drawShape(source, attributes, writer);
+	}
+
+	private Rectangle2D drawShape(final Geometry gg, final IDrawingAttributes attributes, final ShapeWriter writer) {
 		if (gg == null) return null;
 		Geometry geometry = gg;
 		if (geometry instanceof GeometryCollection) {
 			final Rectangle2D result = new Rectangle2D.Double();
-			GeometryUtils.applyToInnerGeometries(geometry, g -> result.add(drawShape(g, attributes)));
+			GeometryUtils.applyToInnerGeometries(geometry, g -> result.add(drawShape(g, attributes, writer)));
 			return result;
 		}
 		boolean isLine = geometry instanceof Lineal || geometry instanceof Puntal;
@@ -423,7 +602,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			attributes.setFill(GamaColorFactory.get(data.getHighlightColor().getRGB()));
 			if (border != null) { border = attributes.getColor(); }
 		}
-		final Shape s = sw.toShape(geometry);
+		final Shape s = writer.toShape(geometry);
+		final Stroke stroke = currentRenderer.getStroke();
 		try {
 			currentRenderer.setColor(IColor.toAWTColor(attributes.getColor()));
 			if (!isLine && !attributes.isEmpty()) {
@@ -443,12 +623,15 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			}
 			if (isLine || border != null || attributes.isEmpty()) {
 				if (border != null) { currentRenderer.setColor(IColor.toAWTColor(border)); }
+				currentRenderer.setStroke(new BasicStroke(attributes.getLineWidth().floatValue()));
 				currentRenderer.draw(s);
 			}
 			return s.getBounds2D();
 		} catch (final Exception e) {
 			e.printStackTrace();
 			return null;
+		} finally {
+			currentRenderer.setStroke(stroke);
 		}
 	}
 
@@ -525,16 +708,48 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	@Override
 	public void beginOverlay(final ILayer layer) {
 		if (layer instanceof OverlayLayer overlay) {
+			adaptiveOverlay = overlay.getDefinition() instanceof OverlayStatement statement && statement.mayUseAdaptiveText();
+			if (adaptiveOverlay) {
+				if (frameBuffer == null) {
+					throw new IllegalStateException("Adaptive text requires an image-backed Java2D renderer");
+				}
+				if (sceneBeforeOverlay == null || sceneBeforeOverlay.getWidth() != frameBuffer.getWidth()
+						|| sceneBeforeOverlay.getHeight() != frameBuffer.getHeight()) {
+					if (sceneBeforeOverlay != null) { sceneBeforeOverlay.flush(); }
+					sceneBeforeOverlay = new BufferedImage(frameBuffer.getWidth(), frameBuffer.getHeight(),
+							BufferedImage.TYPE_INT_RGB);
+				}
+				final Graphics2D capture = sceneBeforeOverlay.createGraphics();
+				try {
+					capture.setComposite(AlphaComposite.Src);
+					capture.drawImage(frameBuffer, 0, 0, null);
+				} finally {
+					capture.dispose();
+				}
+			}
 			currentRenderer = overlayRenderer;
-			currentRenderer.setColor(IColor.toAWTColor(overlay.getData().getBackgroundColor(getSurface().getScope())));
 			final int x = (int) getXOffsetInPixels();
 			final int y = (int) getYOffsetInPixels();
 			final int w = getLayerWidth();
 			final int h = getLayerHeight();
-			if (overlay.getData().isRounded()) {
-				currentRenderer.fillRoundRect(x, y, w, h, 10, 10);
-			} else {
-				currentRenderer.fillRect(x, y, w, h);
+			final IColor background = overlay.getData().getBackgroundColor(getSurface().getScope());
+			final double arc = overlay.getData().isRounded() ? 10 : 0;
+			adaptiveOverlayBackground = adaptiveOverlay && background != null
+					? new AdaptiveColor.Background(new RoundRectangle2D.Double(0, 0, w, h, arc, arc), background, 1)
+					: null;
+			if (background != null) {
+				final var composite = currentRenderer.getComposite();
+				try {
+					currentRenderer.setComposite(AlphaComposite.SrcOver);
+					currentRenderer.setColor(IColor.toAWTColor(background));
+					if (overlay.getData().isRounded()) {
+						currentRenderer.fillRoundRect(x, y, w, h, 10, 10);
+					} else {
+						currentRenderer.fillRect(x, y, w, h);
+					}
+				} finally {
+					currentRenderer.setComposite(composite);
+				}
 			}
 			if (overlay.getData().getBorderColor() != null) {
 				currentRenderer.setColor(IColor.toAWTColor(overlay.getData().getBorderColor()));
@@ -549,6 +764,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 
 	@Override
 	public void endOverlay() {
+		adaptiveOverlay = false;
+		adaptiveOverlayBackground = null;
 		currentRenderer = normalRenderer;
 	}
 
@@ -600,9 +817,25 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	boolean drawChart = true;
 
 	@Override
+	public double getDevicePixelRatio() {
+		final AffineTransform transform = currentRenderer.getTransform();
+		return Math.max(Math.hypot(transform.getScaleX(), transform.getShearY()),
+				Math.hypot(transform.getScaleY(), transform.getShearX()));
+	}
+
+	@Override
 	public Rectangle2D drawChart(final BufferedImage chart) {
 		if (!drawChart) return chartRect;
-		drawChart = currentRenderer.drawImage(chart, (int) getXOffsetInPixels(), (int) getYOffsetInPixels(), this);
+		final int x = (int) getXOffsetInPixels(), y = (int) getYOffsetInPixels();
+		final int width = getLayerWidth(), height = getLayerHeight();
+		final Graphics2D renderer = (Graphics2D) currentRenderer.create();
+		try {
+			renderer.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BICUBIC);
+			drawChart = renderer.drawImage(chart, x, y, width, height, this);
+		} finally {
+			renderer.dispose();
+		}
+		chartRect.setRect(x, y, width, height);
 		return chartRect;
 	}
 

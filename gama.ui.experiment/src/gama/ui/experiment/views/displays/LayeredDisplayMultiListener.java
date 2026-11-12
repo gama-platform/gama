@@ -54,7 +54,7 @@ public class LayeredDisplayMultiListener {
 	volatile long lastEnterTime;
 
 	/** The last enter position. */
-	volatile Point lastEnterPosition = new Point(0, 0);
+	volatile Point lastEnterPosition;
 
 	/** The suppress next enter. */
 	volatile boolean suppressNextEnter;
@@ -170,7 +170,9 @@ public class LayeredDisplayMultiListener {
 		if (modifier) return;
 		if (button > 0) return;
 		final long currentTime = System.currentTimeMillis();
-		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
+		final Point previousEnter = lastEnterPosition;
+		if (previousEnter != null && currentTime - lastEnterTime < 100 && previousEnter.x == x && previousEnter.y == y)
+			return;
 		lastEnterTime = System.currentTimeMillis();
 		lastEnterPosition = new Point(x, y);
 		// DEBUG.LOG("Mouse entering " + e);
@@ -190,8 +192,10 @@ public class LayeredDisplayMultiListener {
 	 *            the button
 	 */
 	public void mouseExit(final int x, final int y, final boolean modifier, final int button) {
-		final long currentTime = System.currentTimeMillis();
-		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
+		final var controls = surface.getControlLayer();
+		if (controls != null) controls.cancelControlInteraction();
+		// An exit is not a duplicate enter; the next re-entry must also be delivered, even at the same coordinates.
+		lastEnterPosition = null;
 		setMousePosition(-1, -1);
 		if (button > 0) return;
 		// DEBUG.LOG("Mouse exiting " + e);
@@ -229,9 +233,11 @@ public class LayeredDisplayMultiListener {
 	 */
 	public void mouseMove(final int x, final int y, final boolean modifier) {
 		view.requestOverlayUpdate();
-		// Always track the mouse position, even when modifier keys are held
-		setMousePosition(x, y);
-		if (modifier) return;
+		final var controls = surface.getControlLayer();
+		if (controls != null && controls.controlMouseMove(x, y) || modifier) {
+			setMousePosition(x, y);
+			return;
+		}
 		// DEBUG.LOG("Mouse moving on " + view.view.getPartName() + " at (" + x + "," + y + ")");
 		if (mouseIsDown) {
 			// Depending on the plateform or display, this case is never called,
@@ -247,8 +253,10 @@ public class LayeredDisplayMultiListener {
 			// technically does not change, but approximations are not likely to
 			// break anything.
 
+			setMousePosition(x, y);
 			surface.dispatchMouseEvent(SWT.DragDetect, x, y);
 		} else {
+			setMousePosition(x, y);
 			surface.dispatchMouseEvent(SWT.MouseMove, x, y);
 		}
 
@@ -269,6 +277,8 @@ public class LayeredDisplayMultiListener {
 	public void mouseDown(final int x, final int y, final int button, final boolean modifier) {
 		// DEBUG.LOG("Mouse down at " + x + ", " + y);
 		setMousePosition(x, y);
+		final var controls = surface.getControlLayer();
+		if (controls != null && controls.controlMouseDown(x, y, button)) return;
 		if (inMenu) {
 			inMenu = false;
 			return;
@@ -295,6 +305,11 @@ public class LayeredDisplayMultiListener {
 	 *            whetehr ALT, CTRL, CMD, META or other modifiers are used
 	 */
 	public void mouseUp(final int x, final int y, final int button, final boolean modifier) {
+		final var controls = surface.getControlLayer();
+		if (controls != null && controls.controlMouseUp(x, y, button)) {
+			mouseIsDown = false;
+			return;
+		}
 		// DEBUG.LOG("Mouse up at " + x + ", " + y + " on " + view.getPartName());
 		// In case the mouse has moved (for example on a menu)
 		if (!mouseIsDown) return;
@@ -327,6 +342,8 @@ public class LayeredDisplayMultiListener {
 	 * Drag detected.
 	 */
 	public void dragDetected(final int x, final int y) {
+		final var controls = surface.getControlLayer();
+		if (controls != null && controls.controlMouseMove(x, y)) return;
 		// DEBUG.LOG("Mouse drag detected on " + view.view.getPartName() + " at (" + x + "," + y + ")");
 		surface.draggedTo(x, y);
 		setMousePosition(x, y);
@@ -346,6 +363,8 @@ public class LayeredDisplayMultiListener {
 	 * Focus lost.
 	 */
 	public void focusLost() {
+		final var controls = surface.getControlLayer();
+		if (controls != null) controls.cancelControlInteraction();
 		pressedCharacters.clear();
 		pressedSpecialCharacters.clear();
 		// Reset mouseIsDown when focus is lost to prevent it getting stuck if the button is released while canvas lacks focus

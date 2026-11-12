@@ -97,7 +97,7 @@ public record BehaviorFacet(String name, String type, boolean required, String d
 			IArtefact.Symbol symbol = ArtefactRegistry.getStatementArtefact(keyword);
 			if (symbol == null) return List.of();
 			List<BehaviorFacet> result = new ArrayList<>();
-			symbol.getPossibleFacets().forEach((name, facet) -> {
+			symbol.getPossibleFacets(keyword).forEach((name, facet) -> {
 				if ("name".equals(name) || facet.isInternal()) return;
 				var types = facet.getTypes();
 				String type = types == null || types.length == 0 ? ""

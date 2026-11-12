@@ -59,7 +59,7 @@ experiment Display type: gui autorun: true {
 			light #ambient intensity: 0;
 			light #default intensity: 0;
 			light "1" 
-				type: #spot 
+				kind: #spot 
 				location: {(world.shape.width/2 + distance) * cos(angle) + world.shape.width/2, (world.shape.height/2 + distance) * sin(angle) + world.shape.height / 2, height} 
 				direction:{cos(angle + 180), sin(angle + 180), 0} 
 				intensity: #red 

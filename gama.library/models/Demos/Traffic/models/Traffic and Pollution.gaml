@@ -125,9 +125,10 @@ experiment traffic type: gui autorun: true{
 	font title <- font("Arial", 18, #bold);
 	
 	output synchronized: true{
-		display carte type: 3d axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
+		display carte type: opengl axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
 			
-			 overlay position: { 50#px,50#px} size: { 1 #px, 1 #px } background: # black border: #black rounded: false 
+			 // The one-pixel frame deliberately allows the legend to overflow.
+			 overlay coordinates: #screen position: {50, 50} size: {1, 1} background: # black border: #black rounded: false
             	{
             	//for each possible type, we draw a square with the corresponding color and we write the name of the type
                 

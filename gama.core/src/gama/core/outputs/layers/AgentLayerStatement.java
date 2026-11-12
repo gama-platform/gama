@@ -60,6 +60,9 @@ import gaml.compiler.descriptions.SpeciesDescription;
 		symbols = IKeyword.DISPLAY)
 @facets (
 		value = { @facet (
+				name = LayerData.COORDINATES, type = IType.STRING,
+				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
+				@facet (
 				name = IKeyword.VALUE,
 				type = IType.CONTAINER,
 				of = IType.AGENT,
@@ -89,12 +92,12 @@ import gaml.compiler.descriptions.SpeciesDescription;
 						name = IKeyword.POSITION,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("position of the upper-left corner of the layer. Note that if coordinates are in [0,1[, the position is relative to the size of the environment (e.g. {0.5,0.5} refers to the middle of the display) whereas it is absolute when coordinates are greater than 1 for x and y. The z-ordinate can only be defined between 0 and 1. The position can only be a 3D point {0.5, 0.5, 0.5}, the last coordinate specifying the elevation of the layer. In case of negative value OpenGl will position the layer out of the environment.")),
+						doc = @doc (LayerData.POSITION_DOC)),
 				@facet (
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("extent of the layer in the screen from its position. Coordinates in [0,1[ are treated as percentages of the total surface, while coordinates > 1 are treated as absolute sizes in model units (i.e. considering the model occupies the entire view). Like in 'position', an elevation can be provided with the z coordinate, allowing to scale the layer in the 3 directions ")),
+						doc = @doc (LayerData.SIZE_DOC)),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,
@@ -124,7 +127,7 @@ import gaml.compiler.descriptions.SpeciesDescription;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, useful in case of agents that do not move)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to true.")) },
 		omissible = IKeyword.NAME)
 @validator (AgentLayerValidator.class)
 @doc (
@@ -168,6 +171,7 @@ public class AgentLayerStatement extends AbstractLayerStatement {
 		 */
 		@Override
 		public void validate(final IStatementDescription description) {
+			validateCoordinates(description);
 			// Should be broken down in subclasses
 			IExpressionDescription ed = description.getFacet(VALUE);
 			if (ed == null || ed.getExpression() == null) return;

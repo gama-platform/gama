@@ -72,36 +72,36 @@ experiment "Different heatmaps" type: gui
 		tabs: false
 		;	
 		
-		display "Nice Heatmap" type: 2d
+		display "Nice Heatmap" type: 3d
 		{
-			chart "Nice Heatmap" type: heatmap background: # darkblue color: # lightgreen axes: # lightgreen title_font: font('Serif', 32, #italic) tick_font:
+			chart "Nice Heatmap" kind: heatmap background: # darkblue color: # lightgreen axes: # lightgreen title_font: font('Serif', 32, #italic) tick_font:
 			font('Monospaced', 14, #bold) label_font: font('Serif', 18, #plain) legend_font: font('SanSerif', 18, #bold) x_label: 'Nice Xlabel' y_label: 'Nice Ylabel'
 			{
 				data "test" value: mylldata color: [# darkblue, # orange] accumulate_values: false;
 			}
 		}
 
-		display "listOflist_heatmap" type: 2d
+		display "listOflist_heatmap" type: 3d
 		{
-			chart "Heatmap of list of lists" type: heatmap
+			chart "Heatmap of list of lists" kind: heatmap
 			{
 				data "cosX" value: mylldata color: [# blue] accumulate_values: false;
 				data "sinY" value: mylldata2 color: [# darkred] accumulate_values: false;
 			}
 		}
 
-		display "list_heatmap" type: 2d antialias:false
+		display "list_heatmap" type: 3d antialias:false
 		{
-			chart "Heatmap of list" type: heatmap 
+			chart "Heatmap of list" kind: heatmap 
 			{
 				data "test" value: myldata color: [# cyan, # red] accumulate_values: false;
 			}
 
 		}
 
-		display "simple_heatmap2" type: 2d
+		display "simple_heatmap2" type: 3d
 		{
-			chart "Simple static heatmap" type: heatmap
+			chart "Simple static heatmap" kind: heatmap
 			{
 				data "test" value: [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]] color: [# cyan, # red] accumulate_values: false;
 			}
@@ -116,9 +116,9 @@ experiment Heatmap type: gui
 {
 	output synchronized: true
 	{
-		display "list_heatmap" type: 2d antialias:false
+		display "list_heatmap" type: 3d antialias:false
 		{
-			chart "list_heatmap" type: heatmap
+			chart "list_heatmap" kind: heatmap
 			{
 				data "test" value: myldata color: [# cyan, # red] accumulate_values: false;
 			}

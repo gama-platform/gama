@@ -21,11 +21,12 @@ import gama.ui.display.java2d.swing.SwingControl;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
 import gama.ui.experiment.views.displays.SWTLayeredDisplayMultiListener;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.ScaleLockable;
 
 /**
  * The Class AWTDisplayView.
  */
-public class AWTDisplayView extends LayeredDisplayView {
+public class AWTDisplayView extends LayeredDisplayView implements ScaleLockable {
 
 	static {
 		DEBUG.OFF();
@@ -138,6 +139,12 @@ public class AWTDisplayView extends LayeredDisplayView {
 
 	@Override
 	public boolean isCameraDynamic() { return getDisplaySurface().isCameraDynamic(); }
+
+	@Override
+	public boolean isScaleLocked() { return getDisplaySurface().isScaleLocked(); }
+
+	@Override
+	public void toggleScaleLock() { getDisplaySurface().toggleScaleLock(); }
 
 	@Override
 	public boolean largePauseIcon() {

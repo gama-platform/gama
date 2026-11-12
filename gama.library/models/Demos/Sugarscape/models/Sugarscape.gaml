@@ -151,7 +151,7 @@ experiment sugarscape type: gui{
 		display grille type: 2d background: backdrop {
 			grid sugar_cell;
 			species animal;
-			overlay position: {12#px, 12#px} size: {320#px, 142#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {320, 142} background: backdrop rounded: true {
 				draw "SUGARSCAPE / RESOURCES & RESERVES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal: reserve > 8 / Coral rings: reserve <= 8" at: {12#px, 47#px}
 					color: lettering font: font("Helvetica", 11);
@@ -165,15 +165,15 @@ experiment sugarscape type: gui{
 					color: lettering font: font("Helvetica", 11);
 			}
 		}
-		display chart refresh: every(5#cycles) type: 2d background: backdrop {
-			chart "Sugar reserve / population share" type: pie background: backdrop color: lettering
+		display chart refresh: every(5#cycles) type: 3d background: backdrop {
+			chart "Sugar reserve / population share" kind: pie background: backdrop color: lettering
 				style: ring label_background_color: backdrop label_text_color: lettering {
 				data "Reserve > 8" value: (animal as list) count (each.sugar > 8) color: strong_color;
 				data "Reserve <= 8" value: (animal as list) count (each.sugar < 9) color: weak_color;
 			}
 		}
-		display chart2 refresh: every(5#cycles) type: 2d background: backdrop {
-			chart "Sugar reserve / agent counts" type: histogram background: backdrop color: lettering axes: lettering
+		display chart2 refresh: every(5#cycles) type: 3d background: backdrop {
+			chart "Sugar reserve / agent counts" kind: histogram background: backdrop color: lettering axes: lettering
 				label_background_color: backdrop label_text_color: lettering gap: 0.2 y_label: "Agents" {
 				data "Reserve > 8" value: (animal as list) count (each.sugar > 8) color: strong_color;
 				data "Reserve <= 8" value: (animal as list) count (each.sugar < 9) color: weak_color;

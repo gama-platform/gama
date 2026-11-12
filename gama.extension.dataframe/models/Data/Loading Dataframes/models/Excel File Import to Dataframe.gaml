@@ -156,7 +156,7 @@ experiment "Explore Coffee Sales" type: gui {
 	output {
 
 		display "Revenue by Store" type: 2d {
-			chart "Revenue by Store Location" type: pie {
+			chart "Revenue by Store Location" kind: pie {
 				loop i from: 0 to: (by_store.rows) - 1 {
 					data string(cell(by_store, i, "store"))
 						value: float(cell(by_store, i, "revenue"));
@@ -165,7 +165,7 @@ experiment "Explore Coffee Sales" type: gui {
 		}
 
 		display "Revenue by Category" type: 2d {
-			chart "Revenue by Product Category" type: histogram {
+			chart "Revenue by Product Category" kind: histogram {
 				loop i from: 0 to: (by_category.rows) - 1 {
 					data string(cell(by_category, i, "category"))
 						value: float(cell(by_category, i, "revenue"));
@@ -174,7 +174,7 @@ experiment "Explore Coffee Sales" type: gui {
 		}
 
 		display "Avg Price by Category" type: 2d {
-			chart "Average Unit Price by Product Category" type: histogram {
+			chart "Average Unit Price by Product Category" kind: histogram {
 				loop i from: 0 to: (by_category.rows) - 1 {
 					data string(cell(by_category, i, "category"))
 						value: float(cell(by_category, i, "avg_price"));

@@ -55,7 +55,7 @@ global {
 			map<string, string> loc <- map<string, string>(children[0]["attributes"]);
 			write "Bug " + atts["id"] + " at {" + loc["x"] + "," + loc["y"] + "} of size " + children[1]["text"];
 		}
-		do pause();
+		experiment.pause();
 	}
 }
 

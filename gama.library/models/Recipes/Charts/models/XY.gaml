@@ -39,14 +39,14 @@ global {
 
 experiment main {
 	output {
-		display charts  type: 2d {
+		display charts  type: 3d {
 			//chart displaying the values of serie_y according to serie_x (for i from 0 to 100, x = serie_x[i], y = serie_y[i])
-			chart "serie_x and serie_y" type: xy size: {1.0,0.5}{
+			chart "serie_x and serie_y" coordinates: #screen kind: xy size: {#display_width,0.5}{
 				 data legend: "x" value:rows_list(matrix([serie_x,serie_y])) ;
 			}
 			
 			//at each simulation step, display the value of y according to the value of x
-			chart "x and y" type: xy size: {1.0,0.5} position: {0,0.5}{
+			chart "x and y" coordinates: #screen kind: xy size: {#display_width,0.5} position: {0,0.5}{
 				 data legend: "x" value:[x,y] line_visible: false color: #green;
 			}
 		}

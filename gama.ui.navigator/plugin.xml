@@ -27,6 +27,12 @@
    <extension point="org.eclipse.ui.commands">
       <command
             categoryId="gama.category"
+            defaultHandler="gama.ui.navigator.commands.ShowDependenciesHandler"
+            id="gama.ui.navigator.showDependencies"
+            name="Show dependencies">
+      </command>
+      <command
+            categoryId="gama.category"
             defaultHandler="gama.ui.navigator.commands.DetailsHandler"
             id="gama.ui.details"
             name="Manage extensions...">
@@ -54,6 +60,25 @@
             class="gama.ui.navigator.commands.ChooseFileImportHandler"/>
    </extension>
    <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:navigator.menu?after=group.open">
+         <command commandId="gama.ui.navigator.showDependencies"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.dependencies.svg"
+               label="Show dependencies" style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate ifEmpty="false" operator="and">
+                     <adapt type="org.eclipse.core.resources.IFile">
+                        <or>
+                           <test property="org.eclipse.core.resources.extension" value="gaml"/>
+                           <test property="org.eclipse.core.resources.extension" value="experiment"/>
+                        </or>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
       <menuContribution
             allPopups="false"
             locationURI="menu:support?after=gama.ui.shared.help.separator2">
@@ -273,6 +298,14 @@
                   label="Individual file..."
                   style="push">
             </command>
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <iterate ifEmpty="true" operator="and">
+                     <test property="gama.navigator.supportsWorkspaceActions"
+                           value="true" forcePluginActivation="true"/>
+                  </iterate>
+               </with>
+            </visibleWhen>
          </menu>
          <separator
                name="gama.ui.gamaNavigator.separator1"
@@ -382,6 +415,8 @@
                         <instanceof
                               value="gama.ui.navigator.view.contents.VirtualContent">
                         </instanceof>
+                        <test property="gama.navigator.supportsWorkspaceActions"
+                              value="true" forcePluginActivation="true"/>
                         <not>
                            <instanceof
                                  value="gama.ui.navigator.view.contents.UserGroupFolder">
@@ -710,10 +745,28 @@
       <view
             allowMultiple="false"
             category="gama.ui.category.gama"
+            class="gama.ui.navigator.view.dependencies.DependenciesView"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.dependencies.svg"
+            id="gama.ui.navigator.view.Dependencies"
+            name="Dependencies"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="false"
+            category="gama.ui.category.gama"
+            class="gama.ui.navigator.view.PreviousVersionsView"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.history.svg"
+            id="gama.ui.navigator.view.PreviousVersions"
+            name="Versions"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="false"
+            category="gama.ui.category.gama"
             class="gama.ui.navigator.view.GamaNavigator"
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.navigator.svg"
             id="gama.ui.application.view.GamaNavigator" 
-            name="Models"
+            name="Navigator"
             restorable="true">
       </view>
    </extension>
@@ -886,6 +939,13 @@ type="java.lang.Object">
              namespace="gama.navigator"
              properties="needsConversion"
              type="org.eclipse.core.resources.IResource">
+       </propertyTester>
+       <propertyTester
+             class="gama.ui.navigator.view.WorkspaceActionsTester"
+             id="gama.navigator.workspaceActionsTester"
+             namespace="gama.navigator"
+             properties="supportsWorkspaceActions"
+             type="java.lang.Object">
        </propertyTester>
     </extension>
 </plugin>

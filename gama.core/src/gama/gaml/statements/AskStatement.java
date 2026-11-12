@@ -59,7 +59,7 @@ import gama.api.types.misc.IContainer;
 				name = IKeyword.PARALLEL,
 				type = { IType.BOOL, IType.INT },
 				optional = true,
-				doc = @doc ("(experimental) setting this facet to 'true' will allow 'ask' to use concurrency when traversing the targets; setting it to an integer will set the threshold under which they will be run sequentially (the default is initially 20, but can be fixed in the preferences). This facet is false by default.")),
+				doc = @doc ("(experimental) setting this facet to 'true' allows 'ask' to process targets concurrently, using the global thread-count preference as the splitting threshold; setting it to an integer sets the splitting threshold explicitly, so target collections at or below that size run sequentially. If omitted or set to false, targets are processed sequentially.")),
 				@facet (
 						name = IKeyword.TARGET,
 						type = { IType.CONTAINER, IType.AGENT },
@@ -245,7 +245,7 @@ public class AskStatement extends AbstractStatementSequence implements Breakable
 			agent = Cast.asAgent(scope, t);
 			if (agent == null) throw GamaRuntimeException.error("Can not execute ask on a nil agent", scope);
 		}
-		final IExecutionResult result = scope.execute(sequence, agent, null);
+		final IExecutionResult result = scope.execute(sequence, agent, true, null);
 		return result.getValue();
 	}
 

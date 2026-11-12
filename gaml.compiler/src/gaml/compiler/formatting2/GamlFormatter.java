@@ -156,7 +156,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	protected void format(final Model model, final IFormattableDocument doc) {
 		// Two blank lines after the model name assignment
 		final ISemanticRegion nameRegion =
-				regionFor(model).assignment(ga.getModelAccess().getNameAssignment_2());
+				regionFor(model).assignment(ga.getModelAccess().getNameAssignment_1());
 		if (nameRegion != null) { doc.append(nameRegion, it -> it.setNewLines(2)); }
 		// Format imports: one blank line after each
 		for (final Import imp : model.getImports()) {

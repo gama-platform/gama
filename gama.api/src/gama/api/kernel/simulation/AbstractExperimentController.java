@@ -237,6 +237,9 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	@Override
 	public IExperimentSpecies getExperiment() { return experiment; }
 
+	@Override
+	public boolean supportsInteractiveControl() { return true; }
+
 	/**
 	 * Sets the experiment.
 	 *

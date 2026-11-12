@@ -242,7 +242,7 @@ experiment "Explore Listings" type: gui {
 
 		// Chart 1 — Listings by city (top 10, bar)
 //		display "Listings by City" type: 2d {
-//			chart "Listings by City (top 10)" type: histogram
+//			chart "Listings by City (top 10)" kind: histogram
 //					x_label: "City" y_label: "Number of listings" {
 //				loop c over: (listings_by_city.keys
 //						sort_by (-listings_by_city[each] at {0, 9}))  {
@@ -253,7 +253,7 @@ experiment "Explore Listings" type: gui {
 
 		// Chart 2 — Listings by room type (pie)
 		display "Room Type Distribution" type: 2d {
-			chart "Listings by Room Type" type: pie {
+			chart "Listings by Room Type" kind: pie {
 				loop rt over: listings_by_room_type.keys
 						sort_by (-listings_by_room_type[each]) {
 					data rt value: listings_by_room_type[rt];
@@ -263,7 +263,7 @@ experiment "Explore Listings" type: gui {
 
 		// Chart 3 — Revenue by city (top 10, bar)
 //		display "Revenue by City" type: 2d {
-//			chart "Total TTM Revenue by City — top 10 (USD)" type: histogram
+//			chart "Total TTM Revenue by City — top 10 (USD)" kind: histogram
 //					x_label: "City" y_label: "Total TTM revenue (USD)" {
 //				loop c over: (revenue_by_city.keys
 //						sort_by (-revenue_by_city[each])) at {0, 9} {
@@ -274,7 +274,7 @@ experiment "Explore Listings" type: gui {
 
 		// Chart 4 — Rating distribution (bar)
 		display "Rating Distribution" type: 2d {
-			chart "Overall Rating Distribution" type: histogram
+			chart "Overall Rating Distribution" kind: histogram
 					x_label: "Rating range" y_label: "Number of listings" {
 				loop b over: ["< 3.0","3.0 – 3.5","3.5 – 4.0",
 				              "4.0 – 4.5","4.5 – 4.75","4.75 – 5.0"] {
@@ -285,7 +285,7 @@ experiment "Explore Listings" type: gui {
 
 		// Chart 5 — Occupancy distribution (bar)
 		display "Occupancy Distribution" type: 2d {
-			chart "TTM Occupancy Rate Distribution" type: histogram
+			chart "TTM Occupancy Rate Distribution" kind: histogram
 					x_label: "Occupancy range" y_label: "Number of listings" {
 				loop b over: ["0 – 10 %","10 – 20 %","20 – 30 %",
 				              "30 – 50 %","50 – 70 %","> 70 %"] {
@@ -296,7 +296,7 @@ experiment "Explore Listings" type: gui {
 
 		// Chart 6 — Price tier for Seminyak entire-home (pie)
 		display "Price Tiers — Seminyak" type: 2d {
-			chart "Price Tier — Seminyak Entire-Home" type: pie {
+			chart "Price Tier — Seminyak Entire-Home" kind: pie {
 				loop t over: ["budget (< $100)","mid-range ($100–250)",
 				              "premium ($250–500)","luxury (> $500)"] {
 					data t value: price_tier_seminyak[t];

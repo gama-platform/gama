@@ -102,7 +102,7 @@ experiment main type: gui {
 	output {
 		monitor "Infected people rate" value: infected_rate;
 		
-		display map {
+		display map map_order: true {
 			species road aspect:geom;
 			species building aspect:geom;
 			species people aspect:circle;			
@@ -110,8 +110,8 @@ experiment main type: gui {
 		
 		
 		
-		display chart_display refresh: every(10 #cycles)  type: 2d  {
-			chart "Disease spreading" type: series {
+		display chart_display refresh: every(10 #cycles)  type: 3d  {
+			chart "Disease spreading" kind: series {
 				data "susceptible" value: nb_people_not_infected color: #green;
 				data "infected" value: nb_people_infected color: #red;
 			}

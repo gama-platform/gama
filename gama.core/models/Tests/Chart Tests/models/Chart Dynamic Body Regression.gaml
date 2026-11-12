@@ -17,7 +17,7 @@ global {
 experiment "Dynamic body" type: gui {
 	output {
 		display "Conditional series" type: 2d {
-			chart "Conditional series" type: series {
+			chart "Conditional series" kind: series {
 				data "Always" value: cycle color: #black;
 				if (cycle > 1) {
 					data "Instant" value: 2 * cycle color: #blue;
@@ -28,12 +28,12 @@ experiment "Dynamic body" type: gui {
 			}
 		}
 		display "Dynamic legend" type: 2d {
-			chart "Dynamic legend" type: series {
+			chart "Dynamic legend" kind: series {
 				data "period " + (cycle div 10) value: cycle mod 10;
 			}
 		}
 		display "Pie" type: 2d {
-			chart "Pie" type: pie {
+			chart "Pie" kind: pie {
 				data "small" value: 10 color: #green;
 				if (cycle mod 20 >= 10) {
 					data "big" value: 30 color: #orange;
@@ -41,7 +41,7 @@ experiment "Dynamic body" type: gui {
 			}
 		}
 		display "Histogram" type: 2d {
-			chart "Histogram: 1 to 5 bars, changing every 5 cycles" type: histogram {
+			chart "Histogram: 1 to 5 bars, changing every 5 cycles" kind: histogram {
 				loop i from: 1 to: nb {
 					data "bar " + i value: i * 10;
 				}

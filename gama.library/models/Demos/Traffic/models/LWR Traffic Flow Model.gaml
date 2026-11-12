@@ -126,7 +126,7 @@ global {
 	// When there is less than one car left on the road, the simulation stops.
 	
 	reflex stop_simulation when: sum(section collect each.current_concentration) < 1.0 {
-		do pause();
+		experiment.pause();
 	}
 }
 
@@ -183,8 +183,8 @@ experiment TraficGroup type: gui {
 		// The greeen time series correspond to the middle section (on which concentration and maximum speed are lower).
 		// The red time series correspond to the section just before the middle one.
 				
-		display Concentrations  type: 2d {
-			chart "Concentrations" type: series  {
+		display Concentrations  type: 3d {
+			chart "Concentrations" kind: series  {
 				loop i from: 0 to: length(section) -1 {
 					data 'Section '+i value: section[i].current_concentration color: section[i].color marker: false ;		
 				}
@@ -192,8 +192,8 @@ experiment TraficGroup type: gui {
 			}
 		}
 			
-			display Flows  type: 2d {
-			    chart "Flows" type: series  {
+			display Flows  type: 3d {
+			    chart "Flows" kind: series  {
 			    	loop i from: 0 to: length(section) -1 {
 						data 'Section '+i value: section[i].current_flow color: section[i].color marker: false ;		
 			   		}

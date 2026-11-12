@@ -38,7 +38,7 @@ global {
     }
     
     reflex end_simulation when: sum(gold_mine collect each.quantity) = 0 and empty(miner where each.has_belief(has_gold)){
-        do pause();
+        experiment.pause();
         ask miner {
 			write name + " : " +gold_sold;
 		}
@@ -142,7 +142,7 @@ experiment GoldBdi type: gui {
         }
         
         display chart type: 2d {
-			chart "Money" type: series {
+			chart "Money" kind: series {
 				datalist legend: miner accumulate each.name value: miner accumulate each.gold_sold color: miner accumulate each.my_color;
 			}
 		}

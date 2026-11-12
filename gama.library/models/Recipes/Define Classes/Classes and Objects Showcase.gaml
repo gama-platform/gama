@@ -466,8 +466,8 @@ experiment "Classes and Objects" type: gui parent: base_params {
 			species painter;
 		}
 
-		display "Shape statistics" type: 2d {
-			chart "Shape stats per cycle" type: series background: #white {
+		display "Shape statistics" type: 3d {
+			chart "Shape stats per cycle" kind: series background: #white {
 				data "Total shapes held"
 					value: painter sum_of length(each.my_shapes)
 					color: #steelblue;

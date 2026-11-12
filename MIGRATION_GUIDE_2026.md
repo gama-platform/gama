@@ -1,6 +1,6 @@
 # GAMA 2026 — Migration Guide
 
-> **Who is this for?** Plugin developers and contributors upgrading existing code to GAMA 2026.  
+> **Who is this for?** Model authors, plugin developers and contributors upgrading to GAMA 2026.  
 > **What's covered?** Every breaking change in Java APIs, GAML syntax, and architecture — with before/after examples throughout.
 
 ---
@@ -31,6 +31,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
 | **Apache Fory** replaces FST for binary serialization | FST binary saves must be regenerated; no legacy reader is provided |
 | **`IType.NEW_TEMP_ID` removed** | Use `@facet(declares_new_temp = true)` and explicit variable type metadata |
+| Expanded built-in **`gama` platform agent** | Additive GAML actions; no migration is required unless you choose to use them |
 
 ### Binary serialization compatibility
 
@@ -55,8 +56,15 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | `image` layer renamed to `picture` | Update display blocks |
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
+| Display dimensions always mean logical viewport pixels | Review former zoom-dependent world-extent calculations; prefer explicit mouse-coordinate aliases |
+| Optional OpenGL map ordering | Add `map_order: true` to suitable flat displays or enable the rendering preference |
+| OBJ geometry buffers contain one polygon per face | Review models that relied on the former incomplete intermediate polygons |
 | Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
 | Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
+| Grid `collect` preserves spatial structure | Use `list(cell) collect expression` when a flat list is required |
+| Grid attribute brackets are typed matrix reads and writes | Replace `matrix_with(cell, "attribute")` with `cell[attribute]` and `set_values` with `cell[attribute] <- matrix;` |
+| Attribute brackets also support ordinary species | `species[attribute]` reads a typed list; assigning a list requires exactly one element per current agent |
+| Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
 
 ## Engine, UI, and Graphics
 
@@ -64,12 +72,57 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 |---|---|
 | New **OpenGL 4.1** display plugin (`gama.ui.display.opengl4`) | Modern shader-based rendering; legacy OpenGL 2 pipeline removed |
 | New **launching overlay** | Visual improvement only, no code changes needed |
+| Major model-editing addition: **Previous versions** | Browse, compare and restore saved workspace versions; no GAML migration required |
 | Improved **concurrency** support | Internal threading improved; some scheduling APIs changed |
 | **Copilot integration extracted** to `gama.copilot` | Install from its dedicated p2 site; no Copilot feature/module in the core reactor |
 
 ---
 
 # Part 1: What's New and Why It Matters
+
+## Major addition to model editing: Previous versions
+
+GAMA now brings saved model versions directly into the editing workflow. The dedicated **Previous versions**
+view lets you revisit an earlier implementation, compare it with the current file, or restore it without
+leaving the workbench or managing manual copies.
+
+Open **Previous versions...** from a workspace file's navigator context menu. In a GAML editor, open the
+top-right options menu and choose **Show previous versions**, immediately after **Show/Hide minimap**.
+The same entry becomes **Hide previous versions** while the view is open.
+
+Versions are always grouped by date, and the view follows the selected workspace file or active editor.
+It refreshes automatically at opening, when a workspace editor becomes prominent, and when the file is saved
+or otherwise changes. Opening a revision or comparison editor does not redirect the history being followed.
+The compact view has no toolbar, repeated filename or column heading; its clock, calendar and version icons
+match GAMA's light and dark themes.
+
+Open a version to compare it with the current file, or use its context menu:
+
+- **Open in text editor** opens the version separately for inspection.
+- **Compare with current** displays the differences against the current workspace file.
+- **Replace current** restores the selected version after overwrite confirmation, preserving the replaced
+  contents in local history. This action is not offered for the current revision itself.
+
+**No model migration is needed.** The former **Local history...** navigator item is simply renamed.
+History is unlimited by application default: Eclipse's age, count and file-size retention limits are disabled,
+but explicit workspace retention preferences still take precedence. Disk usage can therefore grow.
+This feature uses the versions retained in the current workspace, not Git commits or an external backup;
+it cannot recover versions already discarded. A file with no saved history can still open the view.
+See the [changelog](CHANGELOG_2026.md#major-addition-previous-versions-for-model-editing) for the complete addition.
+
+## Platform-agent operations
+
+The built-in `gama` agent can now act as a small automation and diagnostics interface, including from the interactive
+console when an experiment is active. Its additive actions inspect preferences, change or reset them, open model
+experiments, run test experiments, validate workspace models or GAML snippets, and launch `.gamx` playable packages.
+See the [platform-agent guide](https://github.com/gama-platform/gama/wiki/PlatformAgent) for GAML examples, execution
+requirements, and side effects.
+
+No existing models or Java plug-ins need to change. Preference updates are in-memory by default and restore when the
+active experiment closes; pass `persist: true` only when the preference should remain changed afterwards. Opening an
+experiment confirms replacement of an active experiment by default; `confirm: false` deliberately bypasses that
+confirmation for scripted chaining. Model validation and test execution are synchronous actions and may take time in a
+large workspace or model.
 
 ## Optional Copilot integration and pre-workbench initialization
 
@@ -313,6 +366,43 @@ Work through each section that applies to your plugin. Each section is self-cont
 
 These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
 
+### Explicit container types for built-in action arguments
+
+**Breaking change for model authors:** built-in actions now check the content and key types
+declared for their container arguments. A bare `graph` declaration is no longer sufficient
+when passing a network to an action expecting `graph<geometry, geometry>`, such as
+`wander`'s `on` argument, driving's `compute_path`/`drive_random` graph arguments, or
+pedestrian network actions.
+
+```gaml
+// Before
+graph road_network;
+
+// After
+graph<geometry, geometry> road_network;
+```
+
+The first parameter is the vertex type; the second is the edge type. Use geometry types
+for these spatial networks even when vertices and edges are intersection and road agents:
+agents are compatible with geometry types. Graph construction is unchanged, for example:
+
+```gaml
+graph<geometry, geometry> road_network;
+init {
+    road_network <- as_driving_graph(road, intersection);
+}
+```
+
+Update every declaration that carries the network, including globals, species attributes,
+local variables and your own action parameters or return types. A later assignment of a
+spatial graph does not refine a variable declared only as `graph`. An argument-type error
+at a call site should therefore be fixed at the relevant declaration, not just by changing
+the graph-building expression.
+
+This is not a blanket change to all graphs: non-spatial graphs should retain their actual
+vertex and edge types. The same stricter checking applies to other annotated container
+arguments; declare compatible list element and map key/value types where required.
+
 ### Lists and maps: absence is not emptiness (#765)
 
 An omitted initializer creates a new empty list or map. An explicit `nil` initializer, later assignment,
@@ -338,6 +428,94 @@ allocates an independent container, even for repeated executions of the same loc
 `cast(scope, null, ...)`. `getDefault()` remains the type's fallback/nullability value.
 The Java construction helpers `GamaListFactory.castToList` and `GamaMapFactory.castToMap` still
 convert Java null to an empty container; they are not the GAML casts.
+
+### Species attribute brackets and grid matrices
+
+Attribute brackets work on any statically known species. Ordinary species produce typed lists:
+
+```gaml
+list<float> energies <- animal[energy];
+animal[energy] <- energies collect (each * 0.95);
+```
+
+The list follows the species' current population order, just like `animal collect each.energy`;
+it is not indexed by agent identifiers. Assignment requires a non-nil list of compatible elements
+with exactly one element per current agent. Length and content type are checked before any write.
+An empty population reads as an empty typed list and accepts an empty list.
+Agents and values are captured before invoking setters, so setter side effects do not reorder the assignment.
+The population is resolved in the caller's host context, as with ordinary species iteration.
+Inherited attributes and species aliases are supported when their species type is statically known.
+Grids retain the spatial matrix behavior described below.
+
+```gaml
+// Before
+matrix<float> roads <- matrix_with(cell, "road");
+cell set_values ("road", roads);
+list<float> flat_roads <- cell collect each.road;
+
+// After
+matrix<float> roads <- cell[road];
+cell[road] <- roads;
+list<float> flat_roads <- list(cell) collect each.road;
+// Alternatively, flatten the spatial snapshot explicitly:
+list<float> flattened <- list(cell collect each.road);
+```
+
+`collect` on a statically known grid species returns a matrix with the grid's column and row
+counts. `each` is a cell agent, and `result[col, row]` contains the expression's value for
+the cell at `grid_x = col`, `grid_y = row`. These are zero-based grid indices, not world
+coordinates. Expressions are evaluated in row-major order, once per existing cell; missing
+cells receive the result content type's default value. The matrix is a snapshot, not a live
+view, and container-valued attributes are not deep-copied.
+
+The matrix element type is inferred from the expression: integer, float, boolean, color,
+string and container-valued expressions retain their types. Direct accesses such as
+`cell collect each.road` (including named iterators, `cell collect (c: c.road)`) use optimized
+attribute extraction, as does the equivalent `cell[road]`. Arbitrary expressions use normal
+per-cell evaluation, for example `cell collect (each.road * each.capacity)`.
+
+Float attribute snapshots are backed internally by a field while retaining the inferred
+`matrix<float>` type. Thus `field r <- field(cell[road]);` reuses the extracted field without
+copying its values. The equivalent direct-attribute `collect` uses the same representation.
+Extraction still creates a snapshot, not a live view of the grid. Field spatial accesses use
+the usual field world-coordinate conventions; `[col, row]` continues to use grid indices.
+
+In `species[attribute]`, a bare identifier naming an attribute resolves against the statically
+known species, even if a caller variable has the same name. The result is a
+`list<attribute_type>`, or `matrix<attribute_type>` for grids. Unknown names are compiled as ordinary index expressions and
+reported as errors if they are not valid caller variables either. Numeric and coordinate
+indexing are unchanged: `cell[0]` and `cell[col, row]` still select cells.
+To index when names collide, qualify the caller's attribute (for example, `road[self.linked]`
+inside a road agent), parenthesize the index (`road[(linked)]`), or copy it to an intermediate
+variable whose name is not an attribute of the indexed species (`int road_index <- linked;`
+followed by `road[road_index]`). Brackets on lists, maps and matrices keep their existing meaning.
+
+Lists of cells, filtered grids (`cell where ...`), ordinary species, and species expressions
+without a statically known grid type still produce lists. Cast the source to a list to
+preserve the old flat behavior, especially before list-only operators such as
+`remove_duplicates` or functions taking lists. On an existing matrix, `collect` also preserves
+dimensions; it does not flatten the matrix.
+
+Assignments to species attribute brackets check that the attribute is writable and accepts the
+supplied list or matrix element type. The right-hand expression is evaluated once in the caller's context
+before writing. Use separate assignments for separate attributes:
+
+```gaml
+cell[road] <- roads;
+cell[color] <- colors;
+```
+
+Every matrix must have exactly the grid's dimensions; nil matrices and mismatched dimensions
+raise an error before any attribute is changed. Matrix positions map directly to grid indices.
+Missing cells are skipped. Writes use normal attribute setters, preserving type conversion,
+constraints and change notifications, with cells visited in row-major order. Each assignment
+is checked independently; errors from an individual setter do not roll back earlier writes.
+Reads are snapshots: modifying a separately stored list or matrix does not update the agents until it
+is assigned back. Container-valued attributes are shallowly copied, not deep-copied.
+
+The string-based grid `matrix_with` and `set_values` operators are removed. The dimensions-based iterator
+`{columns, rows} matrix_with expression` is unchanged: its `each` denotes a coordinate point,
+not a cell agent.
 
 ### 1.1 Arrow (`->`) expressions — braces removed
 
@@ -431,6 +609,101 @@ overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white {
 ```
 
 > **Action needed:** none for overlays whose contents are drawn with `#px`. Models that draw the contents with model units in an overlay smaller than the view (e.g. `at: location / 3`) may need to express these coordinates in pixels.
+
+---
+
+### Display dimensions and mouse coordinates
+
+`#display_width` and `#display_height` always describe the **visible viewport in logical pixels**,
+independent of zoom, layer coordinate mode and overlay size. In graphical scopes, including `event`
+callbacks, they use the originating display. Outside graphics they use the frontmost display, or
+return `0` when none exists. Dimensions are read when the expression is evaluated; unlike mouse
+positions, they are not captured in the event snapshot.
+
+**Breaking behavior change:** in world contexts these constants previously described the displayed
+world's pixel extent. Review calculations that relied on that extent or its variation with zoom.
+Viewport dimensions multiplied by `#zoom` are not generally equivalent to the old values:
+aspect-ratio fitting, letterboxing and camera projection also affect the world.
+`#px` still depends on the evaluation context: it is `1` in screen contexts and converts a
+logical pixel to model units in world contexts. Stored numbers do not retain coordinate metadata.
+
+Prefer these explicit mouse names in new or migrated models:
+
+| Referential | Preferred name | Other supported names |
+|---|---|---|
+| World/model units | `#mouse_location_in_world` | `#user_location`, `#user_location_in_world`, legacy `#mouse_world_location` |
+| Viewport logical pixels, from the top-left | `#mouse_location_in_display` | `#user_location_in_display`, legacy `#mouse_screen_location` |
+
+The legacy mouse names remain aliases; replacing their spelling is optional and does not change
+behavior. Mouse-event callbacks read the originating event's captured position with every alias.
+Viewport mouse positions are not overlay-local positions.
+
+For example, normalize a mouse position within the viewport using matching units:
+
+```gaml
+event #mouse_move {
+    point mouse = #mouse_location_in_display;
+    if (#display_width > 0 and #display_height > 0) {
+        write {mouse.x / #display_width, mouse.y / #display_height};
+    }
+}
+```
+
+Use `#mouse_location_in_world` instead for comparisons with agent locations or world geometry.
+An event block does not inherit a drawing layer's referential, and ordinary point arithmetic does
+not convert between world and viewport coordinates. For layer placement and contents, see the
+[display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
+
+---
+
+### Map order for OpenGL displays
+
+Flat maps and map-like environments can avoid depth-buffer conflicts between overlapping
+elements by opting into **map ordering**. Both OpenGL backends then draw world layers,
+traces and drawings in their existing traversal order, with later fragments covering or
+blending over earlier fragments instead of competing for depth.
+
+To enable it for a specific display, add the facet to the display declaration:
+
+```gaml
+display my_map type: opengl map_order: true {
+    species roads;
+    species buildings;
+    species people;
+}
+```
+
+Alternatively, enable **Displays > OpenGL Rendering Properties > In OpenGL, draw world
+layers in map order instead of using 3D depth** in preferences. This applies to OpenGL
+displays without an explicit `map_order:` facet, including existing models without code
+changes. The preference defaults to `false`. An explicit facet takes precedence:
+use `map_order: false` on a 3D display to retain depth-based rendering when the global
+preference is enabled. Java2D displays are unaffected.
+
+**Action needed to use the improvement:** choose the display facet for portable,
+per-model behavior or the preference for a local default. Review drawing order first:
+a later background or polygon can cover an earlier agent, regardless of elevation.
+Map ordering disables depth testing and writes for world drawings, including faces and
+mesh cells within a drawing; it is therefore unsuitable for scenes that depend on
+physical 3D occlusion. It does not change model coordinates or camera projection, and
+camera clipping still applies. Screen layers retain their existing handling. Picking
+follows map order, with backend-specific limitations described in the
+[display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#map-ordering-in-opengl).
+
+Even without map ordering, legacy OpenGL orthographic displays now use the same camera-depth
+direction as perspective and OpenGL4. Existing overlapping geometry may consequently look
+different; review displays that relied on the former depth behavior.
+
+---
+
+### OBJ geometry conversion
+
+When an OBJ file is read as GAML geometry, its face buffer now contains **one complete polygon
+per OBJ face**. Previously it also contained incomplete polygons created while collecting each
+face's vertices. Models that relied on the former geometry count or those intermediate polygons
+must be updated; models that only draw the OBJ file directly do not need a syntax change.
+OBJ bounds are now obtained without constructing all face geometries, and invalidating the file
+clears its parsed data so the next access reloads it.
 
 ---
 

@@ -76,7 +76,9 @@ public class WrappedProject extends WrappedContainer<IProject> {
 	public Object[] getNavigatorChildren() { return isOpen() ? super.getNavigatorChildren() : EMPTY; }
 
 	@Override
-	public ImageDescriptor getImageDescriptor() { return GamaIcon.named(IGamaIcons.FOLDER_PROJECT).descriptor(); }
+	public ImageDescriptor getImageDescriptor() {
+		return NavigatorIcons.descriptor("project", GamaIcon.named(IGamaIcons.FOLDER_PROJECT).descriptor());
+	}
 
 	@Override
 	public String getExplanation() {

@@ -50,8 +50,8 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	/** The paused. */
 	volatile boolean paused = false;
 
-	/** The display runnable. */
-	private final Runnable displayRunnable;
+	/** The native drawable; unrealized windows must wait rather than spin or count empty frames. */
+	private final GLAutoDrawable window;
 	/** The stop requested. */
 	protected volatile boolean stopRequested = false;
 
@@ -113,7 +113,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	 *            the canvas
 	 */
 	public GamaGLAnimator(final GLAutoDrawable window) {
-		this.displayRunnable = () -> { if (window.isRealized()) { window.display(); } };
+		this.window = window;
 		window.setAnimator(this);
 		this.animatorThread = Thread.ofPlatform().name("Animator thread").unstarted(this);
 		// if (DEBUG.IS_ON()) {
@@ -209,11 +209,11 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 			while (!stopRequested) {
 				final long frameStart = System.nanoTime();
 				try {
-					if (paused) {
+					if (paused || !window.isRealized()) {
 						LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(50));
 						continue;
 					}
-					displayRunnable.run();
+					window.display();
 					tickFPS();
 					if (capFPS && targetFPS > 0) {
 						final long remaining = TimeUnit.SECONDS.toNanos(1) / targetFPS

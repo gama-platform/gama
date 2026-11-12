@@ -90,7 +90,7 @@ global {
 			finished <- true;
 			do report(phase: "RESULT");
 			if pause_at_end {
-				do pause();
+				experiment.pause();
 			}
 		}
 	}

@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
@@ -29,6 +33,9 @@ import gama.ui.display.opengl.scene.layers.FrameLayerObject;
 import gama.ui.display.opengl.scene.layers.LayerObject;
 import gama.ui.display.opengl.scene.layers.LayerObjectWithTrace;
 import gama.ui.display.opengl.scene.layers.OverlayLayerObject;
+import gama.ui.display.opengl.scene.geometry.PrimitiveObject;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 
 /**
  *
@@ -57,17 +64,15 @@ public class ModelScene {
 	/** The current layer. */
 	protected LayerObject currentLayer;
 
+	private final Map<ILayer, LayerObject> recycledLayers = new IdentityHashMap<>();
+	private final Map<Object, double[]> fieldBuffers = new IdentityHashMap<>();
+	private Map<ILayer, Integer> layerOrder;
+
 	/** The renderer. */
 	protected final IOpenGLRenderer renderer;
 
 	/** The rendered. */
 	private volatile boolean rendered = false;
-
-	/** The object number. */
-	private volatile int objectNumber;
-
-	/** The current layer trace. */
-	private volatile int currentLayerTraceNumber;
 
 	/**
 	 * Instantiates a new model scene.
@@ -116,63 +121,51 @@ public class ModelScene {
 		// DEBUG.OUT("Drawing scene " + index);
 		// }
 		double maxZ = renderer.getMaxEnvDim() * 0.005;
-		// maxZ = gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber)
-		final double zIncrement = objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue() ? 0d
-				: maxZ / objectNumber * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue();
-
-		gl.push(GLMatrixFunc.GL_MODELVIEW);
-		gl.setZIncrement(renderer.getData().isOrtho() ? 0D : zIncrement);
-		// AD called here so that it is inside the keystone drawing. See #3285
-		gl.rotateModel();
-		for (LayerObject layer : layers.values()) {
-			// AD Added
+		long objectNumber = 0, worldLayerNumber = 0;
+		for (final LayerObject layer : layers.values()) {
 			if (layer != null && layer.isVisible()) {
-				// See Issue #3857
-				if (GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) { gl.translateBy(0, 0, zIncrement); }
-				// AD added to prevent overlays to rotate
-				if (layer.isOverlay()) { gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW); }
-				try {
-					if (renderer.getPickingHelper().isPicking() && !layer.isPickable()) { continue; }
-					layer.draw(gl);
-				} catch (final RuntimeException r) {
-					DEBUG.ERR("Runtime error " + r.getMessage() + " in OpenGL loop");
-					r.printStackTrace();
-				} finally {
-					if (layer.isOverlay()) { gl.pop(GLMatrixFunc.GL_MODELVIEW); }
-				}
+				objectNumber += layer.numberOfZTranslatedObjects();
+				if (!layer.isOverlay()) { worldLayerNumber++; }
 			}
 		}
+		final double zIncrement = renderer.getData().isMapOrder() || objectNumber < 1
+				|| !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue() ? 0d
+				: maxZ / Math.max(objectNumber, worldLayerNumber) * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue();
 
-		gl.setZIncrement(0);
-		rendered = true;
-		// renderer.getSurface().getOutput().setRendered(true);
-		gl.pop(GLMatrixFunc.GL_MODELVIEW);
-	}
-
-	// /**
-	// * Compute visual Z increment.
-	// *
-	// * @return the double
-	// */
-	// private double computeVisualZIncrement(final IOpenGL gl) {
-	// if (objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) return 0d;
-	// return gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber);
-	//
-	// // The maximum visual z allowance between the object at the bottom and the one at the top
-	//
-	// // The increment is simply
-	// // return maxZ / objectNumber;
-	// }
-
-	/**
-	 * Increment.
-	 *
-	 * @return true, if successful
-	 */
-	private boolean increment() {
-		if (currentLayer == null) return false;
-		objectNumber += currentLayerTraceNumber;
-		return true;
+		final double previousIncrement = gl.getCurrentZIncrement();
+		final double previousTranslation = gl.getCurrentZTranslation();
+		gl.push(GLMatrixFunc.GL_MODELVIEW);
+		try {
+			gl.setZIncrement(renderer.getData().isOrtho() ? 0D : zIncrement);
+			// AD called here so that it is inside the keystone drawing. See #3285
+			gl.rotateModel();
+			long objectIndex = 0;
+			long layerIndex = 0;
+			for (LayerObject layer : layers.values()) {
+				if (layer != null && layer.isVisible()) {
+					final boolean worldLayer = !layer.isOverlay();
+					if (worldLayer) { layerIndex++; }
+					gl.setCurrentZTranslation(objectIndex * gl.getCurrentZIncrement());
+					objectIndex += layer.numberOfZTranslatedObjects();
+					gl.push(GLMatrixFunc.GL_MODELVIEW);
+					try {
+						if (worldLayer) { gl.translateBy(0, 0, layerIndex * zIncrement); }
+						if (renderer.getPickingHelper().isBeginningPicking() && !layer.isPickable()) { continue; }
+						layer.draw(gl);
+					} catch (final RuntimeException r) {
+						DEBUG.ERR("Runtime error " + r.getMessage() + " in OpenGL loop");
+						r.printStackTrace();
+					} finally {
+						gl.pop(GLMatrixFunc.GL_MODELVIEW);
+					}
+				}
+			}
+			rendered = true;
+		} finally {
+			gl.setZIncrement(previousIncrement);
+			gl.setCurrentZTranslation(previousTranslation);
+			gl.pop(GLMatrixFunc.GL_MODELVIEW);
+		}
 	}
 
 	/**
@@ -184,7 +177,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addString(final String string, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addString(string, attributes); }
+		if (currentLayer != null) { currentLayer.addString(string, attributes); }
 	}
 
 	/**
@@ -196,7 +189,11 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addGeometryFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addFile(file, attributes); }
+		if (currentLayer != null) { currentLayer.addFile(file, attributes); }
+	}
+
+	public void addGeometryFile(final GamaGeometryFile file, final IDrawingAttributes attributes, final String key) {
+		if (currentLayer != null) { currentLayer.addFile(file, attributes, key); }
 	}
 
 	/**
@@ -208,7 +205,7 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addImage(final Object img, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addImage(img, attributes); }
+		if (currentLayer != null) { currentLayer.addImage(img, attributes); }
 	}
 
 	/**
@@ -220,7 +217,33 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addGeometry(geometry, attributes); }
+		if (currentLayer != null) { currentLayer.addGeometry(geometry, attributes); }
+	}
+
+	public void addGeometry(final gama.api.ui.displays.GeometryDrawing command, final IDrawingAttributes attributes) {
+		if (currentLayer != null) { currentLayer.addGeometry(command, attributes); }
+	}
+
+	public void addGridLines(final int cols, final int rows, final double width, final double height,
+			final IDrawingAttributes attributes) {
+		if (currentLayer != null) {
+			currentLayer.addGeometryObject(new gama.ui.display.opengl.scene.geometry.GridLineObject(
+					cols, rows, width, height, attributes.snapshot()));
+		}
+	}
+
+	public void addPrimitive(final Geometry geometry, final double scale, final IPoint center,
+			final IDrawingAttributes attributes) {
+		if (currentLayer != null) {
+			currentLayer.addPrimitive(new PrimitiveObject(geometry, scale, center, attributes.snapshot()));
+		}
+	}
+
+	public void addPrimitive(final java.util.function.Function<IShape.Type, Geometry> geometry,
+			final double scale, final IPoint center, final IDrawingAttributes attributes) {
+		if (currentLayer != null) {
+			currentLayer.addPrimitive(new PrimitiveObject(geometry, scale, center, attributes.snapshot()));
+		}
 	}
 
 	/**
@@ -232,7 +255,20 @@ public class ModelScene {
 	 *            the attributes
 	 */
 	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
-		if (increment()) { currentLayer.addField(fieldValues, attributes); }
+		if (currentLayer == null) return;
+		boolean owned = false;
+		for (final double[] buffer : fieldBuffers.values()) {
+			if (buffer == fieldValues.getMatrix()) { owned = true; break; }
+		}
+		if (owned) {
+			currentLayer.addField(fieldValues, attributes);
+		} else {
+			final var copied = fieldValues.copy(renderer.getSurface().getScope(), null, true);
+			if (!(copied instanceof IField snapshot)) {
+				throw new IllegalStateException("A displayed field must provide a field-preserving copy");
+			}
+			currentLayer.addField(snapshot, attributes);
+		}
 	}
 
 	/**
@@ -242,20 +278,60 @@ public class ModelScene {
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys before disposing = " + layers.keySet());
 		layers.clear();
 		currentLayer = null;
+		recycledLayers.clear();
+		fieldBuffers.clear();
+		layerOrder = null;
 	}
 
 	/**
 	 * Begin drawing layers.
 	 */
-	public void beginDrawingLayers() {
-		currentLayerTraceNumber = 0;
-	}
+	public void beginDrawingLayers() {}
 
 	/**
 	 * End drawing layers.
 	 */
 	public void endDrawingLayers() {
 		// zIncrement = computeVisualZIncrement();
+	}
+
+	/** Restore declaration order when an initially hidden layer is first added to a later scene. */
+	public void orderLayers() {
+		final var definitions = renderer.getSurface().getManager().getItems();
+		boolean changed = layerOrder == null || layerOrder.size() != definitions.size();
+		if (!changed) {
+			for (int i = 0; i < definitions.size(); i++) {
+				if (!Integer.valueOf(i).equals(layerOrder.get(definitions.get(i)))) {
+					changed = true;
+					break;
+				}
+			}
+		}
+		if (changed) {
+			if (layerOrder == null) {
+				layerOrder = new IdentityHashMap<>();
+			} else {
+				layerOrder.clear();
+			}
+			for (int i = 0; i < definitions.size(); i++) { layerOrder.put(definitions.get(i), i); }
+		}
+		int previous = -1;
+		boolean ordered = true;
+		for (final LayerObject layer : layers.values()) {
+			final int order = layer.layer == null ? -1 : layerOrder.getOrDefault(layer.layer, Integer.MAX_VALUE);
+			if (order < previous) {
+				ordered = false;
+				break;
+			}
+			previous = order;
+		}
+		if (ordered) return;
+		final var entries = new ArrayList<>(layers.entrySet());
+		entries.sort((a, b) -> Integer.compare(
+				a.getValue().layer == null ? -1 : layerOrder.getOrDefault(a.getValue().layer, Integer.MAX_VALUE),
+				b.getValue().layer == null ? -1 : layerOrder.getOrDefault(b.getValue().layer, Integer.MAX_VALUE)));
+		layers.clear();
+		for (final var entry : entries) { layers.put(entry.getKey(), entry.getValue()); }
 	}
 
 	/**
@@ -283,21 +359,36 @@ public class ModelScene {
 	 * @param alpha
 	 *            the alpha
 	 */
-	public void beginDrawingLayer(final ILayer layer, final Double alpha) {
+	public LayerObject beginDrawingLayer(final ILayer layer, final Double alpha) {
 		final String key = layer.getName() + layer.getDefinition().getOrder();
 		currentLayer = layers.get(key);
+		LayerObject replaced = null;
+		if (currentLayer != null && !layer.getData().isDynamic()) {
+			replaced = currentLayer;
+			currentLayer = null;
+		}
 		if (currentLayer == null) {
+			if (layer.getData().isDynamic() && layer.getData().getTrace() == 0 && !layer.isOverlay()) {
+				currentLayer = recycledLayers.remove(layer);
+				if (currentLayer != null) { currentLayer.resetForReuse(); }
+			}
 			// DEBUG.OUT("ModelScene #" + myIndex + ": Layer " + layer.getName() + " is not present in the scene");
-			currentLayer = layer.isOverlay() ? new OverlayLayerObject(renderer, layer)
+			if (currentLayer == null) { currentLayer = layer.isOverlay() ? new OverlayLayerObject(renderer, layer)
 					: layer.getData().getTrace() > 0 ? new LayerObjectWithTrace(renderer, layer)
-					: new LayerObject(renderer, layer);
+					: new LayerObject(renderer, layer); }
 			// DEBUG.OUT("ModelScene #" + myIndex + ": Creating layer " + " : static " + currentLayer.isStatic()
 			// + "; trace " + currentLayer.hasTrace());
 			layers.put(key, currentLayer);
 		}
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys after creation = " + layers.keySet());
+		currentLayer.captureState();
 		currentLayer.setAlpha(alpha);
-		currentLayerTraceNumber = currentLayer.numberOfActualTraces();
+		return replaced;
+	}
+
+	public boolean containsLayerObject(final LayerObject object) {
+		for (final LayerObject value : layers.values()) { if (value == object) return true; }
+		return false;
 	}
 
 	/**
@@ -314,10 +405,43 @@ public class ModelScene {
 			if (layer.isStatic() || layer.hasTrace()) {
 				// DEBUG.OUT("===>> Adding " + name + " as static ");
 				newScene.layers.put(name, layer);
+				layer.markShared();
+				if (layer.layer != null) { fieldBuffers.remove(layer.layer.getDefinition()); }
 			}
 		});
 
 		return newScene;
+	}
+
+	public double[] getFieldBuffer(final Object owner, final int length) {
+		double[] buffer = fieldBuffers.get(owner);
+		if (buffer == null || buffer.length != length) {
+			buffer = new double[length];
+			fieldBuffers.put(owner, buffer);
+		}
+		return buffer;
+	}
+
+	/** Called on the GL thread only after this retired scene has been wiped. */
+	public void recycle() {
+		for (final LayerObject layer : layers.values()) {
+			if (layer.getClass() == LayerObject.class && !layer.isStatic() && !layer.hasTrace() && !layer.wasShared()) {
+				recycledLayers.put(layer.layer, layer);
+			}
+		}
+		layers.clear();
+		currentLayer = null;
+	}
+
+	public void reuseFrom(final ModelScene scene) {
+		rendered = false;
+		if (scene == null) {
+			initWorld();
+		} else {
+			scene.layers.forEach((key, layer) -> {
+				if (layer.isStatic() || layer.hasTrace()) { layers.put(key, layer); }
+			});
+		}
 	}
 
 }

@@ -49,8 +49,21 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOp
 	@SuppressWarnings ("unchecked")
 	public final void draw(final AbstractObject<?, ?> object, final boolean isPicking) {
 		gl.beginObject(object, isPicking);
-		_draw((T) object);
-		gl.endObject(object, isPicking);
+		try {
+			gl.pushMatrix();
+			try {
+				gl.translateBy(0, 0, gl.getCurrentZTranslation());
+				if (gl.canRetainObjectGeometry(object)) {
+					gl.drawObjectGeometry(object, () -> _draw((T) object));
+				} else {
+					_draw((T) object);
+				}
+			} finally {
+				gl.popMatrix();
+			}
+		} finally {
+			gl.endObject(object, isPicking);
+		}
 	}
 
 	/**
@@ -66,16 +79,25 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOp
 
 		final Scaling3D size = object.getAttributes().getSize();
 		if (size != null) {
-			final IEnvelope env = gl.getEnvelopeFor(object.getObject());
+			if (object instanceof gama.ui.display.opengl.scene.geometry.PrimitiveObject primitive) {
+				final double extent = primitive.getUnitExtent() * primitive.getGeometryScale();
+				final double factor = Math.min(size.getX() / extent, size.getY() / extent);
+				if (factor != 1d) { gl.scaleBy(factor, factor, factor); }
+				return true;
+			}
+			final IEnvelope env = object.getEnvelope(gl);
 			if (env != null) {
 				// try {
 				final boolean in2D = isDrawing2D(size, env, object);
+				final double geometryScale = object.getGeometryScale();
 				double factor = 0.0;
 				if (in2D) {
-					factor = Math.min(size.getX() / env.getWidth(), size.getY() / env.getHeight());
+					factor = Math.min(size.getX() / (env.getWidth() * geometryScale),
+							size.getY() / (env.getHeight() * geometryScale));
 				} else {
-					final double min_xy = Math.min(size.getX() / env.getWidth(), size.getY() / env.getHeight());
-					factor = Math.min(min_xy, size.getZ() / env.getDepth());
+					final double min_xy = Math.min(size.getX() / (env.getWidth() * geometryScale),
+							size.getY() / (env.getHeight() * geometryScale));
+					factor = Math.min(min_xy, size.getZ() / (env.getDepth() * geometryScale));
 				}
 				if (factor != 1d) {
 					object.getTranslationForScalingInto(loc);

@@ -259,7 +259,7 @@ public class ArtefactRegistry {
 		if (key == null) return Collections.emptySet();
 		final IArtefact.Symbol md = getArtefact(key, null);
 		if (md == null) return Collections.emptySet();
-		return md.getPossibleFacets().keySet();
+		return md.getPossibleFacets(key).keySet();
 	}
 
 	/**

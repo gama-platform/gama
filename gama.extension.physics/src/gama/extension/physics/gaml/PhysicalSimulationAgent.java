@@ -201,7 +201,8 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 			args = { @arg (
 					doc = @doc ("the list or container of agents to register in this physical world"),
 					name = BODIES,
-					type = IType.CONTAINER) })
+					type = IType.CONTAINER,
+					of = IType.AGENT) })
 
 	public Object primRegister(final IScope scope) {
 		IList<IAgent> agents = scope.getListArg(BODIES);
@@ -509,9 +510,9 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the max motor force
 	 * @return the gama joint
 	 */
-	GamaJoint createHingeJointWithAxis(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchor, final IPoint axis, final Double lowerLimit, final Double upperLimit,
-			final Double motorSpeed, final Double maxMotorForce) {
+	GamaJoint createHingeJointWithAxis(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchor,
+			final IPoint axis, final Double lowerLimit, final Double upperLimit, final Double motorSpeed,
+			final Double maxMotorForce) {
 		return createJoint(scope, IJointDefinition.JointType.HINGE, bodyA, bodyB, anchor, axis, lowerLimit, upperLimit,
 				motorSpeed, maxMotorForce);
 	}
@@ -533,8 +534,8 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the upper limit
 	 * @return the gama joint
 	 */
-	GamaJoint createSliderJoint(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchor, final Double lowerLimit, final Double upperLimit) {
+	GamaJoint createSliderJoint(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchor,
+			final Double lowerLimit, final Double upperLimit) {
 		return createJoint(scope, IJointDefinition.JointType.SLIDER, bodyA, bodyB, anchor,
 				GamaPointFactory.create(1, 0, 0), lowerLimit, upperLimit, 0d, 0d);
 	}
@@ -562,9 +563,9 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the max motor force
 	 * @return the gama joint
 	 */
-	GamaJoint createSliderJointWithAxis(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchor, final IPoint axis, final Double lowerLimit, final Double upperLimit,
-			final Double motorSpeed, final Double maxMotorForce) {
+	GamaJoint createSliderJointWithAxis(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchor,
+			final IPoint axis, final Double lowerLimit, final Double upperLimit, final Double motorSpeed,
+			final Double maxMotorForce) {
 		return createJoint(scope, IJointDefinition.JointType.SLIDER, bodyA, bodyB, anchor, axis, lowerLimit, upperLimit,
 				motorSpeed, maxMotorForce);
 	}
@@ -601,8 +602,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the anchor
 	 * @return the gama joint
 	 */
-	GamaJoint createFixedJoint(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchor) {
+	GamaJoint createFixedJoint(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchor) {
 		return createJoint(scope, IJointDefinition.JointType.FIXED, bodyA, bodyB, anchor,
 				GamaPointFactory.create(0, 0, 1), null, null, 0d, 0d);
 	}
@@ -626,8 +626,8 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the damping
 	 * @return the gama joint
 	 */
-	GamaJoint createDistanceJoint(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchorA, final IPoint anchorB, final double frequency, final double damping) {
+	GamaJoint createDistanceJoint(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchorA,
+			final IPoint anchorB, final double frequency, final double damping) {
 		return createJoint(scope, IJointDefinition.JointType.DISTANCE, bodyA, bodyB, anchorA,
 				GamaPointFactory.create(0, 0, 1), null, null, 0d, 0d, anchorB, frequency, damping, 0d, 0d);
 	}
@@ -674,8 +674,8 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the twist limit
 	 * @return the gama joint
 	 */
-	GamaJoint createConeTwistJoint(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchor, final IPoint axis, final double swingLimit, final double twistLimit) {
+	GamaJoint createConeTwistJoint(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchor,
+			final IPoint axis, final double swingLimit, final double twistLimit) {
 		return createJoint(scope, IJointDefinition.JointType.CONE_TWIST, bodyA, bodyB, anchor, axis, null, null, 0d, 0d,
 				null, 0d, 0d, swingLimit, twistLimit);
 	}
@@ -703,9 +703,9 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the max motor torque
 	 * @return the gama joint
 	 */
-	GamaJoint createWheelJoint(final IScope scope, final Object bodyA, final Object bodyB,
-			final IPoint anchor, final IPoint axis, final double frequency, final double damping,
-			final double motorSpeed, final double maxMotorTorque) {
+	GamaJoint createWheelJoint(final IScope scope, final Object bodyA, final Object bodyB, final IPoint anchor,
+			final IPoint axis, final double frequency, final double damping, final double motorSpeed,
+			final double maxMotorTorque) {
 		return createJoint(scope, IJointDefinition.JointType.WHEEL, bodyA, bodyB, anchor, axis, null, null, motorSpeed,
 				maxMotorTorque, null, frequency, damping, 0d, 0d);
 	}
@@ -726,7 +726,16 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 		return true;
 	}
 
-	boolean ownsJoint(final GamaJoint joint) { return joints.contains(joint); }
+	/**
+	 * Owns joint.
+	 *
+	 * @param joint
+	 *            the joint
+	 * @return true, if successful
+	 */
+	boolean ownsJoint(final GamaJoint joint) {
+		return joints.contains(joint);
+	}
 
 	/**
 	 * Creates the joint.

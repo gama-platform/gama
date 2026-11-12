@@ -578,7 +578,15 @@ public class WorkspaceManager implements IWorkspaceManager {
 							|| askAndRemember("Different version of the models library",
 									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?",
 									KEY_ASK_OUTDATED));
-					if (remember) { clearWorkspace(true); }
+					if (remember) {
+						try {
+							new File(lastUsedWs, getModelIdentifier()).createNewFile();
+						} catch (final IOException e) {
+							GAMA.getGui().getDialogFactory().error("Error updating the models library");
+							return IApplication.EXIT_OK;
+						}
+						clearWorkspace(true);
+					}
 				}
 			}
 		}

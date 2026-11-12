@@ -42,7 +42,7 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject, IOpenGL> {
 	@Override
 	protected boolean applyRotation(final ResourceObject object) {
 		final AxisAngle rotation = object.getAttributes().getRotation();
-		final AxisAngle initRotation = object.getObject().getInitRotation();
+		final AxisAngle initRotation = object.getInitialRotation();
 		if (rotation == null && initRotation == null) return false;
 		final IPoint loc = object.getAttributes().getLocation();
 		double lx = loc.getX();
@@ -68,13 +68,13 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject, IOpenGL> {
 
 	@Override
 	protected boolean isDrawing2D(final Scaling3D size, final IEnvelope env, final ResourceObject object) {
-		return super.isDrawing2D(size, env, object) || object.getObject().is2D();
+		return super.isDrawing2D(size, env, object) || object.is2D();
 	}
 
 	@Override
 	protected void _draw(final ResourceObject object) {
 		final boolean push = object.getAttributes().getRotation() != null
-				|| object.getObject().getInitRotation() != null || object.getAttributes().getSize() != null;
+				|| object.getInitialRotation() != null || object.getAttributes().getSize() != null;
 		try {
 			if (push) {
 				gl.pushMatrix();
@@ -86,7 +86,13 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject, IOpenGL> {
 			final IColor border = !solid && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
 			final GamaGeometryFile file = object.getObject();
-			if (file != null) { gl.drawCachedGeometry(file, border); }
+			if (file != null) {
+				if (object.getCacheKey() == null) {
+					gl.drawCachedGeometry(file, border);
+				} else {
+					gl.drawCachedGeometry(file, object.getCacheKey(), border);
+				}
+			}
 		} finally {
 			if (push) { gl.popMatrix(); }
 		}

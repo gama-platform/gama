@@ -812,6 +812,20 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
+	public boolean executeDraw(final IStatement.Draw statement) {
+		if (!canContinue(getCurrentObjectOrAgent())) return false;
+		try (StopWatch w = GAMA.benchmark(this, statement)) {
+			statement.setRuntimeArgs(this, null);
+			statement.setMyself(getAgent());
+			statement.executeOn(this);
+			return true;
+		} catch (final Exception e) {
+			GAMA.reportAndThrowIfNeeded(this, e instanceof GamaRuntimeException g ? g : create(e, this), true);
+			return false;
+		}
+	}
+
+	@Override
 	public Invocation takeInvocation(final IExecutable executable) {
 		final Invocation result = invocation;
 		if (result == null || result.executable() != executable) return null;

@@ -50,11 +50,11 @@ experiment Display type: gui autorun: true {
 			camera 'default' location: {-87.5648,126.2534,134.3343} target: {50.0,50.0,0.0};
 			light #ambient intensity: 0;
 			light #default intensity: 0;
-			light "1" type: #spot location: {world.shape.width * cos(cycle) + world.shape.width / 2, world.shape.height * sin(cycle) + world.shape.height / 2, 20} direction:
+			light "1" kind: #spot location: {world.shape.width * cos(cycle) + world.shape.width / 2, world.shape.height * sin(cycle) + world.shape.height / 2, 20} direction:
 			{cos(cycle + 180), sin(cycle + 180), -1} intensity: #red show: true quadratic_attenuation: 0.0001 dynamic: true;
-			light "2" type: #spot location: {world.shape.width * cos(cycle + 180) + world.shape.width / 2, world.shape.height * sin(cycle + 180) + world.shape.height / 2, 20} direction:
+			light "2" kind: #spot location: {world.shape.width * cos(cycle + 180) + world.shape.width / 2, world.shape.height * sin(cycle + 180) + world.shape.height / 2, 20} direction:
 			{cos(cycle), sin(cycle), -1} intensity: #blue show: true quadratic_attenuation: 0.0001 dynamic: true;
-			light "3" type: #spot location: {world.shape.width / 2, world.shape.height / 2, world.shape.width / 2} direction: {0, 0, -1} intensity: #green show: true angle:
+			light "3" kind: #spot location: {world.shape.width / 2, world.shape.height / 2, world.shape.width / 2} direction: {0, 0, -1} intensity: #green show: true angle:
 			30 * (1 + cos(2 * cycle)) quadratic_attenuation: 0.0001 dynamic: true;
 			species GAMAGeometry2D;
 		}
@@ -65,11 +65,11 @@ experiment Display type: gui autorun: true {
 		// the green light change its location up and down, we can see the quadratic_attenuation effect : the farther the light is, the less power it has			
 			light #ambient intensity: 0;
 			light #default intensity: 0;
-			light "1" type: #point location: {world.shape.width * cos(cycle) + world.shape.width / 2, world.shape.height * sin(cycle) + world.shape.height / 2, 20} intensity: #red show: true
+			light "1" kind: #point location: {world.shape.width * cos(cycle) + world.shape.width / 2, world.shape.height * sin(cycle) + world.shape.height / 2, 20} intensity: #red show: true
 			quadratic_attenuation: 0.0001 dynamic: true;
-			light "2" type: #point location: {world.shape.width * cos(cycle + 180) + world.shape.width / 2, world.shape.height * sin(cycle + 180) + world.shape.height / 2, 20} intensity:
+			light "2" kind: #point location: {world.shape.width * cos(cycle + 180) + world.shape.width / 2, world.shape.height * sin(cycle + 180) + world.shape.height / 2, 20} intensity:
 			#blue show: true quadratic_attenuation: 0.0001 dynamic: true;
-			light "3" type: #point location: {world.shape.width / 2, world.shape.height / 2, world.shape.width * cos(cycle)} intensity: #green show: true quadratic_attenuation: 0.0001
+			light "3" kind: #point location: {world.shape.width / 2, world.shape.height / 2, world.shape.width * cos(cycle)} intensity: #green show: true quadratic_attenuation: 0.0001
 			dynamic: true;
 			species GAMAGeometry2D aspect: default;
 		}
@@ -80,9 +80,9 @@ experiment Display type: gui autorun: true {
 		// the green light change its intensity
 			light #ambient intensity: 0;
 			light #default intensity: 0;
-			light "1" type: #direction direction: {cos(cycle + 180), sin(cycle + 180), -1} intensity: #red show: true dynamic: true;
-			light "2" type: #direction direction: {cos(cycle), sin(cycle), -1} intensity: #blue show: true dynamic: true;
-			light "3" type: #direction direction: {0, 0, -1} intensity: rgb(0, 255 * (1 + cos(cycle)), 0) show: true dynamic: true;
+			light "1" kind: #direction direction: {cos(cycle + 180), sin(cycle + 180), -1} intensity: #red show: true dynamic: true;
+			light "2" kind: #direction direction: {cos(cycle), sin(cycle), -1} intensity: #blue show: true dynamic: true;
+			light "3" kind: #direction direction: {0, 0, -1} intensity: rgb(0, 255 * (1 + cos(cycle)), 0) show: true dynamic: true;
 			species GAMAGeometry2D aspect: default;
 		}
 

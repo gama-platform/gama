@@ -144,6 +144,12 @@ import gama.dev.DEBUG;
 						optional = true,
 						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in __PREFS__")),
 
+				@facet (
+						name = "map_order",
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("In OpenGL displays, draw world layers and drawings in traversal order instead of using 3D depth. Intended for flat maps: later drawings cover earlier drawings regardless of elevation. Overrides the OpenGL map-order preference; defaults to that preference, initially false.")),
+
 				/// LIGHT FACETS
 				@facet (
 						name = IKeyword.IS_LIGHT_ON,
@@ -327,11 +333,6 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 				d.setFacet(TYPE, GAML.getExpressionFactory().createConst(cand, Types.STRING));
 			}
 
-			// Addressing problems with charts in OpenGL
-			if (IKeyword._3D.equals(type.getExpression().literalValue()) && !Iterables.isEmpty(d.getOwnChildren())
-					&& d.visitOwnChildren(c -> (CHART.equals(c.getKeyword()) || EVENT.equals(c.getKeyword())))) {
-				d.warning("Consider switching to a 2d display if you only display charts", CONFLICTING_FACETS, TYPE);
-			}
 		}
 
 		/**
@@ -453,7 +454,12 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		final long t0 = System.currentTimeMillis();
 		DEBUG.OUT(
 				"[LayeredDisplayOutput.update] START for " + getName() + " thread=" + Thread.currentThread().getName());
-		getData().update(getScope(), description.getFacets());
+		final IGraphicsScope source = getScope();
+		// Input callbacks and simulation updates can refresh the same display concurrently.
+		try (IGraphicsScope refreshScope = source.copyForGraphics("for display update")) {
+			refreshScope.setGraphics(source.getGraphics());
+			getData().update(refreshScope, description.getFacets());
+		}
 		DEBUG.OUT("[LayeredDisplayOutput.update] after getData().update=" + (System.currentTimeMillis() - t0) + "ms");
 
 		super.update();

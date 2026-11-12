@@ -27,7 +27,7 @@ global {
 	int num_cars;
 	int num_motorbikes;
 
-	graph road_network;
+	graph<geometry, geometry> road_network;
 	list<intersection> non_deadend_nodes;
 
 	init {

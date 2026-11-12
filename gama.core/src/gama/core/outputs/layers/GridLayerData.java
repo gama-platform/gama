@@ -108,6 +108,12 @@ public class GridLayerData extends LayerData {
 								.getMatrix();
 					case IType.FLOAT:
 					case IType.INT:
+						final IGraphics graphics = scope.getGraphics();
+						if (graphics != null && !graphics.is2D() && isDynamic() && getTrace() == 0) {
+							final var matrix = grid.getTopology().getPlaces();
+							return matrix.getGridValueOf(scope, exp,
+									graphics.getFieldBuffer(def, (int) dim.getX() * (int) dim.getY()));
+						}
 						return grid.getTopology().getPlaces().getGridValueOf(scope, exp);
 					case IType.BOOL:
 						if ((Boolean) exp.value(scope)) return grid.getTopology().getPlaces().getGridValue();

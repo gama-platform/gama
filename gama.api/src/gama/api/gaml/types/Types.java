@@ -28,6 +28,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IOperator;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.object.GamaGenericObjectType;
@@ -508,6 +509,9 @@ public class Types {
 		final IType receiver = receiverType.getGamlType();
 		final boolean result = (receiver == MAP || receiver == LIST) && expr2.isEmpty();
 		if (result) return true;
+		if (receiver == MAP && expr2 instanceof IOperator op && IKeyword.AS.equals(op.getName())
+				&& expr2.getGamlType().getGamlType() == MAP && op.arg(0) instanceof IExpression.List list
+				&& list.isEmpty()) return true;
 		// One last chance if receiverType is a list of lists/maps and expr2 is a list expression containing empty
 		// lists. This case is treated recursively in case of complex data structures
 		if (expr2 instanceof IExpression.List) {

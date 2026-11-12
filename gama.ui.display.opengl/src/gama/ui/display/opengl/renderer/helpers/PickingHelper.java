@@ -35,6 +35,8 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 	/** The select buffer. */
 	protected final IntBuffer selectBuffer = Buffers.newDirectIntBuffer(1024);
 
+	private final double[] pickTransform = new double[16];
+
 	/**
 	 * Instantiates a new picking helper.
 	 *
@@ -189,6 +191,7 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 			 */
 			glu.gluPickMatrix(camera.getMousePosition().getX(), viewport[3] - camera.getMousePosition().getY(), 4, 4,
 					viewport, 0);
+			gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, pickTransform, 0);
 		} catch (Throwable e) {
 			DEBUG.ERR("in beginPicking", e);
 		} finally {
@@ -196,6 +199,11 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 			openGL.updatePerspective();
 			openGL.matrixMode(GLMatrixFunc.GL_MODELVIEW);
 		}
+	}
+
+	@Override
+	public void applyPickTransform() {
+		getGL().glMultMatrixd(pickTransform, 0);
 	}
 
 	/**
@@ -210,7 +218,14 @@ public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 			// 5. gl.glRenderMode() methods return number of hits
 			final int howManyObjects = gl.glRenderMode(GL2.GL_RENDER);
 			// 6. Search the select buffer to find the nearest object
-			if (howManyObjects > 0) {
+			if (howManyObjects > 0 && getData().isMapOrder()) {
+				int offset = 0;
+				for (int i = 0; i < howManyObjects; i++) {
+					final int names = selectBuffer.get(offset);
+					if (names > 0) { selectedIndex = selectBuffer.get(offset + 2 + names); }
+					offset += 3 + names;
+				}
+			} else if (howManyObjects > 0) {
 				// simple searching algorithm
 				selectedIndex = selectBuffer.get(3);
 				int mindistance = Math.abs(selectBuffer.get(1));

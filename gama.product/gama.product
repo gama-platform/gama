@@ -103,6 +103,7 @@
       <feature id="gama.feature.core" installMode="root"/>
       <feature id="gama.feature.ui" installMode="root"/>
       <feature id="gama.feature.library" installMode="root"/>
+      <feature id="gama.feature.shared.models" installMode="root"/>
       <feature id="gama.feature.ui.editor" installMode="root"/>
       <feature id="gama.feature.export" installMode="root"/>
       <feature id="gama.feature.extensions" installMode="root"/>

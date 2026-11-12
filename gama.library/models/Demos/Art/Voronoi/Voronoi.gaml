@@ -89,7 +89,7 @@ experiment voronoi type: gui autorun: true {
 				do die();
 			}
 		}
-		do rebuild_cells();
+		ask world {do rebuild_cells();}
 	}
 	parameter "Color palette" var: palette category: "Mosaic" {
 		colors <- brewer_colors(palette, 11);

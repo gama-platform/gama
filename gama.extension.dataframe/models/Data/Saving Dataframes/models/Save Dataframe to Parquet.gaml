@@ -33,7 +33,7 @@ global {
 		write "Reloaded bugs.parquet : " + reloaded.rows + " rows, columns: " + reloaded.keys;
 		write "First bug name : " + cell(reloaded, 0, "name");
 
-		do pause();
+		experiment.pause();
 	}
 }
 

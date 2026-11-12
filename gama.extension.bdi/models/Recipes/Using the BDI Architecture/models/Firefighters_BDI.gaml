@@ -27,7 +27,7 @@ global {
 	}
 	
 	reflex stop when: length(fireArea) = 0 {
-		do pause();
+		experiment.pause();
 	}
 }
 

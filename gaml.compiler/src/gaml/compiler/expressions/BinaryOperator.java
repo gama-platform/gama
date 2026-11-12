@@ -118,7 +118,13 @@ public class BinaryOperator extends AbstractNAryOperator {
 		final String name = getName();
 		if ("internal_at".equals(name)) {
 			// '[' and ']' included
-			sb.append(exprs[0].serializeToGaml(includingBuiltIn)).append(exprs[1].serializeToGaml(includingBuiltIn));
+			sb.append(exprs[0].serializeToGaml(includingBuiltIn));
+			if (exprs[0].getGamlType().id() == IType.SPECIES && exprs[1] instanceof IExpression.List indices
+					&& indices.getElements().length == 1 && indices.getElements()[0] instanceof IVarExpression) {
+				sb.append("[(").append(indices.getElements()[0].serializeToGaml(includingBuiltIn)).append(")]");
+			} else {
+				sb.append(exprs[1].serializeToGaml(includingBuiltIn));
+			}
 		} else if (ArtefactRegistry.BINARY_ARTEFACTS_NAMES.contains(name)) {
 			parenthesize(sb, exprs[0]);
 			sb.append(' ').append(name).append(' ');

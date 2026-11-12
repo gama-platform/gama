@@ -575,6 +575,15 @@ public interface IDescription
 	String getLitteral(String name);
 
 	/**
+	 * Gets the litteral.
+	 *
+	 * @param names
+	 *            the names
+	 * @return the litteral
+	 */
+	String getLitteral(String... names);
+
+	/**
 	 * Assigns an {@link IExpressionDescription} to the named facet, replacing any existing value.
 	 *
 	 * @param name

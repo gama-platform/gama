@@ -37,6 +37,7 @@ import gama.core.outputs.layers.MeshLayerData;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.MeshSampling;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import one.util.streamex.DoubleStreamEx;
 
@@ -142,7 +143,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 	 */
 	private record BuildKey(MeshObject object, int cols, int rows, int step, boolean triangles,
 			boolean outputsTextures, boolean outputsColors, boolean outputsLines, boolean useFillForLines,
-			IMeshColorProvider colorProvider, IColor line, double above, double noData, int smooth, double zTranslation) {
+			IMeshColorProvider colorProvider, IColor line, double above, double noData, int smooth) {
 
 		@Override
 		public boolean equals(final Object o) {
@@ -153,8 +154,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 					&& outputsColors == k.outputsColors && outputsLines == k.outputsLines
 					&& useFillForLines == k.useFillForLines && colorProvider == k.colorProvider
 					&& java.util.Objects.equals(line, k.line) && Double.compare(above, k.above) == 0
-					&& Double.compare(noData, k.noData) == 0 && smooth == k.smooth
-					&& Double.compare(zTranslation, k.zTranslation) == 0;
+					&& Double.compare(noData, k.noData) == 0 && smooth == k.smooth;
 		}
 
 		@Override
@@ -224,8 +224,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		this.triangles = attributes.isTriangulated();
 
 		BuildKey key = new BuildKey(object, cols, rows, step, triangles, outputsTextures, outputsColors, outputsLines,
-				useFillForLines, colorProvider, line, above, noData, attributes.getSmooth(),
-				gl.getCurrentZTranslation());
+				useFillForLines, colorProvider, line, above, noData, attributes.getSmooth());
 		if (key.equals(failedKey)) return;
 		if (!key.equals(builtKey) && !buildMesh(object, key, noData)) return;
 		gl.pushMatrix();
@@ -476,7 +475,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 				var z = get(data, i, j);
 				realIndexes[index] = z == noData ? -1 : realIndex++;
 				if (z == noData) { continue; }
-				vertexBuffer.put((float) x).put((float) -y).put((float) (z + gl.getCurrentZTranslation()));
+				vertexBuffer.put((float) x).put((float) -y).put((float) z);
 				setColor(z, i, j);
 				setNormal(data, i, j);
 				if (j > 0 && i > 0) {
@@ -578,38 +577,52 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL2ES2.GL_CONSTANT_ALPHA, GL2ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
-		gl.beginDrawing(GL.GL_TRIANGLES);
-		for (var index = 0; index < indexBuffer.limit(); index++) {
-			var i = indexBuffer.get(index);
-			int one = i * 3, two = one + 1, three = one + 2;
-			if (!gl.isWireframe() && outputsColors) {
-				// TODO Bug when using a gradient: some color components are outside the range
-				try {
-					gl.setCurrentColor(colorBuffer.get(i * 4), colorBuffer.get(i * 4 + 1), colorBuffer.get(i * 4 + 2),
-							colorBuffer.get(i * 4 + 3));
-				} catch (IllegalArgumentException e) {
-					DEBUG.OUT("Problem with following colors: " + colorBuffer.get(i * 4) + " "
-							+ colorBuffer.get(i * 4 + 1) + " " + colorBuffer.get(i * 4 + 2));
+		try {
+			if (!gl.isWireframe()) {
+				try (var offset = PolygonOffset.forOutline(gl, outputsLines)) {
+					drawFieldFallbackPass(false);
 				}
 			}
-			if (outputsTextures) { gl.outputTexCoord(texBuffer.get(i * 2), texBuffer.get(i * 2 + 1)); }
-			gl.outputNormal(normalBuffer.get(one), normalBuffer.get(two), normalBuffer.get(three));
-			ogl.glVertex3d(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
+			if (outputsLines) {
+				boolean previous = gl.setObjectWireframe(true);
+				try {
+					drawFieldFallbackPass(true);
+				} finally {
+					gl.setObjectWireframe(previous);
+				}
+			}
+		} finally {
+			ogl.glBlendColor(0.0f, 0.0f, 0.0f, 0.0f);
+			ogl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		}
-		if (outputsLines) {
-			boolean previous = gl.setObjectWireframe(true);
+	}
+
+	private void drawFieldFallbackPass(final boolean outline) {
+		final var ogl = gl.getGL();
+		gl.beginDrawing(GL.GL_TRIANGLES);
+		try {
 			for (var index = 0; index < indexBuffer.limit(); index++) {
 				var i = indexBuffer.get(index);
-				// lineColorBuffer has 4 components per vertex (RGBA)
-				gl.setCurrentColor(lineColorBuffer.get(i * 4), lineColorBuffer.get(i * 4 + 1),
-						lineColorBuffer.get(i * 4 + 2), lineColorBuffer.get(i * 4 + 3));
-				gl.outputVertex(vertexBuffer.get(i * 3), vertexBuffer.get(i * 3 + 1), vertexBuffer.get(i * 3 + 2));
+				int one = i * 3, two = one + 1, three = one + 2;
+				if (outline) {
+					gl.setCurrentColor(lineColorBuffer.get(i * 4), lineColorBuffer.get(i * 4 + 1),
+							lineColorBuffer.get(i * 4 + 2), lineColorBuffer.get(i * 4 + 3));
+				} else if (outputsColors) {
+					try {
+						gl.setCurrentColor(colorBuffer.get(i * 4), colorBuffer.get(i * 4 + 1),
+								colorBuffer.get(i * 4 + 2), colorBuffer.get(i * 4 + 3));
+					} catch (IllegalArgumentException e) {
+						DEBUG.OUT("Problem with following colors: " + colorBuffer.get(i * 4) + " "
+								+ colorBuffer.get(i * 4 + 1) + " " + colorBuffer.get(i * 4 + 2));
+					}
+				}
+				if (!outline && outputsTextures) { gl.outputTexCoord(texBuffer.get(i * 2), texBuffer.get(i * 2 + 1)); }
+				gl.outputNormal(normalBuffer.get(one), normalBuffer.get(two), normalBuffer.get(three));
+				ogl.glVertex3d(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
 			}
-			gl.setObjectWireframe(previous);
+		} finally {
+			gl.endDrawing();
 		}
-		gl.endDrawing();
-		ogl.glBlendColor(0.0f, 0.0f, 0.0f, 0.0f);
-		ogl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	/**
@@ -675,7 +688,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 			}
 
 			if (!gl.isWireframe()) {
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				try (var offset = PolygonOffset.forOutline(gl, outputsLines)) {
+					ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				}
 			}
 			if (outputsLines) {
 				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
@@ -686,8 +701,11 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 					ogl.glColorPointer(4, GL.GL_FLOAT, 0, lineColorBuffer);
 				}
 				boolean previous = gl.setObjectWireframe(true);
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
-				gl.setObjectWireframe(previous);
+				try {
+					ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				} finally {
+					gl.setObjectWireframe(previous);
+				}
 			}
 
 		} finally {
@@ -744,7 +762,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 		gl.beginRasterTextMode();
 		final var previous = gl.setObjectLighting(false);
 		for (var i = 0; i < strings.length; i++) {
-			gl.getGL().glRasterPos3d(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2] + gl.getCurrentZTranslation());
+			gl.getGL().glRasterPos3d(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2]);
 			gl.getGlut().glutBitmapString(GLUT.BITMAP_TIMES_ROMAN_10, strings[i]);
 		}
 		gl.setObjectLighting(previous);

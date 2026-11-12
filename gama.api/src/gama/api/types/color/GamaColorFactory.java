@@ -321,6 +321,7 @@ public class GamaColorFactory {
 	 */
 
 	public static IColor get(final String rgb) {
+		if ("adaptive".equals(rgb)) return AdaptiveColor.INSTANCE;
 		return NAME_REGISTRY.get(rgb);
 	}
 
@@ -415,6 +416,7 @@ public class GamaColorFactory {
 				};
 			}
 			case Map m -> {
+				if (Boolean.TRUE.equals(m.get("adaptive"))) return AdaptiveColor.INSTANCE;
 				return createWithRGBA(Cast.asInt(scope, m.get("red")), Cast.asInt(scope, m.get("green")),
 						Cast.asInt(scope, m.get("blue")), Cast.asInt(scope, m.get("alpha")));
 			}
@@ -423,7 +425,7 @@ public class GamaColorFactory {
 			}
 			case String str -> {
 				final String s = str.toLowerCase();
-				IColor c = NAME_REGISTRY.get(s);
+				IColor c = get(s);
 				if (c == null) {
 					try {
 						final String hex = s.matches("#[0-9a-f]{3}")

@@ -56,7 +56,7 @@ species people {
 
 experiment graphoperators type: gui {
 	output {
-		display map background:#lightgray{
+		display map background:#lightgray map_order: true{
 			graphics "edges" {
 				loop edge over: the_graph.edges {
 					draw edge + (0.1+ec[edge]/500) color: #yellow border: #black;

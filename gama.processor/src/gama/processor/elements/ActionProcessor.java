@@ -197,7 +197,8 @@ public class ActionProcessor extends ElementProcessor<action> {
 
 			verifyDoc(e, "argument " + argName, arg);
 			sb.append("_arg(").append(toJavaString(argName)).append(',').append(arg.type()).append(',')
-					.append(toBoolean(arg.optional())).append(')');
+					.append(toBoolean(arg.optional())).append(',').append(arg.of()).append(',').append(arg.index())
+					.append(')');
 		}
 		sb.append(")");
 

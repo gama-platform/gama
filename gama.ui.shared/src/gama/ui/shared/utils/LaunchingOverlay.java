@@ -16,8 +16,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -38,8 +39,9 @@ import gama.api.ui.IGui;
 import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
-import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -191,8 +193,8 @@ public class LaunchingOverlay {
 
 	/**
 	 * The last line of text that was actually appended to the console widget. Tracked on the UI thread inside
-	 * {@link #appendToConsole(String)} to deduplicate identical consecutive messages that may arrive through multiple
-	 * channels (the console listener and the status interceptor can both deliver the same text).
+	 * {@link #appendToConsole(String, IColor)} to deduplicate identical consecutive messages that may arrive through
+	 * multiple channels (the console listener and the status interceptor can both deliver the same text).
 	 */
 	private String lastConsoleLine;
 
@@ -319,7 +321,7 @@ public class LaunchingOverlay {
 	 */
 	private void buildAndOpen() {
 		final Color bg = LaunchPresentation.backgroundColor();
-		final Color fg = LaunchPresentation.foregroundColor();
+		final Color fg = LaunchPresentation.foregroundColor(bg);
 
 		// Keep the overlay as an owned, undecorated child shell instead of a modal one so
 		// it still covers the workbench client area while leaving the native window frame
@@ -378,12 +380,7 @@ public class LaunchingOverlay {
 		// No background of its own: the overlay watermark shows through.
 		consoleText = new StyledText(overlay, SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.WRAP);
 		consoleText.setEditable(false);
-		final boolean dark = ThemeHelper.isDark();
-		// Dimmed foreground matching the subtitle style
-		final var consoleFg = new Color(overlay.getDisplay(), blend(fg.getRed(), dark ? 255 : 0, 20),
-				blend(fg.getGreen(), dark ? 255 : 0, 20), blend(fg.getBlue(), dark ? 255 : 0, 20));
-		consoleText.setForeground(consoleFg);
-		consoleText.addDisposeListener(ev -> consoleFg.dispose());
+		consoleText.setForeground(fg);
 		consoleText.setFont(parent.getFont());
 		// Inner padding so text doesn't touch the widget edges.
 		consoleText.setMargins(CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING);
@@ -429,7 +426,7 @@ public class LaunchingOverlay {
 		overlay.addDisposeListener(e -> parent.removeControlListener(ref[0]));
 
 		// ── Register console listener ─────────────────────────────────────────────
-		final IConsoleListener listener = (msg, root, color) -> appendToConsole(msg);
+		final IConsoleListener listener = (msg, root, color) -> appendToConsole(msg, color);
 		overlayConsoleListener = listener;
 		if (consoleSource != null) { consoleSource.addConsoleListener(listener); }
 
@@ -460,8 +457,10 @@ public class LaunchingOverlay {
 	 *
 	 * @param msg
 	 *            the raw message to append; blank or {@code null} messages are silently ignored
+	 * @param color
+	 *            optional foreground color for the message
 	 */
-	private void appendToConsole(final String msg) {
+	private void appendToConsole(final String msg, final IColor color) {
 		if (msg == null || msg.isBlank()) return;
 		final String firstLine = msg.lines().map(String::strip).filter(l -> !l.isBlank()).findFirst().orElse(null);
 		if (firstLine == null) return;
@@ -472,8 +471,15 @@ public class LaunchingOverlay {
 			// so we guard here on the UI thread (single-threaded) rather than in each caller.
 			if (firstLine.equals(lastConsoleLine)) return;
 			lastConsoleLine = firstLine;
-			if (consoleText.getCharCount() > 0) { consoleText.append(System.lineSeparator()); }
+			int start = consoleText.getCharCount();
+			if (start > 0) {
+				consoleText.append(System.lineSeparator());
+				start += System.lineSeparator().length();
+			}
 			consoleText.append(firstLine);
+			if (color != null) {
+				consoleText.setStyleRange(new StyleRange(start, firstLine.length(), GamaColors.get(color).color(), null));
+			}
 			// Auto-scroll to the bottom: compute how many lines fit in the visible area and
 			// set topIndex so that the most-recent line appears at the bottom (terminal behaviour).
 			final int lineCount = consoleText.getLineCount();
@@ -511,7 +517,11 @@ public class LaunchingOverlay {
 				if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
 				final String text = m.message();
 				if (text != null && !text.equals(previous)) {
-					appendToConsole(text);
+					IColor color = m.color();
+					if (color == null && (m.type() == IStatusMessage.StatusType.ERROR || m.isError())) {
+						color = IStatusMessage.ERROR_COLOR;
+					}
+					appendToConsole(text, color);
 					previous = text;
 				}
 			}
@@ -611,9 +621,8 @@ public class LaunchingOverlay {
 			e.gc.setFont(parent.getFont());
 			final String sub = modelName + (expName.isEmpty() ? "" : "  \u2192  " + expName);
 			final var se = e.gc.textExtent(sub);
-			final boolean dark = ThemeHelper.isDark();
-			final var dim = new Color(e.display, blend(bg.getRed(), dark ? 255 : 0, 45),
-					blend(bg.getGreen(), dark ? 255 : 0, 45), blend(bg.getBlue(), dark ? 255 : 0, 45));
+			final var dim = new Color(e.display, blend(fg.getRed(), bg.getRed(), 25),
+					blend(fg.getGreen(), bg.getGreen(), 25), blend(fg.getBlue(), bg.getBlue(), 25));
 			e.gc.setForeground(dim);
 			e.gc.drawText(sub, (b.width - se.x) / 2, titleY + te.y + 4, true);
 			dim.dispose();

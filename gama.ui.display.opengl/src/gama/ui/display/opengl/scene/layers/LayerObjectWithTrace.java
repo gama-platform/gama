@@ -44,6 +44,12 @@ public class LayerObjectWithTrace extends LayerObject {
 		traces.add(currentList);
 	}
 
+	@Override
+	protected boolean hasAdaptiveDraws() {
+		for (final Trace trace : traces) { if (hasAdaptiveDraws(trace)) return true; }
+		return false;
+	}
+
 	/**
 	 * Draw all objects.
 	 *
@@ -105,9 +111,7 @@ public class LayerObjectWithTrace extends LayerObject {
 
 	@Override
 	protected int getTrace() {
-		if (layer == null) return 0;
-		final Integer trace = layer.getData().getTrace();
-		return trace == null ? 0 : trace;
+		return currentList.state.trace();
 	}
 
 	/**
@@ -118,6 +122,14 @@ public class LayerObjectWithTrace extends LayerObject {
 	@Override
 	public int numberOfActualTraces() {
 		return traces.size();
+	}
+
+	@Override
+	public long numberOfZTranslatedObjects() {
+		if (layer == null || isOverlay()) return 0;
+		long count = 0;
+		for (final Trace trace : traces) { count += numberOfObjects(trace); }
+		return count;
 	}
 
 }

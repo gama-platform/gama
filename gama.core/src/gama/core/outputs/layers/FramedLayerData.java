@@ -14,7 +14,6 @@ import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.ui.layers.ILayerStatement;
 
@@ -40,8 +39,7 @@ public class FramedLayerData extends LayerData {
 	public FramedLayerData(final ILayerStatement def) throws GamaRuntimeException {
 		super(def);
 		border = create(IKeyword.BORDER, Types.COLOR, null);
-		background = create(IKeyword.BACKGROUND, Types.COLOR,
-				def instanceof OverlayStatement ? GamaColorFactory.BLACK : null);
+		background = create(IKeyword.BACKGROUND, Types.COLOR, null);
 	}
 
 	/**
@@ -52,9 +50,13 @@ public class FramedLayerData extends LayerData {
 	 * @return the background color
 	 */
 	public IColor getBackgroundColor(final IScope scope) {
+		return getBackgroundColor();
+	}
+
+	public IColor getBackgroundColor() {
 		IColor c = background.get();
 		return c == null ? null
-				: GamaColorFactory.createWithRGBA(c.red(), c.green(), c.blue(), (int) ((1 - getTransparency(scope)) * 255));
+				: c.withAlpha(c.alpha() / 255d * (1 - transparency.get()));
 	}
 
 	/**

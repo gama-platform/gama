@@ -372,7 +372,14 @@ public class GAMA {
 	 *            the model containing the experiment
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
-		runGuiExperiment(id, model, null);
+		runGuiExperiment(id, model, null, null, true);
+	}
+
+	/**
+	 * Opens a GUI experiment, optionally asking before closing an active experiment.
+	 */
+	public static boolean runGuiExperiment(final String id, final IModelSpecies model, final boolean confirmClose) {
+		return runGuiExperiment(id, model, null, null, confirmClose);
 	}
 
 	/**
@@ -381,24 +388,19 @@ public class GAMA {
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model,
 			final gama.api.utils.tests.TestSelection selection) {
-		runGuiExperiment(id, model, selection, null, null);
+		runGuiExperiment(id, model, selection, null, null, true);
 	}
 
-	/** Opens a GUI experiment synchronously, with server options installed before initialization. */
-	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
-			final IServerConfiguration configuration) {
-		return runGuiServerExperiment(id, model, configuration, null);
-	}
 
-	/** Opens a server-controlled GUI experiment with an optional initial seed. */
+	/** Opens a server-controlled GUI experiment synchronously with an optional initial seed. */
 	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
 			final IServerConfiguration configuration, final Double seed) {
-		return runGuiExperiment(id, model, null, configuration, seed);
+		return runGuiExperiment(id, model, null, configuration, seed, true);
 	}
 
 	private static boolean runGuiExperiment(final String id, final IModelSpecies model,
 			final gama.api.utils.tests.TestSelection selection, final IServerConfiguration configuration,
-			final Double seed) {
+			final Double seed, final boolean confirmClose) {
 		final IExperimentSpecies newExperiment = model.getExperiment(id);
 		if (newExperiment == null) return false;
 		if (selection != null) {
@@ -412,7 +414,7 @@ public class GAMA {
 			final IExperimentSpecies existingExperiment = controller.getExperiment();
 			if (existingExperiment != null) {
 				controller.processPause(true);
-				if (!getGui().confirmClose(existingExperiment)) return false;
+				if (confirmClose && !getGui().confirmClose(existingExperiment)) return false;
 			}
 		}
 

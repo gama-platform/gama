@@ -48,7 +48,7 @@ public final class LauncherHomeView extends ViewPart {
 				: configuration.startupExperiment();
 		final var scroll = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
 		GamaColors.setBackground(LaunchPresentation.backgroundColor(), scroll);
-		scroll.setForeground(LaunchPresentation.foregroundColor());
+		scroll.setForeground(LaunchPresentation.foregroundColor(scroll.getBackground()));
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
 		scroll.setBackgroundMode(SWT.INHERIT_FORCE);

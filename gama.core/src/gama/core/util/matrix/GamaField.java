@@ -397,7 +397,8 @@ public class GamaField extends GamaFloatMatrix implements IField {
 			GamaField result =
 					new GamaField(scope, numCols, numRows, Arrays.copyOf(getMatrix(), getMatrix().length), noDataValue);
 			if (bands.size() > 1) {
-				for (GamaField f : bands) {
+				for (int i = 1; i < bands.size(); i++) {
+					final GamaField f = bands.get(i);
 					result.bands.add(new GamaField(scope, numCols, numRows,
 							Arrays.copyOf(f.getMatrix(), f.getMatrix().length), noDataValue));
 				}

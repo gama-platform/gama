@@ -478,7 +478,8 @@ experiment Simulation type: gui autorun: true  {
 			event #mouse_down {ask simulation {do buttonPressed();}} 
 			
 			// window title
-			overlay position: {0, 0} size: { 0 #px, 0 #px } background: #white transparency: 0.0{
+			// A zero-size frame deliberately leaves the heading unclipped.
+			overlay coordinates: #screen position: {0, 0} size: {0, 0} background: #white transparency: 0.0{
 				draw string("Interaction matrix") at: {10 #px,10 #px}  anchor: #top_left color: #black font: font("SansSerif", overlayFontSize, #bold) ; 
             }
 		}
@@ -488,7 +489,7 @@ experiment Simulation type: gui autorun: true  {
 			camera  "myCamera" locked: true;
 			
 			// chart definition: cumulated population
-			chart "Cumulated population size" type: series style: area background: #white 
+			chart "Cumulated population size" kind: series style: area background: #white 
 			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(100,max(copy_between(first(solver_and_scheduler).lastCumValues, xRangeMax-xRange, xRangeMax)))} 
 			y_label: "Population (cumulated)"
 			visible: showCumulatedGraph series_label_position: none title_visible: false label_font: font("SansSerif", labelFontSize) {
@@ -498,7 +499,7 @@ experiment Simulation type: gui autorun: true  {
 			}
 			
 			// chart definition: time series
-			chart "Time series" type: series style: line background: #white 
+			chart "Time series" kind: series style: line background: #white 
 			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(30,max(copy_between(first(solver_and_scheduler).lastValues,xRangeMax - xRange, xRangeMax)))} 
 			y_label: "Population"
 			visible: !showCumulatedGraph series_label_position: none title_visible: false label_font: font("SansSerif", labelFontSize) {
@@ -511,7 +512,7 @@ experiment Simulation type: gui autorun: true  {
 			event #mouse_down {showCumulatedGraph <- !showCumulatedGraph;} 
 			
 			// window title
-			overlay position: {0, 0} size: {2000, 32#px} background: #white transparency: 0 rounded: false{
+			overlay coordinates: #screen position: {0, 0} size: {#display_width, 32} background: #white transparency: 0 rounded: false{
 				draw string("Population evolution") at: {10 #px,10 #px}  anchor: #top_left color: #black font:font("SansSerif", overlayFontSize, #bold) ; 
             }
            
@@ -582,7 +583,7 @@ experiment Simulation type: gui autorun: true  {
  			species animal aspect: interactionGraphAspect;
  			
  			// window title
- 			overlay position: { 0, 0} size: { 0 #px, 0 #px } background: #white transparency: 0.0{
+			overlay coordinates: #screen position: {0, 0} size: {0, 0} background: #white transparency: 0.0{
 				draw string("Interaction graph") at: {10 #px,10 #px} anchor: #top_left color: #black font:font("SansSerif", overlayFontSize, #bold) ; 
             }
 		}

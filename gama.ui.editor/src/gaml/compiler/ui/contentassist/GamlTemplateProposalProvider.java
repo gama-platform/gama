@@ -67,6 +67,8 @@ public class GamlTemplateProposalProvider extends DefaultTemplateProposalProvide
 		final EObject grammarElement = context.getCurrentNode().getGrammarElement();
 		if (grammarElement == ga.getML_COMMENTRule()) { return; }
 		if (grammarElement == ga.getSL_COMMENTRule()) { return; }
+		final GamlCompletionContext completion = GamlCompletionContext.at(context);
+		if (completion.memberAccess() || completion.invocationName()) return;
 		// TemplateContextType contextType = templateContext.getContextType();
 		final Template[] templates = store.getTemplates();
 		for (final Template template : templates) {

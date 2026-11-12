@@ -41,7 +41,7 @@ global {
 		}
 	}
 	reflex end_simulation when: infected_rate = 1.0 {
-		do pause();
+		experiment.pause();
 	}
 }
 
@@ -108,8 +108,8 @@ experiment main_experiment type:gui{
 			species people aspect:sphere3D;			
 			species building  transparency: 0.5;
 		}
-		display chart refresh: every(10#cycles)  type: 2d {
-			chart "Disease spreading" type: series style: spline {
+		display chart refresh: every(10#cycles)  type: 3d {
+			chart "Disease spreading" kind: series style: spline {
 				data "susceptible" value: nb_people_not_infected color: #green marker: false;
 				data "infected" value: nb_people_infected color: #red marker: false;
 			}

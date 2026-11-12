@@ -26,6 +26,7 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.ITesselator;
+import gama.ui.display.opengl.renderer.RenderDiagnostics;
 
 /**
  * Renderer-local CPU tessellations. Keys snapshot every contour, including Z, rather than retaining mutable JTS
@@ -63,9 +64,22 @@ public final class PolygonTessellationCache implements ITesselator {
 
 	private record Primitive(int type, double[] vertices) {}
 
-	private record Mesh(List<Primitive> primitives, int weight) {
+	public static final class Tessellation {
+		private final List<Primitive> primitives;
+		private final int weight;
+		private final boolean cacheable;
 
-		void draw(final ITesselator target) {
+		private Tessellation(final List<Primitive> primitives, final int weight, final boolean cacheable) {
+			this.primitives = primitives;
+			this.weight = weight;
+			this.cacheable = cacheable;
+		}
+
+		public int weight() { return weight; }
+
+		public boolean isCacheable() { return cacheable; }
+
+		public void draw(final ITesselator target) {
 			for (final Primitive primitive : primitives) {
 				target.beginDrawing(primitive.type());
 				final double[] v = primitive.vertices();
@@ -77,8 +91,8 @@ public final class PolygonTessellationCache implements ITesselator {
 		}
 	}
 
-	private final Cache<Contours, Mesh> meshes = CacheBuilder.newBuilder().maximumWeight(16 * 1024 * 1024)
-			.weigher((Contours key, Mesh mesh) -> mesh.weight()).build();
+	private final Cache<Contours, Tessellation> meshes = CacheBuilder.newBuilder().maximumWeight(16 * 1024 * 1024)
+			.weigher((Contours key, Tessellation mesh) -> mesh.weight()).build();
 
 	private final GLUtessellator tessellator = GLU.gluNewTess();
 	private final List<Primitive> primitives = new ArrayList<>();
@@ -94,9 +108,15 @@ public final class PolygonTessellationCache implements ITesselator {
 		GLU.gluTessProperty(tessellator, GLU.GLU_TESS_TOLERANCE, 0.1);
 	}
 
-	public void draw(final Polygon polygon, final ICoordinates exterior, final ITesselator target) {
+	public void draw(final Polygon polygon, final ICoordinates exterior, final ITesselator target,
+			final RenderDiagnostics diagnostics) {
+		get(polygon, exterior, diagnostics).draw(target);
+	}
+
+	public Tessellation get(final Polygon polygon, final ICoordinates exterior, final RenderDiagnostics diagnostics) {
 		final Contours key = new Contours(polygon, exterior);
-		Mesh mesh = meshes.getIfPresent(key);
+		Tessellation mesh = meshes.getIfPresent(key);
+		diagnostics.polygonCacheLookup(mesh != null);
 		if (mesh == null) {
 			primitives.clear();
 			failed = false;
@@ -113,13 +133,13 @@ public final class PolygonTessellationCache implements ITesselator {
 				for (final Primitive primitive : primitives) {
 					weight += 48L + primitive.vertices().length * (long) Double.BYTES;
 				}
-				mesh = new Mesh(List.copyOf(primitives), (int) Math.min(Integer.MAX_VALUE, weight));
+				mesh = new Tessellation(List.copyOf(primitives), (int) Math.min(Integer.MAX_VALUE, weight), !failed);
 				if (!failed) { meshes.put(key, mesh); }
 			} finally {
 				primitives.clear();
 			}
 		}
-		mesh.draw(target);
+		return mesh;
 	}
 
 	@Override

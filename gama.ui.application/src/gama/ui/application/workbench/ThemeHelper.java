@@ -11,8 +11,8 @@
 package gama.ui.application.workbench;
 
 import static gama.api.utils.prefs.GamaPreferences.create;
-import static gama.api.utils.prefs.GamaPreferences.Theme.NAME;
-import static gama.api.utils.prefs.GamaPreferences.Theme.UI;
+import static gama.api.utils.prefs.GamaPreferences.Interface.NAME;
+import static gama.api.utils.prefs.GamaPreferences.Interface.THEME;
 import static org.eclipse.swt.widgets.Display.isSystemDarkTheme;
 
 import java.io.IOException;
@@ -100,7 +100,7 @@ public class ThemeHelper {
 	/** The Constant CORE_THEME_FOLLOW. */
 	public static final Pref<Boolean> CORE_THEME_FOLLOW = create("pref_theme_follow",
 			"Follow the theme of the OS (currently " + (isSystemDarkTheme() ? "dark" : "light") + ")",
-			ThemeHelper::followOSTheme, IType.BOOL, false).in(NAME, UI).restartRequired()
+			ThemeHelper::followOSTheme, IType.BOOL, false).in(NAME, THEME).restartRequired()
 					.deactivates("pref_theme_light").onChange(yes -> {
 						followOSTheme(yes);
 						chooseThemeBasedOnPreferences();
@@ -108,7 +108,7 @@ public class ThemeHelper {
 
 	/** The Constant CORE_THEME_LIGHT. */
 	public static final Pref<Boolean> CORE_THEME_LIGHT =
-			create("pref_theme_light", "Theme to apply (requires restart)", true, IType.BOOL, false).in(NAME, UI)
+			create("pref_theme_light", "Theme to apply (requires restart)", true, IType.BOOL, false).in(NAME, THEME)
 					.restartRequired().onChange(yes -> {
 						chooseThemeBasedOnPreferences();
 					}).withLabels("Light", "Dark")
@@ -116,16 +116,16 @@ public class ThemeHelper {
 
 	public static final Pref<Boolean> CUSTOM_BACKGROUNDS = create("pref_theme_custom_backgrounds",
 			"Use custom theme backgrounds (requires restart)", false, IType.BOOL, false)
-					.in(NAME, UI).restartRequired().activates("pref_theme_background_light", "pref_theme_background_dark")
+					.in(NAME, THEME).restartRequired().activates("pref_theme_background_light", "pref_theme_background_dark")
 					.withLabels("Custom", "System");
 
 	public static final Pref<IColor> LIGHT_BACKGROUND = create("pref_theme_background_light",
 			"Light theme background (requires restart)", GamaPreferences.CREAM_PAPER, IType.COLOR, false)
-					.in(NAME, UI).restartRequired();
+					.in(NAME, THEME).restartRequired();
 
 	public static final Pref<IColor> DARK_BACKGROUND = create("pref_theme_background_dark",
 			"Dark theme background (requires restart)", () -> GamaColorFactory.get(38, 43, 42), IType.COLOR, false)
-					.in(NAME, UI).restartRequired();
+					.in(NAME, THEME).restartRequired();
 
 	// Freeze the applied settings for this process: saving preferences only affects the next launch.
 	private static class Backgrounds {

@@ -44,7 +44,7 @@ experiment loadgraph type: gui {
 	parameter "Tolerance" var: tolerance min: 0.0 max: 2.0 category: "Intersection";
 	parameter "Distance" var: distance min: 1.0 max: 50.0 category: "Distance";
 	output {
-		display map {
+		display map map_order: true {
 			species dummy_agent ;
 			graphics "the graph" {
 				loop edge over: the_graph.edges {

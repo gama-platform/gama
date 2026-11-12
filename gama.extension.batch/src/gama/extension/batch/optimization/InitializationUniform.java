@@ -17,8 +17,8 @@ import java.util.List;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
-import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
+import gama.extension.batch.BatchAgent;
 
 /**
  * The Class InitializationUniform.
@@ -42,7 +42,7 @@ public class InitializationUniform implements Initialization {
 		/*
 		 * for (final Chromosome chromosome : populationInit) { algo.computeChroFitness(scope, chromosome); }
 		 */
-		if (GamaExecutorService.shouldRunAllSimulationsInParallel(scope.getExperiment())) {
+		if (BatchAgent.shouldGroupParameterSets(scope.getExperiment())) {
 			algo.computePopFitnessAll(scope, populationInit);
 		} else {
 			algo.computePopFitness(scope, populationInit);

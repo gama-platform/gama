@@ -91,7 +91,7 @@ public class ParallelAgentExecuter extends ParallelAgentRunner<Object> {
 		// Plain boolean is sufficient: forEachRemaining runs sequentially on this single thread
 		for (final IAgent[] box = { null }; agents.tryAdvance(a -> box[0] = a);) {
 			if (!result) break;
-			result = scope.execute(executable, box[0], null).passed();
+			result = scope.execute(executable, box[0], true, null).passed();
 		}
 		return result;
 	}

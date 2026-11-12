@@ -15,6 +15,7 @@ import java.nio.IntBuffer;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
@@ -58,6 +59,8 @@ public class KeystoneHelper extends AbstractRendererHelper
 
 	/** The index buffer index. */
 	private int indexBufferIndex;
+
+	private int vertexArray;
 
 	/** The shader. */
 	private KeystoneShaderProgram shader;
@@ -157,6 +160,7 @@ public class KeystoneHelper extends AbstractRendererHelper
 		if (fboScene != null) { fboScene.cleanUp(); }
 		if (gl != null) {
 			gl.glDeleteBuffers(3, new int[] { indexBufferIndex, verticesBufferIndex, uvMappingBufferIndex }, 0);
+			if (vertexArray != 0) { gl.glDeleteVertexArrays(1, new int[] { vertexArray }, 0); }
 		}
 	}
 
@@ -173,6 +177,7 @@ public class KeystoneHelper extends AbstractRendererHelper
 		}
 		// redirect the rendering to the fbo_scene (will be rendered later, as a texture)
 		fboScene.bindFrameBuffer();
+		getOpenGL().invalidateTextureCache();
 
 	}
 
@@ -339,23 +344,44 @@ public class KeystoneHelper extends AbstractRendererHelper
 	 */
 	public void finishRenderToTexture() {
 		if (drawKeystoneHelper) { drawKeystoneMarks(); }
-		// gl.glDisable(GL4.GL_DEPTH_TEST); // disables depth testing
-		final AbstractPostprocessingShader theShader = getShader();
-		// unbind the last fbo
 		if (fboScene != null) {
-			// We verify if it is not null
 			fboScene.unbindCurrentFrameBuffer();
-			// prepare shader
-			theShader.start();
-			prepareShader(theShader);
-			// build the surface
-			createScreenSurface();
-			// draw
 			final GL4 gl = getGL();
-			gl.glDrawElements(GL.GL_TRIANGLES, 6, GL.GL_UNSIGNED_INT, 0);
-			theShader.stop();
-			gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
-			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+			final int[] state = new int[5];
+			gl.glGetIntegerv(GL4.GL_VERTEX_ARRAY_BINDING, state, 0);
+			gl.glGetIntegerv(GL4.GL_CURRENT_PROGRAM, state, 1);
+			gl.glGetIntegerv(GL.GL_ARRAY_BUFFER_BINDING, state, 2);
+			gl.glGetIntegerv(GL.GL_ACTIVE_TEXTURE, state, 3);
+			gl.glActiveTexture(GL.GL_TEXTURE0);
+			gl.glGetIntegerv(GL.GL_TEXTURE_BINDING_2D, state, 4);
+			final int[] polygonMode = new int[2];
+			gl.glGetIntegerv(GL2GL3.GL_POLYGON_MODE, polygonMode, 0);
+			final boolean depth = gl.glIsEnabled(GL.GL_DEPTH_TEST);
+			final boolean blend = gl.glIsEnabled(GL.GL_BLEND);
+			final boolean cull = gl.glIsEnabled(GL.GL_CULL_FACE);
+			try {
+				final AbstractPostprocessingShader theShader = getShader();
+				gl.glBindVertexArray(vertexArray);
+				gl.glDisable(GL.GL_DEPTH_TEST);
+				gl.glDisable(GL.GL_BLEND);
+				gl.glDisable(GL.GL_CULL_FACE);
+				gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
+				theShader.start();
+				prepareShader(theShader);
+				createScreenSurface();
+				gl.glDrawElements(GL.GL_TRIANGLES, 6, GL.GL_UNSIGNED_INT, 0);
+			} finally {
+				gl.glPolygonMode(GL.GL_FRONT_AND_BACK, polygonMode[0]);
+				if (depth) { gl.glEnable(GL.GL_DEPTH_TEST); }
+				if (blend) { gl.glEnable(GL.GL_BLEND); }
+				if (cull) { gl.glEnable(GL.GL_CULL_FACE); }
+				gl.glBindTexture(GL.GL_TEXTURE_2D, state[4]);
+				gl.glActiveTexture(state[3]);
+				getOpenGL().invalidateTextureCache();
+				gl.glBindBuffer(GL.GL_ARRAY_BUFFER, state[2]);
+				gl.glBindVertexArray(state[0]);
+				gl.glUseProgram(state[1]);
+			}
 		}
 
 	}
@@ -374,6 +400,9 @@ public class KeystoneHelper extends AbstractRendererHelper
 			uvMappingBufferIndex = handles[0];
 			verticesBufferIndex = handles[1];
 			indexBufferIndex = handles[2];
+			final int[] vao = new int[1];
+			gl.glGenVertexArrays(1, vao, 0);
+			vertexArray = vao[0];
 		}
 		return shader;
 	}
@@ -434,7 +463,7 @@ public class KeystoneHelper extends AbstractRendererHelper
 
 		}
 
-		getOpenGL().bindTexture(fboScene.getFBOTexture());
+		gl.glBindTexture(GL.GL_TEXTURE_2D, fboScene.getFBOTexture());
 		// Select the VBO, GPU memory data, to use for colors
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, indexBufferIndex);
 		gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, 24, ibIdxBuff, GL.GL_STATIC_DRAW);

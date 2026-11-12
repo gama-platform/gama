@@ -62,7 +62,14 @@ statement_keyword1 expression1 facet2: expression2... { // a sequence statement
   	<xsl:if test="not(@alt_name_of)">
 
 		<xsl:call-template name="buildFacets"/>
-		<xsl:call-template name="buildDefinition"/>				
+		<xsl:choose>
+			<xsl:when test="@shared_definition_of">
+				<xsl:text>
+Shared definition and examples: [</xsl:text><xsl:value-of select="@shared_definition_of"/><xsl:text>](#</xsl:text><xsl:value-of select="@shared_definition_of"/><xsl:text>)
+</xsl:text>
+			</xsl:when>
+			<xsl:otherwise><xsl:call-template name="buildDefinition"/></xsl:otherwise>
+		</xsl:choose>
 		<xsl:call-template name="buildEmbedments"/>
 	</xsl:if>
 		
@@ -100,7 +107,7 @@ See: [</xsl:text><xsl:value-of select="@alt_name_of"/><xsl:text>](#</xsl:text><x
 	<xsl:choose>
   		<xsl:when test="@optional = 'false'">  
 * **`<xsl:value-of select="@name"/>`** </xsl:when> <xsl:otherwise>
-* `<xsl:value-of select="@name"/>` </xsl:otherwise></xsl:choose>(<xsl:value-of select="@type"/>)<xsl:if test="@omissible = 'true'">, (omissible) </xsl:if><xsl:if test="@values"><xsl:value-of select="@values"/></xsl:if>: <xsl:value-of select="documentation/result"/> 
+* `<xsl:value-of select="@name"/>` </xsl:otherwise></xsl:choose>(<xsl:value-of select="@type"/>)<xsl:if test="@omissible = 'true'">, (omissible) </xsl:if><xsl:if test="@values"><xsl:value-of select="@values"/></xsl:if>: <xsl:value-of select="documentation/result"/><xsl:if test="@specific_to"> Applies to: <xsl:value-of select="@specific_to"/>.</xsl:if><xsl:if test="@excludes"> Cannot be combined with: <xsl:value-of select="@excludes"/>.</xsl:if><xsl:if test="@requires"> Requires: <xsl:value-of select="@requires"/>.</xsl:if>
 </xsl:for-each>
 </xsl:template>
 

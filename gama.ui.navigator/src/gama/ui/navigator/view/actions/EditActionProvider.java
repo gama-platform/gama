@@ -24,6 +24,7 @@ import org.eclipse.ui.actions.TextActionHandler;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
+import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -127,6 +128,8 @@ public class EditActionProvider extends CommonActionProvider {
 	@Override
 	public void fillContextMenu(final IMenuManager menu) {
 		final IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
+		if (selection.toList().stream()
+				.anyMatch(o -> o instanceof VirtualContent<?> content && !content.supportsWorkspaceActions())) return;
 
 		copyAction.selectionChanged(selection);
 		menu.appendToGroup("group.copy", copyAction);

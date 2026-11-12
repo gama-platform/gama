@@ -55,6 +55,7 @@ import gama.api.kernel.species.GamlSpecies;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.ExecutionScope;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
@@ -147,6 +148,11 @@ import gama.gaml.statements.LayoutStatement;
 						optional = true,
 						doc = @doc ("In the case of a batch experiment, specifies whether or not the simulations should be kept in memory for further analysis or immediately discarded with only their fitness kept in memory")),
 				@facet (
+						name = GamaExecutorService.GROUP_PARAMETER_SETS,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("For batch experiments, whether to group simulations from different parameter sets for evaluation (true by default, including in headless mode). Evaluated once when evaluation starts. false processes one parameter set at a time. Grouping changes when experiment behaviors and outputs are stepped and may change optimization behavior. The parallel facet independently limits the number of concurrent simulations.")),
+				@facet (
 						name = IKeyword.REPEAT,
 						type = IType.INT,
 						optional = true,
@@ -160,7 +166,7 @@ import gama.gaml.statements.LayoutStatement;
 						name = IKeyword.PARALLEL,
 						type = { IType.BOOL, IType.INT },
 						optional = true,
-						doc = @doc ("When set to true, use multiple threads to run its simulations. Setting it to n will set the numbers of threads to use")),
+						doc = @doc ("Controls how many simulations of this experiment can step concurrently. If omitted or false, simulations run sequentially. true uses the configured thread count; a positive integer sets the maximum number of concurrent simulations. Headless non-batch experiments remain sequential.")),
 				@facet (
 						name = IKeyword.TYPE,
 						type = IType.LABEL,

@@ -24,7 +24,7 @@ global {
 			save bug to: "../results/bug_agents.csv" format:"csv" rewrite: true;
 		}
 		//Pause the model as the data are saved
-		do pause();
+		experiment.pause();
 	}
 }
 

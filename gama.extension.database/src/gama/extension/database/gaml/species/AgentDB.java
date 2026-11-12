@@ -143,6 +143,8 @@ public class AgentDB extends GamlAgent {
 			args = { @arg (
 					name = "params",
 					type = IType.MAP,
+					of = IType.STRING,
+					index = IType.STRING,
 					optional = false,
 					doc = @doc ("Connection parameters")) },
 			doc = @doc (
@@ -185,6 +187,8 @@ public class AgentDB extends GamlAgent {
 			args = { @arg (
 					name = "params",
 					type = IType.MAP,
+					of = IType.STRING,
+					index = IType.STRING,
 					optional = false,
 					doc = @doc ("Connection parameters")) },
 			doc = @doc (
@@ -227,6 +231,7 @@ public class AgentDB extends GamlAgent {
 					@arg (
 							name = "values",
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = true,
 							doc = @doc ("List of values that are used to replace question marks. Omitted, nil or empty means no parameters.")) },
 			doc = @doc (
@@ -271,6 +276,7 @@ public class AgentDB extends GamlAgent {
 					@arg (
 							name = "values",
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = true,
 							doc = @doc ("List of values that are used to replace question mark. Omitted, nil or empty means no parameters.")) },
 			doc = @doc (
@@ -335,6 +341,8 @@ public class AgentDB extends GamlAgent {
 			args = { @arg (
 					name = "params",
 					type = IType.MAP,
+					of = IType.STRING,
+					index = IType.STRING,
 					optional = false,
 					doc = @doc ("Connection parameters")) },
 			doc = @doc (

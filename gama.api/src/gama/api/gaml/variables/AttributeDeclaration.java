@@ -201,6 +201,7 @@ import gama.dev.DEBUG;
 
 				@facet (
 						name = IKeyword.FUNCTION,
+						excludes = { IKeyword.INIT, IKeyword.UPDATE, IKeyword.ON_CHANGE },
 						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
 						type = IType.NONE,
 						optional = true,
@@ -311,15 +312,6 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 					}
 				}
 			}
-			// The name is ok. Now verifying the logic of facets
-			// Verifying that 'function' is not used in conjunction with other
-			// "value" facets
-			if (cd.hasFacet(FUNCTION) && (cd.hasFacet(INIT) || cd.hasFacet(UPDATE) || cd.hasFacet(ON_CHANGE))) {
-				cd.error("A function cannot have an 'init', 'on_change' or 'update' facet", IGamlIssue.REMOVE_VALUE,
-						FUNCTION);
-				return;
-			}
-
 			// Verifying that a constant has not 'update' or 'function' facet
 			// and is not a parameter
 			if (TRUE.equals(cd.getLitteral(CONST))) {

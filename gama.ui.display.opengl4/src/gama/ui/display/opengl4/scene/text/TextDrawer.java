@@ -17,6 +17,7 @@ import static com.jogamp.opengl.GL.GL_TRIANGLE_STRIP;
 import static java.awt.geom.PathIterator.SEG_CLOSE;
 import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
+import static com.jogamp.opengl.glu.GLU.*;
 
 import java.awt.Font;
 import java.awt.Shape;
@@ -29,18 +30,33 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.DoubleBuffer;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import com.jogamp.graph.curve.Region;
+import com.jogamp.graph.curve.OutlineShape;
 import com.jogamp.graph.curve.opengl.RegionRenderer;
 import com.jogamp.graph.curve.opengl.TextRegionUtil;
 import com.jogamp.graph.font.FontFactory;
+import com.jogamp.math.Recti;
+import com.jogamp.math.Vec3f;
 import com.jogamp.math.Vec4f;
 import com.jogamp.math.util.PMVMatrix4f;
+import com.jogamp.math.geom.plane.Winding;
 import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL4;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUtessellator;
 
 import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
@@ -51,7 +67,10 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
+import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl4.OpenGL;
+import gama.ui.display.opengl.ITesselator;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.text.StringObject;
 
@@ -73,24 +92,23 @@ import gama.ui.display.opengl.scene.text.StringObject;
  * {@link TextRegionUtil#drawString3D} is used in pass-through mode which manages its own internal glyph cache.</li>
  * <li>For <b>non-perspective</b> (overlay / screen-space) text the renderer switches the projection to an orthographic
  * screen-space matrix before issuing the draw call, then restores it.</li>
- * <li>For <b>3-D extruded</b> text ({@code depth > 0}) the flat face is rendered by the graph library while the lateral
- * (side) geometry is still produced by the AWT outline → GLU-tessellator path, because the graph library only provides
- * 2-D outline rendering.</li>
+ * <li>Extruded, bordered, textured and wireframe perspective text use one AWT outline for both caps and sides,
+ * tessellated by GLU on the CPU and rendered through the core-profile VBO path.</li>
  * </ul>
  *
  * <h3>Thread safety</h3> All methods must be called from the GL thread.
  */
-public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
+public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements ITesselator {
 
 	// -------------------------------------------------------------------------
 	// JOGL graph / curve API state
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Hint flags for the JOGL graph region renderer. {@code VBAA_RENDERING_BIT} enables 2-pass vertex-buffer
-	 * anti-aliasing for smooth text at any size.
+	 * Draw curves directly into the scene's multisampled framebuffer. JOGL's two-pass mode composites
+	 * into the context's default framebuffer, not necessarily the display's active render target.
 	 */
-	private static final int RENDER_HINTS = Region.VBAA_RENDERING_BIT;
+	private static final int RENDER_HINTS = Region.NORM_RENDERING_BIT;
 
 	/**
 	 * The JOGL graph region renderer. Created lazily on first use so that it is initialised on the correct GL thread.
@@ -98,20 +116,68 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	 */
 	private RegionRenderer regionRenderer;
 
+	public static final boolean DIAGNOSTICS = Boolean.getBoolean("gama.opengl4.debug.text");
+
+	private int diagnosticDraws;
+
+	public static void traceState(final GL4 gl4, final String stage) {
+		final int[] state = new int[10];
+		gl4.glGetIntegerv(GL.GL_VIEWPORT, state, 0);
+		gl4.glGetIntegerv(GL.GL_DRAW_FRAMEBUFFER_BINDING, state, 4);
+		gl4.glGetIntegerv(GL.GL_READ_FRAMEBUFFER_BINDING, state, 5);
+		gl4.glGetIntegerv(GL4.GL_VERTEX_ARRAY_BINDING, state, 6);
+		gl4.glGetIntegerv(GL2ES2.GL_CURRENT_PROGRAM, state, 7);
+		gl4.glGetIntegerv(GL.GL_SAMPLES, state, 8);
+		gl4.glGetIntegerv(GL.GL_DEPTH_FUNC, state, 9);
+		DEBUG.ERR("[GL4-TEXT single-pass-20261104] context=" + gl4.getContext().hashCode() + " " + stage
+				+ " viewport/fboDraw/fboRead/vao/program/samples/depthFunc=" + Arrays.toString(state)
+				+ " framebufferStatus=0x" + Integer.toHexString(gl4.glCheckFramebufferStatus(GL.GL_DRAW_FRAMEBUFFER))
+				+ " depth=" + gl4.glIsEnabled(GL.GL_DEPTH_TEST) + " blend=" + gl4.glIsEnabled(GL.GL_BLEND)
+				+ " cull=" + gl4.glIsEnabled(GL.GL_CULL_FACE) + " scissor=" + gl4.glIsEnabled(GL.GL_SCISSOR_TEST));
+		// Reading errors consumes them; keep this temporary diagnostic bounded.
+		for (int i = 0; i < 8; i++) {
+			final int error = gl4.glGetError();
+			if (error == GL.GL_NO_ERROR) break;
+			DEBUG.ERR("[GL4-TEXT] " + stage + " GL error=0x" + Integer.toHexString(error));
+		}
+	}
+
 	/**
 	 * High-level utility wrapper around the region renderer that provides the {@link TextRegionUtil#drawString3D}
 	 * convenience method.
 	 */
 	private TextRegionUtil textUtil;
 
+	private int textVertexArray;
+
 	/**
-	 * Cache of wrapped JOGL {@link com.jogamp.graph.font.Font} objects, keyed by the AWT {@link Font}. Wrapping an AWT
-	 * font is inexpensive but not free; caching avoids repeated reflection overhead.
+	 * Cache of JOGL fonts, including the screen/world fallback family in the key.
 	 */
-	private final Map<Font, com.jogamp.graph.font.Font> fontCache = new HashMap<>();
+	private record FontKey(Font font, boolean overlay) {}
+
+	private final Map<FontKey, com.jogamp.graph.font.Font> fontCache = new HashMap<>();
+	private final Set<OutlineShape> normalizedGlyphs = Collections.newSetFromMap(new IdentityHashMap<>());
+
+	private void normalizeGlyphs(final com.jogamp.graph.font.Font font, final String text) {
+		for (int i = 0; i < text.length(); i++) {
+			final OutlineShape shape = font.getGlyph(text.charAt(i)).getShape();
+			if (shape == null || !normalizedGlyphs.add(shape) || shape.getOutlineCount() == 0) continue;
+			var outer = shape.getOutline(0);
+			for (int contour = 1; contour < shape.getOutlineCount(); contour++) {
+				if (shape.getOutline(contour).compareTo(outer) > 0) { outer = shape.getOutline(contour); }
+			}
+			// JOGL assumes CCW outer contours. Some fonts reverse every contour within particular glyphs.
+			if (outer.getWinding() != Winding.CW) continue;
+			for (int contour = 0; contour < shape.getOutlineCount(); contour++) {
+				final var outline = shape.getOutline(contour);
+				outline.setWinding(outline.getWinding() == Winding.CW ? Winding.CCW : Winding.CW);
+			}
+			shape.clearCache();
+		}
+	}
 
 	// -------------------------------------------------------------------------
-	// Contour geometry state (used for 3-D extrusion side geometry and FastTriangulation face tessellation)
+	// Contour geometry state
 	// -------------------------------------------------------------------------
 
 	/** Temporary coordinate sequence used to compute side-face normals. */
@@ -121,10 +187,14 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	IPoint normal = GamaPointFactory.create();
 
 	/** X coordinate of the previous contour vertex, used to compute extrusion normals. */
-	double previousX = Double.MIN_VALUE;
+	double previousX = Double.NaN;
 
 	/** Y coordinate of the previous contour vertex. */
-	double previousY = Double.MIN_VALUE;
+	double previousY = Double.NaN;
+
+	private int contourStartNormalPos = -1;
+
+	private final GLUtessellator tessellator = gluNewTess();
 
 	/** Current contour-index pointer into {@link #indices}. */
 	int currentIndex = -1;
@@ -142,7 +212,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	/** AffineTransform that flips the Y axis so glyph outlines match OpenGL's Y-up convention. */
 	private static final AffineTransform AT = AffineTransform.getScaleInstance(1.0, -1.0);
 
-	/** AWT font render context — used only for 3-D extrusion bounding-box computation. */
+	/** AWT font render context for outline text. */
 	private static final FontRenderContext FONT_CTX = new FontRenderContext(new AffineTransform(), true, true);
 
 	// -------------------------------------------------------------------------
@@ -195,6 +265,20 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	/** Extrusion depth of the current string (0 = flat). */
 	double depth;
 
+	private record OutlineKey(Font font, String text, double precision, double depth, boolean wireframe) {}
+
+	private record OutlineGeometry(Rectangle2D bounds, double[] faces, double[] textures, double[] normals,
+			double[] sides, int[] contours) {
+		int weight() {
+			return 256 + Double.BYTES * (faces.length + textures.length + normals.length + sides.length)
+					+ Integer.BYTES * contours.length;
+		}
+	}
+
+	private final Cache<OutlineKey, OutlineGeometry> outlines = CacheBuilder.newBuilder()
+			.maximumWeight(16 * 1024 * 1024)
+			.weigher((OutlineKey key, OutlineGeometry geometry) -> geometry.weight()).build();
+
 	// -------------------------------------------------------------------------
 	// Constructor
 	// -------------------------------------------------------------------------
@@ -207,6 +291,11 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	 */
 	public TextDrawer(final OpenGL gl) {
 		super(gl);
+		gluTessCallback(tessellator, GLU_TESS_VERTEX, this);
+		gluTessCallback(tessellator, GLU_TESS_COMBINE, this);
+		gluTessCallback(tessellator, GLU_TESS_ERROR, this);
+		// An edge-flag callback requests independent triangles, not strips or fans.
+		gluTessCallback(tessellator, GLU_TESS_EDGE_FLAG, this);
 	}
 
 	// -------------------------------------------------------------------------
@@ -231,7 +320,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 			regionRenderer.init(gl2es2);
 			textUtil = new TextRegionUtil(RENDER_HINTS);
 		} catch (final Exception e) {
-			DEBUG.ERR("TextDrawer: failed to initialise RegionRenderer — " + e.getMessage());
+			DEBUG.ERR("TextDrawer: failed to initialise RegionRenderer", e);
 			regionRenderer = null;
 		}
 		return regionRenderer;
@@ -488,11 +577,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	 * @return the JOGL font, or {@code null} if no font could be loaded
 	 */
 	private com.jogamp.graph.font.Font getJoglFont(final Font awtFont, final boolean overlay) {
-		// Note: the cache key is the AWT Font; overlay fonts (defaulting to JetBrainsMonoNL) and world-space
-		// fonts (defaulting to Poppins) with the same AWT Font object would collide — but in practice the
-		// AWT Font object already encodes the family name, so "default" overlay vs. "default" world-space
-		// would differ only if both requested the exact same AWT Font, which is unlikely.
-		return fontCache.computeIfAbsent(awtFont, f -> loadJoglFont(f, overlay));
+		return fontCache.computeIfAbsent(new FontKey(awtFont, overlay), key -> loadJoglFont(key.font(), key.overlay()));
 	}
 
 	/**
@@ -582,17 +667,32 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	@Override
 	protected void _draw(final StringObject s) {
 		final IDrawingAttributes attributes = s.getAttributes();
+		if (gl.getRenderer().getPickingHelper().isBeginningPicking()) {
+			if (attributes.isPerspective()) {
+				drawOutline(s.getObject(), attributes);
+			} else {
+				drawBillboardForPicking(s.getObject(), attributes);
+			}
+			return;
+		}
+		if (DIAGNOSTICS && diagnosticDraws < 12) {
+			DEBUG.ERR("[GL4-TEXT] dispatch perspective=" + attributes.isPerspective() + " depth="
+					+ attributes.getDepth() + " empty=" + attributes.isEmpty() + " border=" + attributes.getBorder()
+					+ " textured=" + gl.isTextured());
+		}
 		if (!attributes.isPerspective()) {
 			drawWithGraphLibrary(s.getObject(), attributes, true);
-		} else {
-			final double d = attributes.getDepth();
-			if (d <= 0) {
-				// Flat perspective text — fully handled by the graph library
-				drawWithGraphLibrary(s.getObject(), attributes, false);
-			} else {
-				// Extruded 3-D text: use graph library for faces, legacy path for sides
-				drawExtruded(s.getObject(), attributes);
+		} else if (attributes.getDepth() > 0 || attributes.isEmpty() || attributes.getBorder() != null
+				|| gl.isTextured()) {
+			final boolean diagnose = DIAGNOSTICS && diagnosticDraws++ < 12;
+			if (diagnose) { traceState(gl.getGL(), "before outline"); }
+			try {
+				drawOutline(s.getObject(), attributes);
+			} finally {
+				if (diagnose) { traceState(gl.getGL(), "after outline"); }
 			}
+		} else {
+			drawWithGraphLibrary(s.getObject(), attributes, false);
 		}
 	}
 
@@ -614,7 +714,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	 */
 	public void drawWithGraphLibraryPublic(final String text, final IDrawingAttributes attributes,
 			final boolean overlay) {
-		drawWithGraphLibrary(text, attributes, overlay);
+		drawWithGraphLibrary(text, attributes, overlay, overlay);
 	}
 
 	/**
@@ -636,200 +736,285 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	 *            {@code true} to render in screen / overlay space; {@code false} for world space
 	 */
 	private void drawWithGraphLibrary(final String text, final IDrawingAttributes attributes, final boolean overlay) {
+		drawWithGraphLibrary(text, attributes, overlay, false);
+	}
+
+	private void drawWithGraphLibrary(final String text, final IDrawingAttributes attributes, final boolean overlay,
+			final boolean viewportPosition) {
+		try {
+			drawGraphText(text, attributes, overlay, viewportPosition);
+		} catch (final RuntimeException | LinkageError e) {
+			if (DIAGNOSTICS && diagnosticDraws <= 12) { DEBUG.ERR("[GL4-TEXT] text preparation/draw failed", e); }
+			throw e;
+		}
+	}
+
+	private void drawGraphText(final String text, final IDrawingAttributes attributes, final boolean overlay,
+			final boolean viewportPosition) {
 		final com.jogamp.opengl.GL4 gl4 = gl.getGL();
+		final boolean diagnose = DIAGNOSTICS && diagnosticDraws++ < 12;
+		if (diagnose) {
+			traceState(gl4, "graph entry");
+			DEBUG.ERR("[GL4-TEXT] textLength=" + text.length() + " billboard=" + overlay
+					+ " viewportPosition=" + viewportPosition + " location=" + attributes.getLocation()
+					+ " anchor=" + attributes.getAnchor() + " font=" + attributes.getFont()
+					+ " view=" + gl.getViewWidth() + "x" + gl.getViewHeight()
+					+ " pixel/model ratio=" + gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
+		}
+		if (diagnose) { DEBUG.ERR("[GL4-TEXT] preparing region renderer"); }
 		final RegionRenderer rr = getRegionRenderer(gl4);
+		if (diagnose) { DEBUG.ERR("[GL4-TEXT] region renderer ready=" + (rr != null)); }
 		if (rr == null) {
-			if (!overlay) { drawLegacyPerspective(text, attributes); }
+			if (diagnose) { DEBUG.ERR("[GL4-TEXT] graph skipped: region renderer unavailable"); }
+			if (!overlay) { drawOutline(text, attributes); }
 			return;
 		}
 		final IFont gamaFont = attributes.getFont();
-		if (gamaFont == null) return;
+		if (gamaFont == null) {
+			if (diagnose) { DEBUG.ERR("[GL4-TEXT] graph skipped: null GAMA font"); }
+			return;
+		}
 		final Font awtFont = gamaFont.getAwtFont();
+		if (diagnose) { DEBUG.ERR("[GL4-TEXT] resolving JOGL font for " + awtFont); }
 		final com.jogamp.graph.font.Font joglFont = getJoglFont(awtFont, overlay);
+		if (diagnose) { DEBUG.ERR("[GL4-TEXT] JOGL font resolved=" + (joglFont != null)); }
 		if (joglFont == null) {
-			if (!overlay) { drawLegacyPerspective(text, attributes); }
+			if (diagnose) { DEBUG.ERR("[GL4-TEXT] graph skipped: JOGL font unavailable for " + awtFont); }
+			if (!overlay) { drawOutline(text, attributes); }
 			return;
 		}
 
+		final GL2ES2 gl2es2 = gl4.getGL2ES2();
+		normalizeGlyphs(joglFont, text);
+		final IPoint p = attributes.getLocation();
+		final IPoint anchor = attributes.getAnchor();
+
+		final float scale = overlay ? 1f
+				: 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
+		final float pixelSize = awtFont.getSize2D() * scale;
+
+		final int[] viewport = gl.getViewport();
+		if (diagnose) {
+			DEBUG.ERR("[GL4-TEXT] preparing matrices: cached viewport=" + Arrays.toString(viewport));
+		}
+		rr.reshapeNotify(viewport[0], viewport[1], viewport[2], viewport[3]);
+		final PMVMatrix4f pmv = rr.getMatrix();
+		final float[] projection = new float[16];
+		final float[] modelView = new float[16];
+		gl.getProjectionMatrix().get(projection);
+		gl.getModelViewMatrix().get(modelView);
+		pmv.loadP(projection, 0);
+		pmv.loadMv(modelView, 0);
+		if (overlay) {
+			final Vec3f position = new Vec3f((float) p.getX(), (float) p.getY(), (float) p.getZ());
+			if (!viewportPosition) {
+				// Billboard text still needs the containing layer and camera to locate its anchor.
+				if (!pmv.mapObjToWin(position, new Recti(0, 0, (int) gl.getViewWidth(),
+						(int) gl.getViewHeight()), position)) {
+					if (diagnose) { DEBUG.ERR("[GL4-TEXT] graph skipped: anchor projection failed"); }
+					return;
+				}
+			} else {
+				position.set((float) p.getX(), (float) p.getY(), 0);
+			}
+			pmv.loadPIdentity();
+			pmv.loadMvIdentity();
+			pmv.orthoP(0, gl.getViewWidth(), 0, gl.getViewHeight(), -1, 1);
+			pmv.translateMv(position.x(), position.y(), 0);
+		} else {
+			pmv.translateMv((float) p.getX(), (float) p.getY(), (float) p.getZ());
+		}
+		final AxisAngle rotation = attributes.getRotation();
+		if (rotation != null) {
+			final IPoint axis = rotation.getAxis();
+			pmv.rotateMv((float) Math.toRadians(-rotation.getAngle()), (float) axis.getX(),
+					(float) axis.getY(), (float) axis.getZ());
+		}
+		pmv.scaleMv(pixelSize, pixelSize, pixelSize);
+		final var bounds = joglFont.getGlyphBounds(text);
+		if (diagnose) { DEBUG.ERR("[GL4-TEXT] glyph bounds ready; applying anchor=" + anchor); }
+		pmv.translateMv(-bounds.getMinX() - bounds.getWidth() * (float) anchor.getX(),
+				-bounds.getMinY() - bounds.getHeight() * (float) anchor.getY(), 0);
+		if (attributes instanceof TextDrawingAttributes adaptive && adaptive.isAdaptiveDraw()) {
+			final Rectangle2D screenBounds = new Rectangle2D.Double();
+			final Vec3f position = new Vec3f();
+			final Recti view = new Recti(0, 0, gl.getViewWidth(), gl.getViewHeight());
+			boolean first = true;
+			for (int corner = 0; corner < 4; corner++) {
+				final Vec3f point = new Vec3f((corner & 1) == 0 ? bounds.getMinX() : bounds.getMaxX(),
+						(corner & 2) == 0 ? bounds.getMinY() : bounds.getMaxY(), 0);
+				if (!pmv.mapObjToWin(point, view, position) || position.z() < 0 || position.z() > 1) continue;
+				final double x = position.x(), y = gl.getViewHeight() - position.y();
+				if (first) {
+					screenBounds.setRect(x, y, 0, 0);
+					first = false;
+				} else {
+					screenBounds.add(x, y);
+				}
+			}
+			gl.getRenderer().getAdaptiveTextHelper().resolveDraw(adaptive, screenBounds);
+		}
 		final IColor c = gl.getCurrentColor();
 		final Vec4f color = new Vec4f((float) (c.red() / 255.0), (float) (c.green() / 255.0),
 				(float) (c.blue() / 255.0), (float) (c.alpha() / 255.0 * gl.getCurrentObjectAlpha()));
-
-		final GL2ES2 gl2es2 = gl4.getGL2ES2();
-		final IPoint p = attributes.getLocation();
-		final IPoint anchor = attributes.getAnchor();
-
-		// Font units → model units scale factor: font size in points = font size in screen pixels
-		final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-
-		// The graph library uses EM-unit font sizes: pixelSize is the target em-square height in model units
-		final float pixelSize = awtFont.getSize2D() * scale;
-
-		// Load the current projection/modelview matrices into the PMVMatrix4f owned by the RegionRenderer
-		final PMVMatrix4f pmv = rr.getMatrix();
-		if (overlay) {
-			// Screen-space ortho: map [0..w] x [0..h] to NDC
-			pmv.getP().loadIdentity();
-			pmv.getMv().loadIdentity();
-			pmv.orthoP(0, gl.getViewWidth(), 0, gl.getViewHeight(), -1, 1);
-		} else {
-			// World-space: copy from our MatrixStack (column-major float[16])
-			final float[] projArr = new float[16];
-			final float[] mvArr = new float[16];
-			gl.getProjectionMatrix().get(projArr);
-			gl.getModelViewMatrix().get(mvArr);
-			pmv.getP().load(projArr, 0);
-			pmv.getMv().load(mvArr, 0);
+		if (diagnose) {
+			DEBUG.ERR("[GL4-TEXT] awtFont=" + awtFont + " joglFont=" + joglFont + " pixelSize=" + pixelSize
+					+ " color=" + color + " bounds=" + bounds + " zTranslation=" + gl.getCurrentZTranslation()
+					+ " projection=" + Arrays.toString(projection) + " modelView=" + Arrays.toString(modelView)
+					+ " graphMatrices=" + pmv);
+			traceState(gl4, "before graph enable");
 		}
-
+		final int[] state = new int[10];
+		final int[] previousViewport = new int[4];
+		gl4.glGetIntegerv(GL4.GL_VERTEX_ARRAY_BINDING, state, 0);
+		gl4.glGetIntegerv(GL4.GL_DRAW_FRAMEBUFFER_BINDING, state, 1);
+		gl4.glGetIntegerv(GL4.GL_READ_FRAMEBUFFER_BINDING, state, 2);
+		gl4.glGetIntegerv(GL.GL_ACTIVE_TEXTURE, state, 3);
+		gl4.glGetIntegerv(GL.GL_BLEND_SRC_RGB, state, 4);
+		gl4.glGetIntegerv(GL.GL_BLEND_DST_RGB, state, 5);
+		gl4.glGetIntegerv(GL.GL_BLEND_SRC_ALPHA, state, 6);
+		gl4.glGetIntegerv(GL.GL_BLEND_DST_ALPHA, state, 7);
+		gl4.glGetIntegerv(GL2ES2.GL_CURRENT_PROGRAM, state, 8);
+		gl4.glGetIntegerv(GL.GL_VIEWPORT, previousViewport, 0);
+		final boolean blendEnabled = gl4.glIsEnabled(GL.GL_BLEND);
+		final byte[] depthWrite = new byte[1];
+		gl4.glGetBooleanv(GL.GL_DEPTH_WRITEMASK, depthWrite, 0);
+		gl4.glActiveTexture(GL.GL_TEXTURE0);
+		gl4.glGetIntegerv(GL.GL_TEXTURE_BINDING_2D, state, 9);
+		if (textVertexArray == 0) {
+			final int[] vao = new int[1];
+			gl4.glGenVertexArrays(1, vao, 0);
+			textVertexArray = vao[0];
+		}
 		try {
+			// JOGL's graph VBOs need a caller-owned VAO in a core-profile context.
+			gl4.glBindVertexArray(textVertexArray);
 			rr.enable(gl2es2, true);
-			gl.pushMatrix();
 			try {
-				final boolean rotated = applyRotation(attributes, p);
-				final double locX = rotated ? 0 : p.getX();
-				final double locY = rotated ? 0 : p.getY();
-				final double locZ = rotated ? 0 : p.getZ();
-				if (overlay) {
-					gl.translateBy(locX, locY, locZ);
-				} else {
-					gl.translateBy(locX, locY, locZ + gl.getCurrentZTranslation());
-				}
-				// Approximate advance width for anchor offset: ascent * pixelSize * charCount
-				final float approxWidth = joglFont.getMetrics().getAscent() * pixelSize * text.length() * 0.6f;
-				final float approxHeight = pixelSize;
-				gl.translateBy(-approxWidth * anchor.getX(), approxHeight * (1f - (float) anchor.getY()), 0);
-
-				// JOGL 2.6: drawString3D(GL2ES2, RegionRenderer, Font, CharSequence, Vec4f)
+				if (diagnose) { traceState(gl4, "before glyph draw"); }
 				textUtil.drawString3D(gl2es2, rr, joglFont, text, color);
+				if (diagnose) { traceState(gl4, "after glyph draw"); }
 			} finally {
-				gl.popMatrix();
 				rr.enable(gl2es2, false);
 			}
 		} catch (final Exception e) {
-			DEBUG.ERR("TextDrawer.drawWithGraphLibrary: " + e.getMessage());
-		}
-	}
-
-	// -------------------------------------------------------------------------
-	// Extruded (depth > 0) text
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Draws extruded 3-D text. The front and back faces are rendered by the graph library (flat, at z=0 and z=depth).
-	 * The lateral side geometry is built from the AWT glyph outline and rendered via the standard
-	 * {@link OpenGL#beginDrawing}/{@link OpenGL#endDrawing} VBO path.
-	 *
-	 * @param text
-	 *            the string to render
-	 * @param attributes
-	 *            the drawing attributes
-	 */
-	private void drawExtruded(final String text, final IDrawingAttributes attributes) {
-		// Compute bounds from AWT (needed for side geometry and anchor positioning)
-		final Font awtFont = attributes.getFont().getAwtFont();
-		final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
-		final Rectangle2D bounds = shape.getBounds2D();
-
-		this.depth = attributes.getDepth();
-		this.border = attributes.getBorder();
-		this.width = bounds.getWidth();
-		this.height = bounds.getHeight();
-
-		// Build side/border geometry buffers from the AWT path
-		faceVertexBuffer.clear();
-		faceTextureBuffer.clear();
-		sideNormalBuffer.clear();
-		sideQuadsBuffer.clear();
-		currentIndex = -1;
-		process(shape.getPathIterator(AT, attributes.getPrecision()));
-
-		// Position everything
-		final IPoint p = attributes.getLocation();
-		final IPoint anchor = attributes.getAnchor();
-		final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-
-		IColor previous = null;
-		gl.pushMatrix();
-		try {
-			final boolean rotated = applyRotation(attributes, p);
-			final double locX = rotated ? 0 : p.getX();
-			final double locY = rotated ? 0 : p.getY();
-			final double locZ = rotated ? 0 : p.getZ();
-			gl.translateBy(locX - width * scale * anchor.getX(), locY + bounds.getY() * scale * anchor.getY(),
-					locZ + gl.getCurrentZTranslation());
-			gl.scaleBy(scale, scale, scale);
-
-			if (!gl.isWireframe()) {
-				// Front face (z = 0) — via graph library
-				drawWithGraphLibrary(text, attributes, false);
-				// Side faces
-				drawSide();
-				// Back face (z = depth) — translate, draw, translate back
-				gl.translateBy(0, 0, depth);
-				drawWithGraphLibrary(text, attributes, false);
-				gl.translateBy(0, 0, -depth);
-				// Border
-				if (border != null) {
-					previous = gl.getCurrentColor();
-					gl.setCurrentColor(border);
-					gl.translateBy(0, 0, depth + 5 * gl.getCurrentZIncrement());
-					drawBorder();
-					gl.translateBy(0, 0, -depth - 5 * gl.getCurrentZIncrement());
-				}
-			} else {
-				if (border != null) {
-					previous = gl.getCurrentColor();
-					gl.setCurrentColor(border);
-				}
-				drawSide();
-			}
+			DEBUG.ERR("TextDrawer.drawWithGraphLibrary", e);
 		} finally {
-			if (previous != null) { gl.setCurrentColor(previous); }
-			gl.popMatrix();
+			gl4.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, state[1]);
+			gl4.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, state[2]);
+			gl4.glViewport(previousViewport[0], previousViewport[1], previousViewport[2], previousViewport[3]);
+			gl4.glBindVertexArray(state[0]);
+			gl4.glUseProgram(state[8]);
+			gl4.glActiveTexture(GL.GL_TEXTURE0);
+			gl4.glBindTexture(GL.GL_TEXTURE_2D, state[9]);
+			gl4.glActiveTexture(state[3]);
+			gl4.glBlendFuncSeparate(state[4], state[5], state[6], state[7]);
+			if (blendEnabled) {
+				gl4.glEnable(GL.GL_BLEND);
+			} else {
+				gl4.glDisable(GL.GL_BLEND);
+			}
+			gl4.glDepthMask(depthWrite[0] != 0);
+			if (diagnose) { traceState(gl4, "after graph restore"); }
 		}
 	}
 
 	// -------------------------------------------------------------------------
-	// Legacy AWT tessellator path (kept as fallback and for 3-D side geometry)
+	// AWT outline path
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Legacy perspective-text drawing path using AWT outline tessellation. Used as a fallback when the JOGL graph
-	 * library is unavailable, and as the source of side-geometry data for extruded text.
+	 * One outline supplies the caps, borders and extrusion sides, including font fallback and glyph bearings.
+	 * Also used for flat perspective text when the graph library is unavailable.
 	 *
 	 * @param text
 	 *            the string to draw
 	 * @param attributes
 	 *            the drawing attributes
 	 */
-	private void drawLegacyPerspective(final String text, final IDrawingAttributes attributes) {
+	private void drawOutline(final String text, final IDrawingAttributes attributes) {
+		drawOutline(text, attributes, false);
+	}
+
+	private void drawBillboardForPicking(final String text, final IDrawingAttributes attributes) {
+		final IPoint p = attributes.getLocation();
+		final double[] position = new double[3];
+		if (!gl.project(p.getX(), p.getY(), p.getZ(), position)) return;
+		gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
+		try {
+			gl.ortho(0, gl.getViewWidth(), 0, gl.getViewHeight(), -1, 1);
+			gl.pushIdentity(GLMatrixFunc.GL_MODELVIEW);
+			try {
+				gl.translateBy(position[0], gl.getViewHeight() - position[1], 0);
+				drawOutline(text, attributes, true);
+			} finally {
+				gl.pop(GLMatrixFunc.GL_MODELVIEW);
+			}
+		} finally {
+			gl.pop(GLMatrixFunc.GL_PROJECTION);
+			gl.matrixMode(GLMatrixFunc.GL_MODELVIEW);
+		}
+	}
+
+	private void drawOutline(final String text, final IDrawingAttributes attributes, final boolean billboard) {
 		final Font awtFont = attributes.getFont().getAwtFont();
-		final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
-		final Rectangle2D bounds = shape.getBounds2D();
 		this.depth = attributes.getDepth();
 		this.border = attributes.getBorder();
-		this.width = bounds.getWidth();
-		this.height = bounds.getHeight();
-		faceVertexBuffer.clear();
-		faceTextureBuffer.clear();
-		sideNormalBuffer.clear();
-		sideQuadsBuffer.clear();
-		currentIndex = -1;
-		process(shape.getPathIterator(AT, attributes.getPrecision()));
-		drawLegacyText(attributes, bounds.getY());
+		final OutlineKey key = new OutlineKey(awtFont, text, attributes.getPrecision(), depth, gl.isWireframe());
+		OutlineGeometry geometry = outlines.getIfPresent(key);
+		final Rectangle2D bounds;
+		if (geometry == null) {
+			final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
+			bounds = shape.getBounds2D();
+			width = bounds.getWidth();
+			height = bounds.getHeight();
+			faceVertexBuffer.clear();
+			faceTextureBuffer.clear();
+			sideNormalBuffer.clear();
+			sideQuadsBuffer.clear();
+			currentIndex = -1;
+			process(shape.getPathIterator(AT, attributes.getPrecision()), gl.isWireframe());
+			geometry = new OutlineGeometry(bounds, snapshot(faceVertexBuffer), snapshot(faceTextureBuffer),
+					snapshot(sideNormalBuffer), snapshot(sideQuadsBuffer), Arrays.copyOf(indices, currentIndex + 1));
+			outlines.put(key, geometry);
+		} else {
+			bounds = geometry.bounds();
+			width = bounds.getWidth();
+			height = bounds.getHeight();
+			restore(faceVertexBuffer, geometry.faces());
+			restore(faceTextureBuffer, geometry.textures());
+			restore(sideNormalBuffer, geometry.normals());
+			restore(sideQuadsBuffer, geometry.sides());
+			currentIndex = geometry.contours().length - 1;
+			if (indices.length < geometry.contours().length) { indices = new int[geometry.contours().length]; }
+			System.arraycopy(geometry.contours(), 0, indices, 0, geometry.contours().length);
+		}
+		drawOutlineText(attributes, bounds, billboard);
+	}
+
+	private static double[] snapshot(final DoubleBuffer source) {
+		final double[] values = new double[source.limit()];
+		source.duplicate().rewind().get(values);
+		return values;
+	}
+
+	private static void restore(final DoubleBuffer target, final double[] values) {
+		target.clear();
+		target.put(values);
+		target.flip();
 	}
 
 	/**
-	 * Applies positioning and draws a legacy-tessellated string.
+	 * Applies positioning and draws an outline-tessellated string.
 	 *
 	 * @param attributes
 	 *            the drawing attributes
-	 * @param y
-	 *            the baseline Y offset from {@link Rectangle2D#getY()}
+	 * @param bounds
+	 *            the AWT outline bounds before the Y-axis flip
 	 */
-	private void drawLegacyText(final IDrawingAttributes attributes, final double y) {
-		final IPoint p = attributes.getLocation();
+	private void drawOutlineText(final IDrawingAttributes attributes, final Rectangle2D bounds,
+			final boolean billboard) {
+		final IPoint p = billboard ? GamaPointFactory.create(0, 0, 0) : attributes.getLocation();
 		IColor previous = null;
 		gl.pushMatrix();
 		try {
@@ -838,10 +1023,15 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 			final double locX = rotated ? 0 : p.getX();
 			final double locY = rotated ? 0 : p.getY();
 			final double locZ = rotated ? 0 : p.getZ();
-			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			gl.translateBy(locX - width * scale * anchor.getX(), locY + y * scale * anchor.getY(),
-					locZ + gl.getCurrentZTranslation());
+			final float scale = billboard ? 1f : 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
+			final double x = -bounds.getX() - width * anchor.getX();
+			final double y = bounds.getMaxY() - height * anchor.getY();
+			gl.translateBy(locX + x * scale, locY + y * scale, locZ);
 			gl.scaleBy(scale, scale, scale);
+			if (attributes instanceof TextDrawingAttributes text && text.isAdaptiveDraw()) {
+				gl.getRenderer().getAdaptiveTextHelper().resolveDraw(text,
+						new Rectangle2D.Double(bounds.getX(), -bounds.getMaxY(), width, height), depth);
+			}
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
 			} else {
@@ -853,7 +1043,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 		}
 	}
 
-	/** @see #drawLegacyText */
+	/** @see #drawOutlineText */
 	private IColor drawWireframe(IColor previous) {
 		if (border != null) {
 			previous = gl.getCurrentColor();
@@ -867,90 +1057,70 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 		return previous;
 	}
 
-	/** @see #drawLegacyText */
+	/** @see #drawOutlineText */
 	private IColor drawFacesAndBorder(IColor previous) {
-		drawFace(depth == 0);
-		if (depth > 0) {
-			gl.translateBy(0, 0, depth);
-			drawFace(true);
-			gl.translateBy(0, 0, -depth);
-			drawSide();
+		try (var offset = PolygonOffset.forOutline(gl, border != null)) {
+			drawFace(depth == 0);
+			if (depth > 0) {
+				gl.translateBy(0, 0, depth);
+				drawFace(true);
+				gl.translateBy(0, 0, -depth);
+				drawSide();
+			}
 		}
 		if (border != null) {
 			previous = gl.getCurrentColor();
 			gl.setCurrentColor(border);
-			gl.translateBy(0, 0, depth + 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, depth);
 			drawBorder();
-			gl.translateBy(0, 0, -depth - 5 * gl.getCurrentZIncrement());
+			gl.translateBy(0, 0, -depth);
 		}
 		return previous;
 	}
 
 	// -------------------------------------------------------------------------
-	// AWT outline → side-geometry path (used by extruded text)
+	// AWT outline tessellation and side geometry
 	// -------------------------------------------------------------------------
 
 	/**
 	 * Processes a {@link PathIterator} of an AWT glyph outline.
 	 *
 	 * <p>
-	 * Contour vertices are collected into per-contour rings. In solid mode the rings are passed to
-	 * {@link FastTriangulation#triangulate} to fill {@link #faceVertexBuffer} with triangle data (replaces the former
-	 * GLU tessellator path). In wireframe mode only the side contour vertices are collected. Side geometry (for depth >
-	 * 0) is always collected into {@link #sideQuadsBuffer}.
+	 * GLU resolves the path's winding rule across all contours, including disconnected letters and glyph holes.
+	 * Side geometry is collected from that same path.
 	 * </p>
 	 *
 	 * @param pi
 	 *            the glyph outline path iterator (pre-flattened: only SEG_MOVETO/SEG_LINETO/SEG_CLOSE)
 	 */
-	void process(final PathIterator pi) {
-		final boolean wireframe = gl.isWireframe();
-
-		// Collect all contours: each is a flat double[x0,y0,x1,y1,...] open ring.
-		final List<double[]> contours = new ArrayList<>();
-		final List<double[]> contourZ = new ArrayList<>(); // parallel z values (always 0 for text faces)
-		double[] curX = null, curY = null;
-		int curLen = 0;
+	void process(final PathIterator pi, final boolean wireframe) {
+		if (!wireframe) {
+			gluTessProperty(tessellator, GLU_TESS_WINDING_RULE,
+					pi.getWindingRule() == PathIterator.WIND_EVEN_ODD ? GLU_TESS_WINDING_ODD
+							: GLU_TESS_WINDING_NONZERO);
+			gluTessNormal(tessellator, 0, 0, -1);
+			gluTessBeginPolygon(tessellator, null);
+		}
 		double x0 = 0, y0 = 0;
-
 		while (!pi.isDone()) {
 			final double[] coords = new double[6];
 			switch (pi.currentSegment(coords)) {
 				case SEG_MOVETO:
-					// Start a new contour ring
-					curX = new double[256];
-					curY = new double[256];
-					curLen = 0;
+					if (!wireframe) {
+						gluTessBeginContour(tessellator);
+						gluTessVertex(tessellator, coords, 0, coords);
+					}
 					x0 = coords[0];
 					y0 = coords[1];
-					curX[curLen] = x0;
-					curY[curLen] = y0;
-					curLen++;
 					beginNewContour();
 					addContourVertex0(x0, y0);
 					break;
 				case SEG_LINETO:
-					if (curX != null) {
-						if (curLen >= curX.length) {
-							curX = java.util.Arrays.copyOf(curX, curLen * 2);
-							curY = java.util.Arrays.copyOf(curY, curLen * 2);
-						}
-						curX[curLen] = coords[0];
-						curY[curLen] = coords[1];
-						curLen++;
-					}
+					if (!wireframe) { gluTessVertex(tessellator, coords, 0, coords); }
 					addContourVertex0(coords[0], coords[1]);
 					break;
 				case SEG_CLOSE:
-					if (curX != null && curLen >= 3) {
-						final double[] flatXY = new double[curLen * 2];
-						for (int i = 0; i < curLen; i++) {
-							flatXY[i * 2] = curX[i];
-							flatXY[i * 2 + 1] = curY[i];
-						}
-						contours.add(flatXY);
-						curX = null;
-					}
+					if (!wireframe) { gluTessEndContour(tessellator); }
 					addContourVertex0(x0, y0);
 					endContour();
 					break;
@@ -959,55 +1129,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 			}
 			pi.next();
 		}
-
-		// ---- face tessellation via FastTriangulation (solid mode only) ----
-		if (!wireframe && !contours.isEmpty()) {
-			// Determine outer ring: the one with the largest absolute signed area (CW in screen space)
-			// AWT uses a Y-down coordinate system after the AT (y-flip), so the outer ring has the largest area.
-			int outerIdx = 0;
-			double maxArea = 0;
-			for (int i = 0; i < contours.size(); i++) {
-				final double area = Math.abs(signedArea(contours.get(i)));
-				if (area > maxArea) {
-					maxArea = area;
-					outerIdx = i;
-				}
-			}
-			final double[] outerRing = contours.get(outerIdx);
-			final int outerN = outerRing.length / 2;
-
-			// Holes: all other contours
-			final List<double[]> holes = new ArrayList<>(contours.size() - 1);
-			for (int i = 0; i < contours.size(); i++) { if (i != outerIdx) { holes.add(contours.get(i)); } }
-			final double[][] holesArr = holes.isEmpty() ? null : holes.toArray(new double[0][]);
-
-			final int[] triIndices = FastTriangulation.triangulate(outerRing, holesArr, outerN);
-
-			// Build combined flat vertex arrays (outer first, then holes)
-			int totalV = outerN;
-			if (holesArr != null) { for (final double[] h : holesArr) { totalV += h.length / 2; } }
-			final double[] allX = new double[totalV], allY = new double[totalV];
-			for (int i = 0; i < outerN; i++) {
-				allX[i] = outerRing[i * 2];
-				allY[i] = outerRing[i * 2 + 1];
-			}
-			int off = outerN;
-			if (holesArr != null) {
-				for (final double[] h : holesArr) {
-					for (int i = 0; i < h.length / 2; i++) {
-						allX[off + i] = h[i * 2];
-						allY[off + i] = h[i * 2 + 1];
-					}
-					off += h.length / 2;
-				}
-			}
-
-			// Fill faceVertexBuffer
-			for (final int idx : triIndices) {
-				if (gl.isTextured()) { faceTextureBuffer.put(allX[idx] / width).put(allY[idx] / height); }
-				faceVertexBuffer.put(allX[idx]).put(allY[idx]).put(0);
-			}
-		}
+		if (!wireframe) { gluTessEndPolygon(tessellator); }
 
 		sideQuadsBuffer.flip();
 		sideNormalBuffer.flip();
@@ -1015,31 +1137,47 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 		if (faceTextureBuffer != null) { faceTextureBuffer.flip(); }
 	}
 
-	/**
-	 * Computes the signed area of a flat {@code double[x0,y0,x1,y1,…]} open ring using the shoelace formula. Positive =
-	 * CCW, negative = CW (in Y-up space).
-	 */
-	private static double signedArea(final double[] ring) {
-		final int n = ring.length / 2;
-		double area = 0;
-		for (int i = 0, j = n - 1; i < n; j = i++) {
-			area += (ring[j * 2] + ring[i * 2]) * (ring[j * 2 + 1] - ring[i * 2 + 1]);
-		}
-		return area / 2.0;
+	@Override
+	public void drawVertex(final int i, final double x, final double y, final double z) {
+		faceTextureBuffer.put(width == 0 ? 0 : x / width).put(height == 0 ? 0 : y / height);
+		faceVertexBuffer.put(x).put(y).put(z);
+	}
+
+	@Override
+	public void combine(final double[] coords, final Object[] data, final float[] weight, final Object[] outData) {
+		outData[0] = coords.clone();
+	}
+
+	@Override
+	public void error(final int code) {
+		throw new IllegalStateException("Cannot tessellate text: " + new GLU().gluErrorString(code));
+	}
+
+	private void addContourIndex() {
+		if (++currentIndex == indices.length) { indices = Arrays.copyOf(indices, indices.length * 2); }
+		indices[currentIndex] = sideQuadsBuffer.position();
 	}
 
 	/**
 	 * Records the start position of a new outline contour in {@link #sideQuadsBuffer}.
 	 */
 	public void beginNewContour() {
-		indices[++currentIndex] = sideQuadsBuffer.position();
+		addContourIndex();
+		previousX = previousY = Double.NaN;
+		contourStartNormalPos = -1;
 	}
 
 	/**
 	 * Records the end position of the current outline contour in {@link #sideQuadsBuffer}.
 	 */
 	public void endContour() {
-		indices[++currentIndex] = sideQuadsBuffer.position();
+		addContourIndex();
+		if (depth > 0 && contourStartNormalPos >= 0) {
+			final int lastNormalPos = sideNormalBuffer.position() - 6;
+			for (int i = 0; i < 6; i++) {
+				sideNormalBuffer.put(contourStartNormalPos + i, sideNormalBuffer.get(lastNormalPos + i));
+			}
+		}
 	}
 
 	/**
@@ -1052,13 +1190,17 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	 *            the Y coordinate in font units
 	 */
 	public void addContourVertex0(final double x, final double y) {
+		if (x == previousX && y == previousY) return;
 		sideQuadsBuffer.put(x).put(y).put(0);
 		if (depth > 0) {
-			if (previousX > Double.MIN_VALUE) {
+			if (!Double.isNaN(previousX)) {
 				temp.setTo(previousX, previousY, 0, previousX, previousY, depth, x, y, 0, previousX, previousY, 0);
 				temp.getNormal(true, 1, normal);
 				sideNormalBuffer.put(new double[] { normal.getX(), normal.getY(), normal.getZ(), normal.getX(),
 						normal.getY(), normal.getZ() });
+			} else {
+				contourStartNormalPos = sideNormalBuffer.position();
+				sideNormalBuffer.put(new double[] { 0, 0, 1, 0, 0, 1 });
 			}
 			sideQuadsBuffer.put(x).put(y).put(depth);
 		}
@@ -1067,7 +1209,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	}
 
 	// -------------------------------------------------------------------------
-	// Side / border / face draw helpers (legacy VBO path)
+	// Side / border / face VBO draw helpers
 	// -------------------------------------------------------------------------
 
 	/**
@@ -1088,7 +1230,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 	}
 
 	/**
-	 * Draws the front or back face of extruded text using the triangle data produced by {@link FastTriangulation}.
+	 * Draws the front or back face of extruded text using the triangle data produced by GLU.
 	 *
 	 * @param up
 	 *            {@code true} to use the upward-facing normal (front face); {@code false} for back face
@@ -1192,6 +1334,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 
 	@Override
 	public void dispose() {
+		gluDeleteTess(tessellator);
 		if (regionRenderer != null) {
 			try {
 				regionRenderer.destroy(gl.getGL().getGL2ES2());
@@ -1201,7 +1344,13 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 			regionRenderer = null;
 			textUtil = null;
 		}
+		if (textVertexArray != 0) {
+			gl.getGL().glDeleteVertexArrays(1, new int[] { textVertexArray }, 0);
+			textVertexArray = 0;
+		}
 		fontCache.clear();
+		normalizedGlyphs.clear();
+		outlines.invalidateAll();
 		faceVertexBuffer = faceTextureBuffer = sideNormalBuffer = sideQuadsBuffer = null;
 	}
 }

@@ -17,9 +17,11 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.dev.DEBUG;
 
 /**
@@ -67,6 +69,11 @@ public abstract class AbstractLayer implements ILayer {
 	@Override
 	public ILayerData getData() { return data; }
 
+	@Override
+	public boolean isProvidingWorldCoordinates() {
+		return data.getContentCoordinates() != LayerCoordinates.SCREEN;
+	}
+
 	/**
 	 * Creates the data.
 	 *
@@ -105,7 +112,10 @@ public abstract class AbstractLayer implements ILayer {
 		// DEBUG.OUT("Does not draw" + this.getName() + " because the renderer is not ready to update");
 		// return;
 		// }
+		final PreparationDiagnostics diagnostics = g.getPreparationDiagnostics();
+		final long dataStart = diagnostics == null ? 0 : diagnostics.startTimer();
 		if (data.compute(scope, g)) { forceRedrawingOnce(); }
+		if (diagnostics != null) { diagnostics.layerDataFinished(dataStart); }
 		if (!data.isVisible() || !g.is2D() && !data.isDynamic() && hasBeenDrawnOnce) // DEBUG.OUT("Does not draw" +
 																						// this.getName() + "
 			// because it is static and it has been drawn already "
@@ -113,8 +123,13 @@ public abstract class AbstractLayer implements ILayer {
 			return;
 		g.setAlpha(1 - data.getTransparency(scope));
 		g.beginDrawingLayer(this);
-		privateDraw(scope, g);
-		g.endDrawingLayer(this);
+		final long layerStart = diagnostics == null ? 0 : diagnostics.startTimer();
+		try {
+			privateDraw(scope, g);
+		} finally {
+			g.endDrawingLayer(this);
+			if (diagnostics != null) { diagnostics.layerFinished(getName(), layerStart); }
+		}
 		// Necessary to handle Issue #3392
 		if (!hasBeenDrawnOnce) {
 			hasBeenDrawnOnce = true;

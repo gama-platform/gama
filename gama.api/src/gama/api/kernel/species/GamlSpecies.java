@@ -173,41 +173,52 @@ import one.util.streamex.StreamEx;
 				name = IKeyword.PARALLEL,
 				type = { IType.BOOL, IType.INT },
 				optional = true,
-				doc = @doc ("(experimental) setting this facet to 'true' will allow this species to use concurrency when scheduling its agents; setting it to an integer will set the threshold under which they will be run sequentially (the default is initially 20, but can be fixed in the preferences). This facet has a default set in the preferences (Under Performances > Concurrency)")),
+				doc = @doc ("Setting this facet to 'true' enables concurrent scheduling for this species; its splitting threshold follows the global thread-count preference. Setting it to an integer sets the splitting threshold, so populations at or below that size run sequentially. If omitted, agents are scheduled sequentially. Use this model-level facet to control reproducibility and parallel execution.")),
 				@facet (
 						name = IKeyword.WIDTH,
 						type = IType.INT,
+						specific_to = IKeyword.GRID,
+						excludes = IKeyword.CELL_WIDTH,
 						optional = true,
 						doc = @doc ("(grid only), the width of the grid (in terms of agent number)")),
 				@facet (
 						name = IKeyword.HEIGHT,
 						type = IType.INT,
+						specific_to = IKeyword.GRID,
+						excludes = IKeyword.CELL_HEIGHT,
 						optional = true,
 						doc = @doc ("(grid only),  the height of the grid (in terms of agent number)")),
 				@facet (
 						name = IKeyword.CELL_WIDTH,
 						type = IType.FLOAT,
+						specific_to = IKeyword.GRID,
+						requires = IKeyword.CELL_HEIGHT,
 						optional = true,
 						doc = @doc ("(grid only), the width of the cells of the grid")),
 				@facet (
 						name = IKeyword.CELL_HEIGHT,
 						type = IType.FLOAT,
+						specific_to = IKeyword.GRID,
+						requires = IKeyword.CELL_WIDTH,
 						optional = true,
 						doc = @doc ("(grid only), the height of the cells of the grid")),
 				@facet (
 						name = IKeyword.NEIGHBORS,
 						type = IType.INT,
+						specific_to = IKeyword.GRID,
 						optional = true,
 						doc = @doc ("(grid only), the chosen neighborhood (4, 6 or 8)")),
 				@facet (
 						name = "horizontal_orientation",
 						type = IType.BOOL,
+						specific_to = IKeyword.GRID,
 						optional = true,
 						doc = { @doc (
 								value = "(hexagonal grid only),(true by default). Allows use a hexagonal grid with a horizontal or vertical orientation. ") }),
 				@facet (
 						name = "use_individual_shapes",
 						type = IType.BOOL,
+						specific_to = IKeyword.GRID,
 						optional = true,
 						doc = { @doc (
 								value = "(grid only),(true by default). Allows to specify whether or not the agents of the grid will have distinct geometries. If set to false, they will all have simpler proxy geometries",
@@ -216,35 +227,44 @@ import one.util.streamex.StreamEx;
 				@facet (
 						name = "use_regular_agents",
 						type = IType.BOOL,
+						specific_to = IKeyword.GRID,
 						optional = true,
 						doc = { @doc (
 								value = "(grid only),(true by default). Allows to specify if the agents of the grid are regular agents (like those of any other species) or minimal ones (which can't have sub-populations, can't inherit from a regular species, etc.)") }),
 				@facet (
 						name = "optimizer",
 						type = IType.STRING,
+						specific_to = IKeyword.GRID,
 						optional = true,
 						doc = { @doc (
 								value = "(grid only),(\"A*\" by default). Allows to specify the algorithm for the shortest path computation (\"BF\", \"Dijkstra\", \"A*\" or \"JPS*\"") }),
 				@facet (
 						name = "use_neighbors_cache",
 						type = IType.BOOL,
+						specific_to = IKeyword.GRID,
 						optional = true,
 						doc = { @doc (
 								value = "(grid only),(true by default). Allows to turn on or off the use of the neighbors cache used for grids. Note that if a diffusion of variable occurs, GAMA will emit a warning and automatically switch to a caching version") }),
 				@facet (
 						name = IKeyword.FILE,
 						type = IType.FILE,
+						specific_to = IKeyword.GRID,
+						excludes = { IKeyword.FILES, IKeyword.WIDTH, IKeyword.HEIGHT, IKeyword.CELL_WIDTH,
+								IKeyword.CELL_HEIGHT },
 						optional = true,
 						doc = @doc ("(grid only), a bitmap file that will be loaded at runtime so that the value of each pixel can be assigned to the attribute 'grid_value'")),
 				@facet (
 						name = IKeyword.FILES,
 						type = IType.LIST,
+						specific_to = IKeyword.GRID,
+						excludes = { IKeyword.WIDTH, IKeyword.HEIGHT, IKeyword.CELL_WIDTH, IKeyword.CELL_HEIGHT },
 						of = IType.FILE,
 						optional = true,
 						doc = @doc ("(grid only), a list of bitmap file that will be loaded at runtime so that the value of each pixel of each file can be assigned to the attribute 'bands'")),
 				@facet (
 						name = IKeyword.TORUS,
 						type = IType.BOOL,
+						specific_to = IKeyword.GLOBAL,
 						optional = true,
 						doc = @doc ("is the topology toric (defaut: false). Needs to be defined on the global species.")),
 				@facet (
@@ -325,9 +345,9 @@ import one.util.streamex.StreamEx;
 								value = "species node_agent mirrors: list(bug) parent: graph_node edge_species: edge_agent { }",
 								isExecutable = false) }),
 				@usage (
-						value = "The definition of the single grid of a model will automatically create gridwidth x gridheight agents:",
+						value = "Explicit dimensions automatically create gridwidth x gridheight agents:",
 						examples = { @example (
-								value = "grid ant_grid width: gridwidth height: gridheight file: grid_file neighbors: 8 use_regular_agents: false { }",
+								value = "grid ant_grid width: gridwidth height: gridheight neighbors: 8 use_regular_agents: false { }",
 								isExecutable = false) }),
 				@usage (
 						value = "Using a file to initialize the grid can replace width/height facets:",
@@ -342,15 +362,10 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	 * Validator for species descriptions.
 	 *
 	 * <p>
-	 * This validator ensures the consistency and correctness of species definitions, particularly for grid species. It
-	 * validates:
+	 * Structural facet constraints are validated generically from the annotations. This validator checks:
 	 * </p>
 	 * <ul>
-	 * <li>Dimension facets (width, height, cell_width, cell_height) are properly paired and non-conflicting</li>
-	 * <li>Grid-specific facets are only used on grid species</li>
-	 * <li>File loading facets don't conflict with dimension facets</li>
 	 * <li>Frequency settings don't make variables/behaviors unreachable</li>
-	 * <li>Torus topology is only defined on global species</li>
 	 * <li>Species names don't conflict with existing unary operators</li>
 	 * </ul>
 	 */
@@ -367,38 +382,9 @@ public class GamlSpecies extends Symbol implements ISpecies {
 
 			final ISpeciesDescription sd = (ISpeciesDescription) desc;
 
-			final IExpression neighbours = processNeighbors(sd);
-			// Issue 1311
-			final IExpression cellWidth = sd.getFacetExpr(CELL_WIDTH);
-			final IExpression cellHeight = sd.getFacetExpr(CELL_HEIGHT);
-			if (cellWidth != null == (cellHeight == null)) {
-				sd.error("'cell_width' and 'cell_height' must be defined together", IGamlIssue.CONFLICTING_FACETS,
-						cellWidth == null ? CELL_HEIGHT : CELL_WIDTH);
-				return;
-			}
-			final IExpression width = sd.getFacetExpr(WIDTH);
-			final IExpression height = sd.getFacetExpr(HEIGHT);
-			if (cellWidth != null && width != null) {
-				sd.error("'cell_width' and 'width' cannot be defined at the same time", IGamlIssue.CONFLICTING_FACETS,
-						WIDTH);
-				return;
-			}
-			if (cellHeight != null && height != null) {
-				sd.error("'cell_width' and 'width' cannot be defined at the same time", IGamlIssue.CONFLICTING_FACETS,
-						HEIGHT);
-				return;
-			}
-
-			if (cellHeight != null || cellWidth != null || width != null || height != null || neighbours != null) {
-				if (!IKeyword.GRID.equals(sd.getKeyword())) {
-					sd.warning("Facets related to dimensions and neighboring can only be defined in 'grids' definition",
-							IGamlIssue.CONFLICTING_FACETS);
-				}
-			}
-			verifyFiles(sd, width, height, cellWidth, cellHeight);
+			processNeighbors(sd);
 			// Issue 1138
 			verifyFrequency(sd);
-			verifyTorus(sd);
 
 			final String name = sd.getName();
 			if (GAML.isUnaryOperator(name)) {
@@ -425,67 +411,6 @@ public class GamlSpecies extends Symbol implements ISpecies {
 			final IExpression neighbours = sd.getFacetExpr(IKeyword.NEIGHBORS);
 			if (neighbours != null) { sd.setFacet(NEIGHBORS, neighbours); }
 			return neighbours;
-		}
-
-		/**
-		 * Validates that the torus facet is only defined on global species.
-		 *
-		 * <p>
-		 * Torus topology creates a wrapped world where agents crossing one edge appear on the opposite edge. This
-		 * should only be defined at the model level.
-		 * </p>
-		 *
-		 * @param desc
-		 *            the species description
-		 */
-		private void verifyTorus(final IDescription desc) {
-			// If torus is declared on a species other than "global", emit a
-			// warning
-			final IExpression torus = desc.getFacetExpr(TORUS);
-			if (torus != null
-					&& (IKeyword.SPECIES.equals(desc.getKeyword()) || IKeyword.GRID.equals(desc.getKeyword()))) {
-				desc.warning("The 'torus' facet can only be specified for the model topology (i.e. in 'global')",
-						IGamlIssue.WRONG_CONTEXT, TORUS);
-			}
-		}
-
-		/**
-		 * Validates file loading facets for grid species.
-		 *
-		 * <p>
-		 * Grid species can load initial values from image or raster files. This method ensures:
-		 * </p>
-		 * <ul>
-		 * <li>The 'file' and 'files' facets are not used simultaneously</li>
-		 * <li>File facets don't conflict with explicit dimension facets</li>
-		 * </ul>
-		 *
-		 * @param sd
-		 *            the species description
-		 * @param width
-		 *            the width expression
-		 * @param height
-		 *            the height expression
-		 * @param cellWidth
-		 *            the cell width expression
-		 * @param cellHeight
-		 *            the cell height expression
-		 */
-		private void verifyFiles(final ISpeciesDescription sd, final IExpression width, final IExpression height,
-				final IExpression cellWidth, final IExpression cellHeight) {
-			final IExpression file = sd.getFacetExpr(FILE);
-			final IExpression files = sd.getFacetExpr(FILES);
-			if (file != null && files != null) {
-				sd.error(
-						"The use of the 'files' facet prohibits the use of the 'files' facet: if several files have to be loaded in the grid, use the 'files' facet, otherwise use the 'file' facet",
-						IGamlIssue.CONFLICTING_FACETS, FILE);
-			}
-			if ((file != null || files != null)
-					&& (height != null || width != null || cellWidth != null || cellHeight != null)) {
-				sd.error(
-						"The use of the 'file' and 'files' facets prohibit the use of dimension facets ('width', 'height', 'cell_width', 'cell_height')",
-						IGamlIssue.CONFLICTING_FACETS, FILE);
-			}
 		}
 
 		/**
@@ -746,9 +671,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	public IList<ISpecies> getSubSpecies(final IScope scope) {
 		final IList<ISpecies> subspecies = GamaListFactory.create(Types.SPECIES);
 		final IModelSpecies model = scope.getModel();
-		for (final ISpecies s : model.getAllSpecies().values()) {
-			if (s.getParent() == this) { subspecies.add(s); }
-		}
+		for (final ISpecies s : model.getAllSpecies().values()) { if (s.getParent() == this) { subspecies.add(s); } }
 		return subspecies;
 	}
 

@@ -115,7 +115,7 @@ experiment prey_predator type: gui {
 	parameter "Predator energy consumption: " var: predator_energy_consum category: "Predator";
 	
 	output {
-		display main_display {
+		display main_display map_order: true {
 			grid vegetation_cell border: #black;
 			species prey aspect: base;
 			species predator aspect: base;

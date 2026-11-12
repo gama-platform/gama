@@ -42,7 +42,7 @@ experiment examples type: gui {
 	output {	
 		layout horizontal([vertical([0::100,1::100])::100,2::100]) tabs: true;	
 		display "h=0.01"  toolbar: false  type: 2d {
-			chart 'Lotka-Voltera dynamics (time series)' type: series 
+			chart 'Lotka-Voltera dynamics (time series)' kind: series 
 				background: rgb(47,47,47) color: #white
 				y_label: "pop" x_tick_line_visible: false{
 				data "x (h=0.01)" value: first(userLV).x[] color: rgb(52,152,219) marker: false thickness: 2;
@@ -52,7 +52,7 @@ experiment examples type: gui {
 			}			
 		}
 		display "h=1"   toolbar: false  type: 2d {
-			chart 'Lotka-Voltera dynamics (time series)' type: series 
+			chart 'Lotka-Voltera dynamics (time series)' kind: series 
 			background: rgb(47,47,47) color: #white
 			y_label: "pop" x_tick_line_visible: false{
 //				data "x (h=0.01)" value: first(userLV).x color: rgb(52,152,219) marker: false thickness: 2;
@@ -62,7 +62,7 @@ experiment examples type: gui {
 			}			
 		}		
 		display "Phase Portrait"  toolbar: false  type: 2d  {
-		chart 'Lotka-Voltera dynamics (phase portrait)' type: xy 
+		chart 'Lotka-Voltera dynamics (phase portrait)' kind: xy 
 			background: rgb(47,47,47) color: #white y_label: "y" x_label: "x"
 			x_range: {0,8} y_range: {0,5.3}{
 				data "h=0.01" value: [first(userLV).x,first(userLV).y] color: rgb(52,152,219) marker: false;			

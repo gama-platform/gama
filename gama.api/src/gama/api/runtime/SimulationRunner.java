@@ -112,8 +112,8 @@ public class SimulationRunner implements ISimulationRunner {
 	 * </p>
 	 * <ul>
 	 * <li>For headless non-batch experiments: concurrency = 1 (sequential)</li>
-	 * <li>Otherwise: determined by experiment's concurrency expression and preferences (0, i.e. no concurrency, meaning
-	 * that simulations step one after the other)</li>
+	 * <li>Otherwise: determined by the experiment's concurrency expression; if omitted, simulations step one after
+	 * the other</li>
 	 * </ul>
 	 *
 	 * @param pop

@@ -125,15 +125,15 @@ experiment Simulation type: gui {
 	
 	output {
 		layout #split;
-		display "split system"  type: 2d {
-			chart 'Susceptible' type: series background: #white {
+		display "split system"  type: 3d {
+			chart 'Susceptible' kind: series background: #white {
 				data 'susceptible' value: first ( S_agt ) . Ssize color: rgb(46,204,113) ;
 				data 'infected' value: first ( I_agt ) . Isize color: rgb(231,76,60) ;
 				data 'removed' value: first ( R_agt ) . Rsize color: rgb(52,152,219) ;
 			}
 		}
-		display "unified system"  type: 2d {
-			chart 'Susceptible' type: series background: #white {
+		display "unified system"  type: 3d {
+			chart 'Susceptible' kind: series background: #white {
 				data 'susceptible_maths' value: first( SIR_agt ).Sm color: rgb(46,204,113) ;
 				data 'infected_maths' value: first( SIR_agt ).Im color: rgb(231,76,60) ;
 				data 'removed_maths' value: first( SIR_agt ).Rm color: rgb(52,152,219) ;

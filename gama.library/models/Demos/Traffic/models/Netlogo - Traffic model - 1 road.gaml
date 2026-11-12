@@ -126,8 +126,8 @@ experiment NetlogoTrafficmodel type: gui {
 			
 		}
 		
-		display sp  type: 2d {
-			chart "speed" type: series {
+		display sp  type: 3d {
+			chart "speed" kind: series {
 				data "red car" value: sample_car.speed * max_speed color: #red;
 				data "min speed" value: car min_of(each.speed) * max_speed color: #blue;
 				data "max speed" value: car max_of(each.speed) * max_speed color: #green;

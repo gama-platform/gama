@@ -32,6 +32,7 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.serialization.ISymbolSerializer;
@@ -631,6 +632,14 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 	@Override
 	public ModelDescription getModelDescription() { return this; }
+
+	@Override
+	public IVarDescriptionProvider getDescriptionDeclaringVar(final String name) {
+		if (!isMicroModel()) return super.getDescriptionDeclaringVar(name);
+		if (hasAttribute(name)) return this;
+		final IVarDescriptionProvider alternate = getAlternateVarProvider();
+		return alternate != null && alternate.hasAttribute(name) ? alternate : null;
+	}
 
 	@Override
 	public ISpeciesDescription getSpeciesDescription(final String spec) {

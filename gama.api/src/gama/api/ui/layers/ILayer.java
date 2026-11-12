@@ -20,6 +20,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
 import gama.api.ui.IItemList;
@@ -226,6 +227,20 @@ public interface ILayer extends INamed, Comparable<ILayer>, IDisposable {
 	 * @return a point describing a position in the world
 	 */
 	default IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final IDisplaySurface g) {
+		if (getData().getCoordinates() == LayerCoordinates.SCREEN) {
+			final Point size = getData().getSizeInPixels();
+			if (size.x <= 0 || size.y <= 0) return null;
+			final Point position = getData().getPositionInPixels();
+			if (getData().getContentCoordinates() == LayerCoordinates.SCREEN) {
+				return GamaPointFactory.create(xOnScreen - position.x, yOnScreen - position.y);
+			}
+			if (isOverlay()) {
+				final double ratio = Math.min(size.x / g.getEnvWidth(), size.y / g.getEnvHeight());
+				return GamaPointFactory.create((xOnScreen - position.x) / ratio, (yOnScreen - position.y) / ratio);
+			}
+			return GamaPointFactory.create((xOnScreen - position.x) * g.getEnvWidth() / size.x,
+					(yOnScreen - position.y) * g.getEnvHeight() / size.y);
+		}
 		return g.getModelCoordinatesFrom(xOnScreen, yOnScreen, getData().getSizeInPixels(),
 				getData().getPositionInPixels());
 	}
@@ -242,6 +257,18 @@ public interface ILayer extends INamed, Comparable<ILayer>, IDisposable {
 	 * @return a point describing a position on screen
 	 */
 	default Point getScreenCoordinatesFrom(final double x, final double y, final IDisplaySurface g) {
+		if (getData().getCoordinates() == LayerCoordinates.SCREEN) {
+			final Point p = getData().getPositionInPixels();
+			final Point s = getData().getSizeInPixels();
+			if (isOverlay() && getData().getContentCoordinates() == LayerCoordinates.WORLD) {
+				final double ratio = Math.min(s.x / g.getEnvWidth(), s.y / g.getEnvHeight());
+				return new Point((int) Math.round(p.x + x * ratio), (int) Math.round(p.y + y * ratio));
+			}
+			return getData().getContentCoordinates() == LayerCoordinates.SCREEN
+					? new Point((int) Math.round(p.x + x), (int) Math.round(p.y + y))
+					: new Point((int) Math.round(p.x + x * s.x / g.getEnvWidth()),
+							(int) Math.round(p.y + y * s.y / g.getEnvHeight()));
+		}
 		final double xFactor = x / g.getEnvWidth();
 		final double yFactor = y / g.getEnvHeight();
 		final Point s = getData().getSizeInPixels();

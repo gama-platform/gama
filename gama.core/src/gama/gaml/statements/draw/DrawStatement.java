@@ -53,9 +53,11 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.AdaptiveColor;
 import gama.api.ui.displays.DrawingData;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 
@@ -112,7 +114,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						name = COLOR,
 						type = { IType.COLOR, IType.CONTAINER },
 						optional = true,
-						doc = @doc ("the color to use to display the object. In case of images, will try to colorize it. You can also pass a list of colors : in that case, each color will be matched to its corresponding vertex.")),
+						doc = @doc ("The color used to display the object. Text accepts #adaptive to choose black or white from the rendered pixels beneath it; this is opt-in, not the default, and adds a scene readback in OpenGL. In case of images, will try to colorize it. You can also pass a list of colors: each color will be matched to its corresponding vertex.")),
 				@facet (
 						name = ROTATE,
 						type = { IType.FLOAT, IType.INT, IType.PAIR },
@@ -154,7 +156,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc (
-								value = "Whether the object should be lighted or not (only applicable in the context of opengl displays)")),
+								value = "Whether the object should be lighted or not (only applicable in OpenGL displays). Defaults to false for lines without depth, including their arrowheads, and true for other geometries. An explicit value overrides this default.")),
 				@facet (
 						name = PERSPECTIVE,
 						type = IType.BOOL,
@@ -167,7 +169,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						optional = true,
 						doc = @doc (
 								value = """
-										The width in point units (not world units) to use in OpenGL displays for line-based geometries and for the borders or wireframes of arbitrary shapes. This value is passed directly to the underlying OpenGL line width setting, \
+										The width in screen pixels (not world units) for line-based geometries and for the borders or wireframes of arbitrary shapes in Java2D and OpenGL displays. It does not change with world zoom. In OpenGL, this value is passed directly to the underlying line width setting, \
 										so the effective rendering depends on the capabilities of the current GPU and driver. \
 										The default value is set by the preference found in Displays>OpenGL Rendering Properties""")), },
 
@@ -309,16 +311,7 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 	/** The delegate. */
 	private IDrawDelegate delegate;
 
-	/**
-	 * Inline two-slot cache replacing the former WeakHashMap. A draw statement is shared across all agents of a species
-	 * and is called once per agent per frame. Since 2D and 3D displays are never active simultaneously, there are at
-	 * most two distinct IGraphics instances in practice. A direct identity comparison is far cheaper than a WeakHashMap
-	 * get() called thousands of times per frame.
-	 */
-	private IGraphics cachedGraphics0, cachedGraphics1;
-
-	/** The cached data 1. */
-	private DrawingData cachedData0, cachedData1;
+	private final IExpression[] drawingItems;
 
 	/**
 	 * Instantiates a new draw statement.
@@ -330,7 +323,18 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 	 */
 	public DrawStatement(final IDescription desc) throws GamaRuntimeException {
 		super(desc);
+		drawingItems = new IExpression[] { getFacet(IKeyword.GEOMETRY), getFacet(BEGIN_ARROW), getFacet(END_ARROW) };
+	}
 
+	// A draw cannot declare locals; its enclosing aspect already provides the execution frame.
+	@Override
+	public void enterScope(final IScope scope) {
+		if (getClass() != DrawStatement.class) { super.enterScope(scope); }
+	}
+
+	@Override
+	public void leaveScope(final IScope scope) {
+		if (getClass() != DrawStatement.class) { super.leaveScope(scope); }
 	}
 
 	/**
@@ -361,24 +365,26 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 		final IGraphics g = scope.getGraphics();
 		if (scope.interrupted() || g == null || scope.getAgent() == null) return null;
 		try {
-			if (delegate == null) { delegate = (IDrawDelegate) getFacet(INTERNAL_DELEGATE).value(scope); }
-			// Inline two-slot cache: avoids WeakHashMap lookup per agent per frame
-			DrawingData d;
-			if (g == cachedGraphics0) {
-				d = cachedData0;
-			} else if (g == cachedGraphics1) {
-				d = cachedData1;
-			} else {
-				d = new DrawingData(this);
-				// Evict slot 1, shift slot 0 → slot 1, put new entry in slot 0
-				cachedGraphics1 = cachedGraphics0;
-				cachedData1 = cachedData0;
-				cachedGraphics0 = g;
-				cachedData0 = d;
+			if (delegate == null) {
+				final IDrawDelegate candidate = (IDrawDelegate) getFacet(INTERNAL_DELEGATE).value(scope);
+				delegate = candidate.getClass() == ShapeDrawer.class
+						? ((ShapeDrawer) candidate).prepare(drawingItems[0], drawingItems[1] != null
+								|| drawingItems[2] != null, hasFacet(TEXTURE)) : candidate;
 			}
+			final DrawingData d = g.getDrawingData(this);
+			final PreparationDiagnostics diagnostics = g.getPreparationDiagnostics();
+			final long facetsStart = diagnostics == null ? 0 : diagnostics.startTimer();
 			d.refresh(scope);
-			final IExpression item = getFacet(IKeyword.GEOMETRY);
-			final Rectangle2D result = delegate.executeOn(scope, d, item, getFacet(BEGIN_ARROW), getFacet(END_ARROW));
+			if (diagnostics != null) { diagnostics.facetsFinished(facetsStart); }
+			if (d.color.get() == AdaptiveColor.INSTANCE && !(delegate instanceof TextDrawer)) {
+				throw GamaRuntimeException.error("#adaptive is only supported when draw renders text", scope);
+			}
+			if (d.border.get() == AdaptiveColor.INSTANCE) {
+				throw GamaRuntimeException.error("#adaptive is a text foreground, not a border color", scope);
+			}
+			final long drawStart = diagnostics == null ? 0 : diagnostics.startTimer();
+			final Rectangle2D result = delegate.executeOn(scope, d, drawingItems);
+			if (diagnostics != null) { diagnostics.drawFinished(drawStart); }
 			if (result != null) { g.accumulateTemporaryEnvelope(result); }
 			return result;
 		} catch (final GamaRuntimeException e) {
@@ -388,15 +394,6 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	@Override
-	public void dispose() {
-		cachedGraphics0 = null;
-		cachedData0 = null;
-		cachedGraphics1 = null;
-		cachedData1 = null;
-		super.dispose();
 	}
 
 }

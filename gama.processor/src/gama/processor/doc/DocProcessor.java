@@ -1368,12 +1368,27 @@ public class DocProcessor extends ElementProcessor<doc> {
 				if (e.getAnnotation(symbol.class).name().length > 1) {
 
 					for (int i = 1; i < e.getAnnotation(symbol.class).name().length; i++) {
-						final org.w3c.dom.Element alternateElt = document.createElement(XMLElements.STATEMENT);
+						final facets declaredFacets = e.getAnnotation(facets.class);
+						final boolean keywordSpecific = declaredFacets != null && java.util.Arrays
+								.stream(declaredFacets.value()).anyMatch(f -> f.specific_to().length != 0);
+						final org.w3c.dom.Element alternateElt = keywordSpecific
+								? (org.w3c.dom.Element) statElt.cloneNode(true)
+								: document.createElement(XMLElements.STATEMENT);
 
 						alternateElt.setAttribute(XMLElements.ATT_STAT_ID, e.getAnnotation(symbol.class).name()[i]);
 						alternateElt.setAttribute(XMLElements.ATT_STAT_NAME, e.getAnnotation(symbol.class).name()[i]);
-						alternateElt.setAttribute(XMLElements.ATT_STAT_ALT_NAME_OF,
-								e.getAnnotation(symbol.class).name()[0]);
+						if (keywordSpecific) {
+							final org.w3c.dom.Node oldFacets =
+									alternateElt.getElementsByTagName(XMLElements.FACETS).item(0);
+							if (oldFacets != null) alternateElt.removeChild(oldFacets);
+							alternateElt.appendChild(getFacetsElt(declaredFacets, document, mes,
+									e.getAnnotation(symbol.class).name()[i], tc));
+							alternateElt.setAttribute(XMLElements.ATT_STAT_SHARED_DEFINITION_OF,
+									e.getAnnotation(symbol.class).name()[0]);
+						} else {
+							alternateElt.setAttribute(XMLElements.ATT_STAT_ALT_NAME_OF,
+									e.getAnnotation(symbol.class).name()[0]);
+						}
 						alternateElt.setAttribute(XMLElements.ATT_STAT_KIND,
 								tc.getSymbolKindStringFromISymbolKind(e.getAnnotation(symbol.class).kind()));
 
@@ -1842,6 +1857,12 @@ public class DocProcessor extends ElementProcessor<doc> {
 			// : tc.getTypeString(eltArg.type()[i]));
 			// }
 			argElt.setAttribute(XMLElements.ATT_ARG_TYPE, tabType);
+			if (eltArg.of() != 0) {
+				argElt.setAttribute(XMLElements.ATT_ARG_CONTENT_TYPE, tc.getTypeString(eltArg.of()));
+			}
+			if (eltArg.index() != 0) {
+				argElt.setAttribute(XMLElements.ATT_ARG_KEY_TYPE, tc.getTypeString(eltArg.index()));
+			}
 			argElt.setAttribute(XMLElements.ATT_ARG_OPTIONAL, "" + eltArg.optional());
 			final org.w3c.dom.Element docEltArg = getDocElt(eltArg.doc(), doc, mes,
 					"Arg " + eltArg.name() + " from " + eltMethod.getSimpleName(), tc, null, argElt);
@@ -1880,6 +1901,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 		final org.w3c.dom.Element facetsElt = doc.createElement(XMLElements.FACETS);
 
 		for (final facet f : facetsAnnot.value()) {
+			if (f.internal() || f.specific_to().length != 0
+					&& !java.util.Arrays.asList(f.specific_to()).contains(statName)) continue;
 			// if the facet is deprecated, it is not get in the docGAMA.mxl
 			if (f.doc() == null || f.doc().length <= 0 || "".equals(f.doc()[0].deprecated())) {
 				final org.w3c.dom.Element facetElt = doc.createElement(XMLElements.FACET);
@@ -1887,6 +1910,17 @@ public class DocProcessor extends ElementProcessor<doc> {
 				facetElt.setAttribute(XMLElements.ATT_FACET_TYPE,
 						f.declares_new_temp() ? "a new identifier" : tc.getTypeString(f.type()));
 				facetElt.setAttribute(XMLElements.ATT_FACET_OPTIONAL, "" + f.optional());
+				if (f.specific_to().length != 0)
+					facetElt.setAttribute(XMLElements.ATT_FACET_SPECIFIC_TO, String.join(", ", f.specific_to()));
+				final java.util.Set<String> exclusions =
+						new java.util.LinkedHashSet<>(java.util.Arrays.asList(f.excludes()));
+				for (final facet peer : facetsAnnot.value()) {
+					if (java.util.Arrays.asList(peer.excludes()).contains(f.name())) exclusions.add(peer.name());
+				}
+				if (!exclusions.isEmpty())
+					facetElt.setAttribute(XMLElements.ATT_FACET_EXCLUDES, String.join(", ", exclusions));
+				if (f.requires().length != 0)
+					facetElt.setAttribute(XMLElements.ATT_FACET_REQUIRES, String.join(", ", f.requires()));
 				if (f.values().length != 0) {
 					StringBuilder valuesTaken = new StringBuilder();
 					valuesTaken.append(", takes values in: {");

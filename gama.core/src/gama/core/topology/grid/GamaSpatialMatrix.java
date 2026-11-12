@@ -732,6 +732,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	@Override
 	public double[] getGridValueOf(final IScope scope, final IExpression exp) {
 		final double[] result = new double[matrix.length];
+		return getGridValueOf(scope, exp, result);
+	}
+
+	@Override
+	public double[] getGridValueOf(final IScope scope, final IExpression exp, final double[] result) {
+		if (result.length != matrix.length) throw new IllegalArgumentException("Incorrect grid elevation buffer length");
+		java.util.Arrays.fill(result, 0d);
 		for (int i = 0; i < matrix.length; i++) {
 			final IShape s = matrix[i];
 			if (s != null) {

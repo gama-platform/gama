@@ -16,8 +16,10 @@ import static gama.api.additions.GamaBundleLoader.CURRENT_PLUGIN_NAME;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import gama.annotations.constants.IKeyword;
 import gama.annotations.display;
@@ -502,6 +504,13 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 				declaresNewTemp);
 	}
 
+	protected IArtefact.Facet _facet(final String name, final int[] types, final int ct, final int kt,
+			final String[] values, final boolean optional, final boolean internal, final boolean isRemote,
+			final boolean declaresNewTemp, final String[] specificTo, final String[] excludes, final String[] requires) {
+		return GAML.getArtefactFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal, isRemote,
+				declaresNewTemp, specificTo, excludes, requires);
+	}
+
 	/**
 	 * Field.
 	 *
@@ -536,14 +545,39 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the type
 	 * @param optional
 	 *            the optional
+	 * @param of
+	 *            the content type
+	 * @param index
+	 *            the key type
 	 * @return the i description
 	 */
-	public IDescription _arg(final String name, final int type, final boolean optional) {
+	public IDescription _arg(final String name, final int type, final boolean optional, final int of,
+			final int index) {
 		// For IDs and labels, we add a specific facet (ID) -- see #3627
-		if (type <= IType.LABEL) return desc(IKeyword.ARG, IKeyword.NAME, name, IKeyword.ID, "true", IKeyword.TYPE,
-				String.valueOf(type), IKeyword.OPTIONAL, optional ? "true" : "false");
-		return desc(IKeyword.ARG, IKeyword.NAME, name, IKeyword.TYPE, String.valueOf(type), IKeyword.OPTIONAL,
-				optional ? "true" : "false");
+		final List<String> facets = new ArrayList<>(Arrays.asList(IKeyword.NAME, name));
+		if (type <= IType.LABEL) { facets.addAll(Arrays.asList(IKeyword.ID, "true")); }
+		facets.add(IKeyword.TYPE);
+		facets.add(String.valueOf(type));
+		facets.add(IKeyword.OPTIONAL);
+		facets.add(optional ? "true" : "false");
+		if (of != 0) { facets.addAll(Arrays.asList(OF, String.valueOf(of))); }
+		if (index != 0) { facets.addAll(Arrays.asList(IKeyword.INDEX, String.valueOf(index))); }
+		return desc(IKeyword.ARG, facets.toArray(String[]::new));
+	}
+
+	/**
+	 * Creates an argument description without container type information.
+	 *
+	 * @param name
+	 *            the name
+	 * @param type
+	 *            the type
+	 * @param optional
+	 *            the optional
+	 * @return the argument description
+	 */
+	public IDescription _arg(final String name, final int type, final boolean optional) {
+		return _arg(name, type, optional, 0, 0);
 	}
 
 	/**

@@ -69,6 +69,7 @@ import gama.dev.DEBUG;
 import gaml.compiler.ide.contentassist.antlr.GamlParser;
 import gaml.compiler.parsing.GamlSyntaxErrorMessageProvider;
 import gaml.compiler.resource.GamlEncodingProvider;
+import gaml.compiler.ui.contentassist.GamlContentAssistProcessor;
 import gaml.compiler.ui.contentassist.GamlTemplateProposalProvider;
 import gaml.compiler.ui.decorators.GamlImageHelper;
 import gaml.compiler.ui.decorators.GamlMarkerUpdater;
@@ -202,6 +203,10 @@ public class GamlUiModule extends gaml.compiler.ui.AbstractGamlUiModule {
 	@Override
 	public Class<? extends ITemplateProposalProvider> bindITemplateProposalProvider() {
 		return GamlTemplateProposalProvider.class;
+	}
+
+	public Class<? extends XtextContentAssistProcessor> bindXtextContentAssistProcessor() {
+		return GamlContentAssistProcessor.class;
 	}
 
 	/**

@@ -316,6 +316,12 @@ public interface XMLElements {
 	/** The Constant ATT_FACET_OMISSIBLE. */
 	public static final String ATT_FACET_OMISSIBLE = "omissible";
 
+	public static final String ATT_FACET_SPECIFIC_TO = "specific_to";
+
+	public static final String ATT_FACET_EXCLUDES = "excludes";
+
+	public static final String ATT_FACET_REQUIRES = "requires";
+
 	/** The Constant ATT_CST_NAME. */
 	// Attributes of CONSTANT element
 	public static final String ATT_CST_NAME = "name";
@@ -353,6 +359,12 @@ public interface XMLElements {
 	/** The Constant ATT_ARG_TYPE. */
 	public static final String ATT_ARG_TYPE = "type";
 	
+	/** The Constant ATT_ARG_CONTENT_TYPE. */
+	public static final String ATT_ARG_CONTENT_TYPE = "contentType";
+
+	/** The Constant ATT_ARG_KEY_TYPE. */
+	public static final String ATT_ARG_KEY_TYPE = "keyType";
+
 	/** The Constant ATT_ARG_OPTIONAL. */
 	public static final String ATT_ARG_OPTIONAL = "optional";
 
@@ -411,6 +423,8 @@ public interface XMLElements {
 	
 	/** The Constant ATT_STAT_ALT_NAME_OF. */
 	public static final String ATT_STAT_ALT_NAME_OF = "alt_name_of";	
+
+	public static final String ATT_STAT_SHARED_DEFINITION_OF = "shared_definition_of";
 
 	/** The Constant ATT_TYPE_NAME. */
 	// Attributes of TYPE element

@@ -231,7 +231,7 @@ experiment default_experiment type: gui autorun: true
 				draw circle(1.3) color: tint border: rgb(lettering, 0.6);
 			}
 			species corridor_info_drawer aspect: base;
-			overlay position: {12#px, 12#px} size: {340#px, 64#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 12} size: {340, 64} background: backdrop rounded: true {
 				draw "TWO LEVELS / TWO TRANSIT MODELS" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Teal: ABM / Amber: hybrid occupancy (not positions)" at: {12#px, 47#px}
 					color: lettering font: font("Helvetica", 11);

@@ -119,7 +119,7 @@ global {
 	}
 	
 	reflex end_simulation when: empty(people) {
-		do pause();
+		experiment.pause();
 	}
 }
 

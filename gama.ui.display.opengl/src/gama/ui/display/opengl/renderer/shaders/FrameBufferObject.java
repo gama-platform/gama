@@ -121,10 +121,19 @@ public class FrameBufferObject {
 	 * Initialise frame buffer.
 	 */
 	private void initialiseFrameBuffer() {
-		createFrameBuffer();
-		createTextureAttachment(width, height);
-		createDepthBufferAttachment(width, height);
-		unbindCurrentFrameBuffer();
+		try {
+			createFrameBuffer();
+			createTextureAttachment(width, height);
+			createDepthBufferAttachment(width, height);
+			final int status = gl.glCheckFramebufferStatus(GL2GL3.GL_FRAMEBUFFER);
+			if (status != GL2GL3.GL_FRAMEBUFFER_COMPLETE) {
+				cleanUp();
+				throw new IllegalStateException("Cannot allocate keystone framebuffer " + width + "x" + height
+						+ " (status 0x" + Integer.toHexString(status) + ")");
+			}
+		} finally {
+			unbindCurrentFrameBuffer();
+		}
 	}
 
 	/**
@@ -196,7 +205,7 @@ public class FrameBufferObject {
 	private int createDepthBufferAttachment(final int width, final int height) {
 		gl.glGenRenderbuffers(1, depthBufferArray, 0);
 		gl.glBindRenderbuffer(GL2GL3.GL_RENDERBUFFER, depthBufferArray[0]);
-		gl.glRenderbufferStorage(GL2GL3.GL_RENDERBUFFER, GL2GL3.GL_DEPTH_COMPONENT, width, height);
+		gl.glRenderbufferStorage(GL2GL3.GL_RENDERBUFFER, GL2GL3.GL_DEPTH_COMPONENT24, width, height);
 		gl.glFramebufferRenderbuffer(GL2GL3.GL_FRAMEBUFFER, GL2GL3.GL_DEPTH_ATTACHMENT, GL2GL3.GL_RENDERBUFFER,
 				depthBufferArray[0]);
 		return depthBufferArray[0];

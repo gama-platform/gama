@@ -20,6 +20,7 @@ import gama.api.additions.IGamaGetter;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
+import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
 
@@ -198,6 +199,19 @@ public interface IArtefact extends IGamlDescription {
 		 */
 		Map<String, IArtefact.Facet> getPossibleFacets();
 
+		/** Returns the facet view applicable to the actual keyword, including aliases of this symbol. */
+		default Map<String, IArtefact.Facet> getPossibleFacets(final String keyword) {
+			final Map<String, IArtefact.Facet> result = new java.util.LinkedHashMap<>();
+			final Map<String, IArtefact.Facet> all = getPossibleFacets();
+			if (all != null) all.forEach((name, facet) -> {
+				if (facet.appliesTo(keyword)) result.put(name, facet);
+			});
+			return java.util.Collections.unmodifiableMap(result);
+		}
+
+		/** Reference documentation with facets filtered for the actual keyword. */
+		default IGamlDocumentation getDocumentation(final String keyword) { return getDocumentation(); }
+
 		/**
 		 * Checks for args.
 		 *
@@ -280,6 +294,16 @@ public interface IArtefact extends IGamlDescription {
 	 * }</pre>
 	 */
 	interface Facet extends IArtefact {
+
+		default Set<String> getSpecificTo() { return Set.of(); }
+
+		default Set<String> getExcludes() { return Set.of(); }
+
+		default Set<String> getRequires() { return Set.of(); }
+
+		default boolean appliesTo(final String keyword) {
+			return getSpecificTo().isEmpty() || getSpecificTo().contains(keyword);
+		}
 
 		/**
 		 * Gets the support class for this facet.

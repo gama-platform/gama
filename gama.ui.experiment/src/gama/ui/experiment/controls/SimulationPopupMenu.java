@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackListener;
+import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -93,6 +94,8 @@ public class SimulationPopupMenu extends PopupDialog {
 
 	/** Whether rows were added or removed, or a text no longer fits, since the last sizing. */
 	private boolean needsResize;
+
+	private static final int SIMULATION_INDENT = 24;
 
 	/**
 	 * Sets the text of a label and records whether the popup needs to be enlarged to show it.
@@ -171,9 +174,30 @@ public class SimulationPopupMenu extends PopupDialog {
 			this.contents = (Composite) super.createDialogArea(parent);
 			GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.CENTER).applyTo(contents);
 			GridLayoutFactory.swtDefaults().numColumns(1).margins(5, 5).spacing(0, 5).applyTo(contents);
+			contents.addPaintListener(this::paintHierarchy);
 		}
 		fillLabels(getAgentsToDisplay());
 		return contents;
+	}
+
+	private void paintHierarchy(final PaintEvent event) {
+		if (labels.size() < 2) return;
+		final Composite experiment = labels.get(0);
+		if (experiment.isDisposed()) return;
+		final Rectangle rootBounds = experiment.getBounds();
+		final Rectangle iconBounds = experiment.getChildren()[0].getBounds();
+		final int x = rootBounds.x + iconBounds.x + iconBounds.width / 2;
+		int previousY = rootBounds.y + rootBounds.height;
+		event.gc.setForeground(contents.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+		for (int i = 1; i < labels.size(); i++) {
+			final Composite simulation = labels.get(i);
+			if (simulation.isDisposed()) continue;
+			final Rectangle bounds = simulation.getBounds();
+			final int y = bounds.y + bounds.height / 2;
+			event.gc.drawLine(x, previousY, x, y);
+			event.gc.drawLine(x, y, bounds.x - 1, y);
+			previousY = y;
+		}
 	}
 
 	/**
@@ -202,12 +226,9 @@ public class SimulationPopupMenu extends PopupDialog {
 		}
 		if (size < labels.size()) {
 			needsResize = true;
-			for (int i = size; i < labels.size(); i++) {
-				labels.get(i).dispose();
-				labels.remove(i);
-			}
+			while (labels.size() > size) { labels.remove(labels.size() - 1).dispose(); }
 		}
-
+		contents.redraw();
 	}
 
 	/**
@@ -218,11 +239,11 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @return the or create label
 	 */
 	Composite getOrCreateLabel(final int i) {
-		if (i > labels.size() - 1) { labels.add(createLabel()); }
+		if (i > labels.size() - 1) { labels.add(createLabel(i > 0)); }
 		Composite c = labels.get(i);
 		if (c == null || c.isDisposed()) {
 			labels.remove(i);
-			c = createLabel();
+			c = createLabel(i > 0);
 			labels.add(i, c);
 		}
 		return c;
@@ -232,15 +253,16 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * Creates the label.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param labels
-	 *            the labels
+	 * @param simulation
+	 *            whether this row is a simulation leaf
 	 * @date 26 août 2023
 	 */
-	private Composite createLabel() {
+	private Composite createLabel(final boolean simulation) {
 		try {
 			final Composite labelComposite = new Composite(contents, SWT.NONE);
 			GridLayoutFactory.swtDefaults().numColumns(2).margins(0, 0).spacing(5, 0).applyTo(labelComposite);
-			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(labelComposite);
+			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false)
+					.indent(simulation ? SIMULATION_INDENT : 0, 0).applyTo(labelComposite);
 			Label labelButton = new Label(labelComposite, SWT.NONE);
 			final Label labelText = new Label(labelComposite, SWT.NONE);
 			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, true).applyTo(labelButton);
@@ -276,6 +298,7 @@ public class SimulationPopupMenu extends PopupDialog {
 				}
 
 			});
+			needsResize = true;
 			return labelComposite;
 		} catch (Exception e) {
 			e.printStackTrace();

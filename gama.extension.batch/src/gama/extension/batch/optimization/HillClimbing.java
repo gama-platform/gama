@@ -32,7 +32,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
-import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
@@ -154,7 +153,7 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 			if (neighbors.isEmpty()) { break; }
 			setBestFitness(currentFitness);
 			ParametersSet bestNeighbor = null;
-			if (GamaExecutorService.shouldRunAllSimulationsInParallel(batch)
+			if (BatchAgent.shouldGroupParameterSets(batch)
 					&& !batch.getParametersToExplore().isEmpty()) {
 				Map<ParametersSet, Double> result = testSolutions(neighbors);
 				if (result.containsKey(bestSolution)) { bestNeighbor = bestSolution; }

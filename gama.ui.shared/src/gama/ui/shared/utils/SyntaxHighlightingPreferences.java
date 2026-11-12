@@ -26,7 +26,7 @@ import gama.api.gaml.types.IType;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.api.utils.prefs.GamaPreferences.Theme;
+import gama.api.utils.prefs.GamaPreferences.Modeling;
 import gama.api.utils.prefs.Pref;
 import gama.ui.application.workbench.ThemeHelper;
 
@@ -71,7 +71,7 @@ public final class SyntaxHighlightingPreferences {
 		titles = new LinkedHashMap<>(categories);
 		defaults = builtIn("GAMA 2026");
 		PREFERENCES.put(CONFIGURATION_KEY, create(CONFIGURATION_KEY, "Configuration", defaults.name(),
-				IType.STRING, false).in(Theme.NAME, CONFIGURATION_GROUP).inPlayer(false));
+				IType.STRING, false).in(Modeling.NAME, CONFIGURATION_GROUP).inPlayer(false));
 		final String selected = (String) PREFERENCES.get(CONFIGURATION_KEY).getValue();
 		final Configuration selectedDefaults = BUILT_INS.contains(selected) ? builtIn(selected) : defaults;
 		final IColor legacyBackground = GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue();
@@ -79,7 +79,7 @@ public final class SyntaxHighlightingPreferences {
 			PREFERENCES.put(backgroundKey(theme), create(backgroundKey(theme), "Background",
 					legacyBackground != null && theme.equals(ThemeHelper.isDark() ? "dark" : "light")
 							? legacyBackground : selectedDefaults.backgrounds().get(theme), IType.COLOR, false)
-							.in(Theme.NAME, group(theme)).inPlayer(false));
+							.in(Modeling.NAME, group(theme)).inPlayer(false));
 			// Retain the old switch so existing custom colors are read without changing their meaning.
 			PREFERENCES.put(legacyKey(theme), create(legacyKey(theme), "Use default syntax colors", true,
 					IType.BOOL, false).inPlayer(false).hidden());
@@ -87,7 +87,7 @@ public final class SyntaxHighlightingPreferences {
 				final Style style = defaults.themes().get(theme).get(id);
 				final String colorKey = key(id, "color", theme);
 				PREFERENCES.put(colorKey, create(colorKey, title, style.color(), IType.COLOR, false)
-						.in(Theme.NAME, group(theme)).inPlayer(false));
+						.in(Modeling.NAME, group(theme)).inPlayer(false));
 				for (final String property : List.of("bold", "italic")) {
 					final String styleKey = key(id, property, theme);
 					PREFERENCES.put(styleKey, create(styleKey, title + " " + property,

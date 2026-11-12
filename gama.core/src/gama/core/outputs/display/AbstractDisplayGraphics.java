@@ -16,24 +16,47 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Map;
+import java.util.IdentityHashMap;
 
 import gama.api.GAMA;
+import gama.api.gaml.statements.IStatement;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.PreparationDiagnostics;
 import gama.api.ui.layers.ILayer;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.random.RandomUtils;
 import gama.core.outputs.layers.OverlayLayer;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.dev.DEBUG;
 
 /**
  * The Class AbstractDisplayGraphics.
  */
 public abstract class AbstractDisplayGraphics implements IGraphics {
+
+	private final Map<IStatement.Draw, DrawingData> drawingData = new IdentityHashMap<>();
+	private IStatement.Draw lastDraw;
+	private DrawingData lastDrawingData;
+	private final PreparationDiagnostics preparationDiagnostics = new PreparationDiagnostics();
+
+	@Override
+	public DrawingData getDrawingData(final IStatement.Draw statement) {
+		if (lastDraw != statement) {
+			lastDrawingData = drawingData.computeIfAbsent(statement, DrawingData::new);
+			lastDraw = statement;
+		}
+		return lastDrawingData;
+	}
+
+	@Override
+	public PreparationDiagnostics getPreparationDiagnostics() { return preparationDiagnostics; }
 
 	/** The cached GC. */
 	private static GraphicsConfiguration cachedGC;
@@ -137,6 +160,9 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	@Override
 	public void dispose() {
 		currentLayer = null;
+		drawingData.clear();
+		lastDraw = null;
+		lastDrawingData = null;
 	}
 
 	@Override
@@ -179,6 +205,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 
 	@Override
 	public double getAbsoluteRatioBetweenPixelsAndModelsUnits() {
+		if (getCoordinateSystem() == LayerCoordinates.SCREEN) return 1d;
 		return Math.min(getyRatioBetweenPixelsAndModelUnits(), getxRatioBetweenPixelsAndModelUnits());
 
 		// return Math.min(surface.getHeight() / data.getEnvHeight(), surface.getWidth() / data.getEnvWidth());
@@ -208,15 +235,17 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
+		if (currentLayer != null && currentLayer.getData().getContentCoordinates() == LayerCoordinates.SCREEN) return 1d;
 		if (currentLayer == null) return getDisplayWidth() / data.getEnvWidth();
-		if (currentLayer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
+		if (currentLayer instanceof OverlayLayer overlay && overlay.isOverlay()) return overlay.getData().getContentRatio();
 		return currentLayer.getData().getSizeInPixels().x / data.getEnvWidth();
 	}
 
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
+		if (currentLayer != null && currentLayer.getData().getContentCoordinates() == LayerCoordinates.SCREEN) return 1d;
 		if (currentLayer == null) return getDisplayHeight() / data.getEnvHeight();
-		if (currentLayer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
+		if (currentLayer instanceof OverlayLayer overlay && overlay.isOverlay()) return overlay.getData().getContentRatio();
 		return currentLayer.getData().getSizeInPixels().y / data.getEnvHeight();
 	}
 
@@ -237,6 +266,26 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 
 	@Override
 	public void beginOverlay(final ILayer layer) {}
+
+	private final ThreadLocal<LayerCoordinates> coordinateContext = new ThreadLocal<>();
+
+	@Override
+	public LayerCoordinates getCoordinateSystem() {
+		final LayerCoordinates override = coordinateContext.get();
+		return override != null ? override : currentLayer == null ? LayerCoordinates.WORLD
+				: currentLayer.getData().getContentCoordinates();
+	}
+
+	@Override
+	public LayerCoordinates setCoordinateSystem(final LayerCoordinates coordinates) {
+		final LayerCoordinates previous = coordinateContext.get();
+		if (coordinates == null) {
+			coordinateContext.remove();
+		} else {
+			coordinateContext.set(coordinates);
+		}
+		return previous;
+	}
 
 	@Override
 	public void endOverlay() {}
@@ -294,7 +343,10 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	}
 
 	@Override
-	public IEnvelope getVisibleRegion() { return surface.getVisibleRegionForLayer(currentLayer); }
+	public IEnvelope getVisibleRegion() {
+		return currentLayer != null && currentLayer.getData().getCoordinates() == LayerCoordinates.SCREEN ? null
+				: surface.getVisibleRegionForLayer(currentLayer);
+	}
 
 	@Override
 	public IRandom getRandom() { return random; }

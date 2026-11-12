@@ -54,10 +54,13 @@ import gama.core.outputs.layers.GridLayerStatement.GridLayerValidator;
 		symbols = IKeyword.DISPLAY)
 @facets (
 		value = { @facet (
+				name = LayerData.COORDINATES, type = IType.STRING,
+				optional = true, doc = @doc (LayerData.COORDINATES_DOC)),
+				@facet (
 				name = IKeyword.POSITION,
 				type = IType.POINT,
 				optional = true,
-				doc = @doc ("position of the upper-left corner of the layer. Note that if coordinates are in [0,1[, the position is relative to the size of the environment (e.g. {0.5,0.5} refers to the middle of the display) whereas it is absolute when coordinates are greater than 1 for x and y. The z-ordinate can only be defined between 0 and 1. The position can only be a 3D point {0.5, 0.5, 0.5}, the last coordinate specifying the elevation of the layer. In case of negative value OpenGl will position the layer out of the environment.")),
+				doc = @doc (LayerData.POSITION_DOC)),
 				@facet (
 						name = IKeyword.ROTATE,
 						type = { IType.FLOAT },
@@ -72,7 +75,7 @@ import gama.core.outputs.layers.GridLayerStatement.GridLayerValidator;
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("extent of the layer in the screen from its position. Coordinates in [0,1[ are treated as percentages of the total surface, while coordinates > 1 are treated as absolute sizes in model units (i.e. considering the model occupies the entire view). Like in 'position', an elevation can be provided with the z coordinate, allowing to scale the layer in the 3 directions ")),
+						doc = @doc (LayerData.SIZE_DOC)),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,
@@ -139,7 +142,7 @@ import gama.core.outputs.layers.GridLayerStatement.GridLayerValidator;
 						name = IKeyword.REFRESH,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("(openGL only) specify whether the display of the species is refreshed. (true by default, usefull in case of agents that do not move)")) },
+						doc = @doc (LayerData.REFRESH_DOC + " Defaults to true.")) },
 		omissible = IKeyword.SPECIES)
 @doc (
 		value = "`" + IKeyword.GRID_LAYER + "` is used using the `" + IKeyword.GRID
@@ -191,6 +194,7 @@ public class GridLayerStatement extends AbstractLayerStatement {
 
 		@Override
 		public void validate(final IStatementDescription d) {
+			validateCoordinates(d);
 			final String name = d.getFacet(SPECIES).serializeToGaml(true);
 			final ISpeciesDescription sd = d.getModelDescription().getSpeciesDescription(name);
 			if (sd == null || !sd.isGrid()) {

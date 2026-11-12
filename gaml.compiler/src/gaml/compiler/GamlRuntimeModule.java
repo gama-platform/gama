@@ -16,6 +16,7 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.parser.IEncodingProvider;
 import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.parser.antlr.IPartialParsingHelper;
 import org.eclipse.xtext.parser.antlr.ISyntaxErrorMessageProvider;
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.resource.IResourceDescription;
@@ -31,6 +32,7 @@ import gaml.compiler.linking.GamlLinkingErrorMessageProvider;
 import gaml.compiler.linking.GamlLinkingService;
 import gaml.compiler.naming.GamlNameConverter;
 import gaml.compiler.naming.GamlQualifiedNameProvider;
+import gaml.compiler.parsing.GamlPartialParsingHelper;
 import gaml.compiler.parsing.GamlSyntaxErrorMessageProvider;
 import gaml.compiler.preprocessor.PreprocessingGamlParser;
 import gaml.compiler.resource.GamlEncodingProvider;
@@ -100,6 +102,11 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 	@Override
 	public Class<? extends IParser> bindIParser() {
 		return PreprocessingGamlParser.class;
+	}
+
+	@Override
+	public Class<? extends IPartialParsingHelper> bindIPartialParserHelper() {
+		return GamlPartialParsingHelper.class;
 	}
 
 	@Override

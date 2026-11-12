@@ -71,9 +71,9 @@ experiment Simple_exp type: gui
 	output
 	{
 	 	layout horizontal([0::5000,vertical([1::5000,2::5000])::5000]) tabs:true editors: false;
-		display "Switch_SIR chart" type: 2d 
+		display "Switch_SIR chart" type: 3d 
 		{
-			chart "SIR_agent" type: series background: # white
+			chart "SIR_agent" kind: series background: # white
 			{
 				data 'S' value: S color: # green;
 				data 'I' value: I color: # red;
@@ -81,8 +81,8 @@ experiment Simple_exp type: gui
 			}
 
 		}
-		display "EBM Disp"  type: 2d {			
-			chart "SIR_agent" type: series background: #white {
+		display "EBM Disp"  type: 3d {			
+			chart "SIR_agent" kind: series background: #white {
 				data 'S' value: first(first(SIR_EBM.EBMcomodel).simulation.agent_with_SIR_dynamic).S color: #green ;				
 				data 'I' value: first(first(SIR_EBM.EBMcomodel).simulation.agent_with_SIR_dynamic).I color: #red ;
 				data 'R' value: first(first(SIR_EBM.EBMcomodel).simulation.agent_with_SIR_dynamic).R color: #blue ;

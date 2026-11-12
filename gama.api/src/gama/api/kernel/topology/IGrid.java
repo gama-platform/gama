@@ -366,6 +366,13 @@ public interface IGrid extends IMatrix<IShape>, ISpatialIndex, IDiffusionTarget 
 	 */
 	double[] getGridValueOf(IScope scope, IExpression expr);
 
+	default double[] getGridValueOf(final IScope scope, final IExpression expression, final double[] buffer) {
+		final double[] values = getGridValueOf(scope, expression);
+		if (buffer.length != values.length) throw new IllegalArgumentException("Incorrect grid elevation buffer length");
+		System.arraycopy(values, 0, buffer, 0, values.length);
+		return buffer;
+	}
+
 	/**
 	 * Checks if the grid uses toroidal topology.
 	 *

@@ -102,6 +102,9 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	/** The ctrl pressed. */
 	protected boolean ctrlPressed = false;
 
+	private boolean mouseLeftPressed;
+	private volatile boolean controlGesture;
+
 	/** The shift pressed. */
 	protected boolean shiftPressed = false;
 
@@ -394,7 +397,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param value
 	 *            the new ctrl pressed
 	 */
-	final void setCtrlPressed(final boolean value) { ctrlPressed = value; }
+	final void setCtrlPressed(final boolean value) {
+		ctrlPressed = value;
+		drawRotationHelper();
+	}
 
 	/**
 	 * Sets the mouse left pressed.
@@ -402,7 +408,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param b
 	 *            the new mouse left pressed
 	 */
-	protected void setMouseLeftPressed(final boolean b) {}
+	protected void setMouseLeftPressed(final boolean b) {
+		mouseLeftPressed = b;
+		drawRotationHelper();
+	}
 
 	/**
 	 * Invoke on GL thread.
@@ -436,6 +445,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseMoved(final com.jogamp.newt.event.MouseEvent e) {
+		if (controlGesture) return;
 		invokeOnGLThread(drawable -> {
 			internalMouseMove(e.getX(), e.getY(), e.getButton(), e.getButton() > 0, isControlDown(e), e.isShiftDown());
 			return false;
@@ -572,6 +582,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mouseClicked(final com.jogamp.newt.event.MouseEvent e) {
+		if (isOverDisplayControl(e)) return;
 		if (e.getClickCount() == 2) {
 			if (keystoneMode) {
 				final int x = e.getX();
@@ -589,6 +600,11 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 	@Override
 	public final void mousePressed(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getButton() == 1 && isOverDisplayControl(e)) {
+			controlGesture = true;
+			return;
+		}
+
 		// DEBUG.OUT("Mouse pressed from NEWT");
 		invokeOnGLThread(drawable -> {
 			final int x = e.getX();
@@ -596,6 +612,12 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			internalMouseDown(x, y, e.getButton(), isControlDown(e), e.isShiftDown());
 			return false;
 		});
+	}
+
+	private boolean isOverDisplayControl(final com.jogamp.newt.event.MouseEvent e) {
+		final int[] position = renderer.getCanvas().getNativeSurface()
+				.convertToWindowUnits(new int[] { e.getX(), e.getY() });
+		return renderer.getSurface().isOverDisplayControl(position[0], position[1]);
 	}
 
 	/**
@@ -660,6 +682,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		}
 
 		lastMousePressedPosition.setLocation(x, y, 0);
+		setCtrlPressed(isCtrl);
+		setShiftPressed(isShift);
+		mousePosition.setLocation(x, y, 0);
+		computeMouseLocationInTheWorld(x, y);
 		// Activate Picking when press and right click
 		if (button == 3 && !keystoneMode) {
 			if (mouseInROI(lastMousePressedPosition)) {
@@ -671,17 +697,18 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		} else if (button == 2 && !data.isCameraLocked()) { // mouse wheel
 			resetPivot();
 		} else if (isShift && isViewInXYPlan()) { startROI(); }
-		mousePosition.setLocation(x, y, 0);
-		computeMouseLocationInTheWorld(x, y);
-
 		setMouseLeftPressed(button == 1);
-		setCtrlPressed(isCtrl);
-		setShiftPressed(isShift);
 	}
 
 	@Override
 	public final void mouseReleased(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getButton() == 1 && controlGesture) {
+			controlGesture = false;
+			return;
+		}
 		invokeOnGLThread(drawable -> {
+			setCtrlPressed(isControlDown(e));
+			setShiftPressed(e.isShiftDown());
 			internalMouseUp(e.getButton(), e.isShiftDown());
 			return false;
 		});
@@ -697,7 +724,30 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		firsttimeMouseDown = true;
 		if (isViewInXYPlan() && isShift) { finishROISelection(); }
 		if (button == 1) { setMouseLeftPressed(false); }
+	}
 
+	@Override
+	public final void mouseExited(final com.jogamp.newt.event.MouseEvent e) {
+		cancelInteraction();
+	}
+
+	public void cancelInteraction() {
+		controlGesture = false;
+		invokeOnGLThread(drawable -> {
+			resetInteraction();
+			return true;
+		});
+	}
+
+	/** Cancels input whose release may have happened outside the native canvas. */
+	private void resetInteraction() {
+		setCtrlPressed(false);
+		setShiftPressed(false);
+		setMouseLeftPressed(false);
+		firsttimeMouseDown = true;
+		goesForward = goesBackward = strafeLeft = strafeRight = false;
+		ROICurrentlyDrawn = false;
+		cancelROI();
 	}
 
 	/**
@@ -725,54 +775,81 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	FloatBuffer pixelDepth = Buffers.newDirectFloatBuffer(1);
 
 	/**
-	 * Gets the world position from the mouse position. Less computationally intensive and more accurate for planar
-	 * surfaces. Requires however to be done in the GL context
+	 * Updates mouse coordinates using the z=0 ground plane for non-world layers, keystone editing and region
+	 * selection. Other 3D interactions retain depth-derived coordinates and require a current GL context.
 	 *
-	 * @param mouse
-	 *            the mouse
-	 * @return the world position from
+	 * @param mouse_x
+	 *            horizontal surface coordinate in pixels
+	 * @param mouse_y
+	 *            vertical surface coordinate in pixels, measured from the top
 	 */
 	public void computeMouseLocationInTheWorld(final int mouse_x, final int mouse_y) {
 
 		IOpenGL gl = renderer.getOpenGLHelper();
-		final double[] wcoord = new double[4];
 		final int[] viewport = gl.getViewport();
+		if (viewport[2] <= 0 || viewport[3] <= 0) {
+			DEBUG.ERR("Cannot compute mouse coordinates before the OpenGL viewport is initialized");
+			return;
+		}
+		final IPoint mouse = GamaPointFactory.create(mouse_x, mouse_y);
 		final int x = mouse_x;
-		final int y = viewport[3] - mouse_y;
+		final int y = viewport[1] + viewport[3] - 1 - mouse_y;
+		if (!renderer.getSurface().getManager().isProvidingWorldCoordinates() || keystoneMode
+				|| (shiftPressed && isViewInXYPlan()) || mouseInROI(mouse)
+				|| x < viewport[0] || x >= viewport[0] + viewport[2]
+				|| y < viewport[1] || y >= viewport[1] + viewport[3]) {
+			getWorldPositionFrom(mouse, positionInTheWorld);
+			return;
+		}
 		pixelDepth.rewind();
 		gl.getGL().glReadPixels(x, y, 1, 1, GL2ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);
 
 		if (z == 1d || z == 0d) {
-			getWorldPositionFrom(GamaPointFactory.create(mouse_x, mouse_y), positionInTheWorld);
+			getWorldPositionFrom(mouse, positionInTheWorld);
 		} else {
+			final double[] wcoord = new double[4];
 			gl.unproject(x, y, z, wcoord);
 			positionInTheWorld.setLocation(wcoord[0], wcoord[1], 0);
 		}
 	}
 
 	/**
-	 * Different method from above, as it might be used in non openGL contexts
+	 * Intersects the unprojected mouse ray with the z=0 ground plane, in renderer coordinates (Y negated relative
+	 * to model coordinates). Uses cached matrices without GPU readback, including for orthographic cameras.
 	 *
 	 * @param mouse
-	 * @return
+	 *            surface coordinates in pixels, measured from the top left
+	 * @param result
+	 *            point to update; left unchanged if no finite ground-plane intersection exists
+	 * @return the updated point
 	 */
 	public IPoint getWorldPositionFrom(final IPoint mouse, final IPoint result) {
-		final IPoint camLoc = getPosition();
 		IOpenGL gl = renderer.getOpenGLHelper();
-		if (gl == null) return GamaPointFactory.create();
-		final double[] wcoord = new double[4];
-		synchronized (gl) {
-			final double x = (int) mouse.getX(), y = gl.getViewport()[3] - (int) mouse.getY();
-			gl.unproject(x, y, 0.1, wcoord);
-			result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
-			gl.unproject(x, y, 0.9, wcoord);
-			result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ())
-					.normalize();
+		if (gl == null) {
+			DEBUG.ERR("Cannot compute ground-plane coordinates without an OpenGL helper");
+			return result;
 		}
-		final double distance = camLoc.getZ() / -result.getZ();
-		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
-				0);
+		final double[] near = new double[4];
+		final double[] far = new double[4];
+		synchronized (gl) {
+			final int[] viewport = gl.getViewport();
+			if (viewport[2] <= 0 || viewport[3] <= 0) {
+				DEBUG.ERR("Cannot compute ground-plane coordinates before the OpenGL viewport is initialized");
+				return result;
+			}
+			final double x = mouse.getX(), y = viewport[1] + viewport[3] - 1 - mouse.getY();
+			gl.unproject(x, y, 0.1, near);
+			gl.unproject(x, y, 0.9, far);
+		}
+		final double distance = -near[2] / (far[2] - near[2]);
+		final double x = near[0] + distance * (far[0] - near[0]);
+		final double y = near[1] + distance * (far[1] - near[1]);
+		if (!Double.isFinite(x) || !Double.isFinite(y)) {
+			DEBUG.ERR("Mouse ray has no finite intersection with the ground plane");
+			return result;
+		}
+		return result.setLocation(x, y, 0);
 	}
 
 	/**
@@ -1030,7 +1107,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 			if (!keystoneMode) {
 				if (e.getKeyChar() == 0) {
 					setCtrlPressed(!isCameraModifierKey(e.getKeySymbol()) && isControlDown(e));
-					if (shiftPressed) { setShiftPressed(!e.isShiftDown()); }
+					setShiftPressed(e.isShiftDown());
 					return true;
 				}
 				boolean cameraInteraction = !data.isCameraLocked();
@@ -1127,7 +1204,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * Draw rotation helper.
 	 */
 	protected void drawRotationHelper() {
-		renderer.getOpenGLHelper().setRotationMode(ctrlPressed && !data.isCameraLocked());
+		renderer.getOpenGLHelper().setRotationMode(ctrlPressed && mouseLeftPressed && !data.isCameraLocked());
 	}
 
 	/**

@@ -76,6 +76,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The Constant WIDTH. */
 	private final static int WIDTH = 300;
 
+	private static final long IDLE_DELAY_MS = 3000;
+
 	/** Jobs that are implementation details rather than user-visible tasks. */
 	private static final Set<String> USELESS_JOBS = Set.of("Win32 refresh daemon", "Animation start",
 			"Decoration Calculation", "Update Capability Enablement for Natures", "Status refresh",
@@ -208,7 +210,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 							StatusType.REGULAR, isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null));
 					if (historyPopup.isVisible()) { historyPopup.refresh(); }
 					idleJob.cancel();
-					idleJob.schedule();
+					idleJob.schedule(IDLE_DELAY_MS);
 				});
 			}
 
@@ -341,7 +343,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			}
 		} finally {
 			isUpdating = false;
-			if (currentStatus != StatusType.ERROR) { idleJob.schedule(2000); }
+			if (currentStatus != StatusType.ERROR) { idleJob.schedule(IDLE_DELAY_MS); }
 		}
 
 	}

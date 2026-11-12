@@ -13,8 +13,8 @@ import org.dflib.jdbc.connector.JdbcConnector;
 
 import gama.annotations.doc;
 import gama.annotations.example;
-import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
+import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.tests;
@@ -42,6 +42,16 @@ import gama.api.types.list.IList;
  */
 public class DataFrameOperators {
 
+	/**
+	 * Require column.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param df
+	 *            the df
+	 * @param column
+	 *            the column
+	 */
 	static void requireColumn(final IScope scope, final IDataFrame df, final String column) {
 		if (df == null) throw GamaRuntimeException.error("Dataframe cannot be nil", scope);
 		if (column == null) throw GamaRuntimeException.error("Dataframe column name cannot be nil", scope);
@@ -50,8 +60,8 @@ public class DataFrameOperators {
 	}
 
 	/**
-	 * Access to a column of a dataframe with [column name]. A dataframe is iterated row by row (maps), but indexed
-	 * by column: this operator gives the access its own type, a list, instead of the type of the contents.
+	 * Access to a column of a dataframe with [column name]. A dataframe is iterated row by row (maps), but indexed by
+	 * column: this operator gives the access its own type, a list, instead of the type of the contents.
 	 *
 	 * @param scope
 	 *            the scope
@@ -76,8 +86,6 @@ public class DataFrameOperators {
 		if (df == null) return null;
 		return df.getFromIndicesList(scope, indices);
 	}
-
-	
 
 	// ========================= Creation operators =========================
 
@@ -105,8 +113,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])",
 							isExecutable = false) }) })
-	@tests ({
-			@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).rows = 2"),
+	@tests ({ @test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).rows = 2"),
 			@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).keys = [\"name\",\"age\"]"),
 			// a column is statically a list of unknown contents, which is written 'list'
 			@test ("string(type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"])) = \"list\""),
@@ -139,8 +146,7 @@ public class DataFrameOperators {
 			@test ("dataframe df19 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); dataframe df24 <- dataframe_with([\"a\", \"b\"], [[3, 4], [5, 6]]); dataframe merged2 <- (df19 + df24); merged2.rows = 3"),
 			@test ("dataframe df110 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); dataframe with_row <- (df110 + [7, 8]); with_row.rows = 2"),
 			// original unchanged (immutability)
-			@test ("dataframe df111 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); df111.rows = 1")
-	})
+			@test ("dataframe df111 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); df111.rows = 1") })
 	public static IDataFrame dataframeWith(final IScope scope, final IList<String> columns, final IList<IList> data) {
 		return GamaDataFrameFactory.create(scope, columns, data);
 	}
@@ -270,10 +276,9 @@ public class DataFrameOperators {
 							value = "unknown val <- cell(my_df, 0, \"name\");",
 							isExecutable = false) }) },
 			see = { "column_at", "row_at" })
-	@tests ({
-			@test ("cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\""),
+	@tests ({ @test ("cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\""),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); cell(df, 1, \"name\") = \"Bob\""),
-			@test ("dataframe df22 <- dataframe_with([\"name\"], [[\"Alice\"], [\"Bob\"]]); dataframe df22 <- add_column(df22, \"score\", 0); cell(df22, 0, \"score\") = 0"),
+			@test ("dataframe df22 <- dataframe_with([\"name\"], [[\"Alice\"], [\"Bob\"]]); df22 <- add_column(df22, \"score\", 0); cell(df22, 0, \"score\") = 0"),
 			@test ("dataframe df3 <- dataframe_with([\"name\"], [[\"Alice\"], [\"Bob\"]]); dataframe df23 <- add_column(df3, \"score\", 0); cell(df23, 1, \"score\") = 0"),
 			@test ("dataframe df2 <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); cell(df2, 0, \"name\") = \"Alice\""),
 			@test ("dataframe df4 <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); cell(df4, 1, \"age\") = 25"),
@@ -284,8 +289,7 @@ public class DataFrameOperators {
 			// Product A, Q1 = 100
 			@test ("dataframe df6 <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted <- pivot(df6, \"product\", \"quarter\", \"revenue\"); cell(pivoted, 0, \"Q1\") = 100"),
 			// Product B, Q2 = 250
-			@test ("dataframe df7 <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted2 <- pivot(df7, \"product\", \"quarter\", \"revenue\"); cell(pivoted2, 1, \"Q2\") = 250")
-	})
+			@test ("dataframe df7 <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted2 <- pivot(df7, \"product\", \"quarter\", \"revenue\"); cell(pivoted2, 1, \"Q2\") = 250") })
 	public static Object dfCell(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final String columnName) {
 		requireColumn(scope, df, columnName);
@@ -323,8 +327,7 @@ public class DataFrameOperators {
 							value = "my_df row_at 1",
 							isExecutable = false) }) },
 			see = { "column_at", "rows_list", "iloc" })
-	@tests ({
-			@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) row_at 1) = [\"Bob\",25]"),
+	@tests ({ @test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) row_at 1) = [\"Bob\",25]"),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); (df row_at 0) = [\"Alice\", 30]"),
 			@test ("dataframe df2 <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); (df2 row_at 1) = [\"Bob\", 25]"),
 			@test ("dataframe df3 <- dataframe_with([\"a\", \"b\", \"c\"], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]); list row0 <- (df3 row_at 0); row0 = [1, 2, 3]"),
@@ -333,8 +336,7 @@ public class DataFrameOperators {
 			// row_at / column_at mirror the matrix operators
 			@test ("dataframe df6 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); (df6 row_at 0) = [\"Alice\", 30, \"Paris\"]"),
 			@test ("dataframe df1 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); dataframe df23 <- dataframe_with([\"a\", \"b\"], [[3, 4], [5, 6]]); dataframe merged <- (df1 + df23); (merged row_at 2) = [5, 6]"),
-			@test ("dataframe df12 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); dataframe with_row <- (df12 + [7, 8]); (with_row row_at 1) = [7, 8]")
-	})
+			@test ("dataframe df12 <- dataframe_with([\"a\", \"b\"], [[1, 2]]); dataframe with_row <- (df12 + [7, 8]); (with_row row_at 1) = [7, 8]") })
 	public static IList rowAt(final IScope scope, final IDataFrame df, final Integer rowIndex) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
@@ -374,8 +376,7 @@ public class DataFrameOperators {
 			@test ("dataframe df10 <- dataframe_with([\"name\", \"city\"], [[\"Alice\", \"Paris\"], [\"Bob\", \"Lyon\"], [\"Charlie\", \"Paris\"]]); dataframe filtered <- filter(df10, \"city\", \"Paris\"); list names <- (filtered column_at \"name\"); names contains \"Alice\""),
 			@test ("dataframe df11 <- dataframe_with([\"name\", \"city\"], [[\"Alice\", \"Paris\"], [\"Bob\", \"Lyon\"], [\"Charlie\", \"Paris\"]]); dataframe filtered2 <- filter(df11, \"city\", \"Paris\"); list names2 <- (filtered2 column_at \"name\"); names2 contains \"Charlie\""),
 			@test ("dataframe df12 <- dataframe_with([\"name\", \"city\"], [[\"Alice\", \"Paris\"], [\"Bob\", \"Lyon\"], [\"Charlie\", \"Paris\"]]); dataframe filtered3 <- filter(df12, \"city\", \"Paris\"); list names3 <- (filtered3 column_at \"name\"); !(names3 contains \"Bob\")"),
-			@test ("dataframe df13 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); (df13 column_at \"age\") = [30, 25, 35]")
-	})
+			@test ("dataframe df13 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); (df13 column_at \"age\") = [30, 25, 35]") })
 	public static IList columnAtName(final IScope scope, final IDataFrame df, final String columnName) {
 		if (!df.getColumns().contains(columnName))
 			throw GamaRuntimeException.error("Unknown column: " + columnName, scope);
@@ -404,8 +405,7 @@ public class DataFrameOperators {
 	@tests ({
 			@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) column_at 0) = [\"Alice\",\"Bob\"]"),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); (df column_at 1) = [30, 25]"),
-			@test ("dataframe df2 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); (df2 column_at 0) = [\"Alice\", \"Bob\", \"Charlie\"]")
-	})
+			@test ("dataframe df2 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); (df2 column_at 0) = [\"Alice\", \"Bob\", \"Charlie\"]") })
 	public static IList columnAtIndex(final IScope scope, final IDataFrame df, final Integer columnIndex) {
 		final IList<String> cols = df.getColumns();
 		if (columnIndex < 0 || columnIndex >= cols.size())
@@ -427,12 +427,10 @@ public class DataFrameOperators {
 			value = "Returns the list of the rows of the dataframe, each row being a list of its cell values. "
 					+ "Overloads the matrix 'rows_list' operator for dataframes.",
 			see = { "columns_list", "row_at" })
-	@tests ({
-			@test ("rows_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,2],[3,4]]"),
+	@tests ({ @test ("rows_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,2],[3,4]]"),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); rows_list(df) = [[\"Alice\", 30], [\"Bob\", 25]]"),
 			// rows_list / columns_list
-			@test ("dataframe df2 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); rows_list(df2) = [[\"Alice\",30,\"Paris\"],[\"Bob\",25,\"Lyon\"],[\"Charlie\",35,\"Marseille\"]]")
-	})
+			@test ("dataframe df2 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); rows_list(df2) = [[\"Alice\",30,\"Paris\"],[\"Bob\",25,\"Lyon\"],[\"Charlie\",35,\"Marseille\"]]") })
 	public static IList rowsList(final IScope scope, final IDataFrame df) {
 		// Explicitly build a list of rows-as-lists (row values), independent of the
 		// dataframe's iteration
@@ -456,11 +454,9 @@ public class DataFrameOperators {
 			value = "Returns the list of the columns of the dataframe, each column being a list of its values. "
 					+ "Overloads the matrix 'columns_list' operator for dataframes.",
 			see = { "rows_list", "column_at" })
-	@tests ({
-			@test ("columns_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,3],[2,4]]"),
+	@tests ({ @test ("columns_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,3],[2,4]]"),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); columns_list(df) = [[\"Alice\", \"Bob\"], [30, 25]]"),
-			@test ("dataframe df2 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); columns_list(df2) = [[\"Alice\",\"Bob\",\"Charlie\"],[30,25,35],[\"Paris\",\"Lyon\",\"Marseille\"]]")
-	})
+			@test ("dataframe df2 <- dataframe_with( [\"name\", \"age\", \"city\"], [[\"Alice\", 30, \"Paris\"], [\"Bob\", 25, \"Lyon\"], [\"Charlie\", 35, \"Marseille\"]] ); columns_list(df2) = [[\"Alice\",\"Bob\",\"Charlie\"],[30,25,35],[\"Paris\",\"Lyon\",\"Marseille\"]]") })
 	public static IList columnsList(final IScope scope, final IDataFrame df) {
 		final IList result = GamaListFactory.create(Types.LIST);
 		for (final String col : df.getColumns()) { result.add(df.getColumnValues(col)); }
@@ -491,8 +487,7 @@ public class DataFrameOperators {
 			@test ("dataframe df <- dataframe_with([\"name\", \"city\"], [[\"Alice\", \"Paris\"], [\"Bob\", \"Lyon\"], [\"Eve\", \"Paris\"]]); dataframe parisians <- filter(df, \"city\", \"Paris\"); parisians.rows = 2"),
 			@test ("dataframe df2 <- dataframe_with([\"name\", \"city\"], [[\"Alice\", \"Paris\"], [\"Bob\", \"Lyon\"], [\"Eve\", \"Paris\"]]); dataframe nobody <- filter(df2, \"city\", \"Berlin\"); nobody.rows = 0"),
 			@test ("dataframe df3 <- dataframe_with([\"name\", \"city\"], [[\"Alice\", \"Paris\"], [\"Bob\", \"Lyon\"], [\"Charlie\", \"Paris\"]]); dataframe filtered <- filter(df3, \"city\", \"Paris\"); filtered.rows = 2"),
-			@test ("dataframe df4 <- dataframe_with([\"val\"], [[1], [2], [3]]); dataframe filtered2 <- filter(df4, \"val\", 999); filtered2.rows = 0")
-	})
+			@test ("dataframe df4 <- dataframe_with([\"val\"], [[1], [2], [3]]); dataframe filtered2 <- filter(df4, \"val\", 999); filtered2.rows = 0") })
 	public static IDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
 		requireColumn(scope, df, columnName);
@@ -518,8 +513,7 @@ public class DataFrameOperators {
 			see = { "filter", "select_columns" })
 	@tests ({
 			@test ("(remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")).rows = 1"),
-			@test ("dataframe df <- dataframe_with([\"name\", \"note\"], [[\"Alice\", \"ok\"], [\"Bob\", \"\"], [\"Charlie\", nil]]); dataframe cleaned <- remove_empty(df, \"note\"); cleaned.rows = 1")
-	})
+			@test ("dataframe df <- dataframe_with([\"name\", \"note\"], [[\"Alice\", \"ok\"], [\"Bob\", \"\"], [\"Charlie\", nil]]); dataframe cleaned <- remove_empty(df, \"note\"); cleaned.rows = 1") })
 	public static IDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
 		requireColumn(scope, df, columnName);
 		return df.removeRowsWithEmptyValues(columnName);
@@ -551,8 +545,7 @@ public class DataFrameOperators {
 			@test ("dataframe df5 <- dataframe_with([\"a\", \"b\", \"c\"], [[1, 2, 3], [4, 5, 6]]); dataframe sub3 <- select_columns(df5, [\"a\", \"c\"]); cell(sub3, 0, \"a\") = 1"),
 			@test ("dataframe df6 <- dataframe_with([\"a\", \"b\", \"c\"], [[1, 2, 3], [4, 5, 6]]); dataframe sub4 <- select_columns(df6, [\"a\", \"c\"]); cell(sub4, 0, \"c\") = 3"),
 			@test ("dataframe df7 <- dataframe_with( [\"name\", \"age\", \"city\", \"score\"], [[\"Alice\", 30, \"Paris\", 95], [\"Bob\", 25, \"Lyon\", 87], [\"Charlie\", 35, \"Paris\", 92], [\"Diana\", 28, \"Paris\", 78]] ); dataframe result <- select_columns(filter(df7, \"city\", \"Paris\"), [\"name\", \"score\"]); result.rows = 3"),
-			@test ("dataframe df8 <- dataframe_with( [\"name\", \"age\", \"city\", \"score\"], [[\"Alice\", 30, \"Paris\", 95], [\"Bob\", 25, \"Lyon\", 87], [\"Charlie\", 35, \"Paris\", 92], [\"Diana\", 28, \"Paris\", 78]] ); dataframe result2 <- select_columns(filter(df8, \"city\", \"Paris\"), [\"name\", \"score\"]); result2.keys = [\"name\", \"score\"]")
-	})
+			@test ("dataframe df8 <- dataframe_with( [\"name\", \"age\", \"city\", \"score\"], [[\"Alice\", 30, \"Paris\", 95], [\"Bob\", 25, \"Lyon\", 87], [\"Charlie\", 35, \"Paris\", 92], [\"Diana\", 28, \"Paris\", 78]] ); dataframe result2 <- select_columns(filter(df8, \"city\", \"Paris\"), [\"name\", \"score\"]); result2.keys = [\"name\", \"score\"]") })
 	public static IDataFrame dfSelectColumns(final IScope scope, final IDataFrame df, final IList<String> columns) {
 		if (columns == null) throw GamaRuntimeException.error("select_columns: the column list must not be nil", scope);
 		return df.selectColumns(columns);
@@ -584,8 +577,7 @@ public class DataFrameOperators {
 			@test ("dataframe df3 <- dataframe_with([\"name\"], [[\"Alice\"], [\"Bob\"]]); dataframe df22 <- add_column(df3, \"score\", 0); df22.keys contains \"score\""),
 			@test ("dataframe df4 <- dataframe_with([\"name\"], [[\"Alice\"], [\"Bob\"]]); dataframe df23 <- add_column(df4, \"score\", 0); cell(df23, 0, \"score\") = 0"),
 			@test ("dataframe df5 <- dataframe_with([\"name\"], [[\"Alice\"], [\"Bob\"]]); dataframe df24 <- add_column(df5, \"score\", 0); cell(df24, 1, \"score\") = 0"),
-			@test ("dataframe df6 <- dataframe_with([\"name\", \"score\"], [[\"Alice\", 95], [\"Bob\", 40], [\"Charlie\", 72]]); dataframe with_passed <- add_column(df6, \"status\", \"unknown\"); with_passed.keys contains \"status\"")
-	})
+			@test ("dataframe df6 <- dataframe_with([\"name\", \"score\"], [[\"Alice\", 95], [\"Bob\", 40], [\"Charlie\", 72]]); dataframe with_passed <- add_column(df6, \"status\", \"unknown\"); with_passed.keys contains \"status\"") })
 	public static IDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
 			final Object defaultValue) {
 		return df.addColumn(columnName, defaultValue);
@@ -618,8 +610,7 @@ public class DataFrameOperators {
 			@test ("dataframe people2 <- dataframe_with([\"id\", \"name\"], [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe scores2 <- dataframe_with([\"id\", \"score\"], [[1, 95], [2, 87]]); dataframe joined2 <- join(people2, scores2, \"id\"); joined2.keys contains \"name\""),
 			@test ("dataframe people3 <- dataframe_with([\"id\", \"name\"], [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe scores3 <- dataframe_with([\"id\", \"score\"], [[1, 95], [2, 87]]); dataframe joined3 <- join(people3, scores3, \"id\"); joined3.keys contains \"score\""),
 			// single key, string and list forms
-			@test ("dataframe people4   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people4, salaries, \"id\")).rows = 2")
-	})
+			@test ("dataframe people4   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people4, salaries, \"id\")).rows = 2") })
 	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String keyColumn) {
 		final IList<String> cols = GamaListFactory.create(Types.STRING);
@@ -648,8 +639,7 @@ public class DataFrameOperators {
 			@test ("(join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), [\"id\"])).rows = 2"),
 			@test ("dataframe people   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people, salaries, [\"id\"])).rows = 2"),
 			// only (FR,2020) and (DE,2020) match on both keys
-			@test ("dataframe a <- dataframe_with([\"country\", \"year\", \"gdp\"], [[\"FR\", 2020, 100], [\"FR\", 2021, 110], [\"DE\", 2020, 120]]); dataframe b <- dataframe_with([\"country\", \"year\", \"pop\"], [[\"FR\", 2020, 67], [\"DE\", 2020, 83]]); (join(a, b, [\"country\", \"year\"])).rows = 2")
-	})
+			@test ("dataframe a <- dataframe_with([\"country\", \"year\", \"gdp\"], [[\"FR\", 2020, 100], [\"FR\", 2021, 110], [\"DE\", 2020, 120]]); dataframe b <- dataframe_with([\"country\", \"year\", \"pop\"], [[\"FR\", 2020, 67], [\"DE\", 2020, 83]]); (join(a, b, [\"country\", \"year\"])).rows = 2") })
 	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final IList<String> keyColumns) {
 		return df1.join(scope, df2, keyColumns, "inner");
@@ -679,8 +669,7 @@ public class DataFrameOperators {
 			@test ("dataframe people   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people, salaries, [\"id\"], \"inner\")).rows = 2"),
 			@test ("dataframe people2   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries2 <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people2, salaries2, [\"id\"], \"left\")).rows  = 3"),
 			@test ("dataframe people3   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries3 <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people3, salaries3, [\"id\"], \"right\")).rows = 2"),
-			@test ("dataframe people4   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries4 <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people4, salaries4, [\"id\"], \"full\")).rows  = 3")
-	})
+			@test ("dataframe people4   <- dataframe_with([\"id\", \"name\"],   [[1, \"Alice\"], [2, \"Bob\"], [3, \"Charlie\"]]); dataframe salaries4 <- dataframe_with([\"id\", \"salary\"], [[1, 55000], [2, 48000]]); (join(people4, salaries4, [\"id\"], \"full\")).rows  = 3") })
 	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final IList<String> keyColumns, final String joinType) {
 		return df1.join(scope, df2, keyColumns, joinType);
@@ -748,8 +737,7 @@ public class DataFrameOperators {
 			@test ("(pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")).rows = 2"),
 			@test ("dataframe df <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted <- pivot(df, \"product\", \"quarter\", \"revenue\"); pivoted.rows = 2"),
 			@test ("dataframe df2 <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted2 <- pivot(df2, \"product\", \"quarter\", \"revenue\"); pivoted2.keys contains \"Q1\""),
-			@test ("dataframe df3 <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted3 <- pivot(df3, \"product\", \"quarter\", \"revenue\"); pivoted3.keys contains \"Q2\"")
-	})
+			@test ("dataframe df3 <- dataframe_with( [\"product\", \"quarter\", \"revenue\"], [[\"A\", \"Q1\", 100], [\"A\", \"Q2\", 200], [\"B\", \"Q1\", 150], [\"B\", \"Q2\", 250]] ); dataframe pivoted3 <- pivot(df3, \"product\", \"quarter\", \"revenue\"); pivoted3.keys contains \"Q2\"") })
 	public static IDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
 		requireColumn(scope, df, indexColumn);
@@ -844,12 +832,10 @@ public class DataFrameOperators {
 							value = "list row <- iloc(my_df, -1);",
 							isExecutable = false) }) },
 			see = { "row_at", "cell" })
-	@tests ({
-			@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]"),
+	@tests ({ @test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]"),
 			@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]"),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); iloc(df, 0) = [\"Alice\", 30]"),
-			@test ("dataframe df2 <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); iloc(df2, -1) = [\"Bob\", 25]")
-	})
+			@test ("dataframe df2 <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); iloc(df2, -1) = [\"Bob\", 25]") })
 	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
 		return df.ilocRow(scope, rowIndex);
 	}
@@ -871,12 +857,10 @@ public class DataFrameOperators {
 							value = "unknown v <- iloc(my_df, 1, 0);",
 							isExecutable = false) }) },
 			see = { "cell", "row_at", "column_at" })
-	@tests ({
-			@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\""),
+	@tests ({ @test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\""),
 			@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30"),
 			@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25"),
-			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); iloc(df, 1, 0) = \"Bob\"")
-	})
+			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); iloc(df, 1, 0) = \"Bob\"") })
 	public static Object iloc(final IScope scope, final IDataFrame df, final Integer rowIndex, final Integer colIndex) {
 		return df.iloc(scope, rowIndex, colIndex);
 	}

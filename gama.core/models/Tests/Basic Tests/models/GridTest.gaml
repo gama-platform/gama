@@ -45,7 +45,7 @@ experiment GridTest type: test autorun: true {
 	
 	test "Grid Casting and Iteration" {
 		// grid cells are agents and can be collected
-		list<float> values <- my_grid collect (each.val);
+		list<float> values <- list(my_grid) collect (each.val);
 		assert length(values) = 100;
 		
 		// grid as a matrix

@@ -27,6 +27,7 @@ import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDisplayControlLayer;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.KeyCombination;
 import gama.api.ui.layers.ILayer;
@@ -175,6 +176,18 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 * @return the manager
 	 */
 	default ILayerManager getManager() { return ILayerManager.NULL; }
+
+	default IDisplayControlLayer getControlLayer() {
+		for (final ILayer layer : getManager().getItems()) {
+			if (layer instanceof IDisplayControlLayer controls) return controls;
+		}
+		return null;
+	}
+
+	default boolean isOverDisplayControl(final int x, final int y) {
+		final IDisplayControlLayer controls = getControlLayer();
+		return controls != null && (controls.isControlCaptured() || controls.containsControl(x, y));
+	}
 
 	/**
 	 * Focus on.

@@ -130,14 +130,12 @@ experiment "Road Traffic" type: gui {
 		}
 	}
 
-	output synchronized: true {
-		display city_display type: 3d {
+	output synchronized: false {
+		display city_display type: opengl4 {
 			//camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			event #mouse_down {
-			ask simulation {
-				do resume();}}
+			event #mouse_down { do play();}
 
 		species building aspect: base refresh: false;
 			species road aspect: base refresh: false;

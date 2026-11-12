@@ -63,8 +63,8 @@ experiment "CoModel" type: gui {
 			agents "plantGrowth" value: plantGrow_simu.plotGrow ;
 		}		
 		
-		display data  type: 2d  {
-			chart "rain" type: series {
+		display data  type: 3d  {
+			chart "rain" kind: series {
 				data "rainfall" value: sum(weather_simu.plotWeather accumulate (each.rain));
 			}
 		}

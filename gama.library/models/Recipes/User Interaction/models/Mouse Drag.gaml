@@ -56,7 +56,7 @@ species DraggedAgent {
 experiment "Mouse Drag" type: gui {
 	/** Insert here the definition of the input and output of the model */
 	output {
-		display "Mouse Drag [in OpenGL]" type:opengl {
+		display "Mouse Drag [in OpenGL]" type:opengl map_order: true {
 			camera #from_above locked:true;
 			event #mouse_down {ask simulation {do mouse_down();}}
 			event #mouse_up {ask simulation {do mouse_up();}}

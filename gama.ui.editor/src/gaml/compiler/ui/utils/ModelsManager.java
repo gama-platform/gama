@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.utils;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,22 +104,25 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 
 	@Override
 	public List<TestExperimentSummary> runHeadlessTests(final Object object) {
-		// final StringBuilder sb = new StringBuilder();
 		final IModelSpecies model = findModel(object);
 		if (model == null) return null;
-		final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
-				.filter(e -> model.getExperiment(e).isTest()).toList();
-		if (testExpNames.isEmpty()) return null;
-		final List<TestExperimentSummary> result = new ArrayList<>();
-		try (var session = IsolatedTestRunner.openSession()) {
-			for (final String expName : testExpNames) {
-				if (GAMA.getGui().isTestStopRequested()) break;
-				final var summary = TestExperimentRunner.run(model, expName, GAMA.getGui());
-				result.add(summary);
-				if (summary.getState() == gama.api.utils.tests.TestState.INTERRUPTED) break;
+		try {
+			final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
+					.filter(e -> model.getExperiment(e).isTest()).toList();
+			if (testExpNames.isEmpty()) return null;
+			final List<TestExperimentSummary> result = new ArrayList<>();
+			try (var session = IsolatedTestRunner.openSession()) {
+				for (final String expName : testExpNames) {
+					if (GAMA.getGui().isTestStopRequested()) break;
+					final var summary = TestExperimentRunner.run(model, expName, GAMA.getGui());
+					result.add(summary);
+					if (summary.getState() == gama.api.utils.tests.TestState.INTERRUPTED) break;
+				}
 			}
+			return result;
+		} finally {
+			if (!(object instanceof IModelSpecies)) { model.dispose(); }
 		}
-		return result;
 	}
 
 	/**
@@ -142,6 +146,15 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		if (object instanceof IModelSpecies) return (IModelSpecies) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());
 		switch (object) {
+			case String path -> {
+				final java.nio.file.Path file = java.nio.file.Path.of(path);
+				if (Files.isRegularFile(file))
+					return findModel(URI.createFileURI(file.toAbsolutePath().toString()));
+				final IFile workspaceFile = GAMA.getWorkspaceManager().getWorkspace().getRoot()
+						.getFile(new Path(path));
+				if (workspaceFile.exists()) return findModel(workspaceFile);
+				throw new IllegalArgumentException("Model file does not exist: " + path);
+			}
 			case IFile file -> {
 				try {
 					if (GamlAutoValidation.isEnabled(file) && file.findMaxProblemSeverity(IMarker.PROBLEM, true,
@@ -186,6 +199,53 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		final IModelSpecies model = findModel(object);
 		if (model == null) return;
 		GAMA.runGuiExperiment(exp, model);
+	}
+
+	@Override
+	public boolean openModel(final Object object, final String exp, final boolean confirm) {
+		final IModelSpecies model = findModel(object);
+		return model != null && GAMA.runGuiExperiment(exp, model, confirm);
+	}
+
+	@Override
+	public List<String> validateWorkspace() {
+		final List<String> result = new ArrayList<>();
+		final List<IGamlFileInfo> models = new ArrayList<>();
+		try {
+			processContainer(GAMA.getWorkspaceManager().getRoot(), models);
+		} catch (final CoreException e) {
+			throw new IllegalStateException("Unable to discover workspace models for validation", e);
+		}
+		if (models.isEmpty()) {
+			result.add("No GAML models found in the workspace");
+			return result;
+		}
+		for (final IGamlFileInfo info : models) {
+			if (info == null) {
+				result.add("Unable to resolve model metadata");
+				continue;
+			}
+			if (!(info instanceof GamlFileInfo modelInfo) || modelInfo.uri == null) {
+				result.add("Unable to resolve model location: " + info.getName());
+				continue;
+			}
+			final List<GamlCompilationError> errors = new ArrayList<>();
+			final IModelSpecies model = GamlModelBuilder.getInstance().compile(modelInfo.uri, errors);
+			if (model == null) {
+				final String diagnostics = errors.isEmpty() ? "compilation failed without diagnostics"
+						: errors.stream().map(Object::toString).toList().toString();
+				result.add(info.getName() + ": " + diagnostics);
+			} else {
+				try {
+					final String diagnostics = errors.isEmpty() ? ""
+							: "; diagnostics: " + errors.stream().map(Object::toString).toList();
+					result.add(info.getName() + ": valid" + diagnostics);
+				} finally {
+					model.dispose();
+				}
+			}
+		}
+		return result;
 	}
 
 	@Override

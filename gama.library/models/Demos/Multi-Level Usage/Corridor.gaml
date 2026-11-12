@@ -136,7 +136,7 @@ experiment "Corridor" type: gui autorun: true {
 			simulation.environment_height - simulation.corridor_wall_height / 2};
 	}
 	output {
-		display defaut_display type: 3d background: backdrop axes: false {
+		display defaut_display type: 3d background: backdrop axes: false map_order: true {
 			camera 'default' location: {4000.0,1500.1331,7628.0284} target: {4000.0,1500.0,0.0};
 			graphics back {
 				draw corridor_wall_0_display color: floor_color border: rgb(68, 87, 109);
@@ -156,7 +156,7 @@ experiment "Corridor" type: gui autorun: true {
 			species pedestrian { 
 				draw circle(13) color: blend(color, lettering, 0.75) border: rgb(lettering, 0.4);
 			}
-
+ 
 			graphics front {
 				draw "ENTRY" at: {corridor_left_bounds - 180, environment_height / 2}
 					anchor: #right_center color: lettering font: font("Helvetica", 11);
@@ -179,7 +179,7 @@ experiment "Corridor" type: gui autorun: true {
 			event #mouse_move {
 				button_hover <- (button_location distance_to #user_location <= 65);
 			}
-			overlay position: {12#px, 8#px} size: {440#px, 70#px} background: backdrop rounded: true {
+			overlay coordinates: #screen position: {12, 8} size: {440, 70} background: backdrop rounded: true {
 				draw "CORRIDOR / CAPTURE & RELEASE" at: {12#px, 19#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Walking: " + length(pedestrian) + "   Captured: " + length(corridor(0).captured_pedestrian)
 					+ "   Step: " + (duration copy_between (0, 4)) + " ms"

@@ -72,7 +72,7 @@ global {
 	
 	// Stop the simulation when everyone is either saved :) or dead :(
 	reflex stop_simu when:inhabitant all_match (each.saved or each.drowned) {
-		do pause();
+		experiment.pause();
 	}
 	
 }

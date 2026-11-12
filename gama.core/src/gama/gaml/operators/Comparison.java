@@ -480,6 +480,7 @@ public class Comparison {
 	@operator (
 			value = { EQUALS },
 			can_be_const = true,
+			content_type = IType.FLOAT,
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = { IConcept.COMPARISON, IConcept.MATRIX })
 	@doc (
@@ -516,6 +517,7 @@ public class Comparison {
 	@operator (
 			value = { EQUALS },
 			can_be_const = true,
+			content_type = IType.INT,
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
 	@doc (

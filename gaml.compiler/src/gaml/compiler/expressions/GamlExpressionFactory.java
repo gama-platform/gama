@@ -33,6 +33,7 @@ import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
@@ -58,6 +59,7 @@ import gama.api.ui.IGamaView;
 import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.LayerCoordinates;
 import gama.api.ui.layers.UserInputEvent;
 import gama.dev.DEBUG;
 import gaml.compiler.descriptions.ConstantExpressionDescription;
@@ -367,29 +369,30 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				// Pixel unit for display coordinates
 				return new CustomExpression<>(unit, Types.FLOAT, 1d, doc, sc -> {
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 1d : 1d / g.getAbsoluteRatioBetweenPixelsAndModelsUnits();
+					return g == null || g.getCoordinateSystem() == LayerCoordinates.SCREEN ? 1d
+							: 1d / g.getAbsoluteRatioBetweenPixelsAndModelsUnits();
 				});
 			case "display_width":
 				// Width of the current display
 				return new CustomExpression<>(unit, Types.FLOAT, 0d, doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getDisplayWidth();
+						if (surface != null) return (double) surface.getWidth();
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 0d : (double) g.getDisplayWidth();
+					return g == null ? 0d : (double) g.getViewWidth();
 				});
 			case "display_height":
 				// Height of the current display
 				return new CustomExpression<>(unit, Types.FLOAT, 0d, doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getDisplayHeight();
+						if (surface != null) return (double) surface.getHeight();
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
-					return g == null ? 0d : (double) g.getDisplayHeight();
+					return g == null ? 0d : (double) g.getViewHeight();
 				});
 			case "now":
 				// Current simulation time
@@ -466,20 +469,28 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				return new CustomExpression<>(unit, Types.STRING, "", doc, UserInputEvent::mouseButton);
 			case "user_location":
 			case "user_location_in_world":
+			case "mouse_location_in_world":
+			case "mouse_world_location":
 				// Mouse cursor location in world coordinates
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null) return GamaPointFactory.create();
 					final UserInputEvent event = UserInputEvent.current(sc);
-					return event != null && event.modelLocation() != null ? event.modelLocation().copy(sc)
-							: sc.getGui().getMouseLocationInModel();
+					if (event != null && event.modelLocation() != null) return event.modelLocation().copy(sc);
+					final IGraphics graphics = sc.getGraphics();
+					return graphics != null && graphics.getSurface() != null
+							? graphics.getSurface().getModelCoordinates() : sc.getGui().getMouseLocationInModel();
 				});
 			case "user_location_in_display":
+			case "mouse_location_in_display":
+			case "mouse_screen_location":
 				// Mouse cursor location in display coordinates
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null) return GamaPointFactory.create();
 					final UserInputEvent event = UserInputEvent.current(sc);
-					return event != null && event.displayLocation() != null ? event.displayLocation().copy(sc)
-							: sc.getGui().getMouseLocationInDisplay();
+					if (event != null && event.displayLocation() != null) return event.displayLocation().copy(sc);
+					final IGraphics graphics = sc.getGraphics();
+					return graphics != null && graphics.getSurface() != null
+							? graphics.getSurface().getWindowCoordinates() : sc.getGui().getMouseLocationInDisplay();
 				});
 			case "current_error":
 				// Current error message if any
@@ -1144,6 +1155,15 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createAction(final String op, final IDescription callerContext, final IActionDescription action,
 			final IExpression call, final Arguments arguments) {
+		final ITypeDescription receiver = call == null ? callerContext.getTypeContext()
+				: call.getGamlType().getDenotedSpecies();
+		if (action.getTypeContext() instanceof IModelDescription && receiver != null
+				&& !receiver.hasAction(op, call instanceof SuperExpression)) {
+			callerContext.error("Action '" + op + "' is defined in global and is not available on "
+					+ receiver.getName() + ". Call it on the simulation (e.g. ask simulation { do "
+					+ op + "(); }).", IGamlIssue.WRONG_CONTEXT, callerContext.getUnderlyingElement());
+			return null;
+		}
 		// Verify that the provided arguments match the action's expected parameters
 		if (action.verifyArgs(callerContext, arguments))
 			// Create primitive operator for the action call
