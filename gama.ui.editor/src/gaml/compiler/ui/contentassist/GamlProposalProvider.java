@@ -12,10 +12,13 @@ package gaml.compiler.ui.contentassist;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.text.DefaultInformationControl;
@@ -118,6 +121,10 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 					isOperator = "operator".equals(type) || "unit".equals(type) || IKeyword.TYPE.equals(type);
 				}
 				final String kind = proposalKind(candidate, defaultProposalKind(candidate));
+				if (cp instanceof GamlCompletionProposal completion) {
+					completion.category = proposalLabel(kind,
+							EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource()));
+				}
 				final String origin = proposalOrigin(candidate,
 						EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource()));
 				if (origin != null) cp.setDisplayString(cp.getDisplayString() + " - " + origin);
@@ -141,6 +148,10 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 	static class GamlCompletionProposal extends ConfigurableCompletionProposal {
 
 		private Supplier<String> documentation;
+
+		private String category;
+
+		private String documentationKey;
 
 		/**
 		 * @param replacementString
@@ -188,7 +199,47 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
 		@Override
 		public String getAdditionalProposalInfo() {
+			final String body = documentationBody();
+			return body == null || body.isBlank() ? null
+					: "<html><head><style>" + GamlDocStyleHelper.getDocCss() + "</style></head><body>"
+							+ body + "</body></html>";
+		}
+
+		private String documentationBody() {
 			return documentation == null ? super.getAdditionalProposalInfo() : documentation.get();
+		}
+
+		static GamlCompletionProposal group(final List<GamlCompletionProposal> proposals) {
+			final List<GamlCompletionProposal> ordered = new ArrayList<>(proposals);
+			ordered.sort((left, right) -> Integer.compare(right.getPriority(), left.getPriority()));
+			final GamlCompletionProposal primary = ordered.getFirst();
+			if (ordered.size() == 1) return primary;
+			final var categories = new LinkedHashSet<String>();
+			final var definitions = new LinkedHashMap<String, Supplier<String>>();
+			for (final GamlCompletionProposal proposal : ordered) {
+				if (proposal.category != null) categories.add(proposal.category);
+				Supplier<String> documentation = proposal.documentation;
+				if (documentation == null) {
+					final String body = proposal.documentationBody();
+					documentation = () -> body;
+				}
+				definitions.putIfAbsent(proposal.documentationKey == null ? proposal.getDisplayString()
+						: proposal.documentationKey, documentation);
+			}
+			if (!categories.isEmpty() && definitions.size() > 1) {
+				final StyledString display = new StyledString(primary.getReplacementString());
+				display.append(" (" + String.join(", ", categories) + ")", StyledString.QUALIFIER_STYLER);
+				primary.setDisplayString(display);
+			}
+			primary.documentation = Suppliers.memoize(() -> {
+				final var bodies = new LinkedHashSet<String>();
+				for (final Supplier<String> definition : definitions.values()) {
+					final String body = definition.get();
+					if (body != null && !body.isBlank()) bodies.add(body);
+				}
+				return String.join("<hr>", bodies);
+			});
+			return primary;
 		}
 
 		@Override
@@ -346,14 +397,13 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 
 	private void addNameProposals(final IScope scope, final boolean action, final GamlCompletionContext completion,
 			final ContentAssistContext context, final ICompletionProposalAcceptor acceptor) {
-		final Set<String> names = new HashSet<>();
 		for (final IEObjectDescription candidate : scope.getAllElements()) {
 			if (!acceptor.canAcceptMoreProposals()) return;
 			final String name = candidate.getName().toString();
 			final String kind = proposalKind(candidate,
 					action ? IKeyword.ACTION : defaultProposalKind(candidate));
 			if (completion.invocationName() && !IKeyword.ACTION.equals(kind) && !"operator".equals(kind)) continue;
-			if (!names.add(name) || !context.getMatcher().isCandidateMatchingPrefix(name, completion.prefix())) continue;
+			if (!context.getMatcher().isCandidateMatchingPrefix(name, completion.prefix())) continue;
 			final EObject definition = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
 			final String label = proposalLabel(kind, definition);
 			final String type = proposalType(candidate, definition);
@@ -369,6 +419,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			proposal.setMatcher(context.getMatcher());
 			proposal.setReplaceContextLength(completion.prefix().length());
 			proposal.setPriority(proposalPriority(kind));
+			if (proposal instanceof GamlCompletionProposal completionProposal) completionProposal.category = label;
 			setProposalDocumentation(proposal, candidate, kind, context);
 			acceptor.accept(proposal);
 		}
@@ -449,6 +500,11 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 	private void setProposalDocumentation(final ConfigurableCompletionProposal proposal,
 			final IEObjectDescription candidate, final String kind, final ContentAssistContext context) {
 		if (proposal instanceof GamlCompletionProposal completion) {
+			completion.documentationKey = kind + ":" + ("operator".equals(kind)
+					|| IKeyword.TYPE.equals(kind) && "xmi".equals(candidate.getEObjectURI().fileExtension())
+					? candidate.getName() : candidate.getEObjectURI() + ":"
+							+ candidate.getUserData(BuiltinGlobalScopeProvider.MEMBER_ORIGIN) + ":"
+							+ candidate.getUserData(BuiltinGlobalScopeProvider.MEMBER_SIGNATURE));
 			completion.documentation = Suppliers.memoize(() -> {
 				if ("operator".equals(kind)) return operatorDocumentation(candidate.getName().toString());
 				final EObject definition = EcoreUtil.resolve(candidate.getEObjectOrProxy(), context.getResource());
@@ -475,14 +531,16 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 							+ (body == null ? "" : body);
 				}
 				if (definition.eResource() != null && !(definition instanceof Model)) {
-					final String location = definition.eResource().getURI().lastSegment();
+					final URI uri = definition.eResource().getURI();
+					final String filename = URI.decode(uri.lastSegment());
+					final String location = "xmi".equals(uri.fileExtension())
+							? "built-in " + URI.decode(uri.trimFileExtension().lastSegment()) : filename;
 					if (location != null) {
 						body = (body == null ? "" : body) + "<p>Declared in <code>"
 								+ HtmlEscapers.htmlEscaper().escape(location) + "</code></p>";
 					}
 				}
-				return "<html><head><style>" + GamlDocStyleHelper.getDocCss() + "</style></head><body>"
-						+ GamlDocStyleHelper.wrapWithCard(title, comment, body) + "</body></html>";
+				return GamlDocStyleHelper.wrapWithCard(title, comment, body);
 			});
 		}
 	}
@@ -499,7 +557,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			body.append(GamlDocStyleHelper.wrapWithCard(
 					HtmlEscapers.htmlEscaper().escape(operator.getTitle()), null, documentation));
 		}
-		return "<html><head><style>" + GamlDocStyleHelper.getDocCss() + "</style></head><body>" + body + "</body></html>";
+		return body.toString();
 	}
 
 	private String defaultProposalKind(final IEObjectDescription candidate) {
@@ -634,11 +692,17 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 				// null for " + t);
 			} else {
 				((ConfigurableCompletionProposal) cp).setPriority(proposalPriority(bi.kind));
-				if ("operator".equals(bi.kind) && cp instanceof GamlCompletionProposal completion) {
-					completion.documentation = Suppliers.memoize(() -> operatorDocumentation(bi.name));
-				}
-				if (bi.documentation != null) {
-					((ConfigurableCompletionProposal) cp).setAdditionalProposalInfo(bi.documentation);
+				if (cp instanceof GamlCompletionProposal completion) {
+					completion.category = switch (bi.kind) {
+						case "operator" -> "Operator";
+						case "statement" -> "Statement";
+						default -> "Declaration";
+					};
+					completion.documentationKey = bi.kind + ":" + bi.name;
+					completion.documentation = Suppliers.memoize(() -> "operator".equals(bi.kind)
+							? operatorDocumentation(bi.name)
+							: GamlDocStyleHelper.wrapWithCard(completion.category + " "
+									+ HtmlEscapers.htmlEscaper().escape(bi.name), null, bi.documentation));
 				}
 				acceptor.accept(cp);
 			}
