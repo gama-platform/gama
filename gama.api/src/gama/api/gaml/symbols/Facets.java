@@ -132,6 +132,22 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	}
 
 	/**
+	 * Gets the label.
+	 *
+	 * @param keys
+	 *            the keys
+	 * @return the label
+	 */
+	public String getLabel(final String... keys) {
+		if (keys == null || keys.length == 0) return null;
+		for (final String key : keys) {
+			final IExpressionDescription result = get(key);
+			if (result != null) return StringUtils.toJavaString(result.toString());
+		}
+		return null;
+	}
+
+	/**
 	 * Gets the expression for a given key.
 	 *
 	 * @param key
