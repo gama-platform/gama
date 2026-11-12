@@ -75,7 +75,7 @@ public class CurrentExperimentExpression extends VariableExpression {
 	    return INSTANCE;
 	}
 
-	/** Keeps the enclosing experiment's type even when an output's evaluation context is its simulation. */
+	/** Keeps the declaring experiment's type in simulation-facing outputs, parameters and inline callbacks. */
 	public static IExpression create(final IDescription context) {
 		if (context != null) {
 			if (context.getTypeContext() instanceof IExperimentDescription experiment)

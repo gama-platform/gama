@@ -315,8 +315,8 @@ public interface IDescription
 
 	/**
 	 * Returns the enclosing context used for expression lookup and species-relative typing. Normally this is the
-	 * enclosing description, but simulation outputs declared inside an experiment use the model instead. This does
-	 * not change the syntax tree, declaration placement, inheritance or serialization.
+	 * enclosing description, but simulation-facing outputs, parameters and their inline callbacks use the model instead.
+	 * This does not change the syntax tree, declaration placement, inheritance or serialization.
 	 *
 	 * @return the enclosing evaluation context, or {@code null} at a lookup boundary
 	 */
