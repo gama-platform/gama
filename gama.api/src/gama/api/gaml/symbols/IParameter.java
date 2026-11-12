@@ -25,6 +25,12 @@ import gama.api.ui.IExperimentDisplayable;
  * explore different model configurations without modifying code. They support various UI widgets (sliders, choosers,
  * text fields, file pickers, etc.) based on their type and constraints.
  * </p>
+ * <p>
+ * GAML parameter expressions use the context of their target variable: the model for simulation parameters, or the
+ * experiment for experiment-owned parameters. Simulation configuration evaluates configured values and global
+ * initializers independently of live simulations. Supplying a simulation-rooted scope explicitly selects that simulation
+ * for dynamic constraints and simulation callbacks; initialization still uses configuration values.
+ * </p>
  * 
  * <h2>Parameter Features</h2>
  * <ul>

@@ -58,10 +58,9 @@ public class VariableFactory implements ISymbolDescriptionFactory {
 			final Map<String, IArtefact.Facet> possibleFacets = artefact.getPossibleFacets();
 			// We copy the relevant facets from the targeted var of the
 			// parameter
-			IVariableDescription targetedVar = enclosing.getModelDescription().getAttribute(facets.getLabel(VAR));
-			if (targetedVar == null && enclosing instanceof IExperimentDescription exp) {
-				targetedVar = exp.getAttribute(facets.getLabel(VAR));
-			}
+			final IVariableDescription targetedVar = enclosing instanceof IExperimentDescription exp
+					? exp.getParameterTarget(facets.getLabel(VAR))
+					: enclosing.getModelDescription().getAttribute(facets.getLabel(VAR));
 			if (targetedVar != null) {
 				for (final String key : possibleFacets.keySet()) {
 					if (ON_CHANGE.equals(key)) { continue; }

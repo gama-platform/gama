@@ -37,6 +37,7 @@ import gama.api.additions.GamaHelper;
 import gama.api.additions.IGamaHelper;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -117,6 +118,16 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	 */
 	@Override
 	public boolean isExperimentParameter() { return PARAMETER.equals(keyword); }
+
+	@Override
+	public IDescription getEnclosingContext() {
+		final IDescription enclosing = getEnclosingDescription();
+		if (isExperimentParameter() && enclosing instanceof IExperimentDescription experiment) {
+			final IVariableDescription target = experiment.getParameterTarget(getLitteral(IKeyword.VAR));
+			if (target != null) return target.getEnclosingDescription();
+		}
+		return enclosing;
+	}
 
 	/**
 	 * Sets the synthetic species container.

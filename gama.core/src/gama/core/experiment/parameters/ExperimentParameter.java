@@ -37,7 +37,6 @@ import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -55,6 +54,9 @@ import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.gaml.variables.AttributeDeclaration;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
@@ -64,14 +66,12 @@ import gama.api.types.date.IDate;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.list.GamaListFactory;
+import gama.core.experiment.ParameterScope;
 import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterValidator;
 
 /**
- * The Class ExperimentParameter.
- */
-
-/**
- * The Class ExperimentParameter.
+ * Parameter expressions follow the targeted variable's model or experiment context. Simulation parameter initialization
+ * uses an isolated configuration context; dynamic facets use a live simulation only when its scope is supplied explicitly.
  */
 @facets (
 		value = { @facet (
@@ -108,7 +108,7 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 						name = IKeyword.VAR,
 						type = IType.ID,
 						optional = false,
-						doc = @doc ("the name of the variable (that should be declared in global)")),
+						doc = @doc ("The target variable, looked up in global first, then in the experiment. Parameter expressions use that variable's context.")),
 				@facet (
 						name = IKeyword.UNIT,
 						type = { IType.STRING, IType.FLOAT, IType.INT },
@@ -130,7 +130,7 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 								// AD deprecation temporarily removed as this facet is used internally now
 								// deprecated = "Move the block of statements at the end of the parameter declaration
 								// instead",
-								value = "Provides a block of statements that will be executed whenever the value of the parameter changes")),
+								value = "An action or block executed on the owning experiment for experiment parameters, or on the explicitly selected simulation for simulation parameters. Simulation callbacks are not executed when changing configuration without a simulation context.")),
 				@facet (
 						name = IKeyword.ENABLES,
 						type = IType.LIST,
@@ -210,7 +210,13 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 		kinds = { ISymbolKind.EXPERIMENT })
 @validator (ExperimentParameterValidator.class)
 @doc (
-		value = "The parameter statement specifies which global attributes (i) will change through the successive simulations (in batch experiments), (ii) can be modified by user via the interface (in gui experiments). In GUI experiments, parameters are displayed depending on their type.",
+		value = """
+				The parameter statement specifies which global or experiment attributes can change between batch simulations \
+				or through the GUI. A target declared in global is evaluated in the model context, even when the experiment \
+				declares an attribute with the same name. Before a simulation is selected, expressions use configured parameter \
+				values and the initial values of other globals, never values borrowed from a running simulation; self and world \
+				are unavailable in that configuration context. Dynamic bounds and display facets use the selected simulation \
+				when explicitly evaluated in its scope. Experiment-owned parameters retain their experiment context.""",
 		usages = { @usage (
 				value = "In gui experiment, the general syntax is the following:",
 				examples = { @example (
@@ -352,9 +358,13 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		onChange = getFacet(IKeyword.ON_CHANGE);
 		if (onChange != null) {
 			listeners.add((scope, v) -> {
-				final IExecutable on_changer =
-						scope.getExperiment().getSpecies().getAction(Cast.asString(scope, onChange.value(scope)));
-				scope.getExperiment().executeAction(on_changer);
+				final ITopLevelAgent target = callbackTarget(scope);
+				if (target == null) return;
+				final String name = Cast.asString(scope, evaluate(scope, onChange, false));
+				final IExecutable callback = target.getSpecies().getAction(name);
+				if (callback == null)
+					throw GamaRuntimeException.error("Unknown parameter callback " + name, scope);
+				target.executeAction(callback);
 			});
 
 		}
@@ -393,14 +403,44 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	 * @return the variable description
 	 */
 	public static IVariableDescription findTargetedVar(final IDescription parameterDescription, final String varName) {
-		// We look first in the model to make sure that built-in parameters (like seed) are correctly retrieved
-		final IModelDescription wd = parameterDescription.getModelDescription();
-		IVariableDescription targetedGlobalVar = wd.getAttribute(varName);
-		if (targetedGlobalVar == null) {
-			final IExperimentDescription ed = (IExperimentDescription) parameterDescription.getEnclosingDescription();
-			targetedGlobalVar = ed.getAttribute(varName);
+		return ((IExperimentDescription) parameterDescription.getEnclosingDescription()).getParameterTarget(varName);
+	}
+
+	private Object evaluate(final IScope scope, final IExpression expression, final boolean configuration) {
+		if (expression.isConst()) return expression.value(scope);
+		if (scope == null) throw GamaRuntimeException.error("Parameter evaluation requires a context.", null);
+		if (isExperiment) {
+			final var experiment = scope.getExperiment();
+			if (experiment == null)
+				throw GamaRuntimeException.error("This parameter requires an experiment instance.", scope);
+			try (IScope evaluation = experiment.getScope().detachedCopy("in experiment parameter")) {
+				evaluation.push(this);
+				return expression.value(evaluation);
+			}
 		}
-		return targetedGlobalVar;
+		if (scope instanceof ParameterScope) return expression.value(scope);
+		if (!configuration && scope.getRoot() instanceof ISimulationAgent) return expression.value(scope);
+		try (IScope evaluation = new ParameterScope(configurationOwner(scope), scope.getExperiment())) {
+			evaluation.push(this);
+			return expression.value(evaluation);
+		}
+	}
+
+	private IExperimentSpecies configurationOwner(final IScope scope) {
+		if (scope.getExperiment() != null) {
+			return scope.getExperiment().getSpecies();
+		} else if (getDescription() != null && scope.getModel() != null) {
+			final var owner = scope.getModel().getExperiment(getDescription().getEnclosingDescription().getName());
+			if (owner != null) return owner;
+		}
+		throw GamaRuntimeException.error("No experiment configuration is available for parameter " + getName(), scope);
+	}
+
+	private ITopLevelAgent callbackTarget(final IScope scope) {
+		// Configuration changes have no running simulation on which to execute GAML callbacks.
+		if (scope instanceof ParameterScope) return null;
+		if (isExperiment) return scope.getExperiment();
+		return scope.getRoot() instanceof ISimulationAgent simulation ? simulation : null;
 	}
 
 	/**
@@ -518,7 +558,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			if (scope != null) { scope.push(this); }
 			final IExpression exp = getFacet("colors");
 			return exp == null ? null
-					: (List<IColor>) Types.LIST.cast(scope, exp.value(scope), null, Types.INT, Types.COLOR, false);
+					: (List<IColor>) Types.LIST.cast(scope, evaluate(scope, exp, false), null, Types.INT, Types.COLOR, false);
 		} finally {
 			if (scope != null) { scope.pop(this); }
 		}
@@ -879,7 +919,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		try {
 			if (scope != null) { scope.push(this); }
 			if (min == null) return null;
-			Object minValue = type.cast(scope, min.value(scope), null, false);
+			Object minValue = type.cast(scope, evaluate(scope, min, false), null, false);
 			if (!(minValue instanceof Comparable mc)) return null;
 			return mc;
 		} finally {
@@ -892,7 +932,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		try {
 			if (scope != null) { scope.push(this); }
 			if (max == null) return null;
-			Object maxValue = type.cast(scope, max.value(scope), null, false);
+			Object maxValue = type.cast(scope, evaluate(scope, max, false), null, false);
 			if (!(maxValue instanceof Comparable mc)) return null;
 			return mc;
 		} finally {
@@ -904,7 +944,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	public List getAmongValue(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
-			if (among != null) return GamaListFactory.castToList(scope, among.value(scope));
+			if (among != null) return GamaListFactory.castToList(scope, evaluate(scope, among, false));
 			return null;
 		} finally {
 			if (scope != null) { scope.pop(this); }
@@ -915,7 +955,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	public Comparable getStepValue(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
-			return step == null ? null : (Comparable) step.value(scope);
+			return step == null ? null : (Comparable) evaluate(scope, step, false);
 		} finally {
 			if (scope != null) { scope.pop(this); }
 		}
@@ -939,7 +979,10 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					GAML.getDescriptionFactory().create(IKeyword.ACTION, getDescription(), IKeyword.NAME, "inline");
 			action = new ActionStatement(d);
 			action.setChildren(statements);
-			listeners.add((scope, v) -> { scope.getExperiment().executeAction(action); });
+			listeners.add((scope, v) -> {
+				final ITopLevelAgent target = callbackTarget(scope);
+				if (target != null) { target.executeAction(action); }
+			});
 		}
 	}
 
@@ -994,7 +1037,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			if (displayUnit != null) return displayUnit;
 			if (unitExpression == null) return null;
 			if (unitExpression.getGamlType().id() == IType.STRING) {
-				final String label = Cast.asString(scope, unitExpression.value(scope));
+				final String label = Cast.asString(scope, evaluate(scope, unitExpression, false));
 				if (label == null) return null;
 				if (!label.equals(parsedUnitLabel)) {
 					// A failed numeric interpretation is an ordinary text label, not a model compilation error.
@@ -1052,7 +1095,16 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	protected Object getValue(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
-			if (value == UNDEFINED && init != null) { setValue(scope, init.value(scope)); }
+			if (value == UNDEFINED && init != null) {
+				if (isExperiment || scope instanceof ParameterScope) {
+					setValue(scope, evaluate(scope, init, true));
+				} else {
+					try (IScope configuration = new ParameterScope(configurationOwner(scope), scope.getExperiment())) {
+						configuration.push(this);
+						setValue(configuration, evaluate(configuration, init, true));
+					}
+				}
+			}
 			return value;
 		} finally {
 			if (scope != null) { scope.pop(this); }
@@ -1064,7 +1116,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		try {
 			if (scope != null) { scope.push(this); }
 			if (slider == null) return true;
-			return Cast.asBool(scope, slider.value(scope));
+			return Cast.asBool(scope, evaluate(scope, slider, false));
 		} finally {
 			if (scope != null) { scope.pop(this); }
 		}

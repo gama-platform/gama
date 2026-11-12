@@ -108,4 +108,11 @@ public interface IExperimentDescription extends ISpeciesDescription {
 	 */
 	boolean isTest();
 
+	/** Resolves parameter targets model-first, including names shared with built-in experiment attributes. */
+	default IVariableDescription getParameterTarget(final String name) {
+		final IModelDescription model = getModelDescription();
+		final IVariableDescription variable = model == null ? null : model.getAttribute(name);
+		return variable == null ? getAttribute(name) : variable;
+	}
+
 }

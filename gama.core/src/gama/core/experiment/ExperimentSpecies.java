@@ -615,7 +615,13 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// evaluate variables in the opening of the
 		// experiment
 		// Make sure that the attributes in experiment are initialized (see #3842)
-		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
+		agent.getParameterValues().forEach((n, v) -> {
+			final var target = getDescription().getParameterTarget(n);
+			if (hasVar(n) && (target != null && target.isDefinedInExperiment()
+					|| IKeyword.SEED.equals(n) || IKeyword.RNG.equals(n))) {
+				agent.setDirectVarValue(myScope, n, v);
+			}
+		});
 		myScope.push(agent);
 		prepareGui(); // TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
@@ -871,6 +877,12 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			super(null, additionalName);
 		}
 
+		@Override
+		public IModelSpecies getModel() { return model; }
+
+		@Override
+		public IExperimentAgent getExperiment() { return agent; }
+
 		/**
 		 * Sets the global var value.
 		 *
@@ -899,10 +911,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		@Override
 		public Object getGlobalVarValue(final String varName) throws GamaRuntimeException {
-			if (hasParameter(varName)) return getParameterValue(varName);
-			// final SimulationAgent a = getCurrentSimulation();
-			// if (a != null) return a.getDirectVarValue(this, varName);
-			return null;
+			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
+				return configuration.getGlobalVarValue(varName);
+			}
 		}
 
 	}
