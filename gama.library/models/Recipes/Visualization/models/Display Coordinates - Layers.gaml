@@ -54,7 +54,7 @@ experiment "2 - Image mesh and chart" type: gui {
             image "../images/Gama.jpg" coordinates: #screen position: {16, 60} size: {200, 140};
             mesh heights coordinates: #screen position: {240, 60} size: {200, 140}
                 scale: 0 color: palette([#blue, #cyan, #yellow, #red]);
-            chart "Cycle" type: series coordinates: #screen
+            chart "Cycle" kind: series coordinates: #screen
                 position: {16, 240} size: {0.9, 180} {
                 data "Cycle" value: cycle;
             }

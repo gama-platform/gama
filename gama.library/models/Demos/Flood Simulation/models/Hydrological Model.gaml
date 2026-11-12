@@ -334,7 +334,7 @@ experiment Run type: gui {
          }
       }
       display chart_display refresh: every(24#cycles) type: 3d background: paper {
-         chart "Dyke pressure" type: series background: paper axes: ink color: ink
+         chart "Dyke pressure" kind: series background: paper axes: ink color: ink
             x_label: "Time (hours)" y_label: "Pressure / fraction of dykes" y_range: {0.0, 1.0}
             legend_font: font("Helvetica", 11) label_font: font("Helvetica", 12)
             title_font: font("Helvetica", 16, #bold) {

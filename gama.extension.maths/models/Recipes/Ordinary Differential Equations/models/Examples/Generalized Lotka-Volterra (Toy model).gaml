@@ -489,7 +489,7 @@ experiment Simulation type: gui autorun: true  {
 			camera  "myCamera" locked: true;
 			
 			// chart definition: cumulated population
-			chart "Cumulated population size" type: series style: area background: #white 
+			chart "Cumulated population size" kind: series style: area background: #white 
 			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(100,max(copy_between(first(solver_and_scheduler).lastCumValues, xRangeMax-xRange, xRangeMax)))} 
 			y_label: "Population (cumulated)"
 			visible: showCumulatedGraph series_label_position: none title_visible: false label_font: font("SansSerif", labelFontSize) {
@@ -499,7 +499,7 @@ experiment Simulation type: gui autorun: true  {
 			}
 			
 			// chart definition: time series
-			chart "Time series" type: series style: line background: #white 
+			chart "Time series" kind: series style: line background: #white 
 			x_range: xRange x_tick_line_visible: false y_range: {0,30 + max(30,max(copy_between(first(solver_and_scheduler).lastValues,xRangeMax - xRange, xRangeMax)))} 
 			y_label: "Population"
 			visible: !showCumulatedGraph series_label_position: none title_visible: false label_font: font("SansSerif", labelFontSize) {

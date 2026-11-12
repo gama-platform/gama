@@ -68,7 +68,7 @@ experiment main_experiment type: gui {
 		}
 
 		display chart refresh: every(10 #cycles)  type: 3d {
-			chart "Disease spreading" type: series style: spline {
+			chart "Disease spreading" kind: series style: spline {
 				data "susceptible" value: nb_people_not_infected color: #green marker: false;
 				data "infected" value: nb_people_infected color: #red marker: false;
 			}

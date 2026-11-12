@@ -32,7 +32,7 @@ global {
 experiment "Long series" type: gui {
 	output synchronized: true {
 		display "long_series" type: 3d {
-			chart "Long series values" type: series x_label: "#points to draw at each step" memorize: false {
+			chart "Long series values" kind: series x_label: "#points to draw at each step" memorize: false {
 				data "Cosinus" value: coslist color: #blue marker: false style: line;
 				data "Sinus" value: sinlist color: #red marker: false style: line;
 			}

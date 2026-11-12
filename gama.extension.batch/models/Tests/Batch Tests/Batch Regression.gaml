@@ -66,7 +66,7 @@ experiment permanent_reload parent: regression_abstract type: batch repeat: 3 un
 	method exploration;
 	permanent {
 		display Cycles type: 2d {
-			chart "Cycles" type: series {
+			chart "Cycles" kind: series {
 				data "Max" value: max(simulations collect each.cycle) color: #red;
 			}
 		}

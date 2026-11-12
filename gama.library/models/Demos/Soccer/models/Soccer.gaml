@@ -536,21 +536,21 @@ experiment "Match" type:gui {
 		}
 		display "match_stats"  type: 3d {
 			// display some statistics about the game
-			chart "ball_possession" coordinates: #screen type:pie position:{0,0} size:{0.5,0.5} {
+			chart "ball_possession" coordinates: #screen kind: pie position:{0,0} size:{0.5,0.5} {
 				data "Red possession" value:red_possession color:#red;
 				data "Blue possession" value:blue_possession color:#blue;
 			}
-			chart "red pass" coordinates: #screen type:pie position:{0,0.5} size:{0.5,0.5} {
+			chart "red pass" coordinates: #screen kind: pie position:{0,0.5} size:{0.5,0.5} {
 				// note that a pass is said "successful" if the player that has the ball was the player called initially. A "failed pass" does not necessary means that the team have lost the ball.
 					data "Red pass succeed" value:(nb_red_pass = 0) ? 0 : float(nb_red_pass_succeed)/float(nb_red_pass) color:#red;
 					data "Red pass failed" value:(nb_red_pass = 0) ? 0 : 1-float(nb_red_pass_succeed)/float(nb_red_pass) color:#darkred;
 			}
-			chart "blue pass" coordinates: #screen type:pie position:{0.5,0.5} size:{0.5,0.5} {
+			chart "blue pass" coordinates: #screen kind: pie position:{0.5,0.5} size:{0.5,0.5} {
 				// note that a pass is said "successful" if the player that has the ball was the player called initially. A "failed pass" does not necessary means that the team have lost the ball.
 				data "Blue pass succeed" value:(nb_blue_pass = 0) ? 0 : float(nb_blue_pass_succeed)/float(nb_blue_pass) color:#blue;
 				data "Blue pass failed" value:(nb_blue_pass = 0) ? 0 : 1-float(nb_blue_pass_succeed)/float(nb_blue_pass) color:#darkblue;
 			}
-			chart "number pass" coordinates: #screen type:series position:{0.5,0} size:{0.5,0.5} {
+			chart "number pass" coordinates: #screen kind: series position:{0.5,0} size:{0.5,0.5} {
 				data "Number pass red" value:nb_red_pass color:#red;
 				data "Number pass blue" value:nb_blue_pass color:#blue;
 			}

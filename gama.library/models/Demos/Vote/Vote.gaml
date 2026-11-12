@@ -357,7 +357,7 @@ experiment vote type: gui {
 			
 		}
 		display "Voters"  type: 3d {
-			chart "Distribution of electors" type: pie background: #white  {
+			chart "Distribution of electors" kind: pie background: #white  {
 			 	loop cand over: candidate {
 			 		data  cand.name value:cand.percentage_vote color: cand.color ;
 			 	}	
@@ -365,10 +365,10 @@ experiment vote type: gui {
 			
 			}
 		display "Indicators"  type: 3d {
-			chart "Shannon Entropy" coordinates: #screen type: series background: #white size: {#display_width,0.5} position: {0, 0} {
+			chart "Shannon Entropy" coordinates: #screen kind: series background: #white size: {#display_width,0.5} position: {0, 0} {
 				data "entropy" value: entropy color: #blue ;
 			}
-			chart "Opinion distribution" coordinates: #screen type: series background: #white size: {#display_width,0.5} position: {0, 0.5} {
+			chart "Opinion distribution" coordinates: #screen kind: series background: #white size: {#display_width,0.5} position: {0, 0.5} {
 				data "Space area covered" value: (union(candidate collect (each.shape buffer threshold_attraction_candidates))).area / 40000 color: #blue ;
 			}
 		}

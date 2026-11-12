@@ -48,7 +48,7 @@ experiment "Plant Growth" type: gui {
 			grid plotGrow border: #black;
 		}
 		display biomass  type: 3d {
-			chart "levels" type: series {
+			chart "levels" kind: series {
 				data "water" value: sum(plotGrow collect(each.available_water)) color: #blue;
 				data "biomass" value: sum(plotGrow collect(each.biomass)) color: #green;				
 			}

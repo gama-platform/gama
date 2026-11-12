@@ -277,7 +277,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	permanent {
 		display Comparison background: #white type:opengl4{
-			chart "Food Gathered" type: series {
+			chart "Food Gathered" kind: series {
 			loop s over: simulations {
 				if (!dead(s)) {
 					data "Food " + int(s) value: s.food_gathered color: s.color marker: false style: line thickness: 5;

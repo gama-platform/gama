@@ -71,7 +71,7 @@ experiment examples type: gui {
 	output {
 		layout #split tabs: true;
 		display LV_series title: "Time series" toolbar: false  type: 2d {
-			chart 'Comparison Euler - RK4 (RK4 is more accurate)' type: series 
+			chart 'Comparison Euler - RK4 (RK4 is more accurate)' kind: series 
 			x_serie: first(LVRK4).t[] y_label: "pop" background: rgb(47,47,47) color: #white x_tick_line_visible: false {
 				data "x (rk4)" value: first(LVRK4).x[] color: rgb(52,152,219) marker: false thickness: 2;
 				data "y (rk4)" value: first(LVRK4).y[] color: rgb(41,128,185) marker: false thickness: 2;
@@ -81,7 +81,7 @@ experiment examples type: gui {
 
 		}
 		display LV_phase_portrait title: "Phase portrait" toolbar: false  type: 2d {
-			chart 'Comparison Euler - RK4 (RK4 is more accurate)' type: xy 
+			chart 'Comparison Euler - RK4 (RK4 is more accurate)' kind: xy 
 			background: rgb(47,47,47) color: #white x_label: "x" y_label: "y" x_tick_line_visible: false y_tick_line_visible: false{
 				data "y(x(t)) rk4" value: rows_list(matrix(first(LVRK4).x[],first(LVRK4).y[])) color: rgb(52,152,219) marker: false thickness: 2;
 				data "y(x(t)) Euler" value: rows_list(matrix(first(LVEuler).x[],first(LVEuler).y[])) color: rgb(243,156,18) marker: false thickness: 2;

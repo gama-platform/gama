@@ -134,11 +134,11 @@ experiment road_traffic type: gui {
 			species people aspect: base ;
 		}
 		display chart_display refresh: every(10#cycles)  type: 3d { 
-			chart "Road Status" coordinates: #screen type: series size: {#display_width, 0.5} position: {0, 0} {
+			chart "Road Status" coordinates: #screen kind: series size: {#display_width, 0.5} position: {0, 0} {
 				data "Mean road destruction" value: mean (road collect each.destruction_coeff) style: line color: #green ;
 				data "Max road destruction" value: road max_of each.destruction_coeff style: line color: #red ;
 			}
-			chart "People Objectif" coordinates: #screen type: pie style: exploded size: {#display_width, 0.5} position: {0, 0.5}{
+			chart "People Objectif" coordinates: #screen kind: pie style: exploded size: {#display_width, 0.5} position: {0, 0.5}{
 				data "Working" value: people count (each.objective="working") color: #magenta ;
 				data "Resting" value: people count (each.objective="resting") color: #blue ;
 			}

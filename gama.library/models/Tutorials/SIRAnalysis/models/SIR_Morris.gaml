@@ -91,7 +91,7 @@ experiment SIR_gui type: gui {
             species person aspect: base;
         }
         display "SIR Chart" type: 3d {
-            chart "SIR dynamics" type: series {
+            chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
                 data "Recovered"   value: nb_recovered   color: #blue;

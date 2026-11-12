@@ -168,14 +168,14 @@ experiment "Experiment" type: gui {
 			species ant  ;
 		}
 		display ProportionCarryFood  type: 3d toolbar: false {
-			chart "Proportions carrying: Pie" coordinates: #screen size: {0.5,0.5} position: {0, 0} type:pie  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Proportions carrying: Pie" coordinates: #screen size: {0.5,0.5} position: {0, 0} kind: pie  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			{
 				data "empty_ants" value:(ant count (!each.hasFood)) color:colors[0];
 				data "carry_food_ants" value:(ant count (each.hasFood)) color:colors[1];
 				
 			}
 			
-			chart "Proportions carrying: Radar" coordinates: #screen size: {0.5,0.5} position: {0.5, 0} type:radar  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Proportions carrying: Radar" coordinates: #screen size: {0.5,0.5} position: {0.5, 0} kind: radar  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			
 
 			{
@@ -183,7 +183,7 @@ experiment "Experiment" type: gui {
 				data "carry" value:(ant count (each.hasFood)) accumulate_values:true color:colors[1];				
 			}
 			
-			chart "Proportion: series" coordinates: #screen size: {#display_width,0.5} position: {0, 0.5} type:series  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
+			chart "Proportion: series" coordinates: #screen size: {#display_width,0.5} position: {0, 0.5} kind: series title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
 			series_label_position: legend 
 			style:stack
 			{
@@ -194,7 +194,7 @@ experiment "Experiment" type: gui {
 		}
 
 		display CentroidPosition  type: 3d toolbar: false {
-			chart "Positions and History of centroid and size by state" type:scatter title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
+			chart "Positions and History of centroid and size by state" kind: scatter title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
 			{
 				datalist legend: ["avg-carry","avg-empty"] 
 					value:[mean((ant where (each.hasFood)) collect each.location),
@@ -213,13 +213,13 @@ experiment "Experiment" type: gui {
 			}
 		}	
 		display Distribution2dPosition  type: 3d toolbar: false {
-			chart "Distribution of the X positions" coordinates: #screen size: {0.65,0.3} position: {0.05, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Distribution of the X positions" coordinates: #screen size: {0.65,0.3} position: {0.05, 0} kind: histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			x_tick_line_visible: false y_tick_line_visible: false flat: false
 			{
 				datalist legend: (distribution_of(ant collect each.location.x,10,0,100) at "legend") 
 					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: colors;
 			}
-			chart "Distribution of the Y positions" coordinates: #screen size: {0.3,0.7} position: {0.7, 0.28} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Distribution of the Y positions" coordinates: #screen size: {0.3,0.7} position: {0.7, 0.28} kind: histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			reverse_axes:true x_tick_line_visible: false y_tick_line_visible: false flat: false
 			
 			{
@@ -227,7 +227,7 @@ experiment "Experiment" type: gui {
 					value:reverse(distribution_of(ant collect each.location.x,10,0,100) at "values") color: reverse(colors);
 			}
 
-			chart "Distribution2d of the XvsY positions- heatmap" coordinates: #screen size: {0.7,0.7} position: {0, 0.3} type:heatmap  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Distribution2d of the XvsY positions- heatmap" coordinates: #screen size: {0.7,0.7} position: {0, 0.3} kind: heatmap  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			series_label_position:none x_tick_line_visible: false y_tick_line_visible: false axes: #white
 			{
 				data  "XYdistrib"
@@ -238,13 +238,13 @@ experiment "Experiment" type: gui {
 		}
 		
 		display DistributionPosition  type: 3d toolbar: false{
-			chart "Distribution of the X positions" coordinates: #screen size: {0.92,0.3} position: {0, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Distribution of the X positions" coordinates: #screen size: {0.92,0.3} position: {0, 0} kind: histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			
 			{
 				datalist legend: (distribution_of(ant collect each.location.x,10,0,100) at "legend") 
 					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: reverse(colors);
 			}
-			chart "Distribution of the X positions- heatmap" coordinates: #screen size: {#display_width,0.7} position: {0, 0.3} type:heatmap  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
+			chart "Distribution of the X positions- heatmap" coordinates: #screen size: {#display_width,0.7} position: {0, 0.3} kind: heatmap  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			x_serie_labels: (distribution_of(ant collect each.location.x,10,0,100) at "legend")
 			y_range:50
 			{
