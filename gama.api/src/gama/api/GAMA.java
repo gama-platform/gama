@@ -372,14 +372,14 @@ public class GAMA {
 	 *            the model containing the experiment
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
-		runGuiExperiment(id, model, null, null, null, true);
+		runGuiExperiment(id, model, null, null, true, null);
 	}
 
 	/**
 	 * Opens a GUI experiment, optionally asking before closing an active experiment.
 	 */
 	public static boolean runGuiExperiment(final String id, final IModelSpecies model, final boolean confirmClose) {
-		return runGuiExperiment(id, model,null, null, null, confirmClose);
+		return runGuiExperiment(id, model,null, null, confirmClose, null);
 	}
 
 	/**
@@ -400,7 +400,7 @@ public class GAMA {
 	/** Opens a server-controlled GUI experiment with an optional initial seed. */
 	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
 			final IServerConfiguration configuration, final Double seed) {
-		return runGuiExperiment(id, model, null, configuration, seed);
+		return runGuiExperiment(id, model, null, configuration, true, seed);
 	}
 
 	private static boolean runGuiExperiment(final String id, final IModelSpecies model,
