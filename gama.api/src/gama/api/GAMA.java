@@ -372,14 +372,14 @@ public class GAMA {
 	 *            the model containing the experiment
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
-		runGuiExperiment(id, model, null, null, true);
+		runGuiExperiment(id, model, null, null, true, null);
 	}
 
 	/**
 	 * Opens a GUI experiment, optionally asking before closing an active experiment.
 	 */
 	public static boolean runGuiExperiment(final String id, final IModelSpecies model, final boolean confirmClose) {
-		return runGuiExperiment(id, model, null, null, confirmClose);
+		return runGuiExperiment(id, model,null, null, confirmClose, null);
 	}
 
 	/**
@@ -388,18 +388,24 @@ public class GAMA {
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model,
 			final gama.api.utils.tests.TestSelection selection) {
-		runGuiExperiment(id, model, selection, null, true);
+		runGuiExperiment(id, model, selection, null, true, null);
 	}
 
 	/** Opens a GUI experiment synchronously, with server options installed before initialization. */
 	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
 			final IServerConfiguration configuration) {
-		return runGuiExperiment(id, model, null, configuration, true);
+		return runGuiExperiment(id, model, null, configuration, true, null);
+	}
+
+	/** Opens a server-controlled GUI experiment with an optional initial seed. */
+	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
+			final IServerConfiguration configuration, final Double seed) {
+		return runGuiExperiment(id, model, null, configuration, true, seed);
 	}
 
 	private static boolean runGuiExperiment(final String id, final IModelSpecies model,
 			final gama.api.utils.tests.TestSelection selection, final IServerConfiguration configuration,
-			final boolean confirmClose) {
+			final boolean confirmClose, final Double seed) {
 		final IExperimentSpecies newExperiment = model.getExperiment(id);
 		if (newExperiment == null) return false;
 		if (selection != null) {
@@ -428,11 +434,15 @@ public class GAMA {
 
 		getGui().getStatus().resetStatus();
 		if (newExperiment.isTest()) {
-			if (getGui().runTestExperiment(model, id, selection)) return true;
+			if (seed == null && getGui().runTestExperiment(model, id, selection)) return true;
 			// controllers.add(controller);
 			gama.api.utils.tests.TestSelection.activate(newExperiment, selection);
 			try {
-				newExperiment.open();
+				if (seed == null) {
+					newExperiment.open();
+				} else if (!newExperiment.open(seed).passed()) {
+					return false;
+				}
 				final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
 				try {
 					agent.init(agent.getScope());
@@ -450,7 +460,7 @@ public class GAMA {
 		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);
 			startBenchmark(newExperiment);
-			return controller.processOpen(configuration != null);
+			return controller.processOpen(configuration != null, seed);
 		} else {
 			DEBUG.ERR("Unable to launch simulation perspective for experiment " + id + " of model "
 					+ model.getFilePath());

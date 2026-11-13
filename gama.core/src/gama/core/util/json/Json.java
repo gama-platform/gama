@@ -16,6 +16,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.serialization.ISerialisedAgent;
@@ -81,8 +84,7 @@ public final class Json implements IJsonConstants, IJson {
 				case Boolean b -> valueOf(b.booleanValue());
 				case Collection<?> c -> (JsonValue) GamaListFactory.wrap(Types.NO_TYPE, c).serializeToJson(this);
 				case Map<?, ?> m -> (JsonValue) GamaMapFactory.wrap(m).serializeToJson(this);
-				case Exception ex -> object("exception", ex.getClass().getName(), "message", ex.getMessage(), "stack",
-						array(Arrays.asList(ex.getStackTrace())));
+				case Exception ex -> exception(ex);
 				case null -> NULL;
 				default -> valueOf(object.toString());
 			};
@@ -94,6 +96,21 @@ public final class Json implements IJsonConstants, IJson {
 				firstPass.remove();
 			}
 		}
+	}
+
+	private JsonObject exception(final Exception exception) {
+		final JsonObject result = object("exception", exception.getClass().getName(), "message",
+				exception.getMessage(), "stack", array(Arrays.asList(exception.getStackTrace())));
+		if (exception instanceof GamaRuntimeException runtime && runtime.getEditorContext() != null) {
+			final var source = runtime.getEditorContext();
+			final var resource = source.eResource();
+			final var node = NodeModelUtils.getNode(source);
+			if (resource != null && resource.getURI() != null && node != null) {
+				result.add("source", resource.getURI().toString());
+				result.add("line", node.getStartLine());
+			}
+		}
+		return result;
 	}
 
 	/**
