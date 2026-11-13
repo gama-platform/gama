@@ -48,9 +48,12 @@ experiment "Simulation toolbar in the display" type: gui {
 
 	image sync_icon <- image(svg_file("../images/ui-toolbar/experiment.sync.svg"), 32,32);
 
-	output {
+	output of: experiment {
 		display "Native experiment controls" type: opengl background: #white axes: false {
-			species particle;
+			
+			agents "Agents" value:simulation.particle;
+
+
 			event #mouse_move {
 				show <- autohide ? (#mouse_location_in_display > location_of_controls) and #mouse_location_in_display < location_of_controls + size_of_controls : true;
 			}

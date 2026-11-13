@@ -32,6 +32,7 @@ import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
+import gaml.compiler.expressions.PersistentVariableExpression;
 
 /**
  * The Class StatementWithChildrenDescription.
@@ -43,6 +44,9 @@ public class StatementWithChildrenDescription extends StatementDescription {
 
 	/** The children. */
 	protected List<IDescription> children;
+
+	private boolean persistentVariablesPrepared;
+	private boolean preparingPersistentVariables;
 
 	/**
 	 * Instantiates a new statement with children description.
@@ -138,6 +142,48 @@ public class StatementWithChildrenDescription extends StatementDescription {
 		return getArtefact().hasScope() /* canHaveTemps */ && temps != null;
 	}
 
+	private boolean hasPersistentVariables() {
+		return IKeyword.OUTPUT.equals(getKeyword()) || IKeyword.PERMANENT.equals(getKeyword())
+				|| IKeyword.DISPLAY.equals(getKeyword());
+	}
+
+	@Override
+	public IDescription validate() {
+		if (hasPersistentVariables() && !preparePersistentVariables()) return null;
+		return super.validate();
+	}
+
+	private boolean preparePersistentVariables() {
+		if (persistentVariablesPrepared) return true;
+		if (preparingPersistentVariables) {
+			error("Circular display inheritance.", IGamlIssue.WRONG_CONTEXT, IKeyword.PARENT);
+			return false;
+		}
+		preparingPersistentVariables = true;
+		try {
+			if (IKeyword.DISPLAY.equals(getKeyword()) && hasFacet(IKeyword.PARENT)) {
+				final String parentName = getLitteral(IKeyword.PARENT);
+				for (final IDescription sibling : getEnclosingDescription().getChildrenWithKeyword(IKeyword.DISPLAY)) {
+					if (!sibling.getName().equals(parentName)
+							|| !(sibling instanceof StatementWithChildrenDescription parent)) continue;
+					if (!parent.preparePersistentVariables()) return false;
+					if (parent.temps != null) {
+						if (temps == null) { temps = new LinkedHashMap<>(); }
+						parent.temps.forEach(temps::putIfAbsent);
+					}
+					break;
+				}
+			}
+			for (final IDescription child : getOwnChildren()) {
+				if (IKeyword.LET.equals(child.getKeyword()) && child.validate() == null) return false;
+			}
+			persistentVariablesPrepared = true;
+			return true;
+		} finally {
+			preparingPersistentVariables = false;
+		}
+	}
+
 	/**
 	 * Adds the temp.
 	 *
@@ -157,6 +203,12 @@ public class StatementWithChildrenDescription extends StatementDescription {
 		// final String kw = getKeyword();
 		if (temps == null) { temps = new LinkedHashMap<>(); }
 		boolean isMyself = IKeyword.MYSELF.equals(name);
+		if (hasPersistentVariables() && temps.get(name) instanceof IVarExpression.Persistent existing
+				&& existing.getDefinitionDescription() == this) {
+			declaration.error("Local variable " + name + " is declared twice in this " + getKeyword(),
+					IGamlIssue.DUPLICATE_NAME, facet);
+			return existing;
+		}
 		if (!isMyself) {
 			IVarDescriptionProvider description = getDescriptionDeclaringVar(name);
 			if (description != null) {
@@ -174,8 +226,10 @@ public class StatementWithChildrenDescription extends StatementDescription {
 			}
 		}
 
-		final IExpression result = getExpressionFactory().createVar(name, type, false,
-				isMyself ? IVarExpression.Category.MYSELF : IVarExpression.Category.TEMP, this);
+		final IExpression result = hasPersistentVariables() && !isMyself
+				? new PersistentVariableExpression(name, type, this)
+				: getExpressionFactory().createVar(name, type, false,
+						isMyself ? IVarExpression.Category.MYSELF : IVarExpression.Category.TEMP, this);
 		temps.put(name, (IVarExpression) result);
 		return result;
 	}

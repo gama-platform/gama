@@ -78,8 +78,25 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 @doc (
 		value = "`output` blocks define how to visualize a simulation (with one or more display blocks that define separate windows). It will include a set of displays, monitors and files statements. It will be taken into account only if the experiment type is `gui`. "
 				+ "of: simulation (the default) compiles and evaluates expressions in the owning simulation's context. Each simulation owns independent output instances. "
-				+ "of: experiment compiles and evaluates them in the declaring experiment, with the same lifetime as the legacy permanent block. All layers and their callbacks inherit the selected context.",
+				+ "of: experiment compiles and evaluates them in the declaring experiment, with the same lifetime as the legacy permanent block. All layers and their callbacks inherit the selected context. "
+				+ "Typed declarations directly inside the block are persistent lexical locals, not attributes of self, simulation or experiment. "
+				+ "They are initialized in declaration order, once per owner/output instance, before the block's facets and child outputs. "
+				+ "Experiment-owned locals needed by layout facets are initialized during GUI preparation, after experiment attributes but before its init behavior. "
+				+ "Locals remain live across refreshes and inline remote callbacks; recreating the owner recreates their values. "
+				+ "Each display can declare private locals that shadow output locals. Ordinary initialization and assignment are supported; attribute update/function facets are not.",
 		usages = { @usage (
+				value = "Share output-local styling while keeping display-local colors private:",
+				examples = @example (
+						value = """
+								output {
+								    font label_font <- font("Helvetica", 14);
+								    display main background: accent {
+								        rgb accent <- #teal;
+								        graphics labels { draw "Hello" font: label_font color: accent; }
+								    }
+								}""",
+						isExecutable = false)),
+				@usage (
 				value = "Its basic syntax is: ",
 				examples = { @example (
 						value = "experiment exp_name type: gui {",

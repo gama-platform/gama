@@ -161,10 +161,10 @@ experiment "Test Restitution !" type: gui {
 			species ball;
 			graphics "Bang" {
 				if (ball_contact != nil) {
-					draw bang at: ball_contact size: {16, 16};
+					draw experiment.bang at: ball_contact size: {16, 16};
 				}
 				if (wall_contact != nil) {
-					draw bam at: wall_contact size: {16, 16};
+					draw experiment.bam at: wall_contact size: {16, 16};
 				}
 			}
 			overlay coordinates: #screen position: {5, 5} size: {250, 106} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
@@ -177,7 +177,6 @@ experiment "Test Restitution !" type: gui {
 			}
 			event "mouse_down" {
 				point target <- #user_location;
-				ask simulations {
 					ask ball {
 						point direction <- target - location;
 						if norm(direction) > 0 {
@@ -186,7 +185,6 @@ experiment "Test Restitution !" type: gui {
 						}
 						angular_velocity <- {rnd(10), rnd(10), rnd(10)};
 					}
-				}
 			}
 		}
 	}

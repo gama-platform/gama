@@ -62,6 +62,7 @@ import gama.core.outputs.layers.properties.CameraStatement;
 import gama.core.outputs.layers.properties.LightStatement;
 import gama.core.outputs.layers.properties.RotationStatement;
 import gama.dev.DEBUG;
+import gama.gaml.statements.LetStatement;
 
 /**
  * The Class LayerDisplayOutput.
@@ -211,7 +212,12 @@ import gama.dev.DEBUG;
 @validator (DisplayValidator.class)
 @serializer (DisplaySerializer.class)
 @doc (
-		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts.",
+		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts. "
+				+ "Typed declarations directly inside it define private persistent lexical locals, initialized in declaration order "
+				+ "before display, camera, light and layer facets, in the enclosing output's owner context. They can shadow output locals. "
+				+ "Inline layers and handlers keep these bindings even when self denotes a remote agent; separately declared species actions/aspects do not inherit them. "
+				+ "Locals survive refreshes and reopenings of the same display, but are recreated with a new display or owner. "
+				+ "Inherited declarations are initialized independently in each child display; inherited layers retain their declaring lexical bindings.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = @example (
@@ -232,6 +238,8 @@ import gama.dev.DEBUG;
 										value = "}",
 										isExecutable = false) }) })
 public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Display {
+
+	private final OutputLocalVariables localVariables = new OutputLocalVariables();
 
 	static {
 		DEBUG.OFF();
@@ -407,17 +415,19 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public boolean init(final IScope scope) throws GamaRuntimeException {
 		final boolean result = super.init(scope);
 		if (!result) return false;
+		final IScope displayScope = getScope();
+		localVariables.initialize(displayScope);
 		if (rotation != null) {
 			getData().setRotation(rotation.getDefinition());
-			rotation.init(scope);
+			rotation.init(displayScope);
 		}
 		for (CameraStatement s : cameras) {
 			getData().addCameraDefinition(s.getDefinition());
-			s.init(scope);
+			s.init(displayScope);
 		}
 		for (LightStatement s : lights) {
 			getData().addLightDefinition(s.getDefinition());
-			s.init(scope);
+			s.init(displayScope);
 		}
 		getData().initWith(getScope(), description);
 
@@ -478,6 +488,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		surface = null;
 		getLayers().clear();
 		getData().dispose();
+		localVariables.dispose();
 	}
 
 	/**
@@ -541,13 +552,18 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public IDisplaySurface getSurface() { return surface; }
 
 	@Override
-	public List<? extends ISymbol> getChildren() { return getLayers(); }
+	public List<? extends ISymbol> getChildren() {
+		final List<ISymbol> children = new ArrayList<>(localVariables.getDeclarations());
+		children.addAll(getLayers());
+		return children;
+	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
 		final List<AbstractLayerStatement> list = new ArrayList<>();
 		for (final ISymbol s : commands) {
 			switch (s) {
+				case LetStatement declaration -> localVariables.add(declaration);
 				case CameraStatement cs -> cameras.add(cs);
 				case RotationStatement rs -> rotation = rs;
 				case LightStatement ls -> lights.add(ls);

@@ -40,10 +40,11 @@ public class UiControlDescription extends StatementWithChildrenDescription {
 	public IDescription validate() {
 		final IDescription result = super.validate();
 		final var binding = getFacetExpr("var");
-		if (binding instanceof TempVariableExpression
+		if (binding instanceof TempVariableExpression && !(binding instanceof IVarExpression.Persistent)
 				|| binding instanceof IVarExpression variable
-						&& variable.getOwner() instanceof TempVariableExpression) {
-			error("var: cannot bind a temporary variable; use a persistent model or experiment variable.");
+						&& variable.getOwner() instanceof TempVariableExpression
+						&& !(variable.getOwner() instanceof IVarExpression.Persistent)) {
+			error("var: cannot bind a temporary variable; use a persistent output/display local, model or experiment variable.");
 		}
 		visitFacets((name, expression) -> {
 			if ("action".equals(name) || "on_change".equals(name)) return true;

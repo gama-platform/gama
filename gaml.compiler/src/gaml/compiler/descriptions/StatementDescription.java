@@ -39,6 +39,7 @@ import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.expressions.IOperator;
@@ -136,6 +137,22 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 				getFacetsCopy(), passedArgs == null ? null : passedArgs.cleanCopy());
 		desc.originName = getOriginName();
 		return desc;
+	}
+
+	@Override
+	public Facets getFacetsCopy() {
+		final Facets copy = super.getFacetsCopy();
+		final IDescription enclosing = getEnclosingDescription();
+		if (copy != null && IKeyword.LET.equals(getKeyword()) && enclosing != null
+				&& (IKeyword.OUTPUT.equals(enclosing.getKeyword()) || IKeyword.PERMANENT.equals(enclosing.getKeyword())
+						|| IKeyword.DISPLAY.equals(enclosing.getKeyword()))) {
+			// A declaring label is mutable: compiling the copy must not replace the parent's binding.
+			final IExpressionDescription name =
+					GAML.getExpressionDescriptionFactory().createLabel(getLitteral(IKeyword.NAME));
+			name.setTarget(getFacet(IKeyword.NAME).getTarget());
+			copy.put(IKeyword.NAME, name);
+		}
+		return copy;
 	}
 
 	@Override

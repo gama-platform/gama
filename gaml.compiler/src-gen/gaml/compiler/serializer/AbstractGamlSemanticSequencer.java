@@ -939,7 +939,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     DisplayBlock returns Block
 	 *
 	 * Constraint:
-	 *     statements+=S_Other*
+	 *     (statements+=S_Definition | statements+=S_Other)*
 	 * </pre>
 	 */
 	protected void sequence_DisplayBlock(ISerializationContext context, Block semanticObject) {

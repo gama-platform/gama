@@ -61,7 +61,8 @@ import gama.dev.DEBUG;
 				doc = @doc ("Allows to save the whole screen on disk. A value of true/false will save it with the resolution of the physical screen. Passing it a string allows to define the filename "
 						+ "Note that setting autosave to true (or to any other value than false) will synchronize all the displays defined in the experiment")) })
 @doc (
-		value = "Legacy spelling of output of: experiment. Represents the outputs of the experiment itself, evaluated in the experiment context. In a batch experiment, these outputs are not re-initialized at the beginning of each simulation.",
+		value = "Legacy spelling of output of: experiment. Represents the outputs of the experiment itself, evaluated in the experiment context. In a batch experiment, these outputs are not re-initialized at the beginning of each simulation. "
+				+ "Direct typed declarations are persistent lexical locals shared by child outputs, with the same initialization, visibility and lifetime as output of: experiment.",
 		usages = { @usage (
 				value = "For instance, this permanent section will allow to display for each simulation the end value of the food_gathered variable:",
 				examples = { @example (
@@ -116,13 +117,14 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 	@Override
 	public boolean init(final IScope scope) {
 		initialized = true;
+		final IScope outputScope = getInitializationScope(scope);
 		final Symbol layoutDefinition = layout == null ? this : layout;
 		final String definitionFacet = layout == null ? LAYOUT : IKeyword.VALUE;
 		final Object layoutObject =
-				layoutDefinition.getFacetValue(scope, definitionFacet, LAYOUTS.indexOf(CORE_DISPLAY_LAYOUT.getValue()));
+				layoutDefinition.getFacetValue(outputScope, definitionFacet, LAYOUTS.indexOf(CORE_DISPLAY_LAYOUT.getValue()));
 		// Delegate to openAndApplyLayout so the GUI can freeze the shell, open all display views
 		// and run the layout algorithm in one atomic UI call — eliminating intermediate repaints.
-		scope.getGui().openAndApplyLayout(scope, () -> super.init(scope), layoutObject);
+		scope.getGui().openAndApplyLayout(outputScope, () -> super.init(outputScope), layoutObject);
 		if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) { GAMA.getGui().updateParameterView(scope); }
 		return true;
 	}

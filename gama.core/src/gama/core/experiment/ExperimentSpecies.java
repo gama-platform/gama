@@ -556,11 +556,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 				case SimulationOutputManager som: {
 					if (IExperimentDescription.isExperimentContext(som.getDescription())) {
 						final ExperimentOutputManager outputs = new ExperimentOutputManager(som.getDescription());
-						outputs.setChildren(som);
+						outputs.setChildren(som.getChildren());
 						outputs.setLayout(som.getLayout());
 						addExperimentOutputs(outputs);
 					} else if (originalSimulationOutputs != null) {
-						originalSimulationOutputs.setChildren(som);
+						originalSimulationOutputs.setChildren(som.getChildren());
 					} else {
 						originalSimulationOutputs = som;
 					}
@@ -606,7 +606,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		if (experimentOutputs == null) {
 			experimentOutputs = outputs;
 		} else {
-			experimentOutputs.setChildren(outputs);
+			experimentOutputs.setChildren(outputs.getChildren());
 			if (outputs.getLayout() != null) { experimentOutputs.setLayout(outputs.getLayout()); }
 		}
 	}
@@ -653,17 +653,18 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	void prepareGui() {
 		if (isTest()) return;
 		final ExperimentOutputManager manager = (ExperimentOutputManager) agent.getOutputManager();
+		final IScope outputScope = manager.getInitializationScope(myScope);
 		Symbol layout = manager.getLayout() == null ? manager : manager.getLayout();
-		final Boolean keepTabs = layout.getFacetValue(myScope, "tabs", true);
-		final Boolean keepToolbars = layout.getFacetValue(myScope, "toolbars", null);
-		final Boolean showConsoles = layout.getFacetValue(myScope, "consoles", null);
-		final Boolean showNavigator = layout.getFacetValue(myScope, "navigator", false);
-		final Boolean showControls = layout.getFacetValue(myScope, "controls", null);
-		final Boolean showParameters = layout.getFacetValue(myScope, "parameters", null);
-		final Boolean keepTray = layout.getFacetValue(myScope, "tray", false);
-		final Boolean showEditors = layout.hasFacet("editors") ? layout.getFacetValue(myScope, "editors", false)
+		final Boolean keepTabs = layout.getFacetValue(outputScope, "tabs", true);
+		final Boolean keepToolbars = layout.getFacetValue(outputScope, "toolbars", null);
+		final Boolean showConsoles = layout.getFacetValue(outputScope, "consoles", null);
+		final Boolean showNavigator = layout.getFacetValue(outputScope, "navigator", false);
+		final Boolean showControls = layout.getFacetValue(outputScope, "controls", null);
+		final Boolean showParameters = layout.getFacetValue(outputScope, "parameters", null);
+		final Boolean keepTray = layout.getFacetValue(outputScope, "tray", false);
+		final Boolean showEditors = layout.hasFacet("editors") ? layout.getFacetValue(outputScope, "editors", false)
 				: !GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue();
-		Supplier<IColor> color = () -> layout.getFacetValue(myScope, "background", null);
+		Supplier<IColor> color = () -> layout.getFacetValue(outputScope, "background", null);
 		myScope.getGui().arrangeExperimentViews(myScope, this, keepTabs, keepToolbars, showConsoles, showParameters,
 				showNavigator, showControls, keepTray, color, showEditors);
 	}
@@ -867,8 +868,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	}
 
 	/**
-	 * Configuration context of the experiment plan, including before its agent exists. It never borrows a simulation's
-	 * globals; ordinary experiment execution uses the agent's separate scope.
+	 * Context of the experiment plan. Attribute access follows the active target when one is pushed, including during
+	 * experiment initialization. Without an active target, it uses simulation-parameter configuration.
 	 *
 	 * @author Alexis Drogoul
 	 * @since November 2011
@@ -903,6 +904,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		@Override
 		public void setGlobalVarValue(final String name, final Object v) throws GamaRuntimeException {
+			if (getCurrentObjectOrAgent() != null) {
+				super.setGlobalVarValue(name, v);
+				return;
+			}
 			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
 				configuration.setGlobalVarValue(name, v);
 			}
@@ -910,6 +915,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 		@Override
 		public boolean hasAccessToGlobalVar(final String name) {
+			if (getCurrentObjectOrAgent() != null) return super.hasAccessToGlobalVar(name);
 			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
 				return configuration.hasAccessToGlobalVar(name);
 			}
@@ -926,6 +932,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		@Override
 		public Object getGlobalVarValue(final String varName) throws GamaRuntimeException {
+			if (getCurrentObjectOrAgent() != null) return super.getGlobalVarValue(varName);
 			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
 				return configuration.getGlobalVarValue(varName);
 			}

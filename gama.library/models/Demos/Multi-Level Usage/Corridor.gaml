@@ -35,6 +35,8 @@ global {
 	int corridor_wall_height <- 800;
 	geometry corridor_wall_0_shape <- rectangle({corridor_width, corridor_wall_height}) at_location {environment_width / 2, corridor_wall_height / 2};
 	geometry corridor_wall_1_shape <- rectangle({corridor_width, corridor_wall_height}) at_location {environment_width / 2, environment_height - (corridor_wall_height / 2)};
+	geometry corridor_wall_0_display <- rectangle({corridor_width-30, corridor_wall_height-30}) at_location {environment_width / 2, corridor_wall_height / 2};
+	geometry corridor_wall_1_display <- rectangle({corridor_width-30, corridor_wall_height-30}) at_location {environment_width / 2, environment_height - (corridor_wall_height / 2)};
 	
 
 	//Corridor parameters
@@ -128,8 +130,6 @@ species corridor {
 experiment "Corridor" type: gui autorun: true {
 	point button_location;
 	bool button_hover;
-	geometry corridor_wall_0_display <- rectangle({corridor_width-30, corridor_wall_height-30}) at_location {environment_width / 2, corridor_wall_height / 2};
-	geometry corridor_wall_1_display <- rectangle({corridor_width-30, corridor_wall_height-30}) at_location {environment_width / 2, environment_height - (corridor_wall_height / 2)};
 	
 	init {
 		button_location <- {simulation.environment_width / 2 - 600,
@@ -165,19 +165,19 @@ experiment "Corridor" type: gui autorun: true {
 			}
 
 			graphics button {
-				draw circle(65) color: button_hover ? lettering : rgb(68, 87, 109) at: button_location;
-				draw circle(48) color: capture_pedestrians ? accent : amber at: button_location;
-				draw (capture_pedestrians ? "CAPTURE ON" : "CAPTURE OFF") at: button_location + {120, 0}
+				draw circle(65) color: experiment.button_hover ? lettering : rgb(68, 87, 109) at: experiment.button_location;
+				draw circle(48) color: capture_pedestrians ? accent : amber at: experiment.button_location;
+				draw (capture_pedestrians ? "CAPTURE ON" : "CAPTURE OFF") at: experiment.button_location + {120, 0}
 					anchor: #left_center color: lettering font: font("Helvetica", 12, #bold);
 			}
 
 			event #mouse_down {
-				if (button_location distance_to #user_location <= 65) {
+				if (experiment.button_location distance_to #user_location <= 65) {
 					capture_pedestrians <- !capture_pedestrians;
 				}
 			}
 			event #mouse_move {
-				button_hover <- (button_location distance_to #user_location <= 65);
+				experiment.button_hover <- (experiment.button_location distance_to #user_location <= 65);
 			}
 			overlay coordinates: #screen position: {12, 8} size: {440, 70} background: backdrop rounded: true {
 				draw "CORRIDOR / CAPTURE & RELEASE" at: {12#px, 19#px} color: lettering font: font("Helvetica", 12, #bold);

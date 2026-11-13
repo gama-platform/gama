@@ -141,6 +141,11 @@ public interface IVarExpression extends IExpression {
 	/** An assignment index binding an attribute to a statically known species. */
 	interface SpeciesAttribute extends IVarExpression {}
 
+	/** A lexical variable whose storage belongs to an output or display, not to an execution frame or agent. */
+	interface Persistent extends IVarExpression {
+		IDescription getDefinitionDescription();
+	}
+
 	/**
 	 * Specialized interface for variable expressions that reference agent attributes. Agent variable expressions
 	 * provide access to attribute metadata and definition information.

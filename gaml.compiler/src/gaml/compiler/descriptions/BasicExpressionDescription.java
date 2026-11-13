@@ -156,6 +156,11 @@ public class BasicExpressionDescription implements IExpressionDescription {
 
 	@Override
 	public IExpressionDescription cleanCopy() {
+		if (expression != null && expression.findAny(e -> e instanceof IVarExpression.Persistent)) {
+			// Rebind inherited expressions to the copy's lexical declarations rather than the original instance.
+			return target == null ? new StringBasedExpressionDescription(expression.serializeToGaml(false))
+					: new BasicExpressionDescription(target);
+		}
 		final BasicExpressionDescription result = new BasicExpressionDescription(target);
 		result.expression = expression;
 		return result;

@@ -75,11 +75,15 @@ import gama.gaml.statements.LetStatement.LetValidator;
 		concept = { IConcept.SYSTEM },
 		with_sequence = false)
 @inside (
+		symbols = { IKeyword.OUTPUT, IKeyword.PERMANENT, IKeyword.DISPLAY },
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER })
 @validator (LetValidator.class)
 @serializer (LetSerializer.class)
 @doc ("Declaration and initialization of a temporary variable. Lists and maps declared without an initializer receive "
-		+ "a new empty container on each execution. Explicit nil initialization or assignment stores nil, not an empty container.")
+		+ "a new empty container on each execution. Explicit nil initialization or assignment stores nil, not an empty container. "
+		+ "Direct declarations in output, permanent and display blocks are persistent lexical locals, initialized once "
+		+ "per owning instance before its facets. Output locals are shared by its child outputs; display locals remain "
+		+ "private to that display. They remain available in nested remote layers and inline callbacks without becoming agent attributes.")
 public class LetStatement extends SetStatement {
 
 	/**
