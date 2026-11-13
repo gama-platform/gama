@@ -52,7 +52,7 @@ species bug skills:[moving]{
 
 experiment main type: gui {
 	output {
-		display map {
+		display main {
 			species bug;
 		}
 	}
