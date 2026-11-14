@@ -54,6 +54,15 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	 */
 	private List<String> cachedArgNames;
 
+	private boolean evaluatesInModel;
+
+	void useModelContext() { evaluatesInModel = true; }
+
+	@Override
+	public IDescription getEnclosingContext() {
+		return evaluatesInModel ? getModelDescription() : super.getEnclosingContext();
+	}
+
 	/**
 	 * Instantiates a new action description.
 	 *
@@ -83,6 +92,7 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	@Override
 	public ActionDescription copy(final IDescription into) {
 		final ActionDescription desc = new ActionDescription(getKeyword(), into, children, element, getFacetsCopy());
+		desc.evaluatesInModel = evaluatesInModel;
 		desc.setOriginName(getOriginName());
 		// Note: cachedArgNames is intentionally not copied - it will be lazily recomputed if needed
 		return desc;

@@ -602,7 +602,6 @@ experiment main {
 			}
 			
 			event #arrow_up {
-				ask simulation {
 					if not has_started {
 						has_started <- true;
 						do resume;
@@ -611,10 +610,8 @@ experiment main {
 						orientation_query <- 0;
 					}
 					
-				}
 			}
 			event #arrow_right {
-				ask simulation {
 					if not has_started {
 						has_started <- true;
 						do resume;
@@ -622,10 +619,8 @@ experiment main {
 					ask pac {
 						orientation_query <- 1;
 					}
-				}
 			}
 			event #arrow_down {
-				ask simulation {
 					if not has_started {
 						has_started <- true;
 						do resume;
@@ -633,10 +628,8 @@ experiment main {
 					ask pac {
 						orientation_query <- 2;
 					}					
-				}
 			}
 			event #arrow_left {
-				ask simulation {
 					if not has_started {
 						has_started <- true;
 						do resume;
@@ -644,12 +637,9 @@ experiment main {
 					ask pac {
 						orientation_query <- 3;
 					}
-				}
 			}
 			event " " {
-				ask simulation {
 					do resume;
-				}
 			}
 			event "r" {
 				ask agents-world-cell {
@@ -657,9 +647,7 @@ experiment main {
 				}
 				score <- 0;
 				
-				ask simulation {
 					do init_a;
-				}
 			}
  		}
 	}

@@ -54,6 +54,7 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getActionFacetKeyAccess().getAlternatives(), "rule__ActionFacetKey__Alternatives");
 			builder.put(grammarAccess.getClassicFacetAccess().getAlternatives_0(), "rule__ClassicFacet__Alternatives_0");
 			builder.put(grammarAccess.getActionFacetAccess().getAlternatives_1(), "rule__ActionFacet__Alternatives_1");
+			builder.put(grammarAccess.getDisplayBlockAccess().getAlternatives_2(), "rule__DisplayBlock__Alternatives_2");
 			builder.put(grammarAccess.getMatchBlockAccess().getStatementsAlternatives_2_0(), "rule__MatchBlock__StatementsAlternatives_2_0");
 			builder.put(grammarAccess.getBinaryOperatorAccess().getAlternatives(), "rule__BinaryOperator__Alternatives");
 			builder.put(grammarAccess.getCastAccess().getAlternatives_1_1(), "rule__Cast__Alternatives_1_1");
@@ -309,7 +310,8 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getActionFacetAccess().getBlockAssignment_1_1(), "rule__ActionFacet__BlockAssignment_1_1");
 			builder.put(grammarAccess.getBlockAccess().getStatementsAssignment_2_0(), "rule__Block__StatementsAssignment_2_0");
 			builder.put(grammarAccess.getModelBlockAccess().getStatementsAssignment_1(), "rule__ModelBlock__StatementsAssignment_1");
-			builder.put(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2(), "rule__DisplayBlock__StatementsAssignment_2");
+			builder.put(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2_0(), "rule__DisplayBlock__StatementsAssignment_2_0");
+			builder.put(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2_1(), "rule__DisplayBlock__StatementsAssignment_2_1");
 			builder.put(grammarAccess.getMatchBlockAccess().getStatementsAssignment_2(), "rule__MatchBlock__StatementsAssignment_2");
 			builder.put(grammarAccess.getPairAccess().getOpAssignment_1_1(), "rule__Pair__OpAssignment_1_1");
 			builder.put(grammarAccess.getPairAccess().getRightAssignment_1_2(), "rule__Pair__RightAssignment_1_2");

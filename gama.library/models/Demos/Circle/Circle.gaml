@@ -101,7 +101,7 @@ experiment main type: gui {
 		} else if (number_of_agents < length(cell)) {
 			ask (length(cell) - number_of_agents) among cell { do die(); }
 		}
-		ask simulation {do measure_formation();}
+		do measure_formation();
 	}
 	parameter "Radius of Circle" var: radius_of_circle unit: "m" category: "Formation";
 	parameter "Attraction to Ring" var: attraction_strength category: "Dynamics";

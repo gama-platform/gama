@@ -2190,15 +2190,18 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Action cBlockAction_0 = (Action)cGroup.eContents().get(0);
 		private final Keyword cLeftCurlyBracketKeyword_1 = (Keyword)cGroup.eContents().get(1);
-		private final Assignment cStatementsAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cStatementsS_OtherParserRuleCall_2_0 = (RuleCall)cStatementsAssignment_2.eContents().get(0);
+		private final Alternatives cAlternatives_2 = (Alternatives)cGroup.eContents().get(2);
+		private final Assignment cStatementsAssignment_2_0 = (Assignment)cAlternatives_2.eContents().get(0);
+		private final RuleCall cStatementsS_DefinitionParserRuleCall_2_0_0 = (RuleCall)cStatementsAssignment_2_0.eContents().get(0);
+		private final Assignment cStatementsAssignment_2_1 = (Assignment)cAlternatives_2.eContents().get(1);
+		private final RuleCall cStatementsS_OtherParserRuleCall_2_1_0 = (RuleCall)cStatementsAssignment_2_1.eContents().get(0);
 		private final Keyword cRightCurlyBracketKeyword_3 = (Keyword)cGroup.eContents().get(3);
 		
 		//DisplayBlock returns Block:
-		//    {Block} '{' (statements+=S_Other)* '}';
+		//    {Block} '{' (=>statements+=S_Definition | statements+=S_Other)* '}';
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{Block} '{' (statements+=S_Other)* '}'
+		//{Block} '{' (=>statements+=S_Definition | statements+=S_Other)* '}'
 		public Group getGroup() { return cGroup; }
 		
 		//{Block}
@@ -2207,11 +2210,20 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'{'
 		public Keyword getLeftCurlyBracketKeyword_1() { return cLeftCurlyBracketKeyword_1; }
 		
-		//(statements+=S_Other)*
-		public Assignment getStatementsAssignment_2() { return cStatementsAssignment_2; }
+		//(=>statements+=S_Definition | statements+=S_Other)*
+		public Alternatives getAlternatives_2() { return cAlternatives_2; }
+		
+		//=>statements+=S_Definition
+		public Assignment getStatementsAssignment_2_0() { return cStatementsAssignment_2_0; }
+		
+		//S_Definition
+		public RuleCall getStatementsS_DefinitionParserRuleCall_2_0_0() { return cStatementsS_DefinitionParserRuleCall_2_0_0; }
+		
+		//statements+=S_Other
+		public Assignment getStatementsAssignment_2_1() { return cStatementsAssignment_2_1; }
 		
 		//S_Other
-		public RuleCall getStatementsS_OtherParserRuleCall_2_0() { return cStatementsS_OtherParserRuleCall_2_0; }
+		public RuleCall getStatementsS_OtherParserRuleCall_2_1_0() { return cStatementsS_OtherParserRuleCall_2_1_0; }
 		
 		//'}'
 		public Keyword getRightCurlyBracketKeyword_3() { return cRightCurlyBracketKeyword_3; }
@@ -5037,7 +5049,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//DisplayBlock returns Block:
-	//    {Block} '{' (statements+=S_Other)* '}';
+	//    {Block} '{' (=>statements+=S_Definition | statements+=S_Other)* '}';
 	public DisplayBlockElements getDisplayBlockAccess() {
 		return pDisplayBlock;
 	}

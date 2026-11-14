@@ -10,7 +10,8 @@ merged branches and a check of merge-resolution deltas
 Entries group related changes rather than reproducing every commit. Intermediate implementations,
 reverted changes, generated files, formatting-only edits and routine release-version bumps are not
 listed separately. References identify the implementation or follow-up fixing the described behavior.
-Unmerged branches and changes in other repositories are outside this scope.
+Unmerged branches and changes in other repositories are outside the historical audit.
+Separately identified draft follow-ups below document development work, not released or merged behavior.
 
 For migration-sensitive additions, start with the [GAML syntax overhaul and translator](#breaking-change-gaml-syntax-overhaul-and-model-translator),
 then see [compiler diagnostics](#compiler-diagnostics-dates-and-expression-semantics),
@@ -18,6 +19,77 @@ then see [compiler diagnostics](#compiler-diagnostics-dates-and-expression-seman
 and [random draws/sampling](#random-draws-and-statistical-correctness), in addition to the Fory and nil-container notes below.
 
 ## [2026.0.0] - Unreleased
+
+### Mesh source name resolution
+
+Bare identifiers in statements such as `mesh terrain` now use normal name resolution,
+including when the parser initially recognizes the statement as a declaration.
+Declared fields resolve as mesh sources, and unknown names produce an undefined-variable
+error instead of a misleading warning that the source has type `skill`.
+
+### Editor validation error reporting
+
+Validation failures are reported as editor diagnostics rather than escaping the Xtext validation
+job and opening an interrupting error dialog. Detached expressions fall back to an enclosing
+source location when available. Expected compilation errors retain their original message instead
+of accumulating an "internal error" prefix at every nested expression; unexpected validation
+failures are also logged, and cancellation remains separate from error reporting.
+This also applies to argument compilation and both modern and legacy action calls.
+An aborted validation also publishes a failed experiment-control state, replacing stale green
+launch buttons with the error indicator instead of leaving the model apparently runnable.
+
+### Draft follow-up: persistent output presentation locals
+
+**Status:** implemented on the branch of draft
+[PR #1313](https://github.com/gama-platform/gama/pull/1313), including
+[`828cff24c`](https://github.com/gama-platform/gama/commit/828cff24c50f24b1e173f9d1c3418ac09a2c13cf),
+not yet merged or released. This entry is separate from the historical audit above.
+
+Typed declarations directly inside `output` and `permanent` now define persistent
+lexical locals. Model authors can move presentation-only fonts, colors, positions and other
+styling out of experiment attributes without turning them into simulation globals.
+Output locals are available to child outputs, including display facets, layers, inline
+callbacks and monitors. They are not agent attributes. Declarations directly inside
+`display` are not supported; place them in the enclosing output block instead. In particular,
+`image name;` inside a display always denotes an image layer, not a variable declaration.
+
+The output owner controls initialization and lifetime: omitted `of:` and `of: simulation`
+create independent storage per simulation; `of: experiment` and legacy `permanent` keep
+experiment-owned storage across simulations. Declarations initialize once, in order,
+before facets, and remain live across refreshes and reopenings of the same instance.
+Experiment output locals are prepared before early layout evaluation, after experiment
+attributes but before its GAML `init` behavior.
+
+Remote inline layers and event/control callbacks preserve lexical bindings while `self`
+denotes their target. Closest lexical declarations take precedence over homonymous target
+attributes; explicit receiver access remains available. Overlay controls can bind persistent
+locals, but still reject transient variables. Detached graphics/callback scopes share dedicated
+local storage without retaining transient caller execution frames or snapshotting live bindings.
+
+Experiment inheritance copies declarations and rebinds their expressions to each child's
+storage. Same-name child output declarations override inherited declarations; missing ones
+are copied in the existing merge order. Explicit display `parent:` inheritance copies display
+facets and layers, not a separate set of local variables. Inherited layers retain their
+declaration-site bindings. Neither form copies a parent's live local values or promises dependency sorting.
+Inherited declaration labels are copied independently so compiling a child cannot replace
+the parent's binding.
+
+Display bodies contain layers and display configuration, not persistent declarations.
+Typed container defaults, explicit nil, and ordinary temporary-variable behavior inside
+graphics blocks and event handlers are retained. Attribute `update:`/`function:` semantics
+are not introduced for presentation locals; dynamic state should remain in attributes or
+be evaluated/assigned explicitly.
+
+Related owner follow-ups stop experiment attribute initialization from incorrectly reading
+simulation-parameter configuration while an experiment target is active, and prevent
+experiment-owned species layers from silently using the current simulation's population.
+Species-layer initialization, drawing and population menus use the actual output root;
+`of:` still does not select an individual simulation.
+
+**Migration:** keep controller/model state and parameter targets as attributes. Move only
+presentation-only values into output locals, or explicitly qualify retained experiment
+attributes from simulation outputs. Review initializer timing, lexical visibility and inherited
+overrides. See the [detailed before/after migration guide](MIGRATION_GUIDE_2026.md#presentation-variables-in-experiments-migrate-to-output-locals).
 
 ### BREAKING CHANGE: explicit container types for built-in action arguments
 

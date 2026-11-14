@@ -5,11 +5,6 @@
 */
 model BenchmarkBinarySerialisers
 
-global {
-	int nb_agents <- 2000;
-	int repetitions <- 20;
-	int warmups <- 3;
-}
 
 species bench_agent {
 	int amount <- rnd(1000);
@@ -22,6 +17,9 @@ species bench_agent {
 }
 
 experiment Benchmark type: gui {
+	int repetitions <- 20;
+	int warmups <- 3;
+	int nb_agents <- 2000;
 
 	action measure (string title, unknown value) {
 		string bytes <- "";

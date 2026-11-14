@@ -107,7 +107,7 @@ public class EditorLabel extends Label {
 		if (param == null) return "";
 		boolean isExperiment = param.isDefinedInExperiment();
 		StringBuilder s = new StringBuilder();
-		if (param.isEditable()) {
+		if (param.isEditable(e.getScope())) {
 			s.append("Parameter of type ").append(param.getType().serializeToGaml(false)).append(" that represents the ");
 		} else {
 			s.append("Read-only ");

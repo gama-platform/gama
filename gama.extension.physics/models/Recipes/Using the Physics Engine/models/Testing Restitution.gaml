@@ -15,8 +15,9 @@ global parent: physical_world {
 	string library_name <- use_native ? "Native" : "Java";
 	// A small step keeps the engine accurate; the outcome of a collision depends on the restitution of both bodies.
 	float step <- 1.0 / 60;
-	float wall_restitution <- 1.0 min: 0.0 max: 1.0;
-	float ball_restitution <- 0.8 min: 0.0 max: 1.0;
+	float wall_restitution;
+	float ball_restitution;
+
 	point ball_impulse <- {100, 100, 0};
 	geometry shape <- box(100, 100, 0.001);
 	float friction <- 0.0;
@@ -98,6 +99,8 @@ species ball skills: [dynamic_body] {
 experiment "Test Restitution !" type: gui {
 	image_file bang <- image_file("../images/bang.png");
 	image_file bam <- image_file("../images/bam.png");
+	float wall_restitution <- 1.0 min: 0.0 max: 1.0;
+	float ball_restitution <- 0.8 min: 0.0 max: 1.0;
 	float minimum_cycle_duration <- 1.0 / 60;
 	parameter "Impulse" var: ball_impulse;
 
@@ -116,19 +119,19 @@ experiment "Test Restitution !" type: gui {
 		}
 	}
 
-	parameter "Restitution of the walls" var: wall_restitution  { 
+	parameter "Restitution of the walls" of: experiment var: wall_restitution  { 
 		ask simulations {
 			ask wall {
-				restitution <- wall_restitution;
+				restitution <- myself.wall_restitution;
 			}
 
 		}
 
 	}
-	parameter "Restitution of the balls" var: ball_restitution  {
+	parameter "Restitution of the balls" of: experiment var: ball_restitution  {
 		ask simulations {
 			ask ball {
-				restitution <- ball_restitution;
+				restitution <- myself.ball_restitution;
 			}
 
 		}
@@ -140,8 +143,8 @@ experiment "Test Restitution !" type: gui {
 		bool prev1 <- gama.pref_append_simulation_name;
 		gama.pref_append_simulation_name <- true;
 		gama.pref_experiment_expand_params <- true;
-		create simulation(seed: 1.0, use_native: true);
-		create simulation(seed: 1.0, use_native: false);
+		create simulation(seed: 1.0, use_native: true, ball_restitution:ball_restitution, wall_restitution: wall_restitution);
+		create simulation(seed: 1.0, use_native: false,ball_restitution:ball_restitution, wall_restitution: wall_restitution);
 		gama.pref_experiment_expand_params <- prev0;
 		gama.pref_append_simulation_name <- prev1;
 	}
@@ -161,10 +164,10 @@ experiment "Test Restitution !" type: gui {
 			species ball;
 			graphics "Bang" {
 				if (ball_contact != nil) {
-					draw bang at: ball_contact size: {16, 16};
+					draw experiment.bang at: ball_contact size: {16, 16};
 				}
 				if (wall_contact != nil) {
-					draw bam at: wall_contact size: {16, 16};
+					draw experiment.bam at: wall_contact size: {16, 16};
 				}
 			}
 			overlay coordinates: #screen position: {5, 5} size: {250, 106} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
@@ -177,7 +180,6 @@ experiment "Test Restitution !" type: gui {
 			}
 			event "mouse_down" {
 				point target <- #user_location;
-				ask simulations {
 					ask ball {
 						point direction <- target - location;
 						if norm(direction) > 0 {
@@ -186,7 +188,6 @@ experiment "Test Restitution !" type: gui {
 						}
 						angular_velocity <- {rnd(10), rnd(10), rnd(10)};
 					}
-				}
 			}
 		}
 	}

@@ -562,7 +562,7 @@ experiment ABValuationDemo type: gui autorun:true{
 			species worker aspect:threeD;
 			species firm aspect: threeD transparency: 0.25;
 			species building aspect:threeD transparency: 0.35;
-			event #mouse_down {ask simulation {do create_firm();}}  
+			event #mouse_down {do create_firm();}
 			event "p" {if(commutingCost<1){commutingCost<-commutingCost+0.1;}}
 			event "m" {if(commutingCost>0){commutingCost<-commutingCost-0.1;}}
 			event "u" {if(shareLowIncome<0.9){shareLowIncome<-shareLowIncome+0.1;}}

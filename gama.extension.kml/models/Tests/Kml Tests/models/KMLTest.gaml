@@ -14,21 +14,21 @@ global {
 experiment KMLTest type: test autorun: true {
 
 	test "A declared kml variable gets a usable default value" {
-		assert world.kml_export != nil;
+		assert simulation.kml_export != nil;
 	}
 
 	test "Geometries can be added to a kml export manager" {
-		ask world {
+		ask simulation {
 			kml_export <- kml_export add_geometry (circle(5), 2.0, #black, #red);
 			kml_export <- kml_export add_geometry (square(3), #blue, #green);
 		}
-		assert world.kml_export != nil;
+		assert simulation.kml_export != nil;
 	}
 
 	test "Adding an icon that does not exist raises an error" {
 		bool failed <- false;
 		try {
-			ask world {
+			ask simulation {
 				kml_export <- kml_export add_icon ({0, 0}, 1.0, 0.0, "missing_icon.png");
 			}
 		} catch {
@@ -40,7 +40,7 @@ experiment KMLTest type: test autorun: true {
 	test "A kml export manager can be saved to a file" {
 		string problem <- nil;
 		try {
-			ask world {
+			ask simulation {
 				kml_export <- kml_export add_geometry (circle(5) at_location {10, 10}, 2.0, #black, #red);
 				save kml_export to: "kml_test_tmp.kml" format: "kml";
 			}

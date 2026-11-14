@@ -20,7 +20,7 @@ global {
 	//Evaporation value per cycle for the pheromons
 	float evaporation_per_cycle <- 5.0 min: 0.0 max: 240.0 ;
 	//Diffusion rate for the pheromons
-	float diffusion_rate <- 1.0 min: 0.0 max: 1.0 ;
+				float diffusion_rate <- 1.0 min: 0.0 max: 1.0 ;
 	//Size of the grid
 	int gridsize <- 75 ;
 	//Center of the grid to put the location of the nest
@@ -117,13 +117,6 @@ species ant skills: [moving] control: fsm {
 }
 experiment "Experiment" type: gui {
 	
-	font title_font <- font("Helvetica", 11, #bold);
-	font chart_font <- font("Helvetica", 10);
-
-	
-	
-	
-	
 	//Parameters to play with  in the gui
 	parameter 'Number of ants:' var: ants_number category: 'Model' ;
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model' ;
@@ -143,24 +136,26 @@ experiment "Experiment" type: gui {
 		statesnames<-list<string>([]);
 		categnames<-["empty","carry"];
 		nbantsbydist<-list<list<int>>([]);
-		loop x over:(world.ant)
+		ask simulation {
+		loop x over:(ant)
 		{
-			if !(statesnames contains (x.state))
+			if !(myself.statesnames contains (x.state))
 			{				
-			add [(ant count (each.state=x.state and !each.hasFood)),(ant count (each.state=x.state and each.hasFood))] to: nbants;
-			add (x.state) to:statesnames;				
+			add [(ant count (each.state=x.state and !each.hasFood)),(ant count (each.state=x.state and each.hasFood))] to: myself.nbants;
+			add (x.state) to:myself.statesnames;				
 			list<int> nl<-list<int>([]);
 			loop d from:0 to:9
-				{
-			add (ant count (each.state=x.state and (((each distance_to center)>gridsize/20*d) and ((each distance_to center)<gridsize/20*(d+1))))) to: nl;
-				}
-			add nl to:nbantsbydist;
+				{ add (ant count (each.state=x.state and (((each distance_to center)>gridsize/20*d) and ((each distance_to center)<gridsize/20*(d+1))))) to: nl;}
+			add nl to:myself.nbantsbydist;
 			}
 		}
+	}
 	
 	}
 	//The different displays
 	output {
+	font title_font <- font("Helvetica", 11, #bold);
+	font chart_font <- font("Helvetica", 10);
 	     layout horizontal([vertical([0::6721,1::3279])::2403,vertical([2::3668,horizontal([3::5175,4::4825])::6332])::7597])  editors: false consoles: false parameters: false background: #white tabs: false;
 		
 		display Ants type: 3d antialias:false toolbar: false map_order: true{

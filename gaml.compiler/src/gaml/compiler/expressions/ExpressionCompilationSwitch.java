@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
@@ -56,6 +57,7 @@ import gama.api.compilation.factories.IExpressionDescriptionFactory;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -71,7 +73,6 @@ import gaml.compiler.EGaml;
 import gaml.compiler.descriptions.DoDescription;
 import gaml.compiler.descriptions.ModelDescription;
 import gaml.compiler.descriptions.PlatformSpeciesDescription;
-import gaml.compiler.descriptions.UiControlDescription;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
@@ -161,6 +162,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			final IExpression expr = doSwitch(s.eClass().getClassifierID(), s);
 			if (expr != null && context.getContext() != null) { context.getDocumentationContext().document(s, expr); }
 			return expr;
+		} catch (final OperationCanceledException | GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
 			if (context.getContext() != null) {
 				context.getContext().error("An internal error occurred while compiling expression: " + e.getMessage(),
@@ -1292,7 +1295,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		IActionDescription action = species == null ? null
 				: isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
 				: species.getAction(op);
-		if (action == null && !isSuper) {
+		if (action == null && !isSuper && !(species instanceof IExperimentDescription)) {
 			final ITypeDescription model = callerContext.getModelDescription();
 			if (model != null && model != species) { action = model.getAction(op); }
 		}
@@ -1366,9 +1369,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		IActionDescription ad = td.getAction(s);
 		if (ad == null) {
 			boolean isExp = td instanceof IExperimentDescription;
-			if (isExp && context.getContext() instanceof UiControlDescription) {
-				ad = context.getContext().getModelDescription().getAction(s);
-			}
 			if (!isExp) {
 				IDescription host = td.getEnclosingDescription();
 				if (host != null) { ad = host.getAction(s); }
@@ -1444,7 +1444,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 
 	@Override
 	public IExpression caseVarDefinition(final VarDefinition object) {
-		return skill(object.getName());
+		return caseVar(object.getName(), object);
 	}
 
 	@Override
@@ -1524,7 +1524,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 */
 	private IExpression resolveSpecialVariable(final String varName, final EObject object) {
 		return switch (varName) {
-			case EXPERIMENT -> CurrentExperimentExpression.create();
+			case EXPERIMENT -> CurrentExperimentExpression.create(context.getContext());
 			case IKeyword.GAMA -> GAMA.getPlatformAgent();
 			case EACH -> getEachExpr(object);
 			case NULL -> GAML.getExpressionFactory().getNil();

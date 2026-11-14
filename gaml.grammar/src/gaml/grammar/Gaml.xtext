@@ -310,7 +310,7 @@ ModelBlock returns Block:
 	{Block} (statements+=(S_Section))*;
 
 DisplayBlock returns Block:
-	{Block} '{' (statements+=S_Other)* '}';
+	{Block} '{' (=>statements+=S_Definition | statements+=S_Other)* '}';
 
 MatchBlock returns Block:
 	{Block} '{' (statements+=(S_Match | S_Default)+) '}';

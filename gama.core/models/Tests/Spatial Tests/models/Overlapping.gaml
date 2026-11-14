@@ -33,7 +33,7 @@ experiment "Overlapping" type: test {
 	
 	test "Overlapping Test" {
 		list<cell> ovelapped_cell;
-		using topology(world) {
+		using topology(simulation) {
 			ovelapped_cell <-cell overlapping (first(polygon_square)) ;
 		}
 		assert length(ovelapped_cell)=9;

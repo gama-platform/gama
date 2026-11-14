@@ -102,11 +102,13 @@ species being skills: [moving]
 
 experiment "Click and Move" type: gui
 {
-	font regular <- font("Helvetica", 14, # bold);
-	rgb c1 <- rgb(#darkseagreen, 120);
-	rgb c2 <- rgb(#firebrick, 120);
+
+
 	output
 	{
+		font regular <- font("Helvetica", 14, # bold);
+		rgb c1 <- rgb(#darkseagreen, 120);
+		rgb c2 <- rgb(#firebrick, 120);
 		layout #split;
 		display "Click and Move [JAVA3D]" type: 3d  axes: false parent: "Click and Move [JAVA2D]"
 		{
@@ -133,10 +135,10 @@ experiment "Click and Move" type: gui
 			}
 
 			species being;
-			event #mouse_move {ask simulation {do move();}} 
-			event #mouse_up {ask simulation {do click();}} 
-			event 'r' {ask simulation {do kill();}} 
-			event 'c'{ask simulation {do duplicate();}} 
+			event #mouse_move {do move();}
+			event #mouse_up {do click();}
+			event 'r'  {do kill();}
+			event 'c' {do duplicate();}
 
 
 		}

@@ -281,7 +281,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		// Consult the alternate provider (e.g. persistent REPL variables in the interactive console) before
 		// walking further up the enclosing description chain.
 		if (alternateVarProvider != null && alternateVarProvider.hasAttribute(aName)) return alternateVarProvider;
-		IDescription enc = getEnclosingDescription();
+		IDescription enc = getEnclosingContext();
 		return enc == null ? null : enc.getDescriptionDeclaringVar(aName);
 	}
 

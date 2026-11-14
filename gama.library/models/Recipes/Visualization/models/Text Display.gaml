@@ -23,11 +23,10 @@ experiment Strings {
 	image_file g <- image_file("./../images/building_texture/texture1.jpg");
 
 
-	output synchronized: true{
+	output synchronized: true of: experiment{
 		layout #split;
 		display "Strings" type: 3d  axes: false {
 			graphics Strings {
-				draw world.shape wireframe: true color: #black;
 				int y <- 4;
 				float precision <- 0.01;
 			loop p over: anchors.pairs {

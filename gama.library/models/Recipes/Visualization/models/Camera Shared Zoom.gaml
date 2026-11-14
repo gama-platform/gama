@@ -13,7 +13,7 @@ model Camera_Shared_Zoom
 
 import "Building Elevation.gaml"
 
-global {
+global { 
 	map<int, point> focus_targets <- [];
 	int focus_display <- 0;
 	point focus_location <- nil;
@@ -37,7 +37,7 @@ experiment "Shared Zoom Example" type: gui {
 			species road aspect: base refresh: false;
 			species people refresh: true;
 			overlay position: {12, -0.25} size: {280, 86} {
-				ui_slider "Shared zoom" var: factor min: 0.1 max: 2.0 continuous: true
+				ui_slider "Shared zoom" var: experiment.factor min: 0.1 max: 2.0 continuous: true
 					at: {0, 0} size: {280, 40};
 				draw "Right-click the scene, then choose\nWorld > Apply Focus here (this display only)."
 					at: {24, 48} anchor: #top_left color: #adaptive font: font("Helvetica", 11);
@@ -47,8 +47,8 @@ experiment "Shared Zoom Example" type: gui {
 		layout #split parameters: false consoles: false;
 		display "1" parent: base {
 			camera #default location: #isometric
-				target: focus_targets[1] != nil ? focus_targets[1] : (building at target1).location
-				distance: distance dynamic: true;
+				target: focus_targets[1] != nil ? focus_targets[1] : (building at experiment.target1).location
+				distance: experiment.distance dynamic: true;
 			event #mouse_listener {
 				if #mouse_action = #mouse_menu {
 					focus_display <- 1;
@@ -58,8 +58,8 @@ experiment "Shared Zoom Example" type: gui {
 		}
 
 		display "2" parent: base {
-			camera #default target: focus_targets[2] != nil ? focus_targets[2] : (building at target2).location
-				distance: distance dynamic: true;
+			camera #default target: focus_targets[2] != nil ? focus_targets[2] : (building at experiment.target2).location
+				distance: experiment.distance dynamic: true;
 			event #mouse_listener {
 				if #mouse_action = #mouse_menu {
 					focus_display <- 2;
@@ -69,8 +69,8 @@ experiment "Shared Zoom Example" type: gui {
 		}
 
 		display "3" parent: base {
-			camera #default target: focus_targets[3] != nil ? focus_targets[3] : (building at target3).location
-				distance: distance dynamic: true;
+			camera #default target: focus_targets[3] != nil ? focus_targets[3] : (building at experiment.target3).location
+				distance: experiment.distance dynamic: true;
 			event #mouse_listener {
 				if #mouse_action = #mouse_menu {
 					focus_display <- 3;
@@ -80,8 +80,8 @@ experiment "Shared Zoom Example" type: gui {
 		}
 
 		display "4" parent: base {
-			camera #default target: focus_targets[4] != nil ? focus_targets[4] : (building at target4).location
-				distance: distance dynamic: true;
+			camera #default target: focus_targets[4] != nil ? focus_targets[4] : (building at experiment.target4).location
+				distance: experiment.distance dynamic: true;
 			event #mouse_listener {
 				if #mouse_action = #mouse_menu {
 					focus_display <- 4;

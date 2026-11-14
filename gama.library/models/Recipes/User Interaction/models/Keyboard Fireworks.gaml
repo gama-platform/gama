@@ -66,11 +66,11 @@ experiment Fireworks type: gui {
 			species spark;
 
 			event #key_listener {
-				ask simulation { do react_to_key(); }
+				do react_to_key(); 
 			}
 			event #mouse_listener {
 				if #mouse_action = #mouse_down and #mouse_button = "left" {
-					ask simulation { launch_at <- #user_location; }
+					 launch_at <- #user_location; 
 				}
 			}
 

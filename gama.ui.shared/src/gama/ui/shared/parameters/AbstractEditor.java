@@ -34,6 +34,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.gaml.variables.AttributeDeclaration;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
@@ -65,7 +66,7 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	private final IAgent agent;
 
 	/** The scope. */
-	private final IScope scope;
+	private IScope scope;
 
 	/** The name. */
 	protected String name;
@@ -125,7 +126,7 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 		param = parameter;
 		agent = a;
 		if (agent == null) throw GamaRuntimeException.error("The parameters view cannot be opened.", a.getScope());
-		scope = agent.getScope().copy("in editor");
+		scope = agent.getScope().detachedCopy("in editor");
 		name = param.getTitle();
 		expectedType = param.getType();
 		computeMaxMinAndStepValues();
@@ -191,6 +192,16 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 
 	@Override
 	public IScope getScope() {
+		if (param instanceof ExperimentParameter parameter && !parameter.isDefinedInExperiment()
+				&& agent instanceof IExperimentAgent experiment) {
+			final var selected = GAMA.getCurrentTopLevelAgent();
+			final var owner = selected instanceof ISimulationAgent simulation && simulation.getExperiment() == experiment
+					? simulation : experiment;
+			if (scope.getRoot() != owner) {
+				GAMA.releaseScope(scope);
+				scope = owner.getScope().detachedCopy("in editor");
+			}
+		}
 		return scope;
 
 		//
@@ -218,7 +229,13 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	protected T retrieveValueOfParameter(final boolean retrieveVarValue) throws GamaRuntimeException {
 		try {
 			Object result;
-			if (getScope() != null /* && agent == null */ && retrieveVarValue
+			final IScope evaluation = getScope();
+			if (param instanceof ExperimentParameter parameter) {
+				final var target = parameter.isDefinedInExperiment() ? evaluation.getExperiment()
+						: evaluation.getRoot() instanceof ISimulationAgent simulation
+								? simulation : null;
+				result = target == null ? param.value(evaluation) : evaluation.getAgentVarValue(target, param.getName());
+			} else if (getScope() != null /* && agent == null */ && retrieveVarValue
 					|| agent.getSpecies().hasVar(param.getName())) {
 				// We are in a case where this is an experiment/simulation
 				// parameter and we want to retrieve the "deep"
@@ -245,8 +262,14 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	 *             the gama runtime exception
 	 */
 	private final void modifyValueOfParameterWith(final Object newValue) throws GamaRuntimeException {
-		if (param instanceof ExperimentParameter && GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent) {
-			agent.getScope().setAgentVarValue(agent, param.getName(), newValue);
+		if (param instanceof ExperimentParameter parameter) {
+			final IScope evaluation = getScope();
+			if (parameter.isDefinedInExperiment() || evaluation.getRoot() instanceof ISimulationAgent) {
+				parameter.setAgentValue(evaluation, newValue);
+			} else {
+				parameter.setValue(evaluation, newValue);
+			}
+			return;
 		} else if (param instanceof AttributeDeclaration) {
 			((AttributeDeclaration) param).setVal(getScope(), agent, newValue);
 			return;
@@ -370,7 +393,7 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	@SuppressWarnings ("rawtypes")
 	EditorControl createEditorControl() {
 		boolean isCombo = param.getAmongValue(getScope()) != null;
-		boolean isEditable = param.isEditable();
+		boolean isEditable = param.isEditable(getScope());
 		if (isEditable) {
 			if (isCombo) {
 				editorControl =

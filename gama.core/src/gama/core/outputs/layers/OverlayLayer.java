@@ -222,8 +222,8 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 			if (surface == null || controlSurface != surface || surface.isDisposed() || !getData().isVisible()
 					|| controls.stream().noneMatch(c -> sameControl(c, active))) return;
 			try (IGraphicsScope callback = surface.getScope().copyForGraphics("for overlay control")) {
-				final IAgent experiment = callback.getExperiment();
-				if (experiment == null || experiment.dead()) return;
+				final IAgent owner = callback.getRoot();
+				if (owner == null || owner.dead()) return;
 				callback.execute(s -> {
 					if (active.statement().isRadio()) {
 						final List<Control> changed = new ArrayList<>();
@@ -239,7 +239,7 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 						active.statement().activate(s, next);
 					}
 					return null;
-				}, experiment, null);
+				}, owner, null);
 			}
 		});
 	}

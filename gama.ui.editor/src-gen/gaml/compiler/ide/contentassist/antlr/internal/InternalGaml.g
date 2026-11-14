@@ -3185,6 +3185,27 @@ finally {
 	restoreStackSize(stackSize);
 }
 
+rule__DisplayBlock__Alternatives_2
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2_0()); }
+		(rule__DisplayBlock__StatementsAssignment_2_0)
+		{ after(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2_0()); }
+	)
+	|
+	(
+		{ before(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2_1()); }
+		(rule__DisplayBlock__StatementsAssignment_2_1)
+		{ after(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2_1()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
 rule__MatchBlock__StatementsAlternatives_2_0
 	@init {
 		int stackSize = keepStackSize();
@@ -8237,9 +8258,9 @@ rule__DisplayBlock__Group__2__Impl
 	}
 :
 (
-	{ before(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2()); }
-	(rule__DisplayBlock__StatementsAssignment_2)*
-	{ after(grammarAccess.getDisplayBlockAccess().getStatementsAssignment_2()); }
+	{ before(grammarAccess.getDisplayBlockAccess().getAlternatives_2()); }
+	(rule__DisplayBlock__Alternatives_2)*
+	{ after(grammarAccess.getDisplayBlockAccess().getAlternatives_2()); }
 )
 ;
 finally {
@@ -14325,15 +14346,30 @@ finally {
 	restoreStackSize(stackSize);
 }
 
-rule__DisplayBlock__StatementsAssignment_2
+rule__DisplayBlock__StatementsAssignment_2_0
 	@init {
 		int stackSize = keepStackSize();
 	}
 :
 	(
-		{ before(grammarAccess.getDisplayBlockAccess().getStatementsS_OtherParserRuleCall_2_0()); }
+		{ before(grammarAccess.getDisplayBlockAccess().getStatementsS_DefinitionParserRuleCall_2_0_0()); }
+		ruleS_Definition
+		{ after(grammarAccess.getDisplayBlockAccess().getStatementsS_DefinitionParserRuleCall_2_0_0()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
+rule__DisplayBlock__StatementsAssignment_2_1
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getDisplayBlockAccess().getStatementsS_OtherParserRuleCall_2_1_0()); }
 		ruleS_Other
-		{ after(grammarAccess.getDisplayBlockAccess().getStatementsS_OtherParserRuleCall_2_0()); }
+		{ after(grammarAccess.getDisplayBlockAccess().getStatementsS_OtherParserRuleCall_2_1_0()); }
 	)
 ;
 finally {

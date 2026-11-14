@@ -157,7 +157,7 @@ public class EditorToolbar<T> {
 				.fill(true).pack(true).extendedMargins(0, 0, 0, 0).justify(false).wrap(false).create();
 		final RowData gd = RowDataFactory.swtDefaults().create();
 		IParameter p = editor.getParam();
-		final int[] toolItems = p == null || p.isEditable() || p.getDisplayUnit(editor.getScope()) != null
+		final int[] toolItems = p == null || p.isEditable(editor.getScope()) || p.getDisplayUnit(editor.getScope()) != null
 				? editor.getToolItems() : new int[0];
 		final String[] samples = editor.getValueLabelsForSizing();
 		final boolean valueColumn = samples.length > 0 && contains(toolItems, VALUE);
@@ -170,7 +170,7 @@ public class EditorToolbar<T> {
 			group.setLayout(id);
 		}
 		for (final int i : toolItems) {
-			if (p != null && !p.isEditable() && i != VALUE) { continue; }
+			if (p != null && !p.isEditable(editor.getScope()) && i != VALUE) { continue; }
 			MouseListener listener = new MouseAdapter() {
 
 				@Override

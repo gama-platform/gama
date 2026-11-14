@@ -201,21 +201,23 @@ experiment test type: test {
 		create ODETest_model(with_viz:false,step:1#s);
 		// tests for consistency of the ODE solver with the same ODE solvers from Maple and Matlab
 		// Testing solutions for equations using Euler, RK4 and DP solver in Gama:;
-		assert rk4_err < 10^-10;
-		assert euler_err < 10^-10;
-		assert dp_err < 10^-3;
-		// tests that the spit system gives the same numerical solution than the non-split system (rk4)
-		assert split_err = 0;
-		assert rk4_stepsize_err < 10^-3;
+		ask simulation{
+			assert rk4_err < 10^-10;
+			assert euler_err < 10^-10;
+			assert dp_err < 10^-3;
+			// tests that the spit system gives the same numerical solution than the non-split system (rk4)
+			assert split_err = 0;
+			assert rk4_stepsize_err < 10^-3;
+		}
 		
 		create ODETest_model(with_viz:false, step:2#s);//beta::1.0 /#s, delta::0.01 /#s];
-		assert rk4_err < 10^-7;
+		assert simulation.rk4_err < 10^-7;
 		
 		create ODETest_model(with_viz:false, with_t0_tf:true,step:2#s);//beta::1.0 /#s, delta::0.01 /#s];
-		assert rk4_err < 10^-7;	
+		assert simulation.rk4_err < 10^-7;	
 		
 		create ODETest_model(with_viz:false,step:1#h, beta:1.0 /#hour, delta:0.01 /#h);
-		assert rk4_err < 10^-10;	
+		assert simulation.rk4_err < 10^-10;	
 	}	
 }
 

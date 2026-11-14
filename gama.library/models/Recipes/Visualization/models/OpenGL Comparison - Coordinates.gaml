@@ -223,11 +223,9 @@ experiment "6 - Text anchors and pointer events" type: gui {
             }
             event #mouse_listener {
                 if #mouse_action = #mouse_down and #mouse_button = "left" {
-                    ask simulation {
                         clicked_world <- #mouse_location_in_world;
                         clicked_screen <- #mouse_location_in_display;
                         clicks <- clicks + 1;
-                    }
                 }
             }
             graphics "Anchors" coordinates: #screen position: {16, 16} size: {570, 290}

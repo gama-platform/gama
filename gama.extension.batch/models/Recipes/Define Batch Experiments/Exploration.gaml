@@ -32,7 +32,7 @@ global {
  */
  
 experiment batch_abstract type:batch virtual:true until:(time > end_cycle) {
-	init {is_batch <- true;}
+	init {simulation.is_batch <- true;}
 	parameter "Prey max transfer:" var: prey_max_transfer min: 0.05 max: 0.5 step: 0.05;
 	parameter "Prey energy reproduce:" var: prey_energy_reproduce min: 0.05 max: 0.75 step: 0.05;
 	parameter "Predator energy transfer:" var: predator_energy_transfer min: 0.1 max: 1.0 step: 0.1;

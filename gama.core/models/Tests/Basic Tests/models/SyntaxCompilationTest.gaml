@@ -50,7 +50,7 @@ experiment SyntaxCompilationTest type: test autorun: true {
 			graphics "Overlay" {
 				draw circle(5) color: #red;
 			}
-			event "mouse_click" action: my_action;
+			event "mouse_click" {experiment. my_action();}
 		}
 	}
 }

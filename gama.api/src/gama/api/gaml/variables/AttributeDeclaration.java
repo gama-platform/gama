@@ -419,27 +419,15 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 			IVariableDescription targetedVar = null;
 			if (PARAMETER.equals(cd.getKeyword()) /* facets.equals(KEYWORD, PARAMETER) */) {
 				final String varName = cd.getLitteral(VAR);
-				targetedVar = cd.getModelDescription().getAttribute(varName);
-
+				final IExperimentDescription ed = (IExperimentDescription) cd.getEnclosingDescription();
+				final boolean experiment = IExperimentDescription.isExperimentContext(cd);
+				targetedVar = ed.getParameterTarget(varName, experiment);
 				if (targetedVar == null) {
-					// AD 07/21 : Adds the possibility for experiment variables to become parameters
-					// We keep on looking after looking in the model so as to make sure that built-in parameters (like
-					// seed, for instance) can be correctly retrieved
-					IExperimentDescription ed = (IExperimentDescription) cd.getEnclosingDescription();
-					targetedVar = ed.getAttribute(varName);
-					if (targetedVar == null) {
-						final String p = "Parameter '" + cd.getParameterName() + "' ";
-						cd.error(p + "cannot refer to the non-global variable " + varName, IGamlIssue.UNKNOWN_VAR,
-								IKeyword.VAR);
-						return;
-					}
-					if (ed.isBatch()) {
-						final String p = "Parameter '" + cd.getParameterName() + "' ";
-						cd.warning(p
-								+ "refers to an experiment variable, which cannot be explored during batch experiments. Move "
-								+ varName + " to the global section if it makes sense.", IGamlIssue.WRONG_CONTEXT,
-								IKeyword.VAR);
-					}
+					final String migration = !experiment && ed.getAttribute(varName) != null
+							? ". Use of: experiment to target the experiment attribute" : "";
+					cd.error("No " + (experiment ? "experiment" : "simulation") + " attribute named " + varName
+							+ migration, IGamlIssue.UNKNOWN_VAR, IKeyword.VAR);
+					return;
 				}
 				if (cd.getGamlType().equals(Types.NO_TYPE)) {
 					cd.error("Impossible to determine the type of the parameter " + varName, IGamlIssue.UNMATCHED_TYPES,

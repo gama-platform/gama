@@ -12,7 +12,9 @@ package gama.core.outputs;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.Iterables;
@@ -211,7 +213,10 @@ import gama.dev.DEBUG;
 @validator (DisplayValidator.class)
 @serializer (DisplaySerializer.class)
 @doc (
-		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts.",
+		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts. "
+				+ "Declare persistent presentation variables in the enclosing output or permanent block, not directly inside the display. "
+				+ "These locals are available in display facets, layers and inline handlers, including remote callbacks. "
+				+ "Ordinary temporary declarations inside graphics blocks and event handlers retain their execution lifetime.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = @example (
@@ -298,7 +303,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		@Override
 		public void validate(final IDescription d) {
 
-			handleInheritance(d);
+			if (!handleInheritance(d, new HashSet<>())) return;
 
 			IExpressionDescription name = d.getFacet(NAME);
 			IExpressionDescription title = d.getFacet(TITLE);
@@ -338,15 +343,19 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		/**
 		 * @param d
 		 */
-		private void handleInheritance(final IDescription d) {
+		private boolean handleInheritance(final IDescription d, final Set<IDescription> ancestors) {
 			final IExpressionDescription parentExp = d.getFacet(PARENT);
-			if (parentExp == null) return;
+			if (parentExp == null) return true;
+			if (!ancestors.add(d)) {
+				d.error("Circular display inheritance.", IGamlIssue.WRONG_CONTEXT, PARENT);
+				return false;
+			}
 			if (!parentExp.getExpression().isConst()) {
 				d.error("The parent display name must be a constant");
-				return;
+				return false;
 			}
 			final String string = parentExp.getExpression().literalValue();
-			handleInheritance(d, string);
+			return handleInheritance(d, string, ancestors);
 		}
 
 		/**
@@ -357,16 +366,17 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		 * @param string
 		 *            the string
 		 */
-		private void handleInheritance(final IDescription d, final String string) {
+		private boolean handleInheritance(final IDescription d, final String string, final Set<IDescription> ancestors) {
 			final IDescription output = d.getEnclosingDescription();
 			for (final IDescription parentDisplay : output.getChildrenWithKeyword(DISPLAY)) {
 				if (parentDisplay.getName().equals(string)) {
-					handleInheritance(parentDisplay);
+					if (!handleInheritance(parentDisplay, ancestors)) return false;
 					handleInheritanceBetween(d, parentDisplay);
-					return;
+					return true;
 				}
 			}
 			d.error("No parent display named '" + string + "' found");
+			return false;
 		}
 
 		/**
@@ -407,17 +417,18 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public boolean init(final IScope scope) throws GamaRuntimeException {
 		final boolean result = super.init(scope);
 		if (!result) return false;
+		final IScope displayScope = getScope();
 		if (rotation != null) {
 			getData().setRotation(rotation.getDefinition());
-			rotation.init(scope);
+			rotation.init(displayScope);
 		}
 		for (CameraStatement s : cameras) {
 			getData().addCameraDefinition(s.getDefinition());
-			s.init(scope);
+			s.init(displayScope);
 		}
 		for (LightStatement s : lights) {
 			getData().addLightDefinition(s.getDefinition());
-			s.init(scope);
+			s.init(displayScope);
 		}
 		getData().initWith(getScope(), description);
 
@@ -541,7 +552,9 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public IDisplaySurface getSurface() { return surface; }
 
 	@Override
-	public List<? extends ISymbol> getChildren() { return getLayers(); }
+	public List<? extends ISymbol> getChildren() {
+		return getLayers();
+	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {

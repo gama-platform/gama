@@ -48,6 +48,7 @@ import gama.api.ui.IOutputManager;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.statements.LayoutStatement;
+import gama.gaml.statements.LetStatement;
 
 /**
  * Class AbstractOutputManager.
@@ -279,6 +280,9 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	/** The layout. */
 	LayoutStatement layout;
 
+	private final OutputLocalVariables localVariables = new OutputLocalVariables();
+	private IScope initializationScope;
+
 	/** The outputs. */
 	protected final OutputMap outputs = new OutputMap();
 
@@ -347,6 +351,10 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			clear();
 		} catch (final Exception e) {
 			e.printStackTrace();
+		} finally {
+			localVariables.dispose();
+			GAMA.releaseScope(initializationScope);
+			initializationScope = null;
 		}
 	}
 
@@ -374,7 +382,9 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
 		for (final ISymbol s : commands) {
-			if (s instanceof LayoutStatement) {
+			if (s instanceof LetStatement declaration) {
+				localVariables.add(declaration);
+			} else if (s instanceof LayoutStatement) {
 				layout = (LayoutStatement) s;
 			} else if (s instanceof IOutput o) {
 				add(o);
@@ -382,6 +392,24 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 				if (o instanceof LayeredDisplayOutput ldo) { ldo.setIndex(displayIndex++); }
 			}
 		}
+	}
+
+	public List<? extends ISymbol> getChildren() {
+		final List<ISymbol> children = new ArrayList<>(localVariables.getDeclarations());
+		if (layout != null) { children.add(layout); }
+		children.addAll(outputs.values());
+		return children;
+	}
+
+	/** Prepares output locals before any facets, without retaining the caller's transient execution frames. */
+	public synchronized IScope getInitializationScope(final IScope scope) {
+		if (localVariables.isEmpty()) return scope;
+		if (initializationScope == null || initializationScope.getRoot() != scope.getRoot()) {
+			GAMA.releaseScope(initializationScope);
+			initializationScope = scope.detachedCopy("for output local variables");
+		}
+		localVariables.initialize(initializationScope);
+		return initializationScope;
 	}
 
 	@Override
@@ -434,10 +462,11 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public boolean init(final IScope scope) {
+		final IScope outputScope = getInitializationScope(scope);
 		if (isSynchronized()) { GAMA.synchronizeFrontmostExperiment(); }
 		name = scope.getRoot().getName();
-		for (final IOutput output : ImmutableList.copyOf(outputs.values())) { if (!open(scope, output)) return false; }
-		evaluateAutoSave(scope);
+		for (final IOutput output : ImmutableList.copyOf(outputs.values())) { if (!open(outputScope, output)) return false; }
+		evaluateAutoSave(outputScope);
 		return true;
 	}
 
@@ -482,9 +511,10 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public boolean open(final IScope scope, final IOutput output) {
-		if (scope.init(output).passed()) {
+		final IScope outputScope = getInitializationScope(scope);
+		if (outputScope.init(output).passed()) {
 			output.setPaused(false);
-			if (initialStep(scope, output)) {
+			if (initialStep(outputScope, output)) {
 				try {
 					output.open();
 					// DEBUG.OUT("Updating the output");
@@ -525,7 +555,7 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			if (each.isRefreshable() && each.getScope().step(each).passed()) { each.update(); }
 		});
 
-		evaluateAutoSave(scope);
+		evaluateAutoSave(getInitializationScope(scope));
 		return true;
 	}
 

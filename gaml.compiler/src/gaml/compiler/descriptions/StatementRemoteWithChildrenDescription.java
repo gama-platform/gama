@@ -24,6 +24,8 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gaml.compiler.expressions.TempVariableExpression;
 
 /**
  * The Class StatementRemoteWithChildrenDescription.
@@ -116,8 +118,16 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String name) {
 		IVarDescriptionProvider result = super.getDescriptionDeclaringVar(name);
+		if (result instanceof ITypeDescription && alternateEnclosingDescription != null) {
+			final IVarDescriptionProvider enclosing =
+					alternateEnclosingDescription.getDescriptionDeclaringVar(name);
+			if (enclosing != null && enclosing.getVarExpr(name, false) instanceof TempVariableExpression)
+				return enclosing;
+		}
 		if (result == null && alternateEnclosingDescription != null) {
 			result = alternateEnclosingDescription.getDescriptionDeclaringVar(name);
+			// Generic agents need declaration-based typing; concrete targets only inherit caller locals.
+			if (result instanceof ITypeDescription && !Types.AGENT.equals(getTypeContext().getGamlType())) return null;
 		}
 		return result;
 	}

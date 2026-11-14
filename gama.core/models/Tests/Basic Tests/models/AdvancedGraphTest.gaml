@@ -5,18 +5,14 @@
 * Tags: graph, algorithm, test
 */
 
-model AdvancedGraphTestModel
 
-global {
+experiment AdvancedGraphTest type: test autorun: true {
 	graph g;
 	
 	init {
 		// A triangle and a disconnected component
 		g <- as_edge_graph([{0,0}::{1,1}, {1,1}::{2,2}, {2,2}::{0,0}, {10,10}::{11,11}]);
 	}
-}
-
-experiment AdvancedGraphTest type: test autorun: true {
 	
 	test "Connected Components" {
 		list<list> components <- connected_components_of(g);

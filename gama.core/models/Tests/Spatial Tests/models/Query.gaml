@@ -41,7 +41,7 @@ global {
 experiment QueryTests type: test {
 	test "closest_to" {
 		dummy closest_dummy;
-		using topology(world) {
+		using topology(simulation) {
 			closest_dummy <- dummy closest_to dummy(8);
 		}
 		assert closest_dummy = dummy(4);
@@ -62,7 +62,7 @@ experiment QueryTests type: test {
 	
 	test "neighbors_of" {
 		list<agent> cl;
-		using topology(world) {
+		using topology(simulation) {
 			cl <-  topology(cell(73)) neighbors_of cell(73);
 		}
 		assert cl contains_all [cell(72),cell(83),cell(63),cell(74)];
@@ -70,7 +70,7 @@ experiment QueryTests type: test {
 	
 	test "agent_closest_to" {
 		agent cl;
-		using topology(world) {
+		using topology(simulation) {
 			cl <-  (agent_closest_to (dummy(8)));
 		}
 		assert cl = cell(73);
@@ -79,7 +79,7 @@ experiment QueryTests type: test {
 	test "agent_farthest_to" {
 		dummy farthest_dummy;
 		agent cl;
-		using topology(world) {
+		using topology(simulation) {
 			cl <- ( agent_farthest_to (cell(73)));
 		}
 		assert cl = cell(9);
@@ -87,12 +87,12 @@ experiment QueryTests type: test {
 
 	test "agents_inside" {
 		list<agent> cl;
-		using topology(world) {
+		using topology(simulation) {
 			cl <- ( agents_inside (cell(73)));
 		}
 		assert cl[0] = dummy(8);
 		
-		using topology(world) {
+		using topology(simulation) {
 			cl <- (  agents_inside (cell(73)));
 		}
 		assert cl[0] = dummy(8);
@@ -101,7 +101,7 @@ experiment QueryTests type: test {
 	test "agents_overlapping" {
 		list<agent> cl;
 		agent cel <- cell(73);
-		using topology(world) {
+		using topology(simulation) {
 			cl <- (agents_overlapping (dummy(8)));
 		}
 		assert cl[0] = cel;
@@ -110,7 +110,7 @@ experiment QueryTests type: test {
 	/* 
 	test "agents_at_distance" {
 		list<agent> cl;
-		using topology(world) {
+		using topology(simulation) {
 			cl <- (agents_at_distance(20));
 		}
 		//assert cl = ??;
@@ -119,7 +119,7 @@ experiment QueryTests type: test {
 	
 	test "farthest_to with continuous topology"{
 		dummy farthest_dummy;
-		using topology(world) {
+		using topology(simulation) {
 			farthest_dummy <- dummy farthest_to dummy(8);
 		}
 		assert farthest_dummy = dummy(7);
@@ -156,7 +156,7 @@ experiment QueryTests type: test {
 	
 	test "inside" {
 		list<dummy> agents_in;
-		using topology(world) {
+		using topology(simulation) {
 			agents_in <- dummy inside cell(73);
 		}
 		assert agents_in = [dummy(8)];
@@ -164,13 +164,13 @@ experiment QueryTests type: test {
 	
 	test "overlapping" {
 		list<dummy> agents_overlapping;
-		using topology(world) {
+		using topology(simulation) {
 			agents_overlapping <- dummy overlapping cell(73);
 		}
 		assert agents_overlapping = [dummy(8)];
 	}
 
-	test "overlapping_outside_world" {
+	test "overlapping_outside_simulation" {
 		dummy out_dummy;
 		create dummy returns: created_ag {
 			location <- {-20, -20};
@@ -178,7 +178,7 @@ experiment QueryTests type: test {
 		out_dummy <- created_ag[0];
 
 		list<dummy> agents_overlapping;
-		using topology(world) {
+		using topology(simulation) {
 			agents_overlapping <- dummy overlapping (circle(5) at_location {-20, -20});
 		}
 		assert agents_overlapping contains out_dummy;

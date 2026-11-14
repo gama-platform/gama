@@ -507,7 +507,11 @@ public interface IScope extends Closeable, IBenchmarkable {
 	}
 
 	/**
-	 * Returns the value of a global variable defined at the simulation level.
+	 * Returns the value of a declared attribute resolved from the current target and its hosts, rather than the fixed
+	 * root of the scope. The search stops at simulation/experiment boundaries. Lexical temporary variables are managed
+	 * separately by {@link #getVarValue(String)}. An ordinary experiment scope never delegates to a selected
+	 * simulation; configuration values require an explicit parameter evaluation context. Both unqualified agent
+	 * attributes and global variable expressions use this lookup.
 	 *
 	 * @param name
 	 *            The name of the global variable
@@ -527,7 +531,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	boolean hasAccessToGlobalVar(String name);
 
 	/**
-	 * Sets the value of a global variable defined at the simulation level.
+	 * Sets a global variable using the same ownership lookup as {@link #getGlobalVarValue(String)}.
 	 *
 	 * @param name
 	 *            The name of the global variable

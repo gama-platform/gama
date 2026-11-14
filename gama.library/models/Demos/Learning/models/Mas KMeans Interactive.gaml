@@ -133,7 +133,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 		layout horizontal([0.0::8000,1::2000]) tabs:true;
 		
 		display map type:2d background:backdrop {
-			event #mouse_down {ask simulation {do register_click();}}
+			event #mouse_down {do register_click();}
 			species centroids aspect: kmeans_aspect2D;
 			species datapoints aspect: kmeans_aspect2D;
 			overlay coordinates: #screen position: {16, 16} size: {340, 118} background: backdrop rounded: true {
@@ -149,7 +149,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 		//display the action buttons
 		display action_buton background:backdrop title:"Clustering tools" type:2d	{
 			species button aspect:normal ;
-			event #mouse_down {ask simulation {do activate_act();}}   
+			event #mouse_down {do activate_act();} 
 		}
 
 	}

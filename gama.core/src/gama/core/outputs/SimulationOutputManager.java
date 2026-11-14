@@ -27,6 +27,7 @@ import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.IType;
@@ -54,6 +55,12 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 		with_sequence = true,
 		concept = { IConcept.DISPLAY, IConcept.OUTPUT })
 @facets ({ @facet (
+		name = IKeyword.OF,
+		type = IType.LABEL,
+		values = { IKeyword.EXPERIMENT, IKeyword.SIMULATION },
+		optional = true,
+		doc = @doc ("The owner of these outputs: simulation (default, independent outputs for each simulation) or experiment (shared outputs lasting for the experiment).")),
+		@facet (
 		name = "synchronized",
 		type = IType.BOOL,
 		optional = true,
@@ -69,8 +76,28 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 @inside (
 		kinds = { ISymbolKind.MODEL, ISymbolKind.EXPERIMENT })
 @doc (
-		value = "`output` blocks define how to visualize a simulation (with one or more display blocks that define separate windows). It will include a set of displays, monitors and files statements. It will be taken into account only if the experiment type is `gui`.",
+		value = "`output` blocks define how to visualize a simulation (with one or more display blocks that define separate windows). It will include a set of displays, monitors and files statements. It will be taken into account only if the experiment type is `gui`. "
+				+ "of: simulation (the default) compiles and evaluates expressions in the owning simulation's context. Each simulation owns independent output instances. "
+				+ "of: experiment compiles and evaluates them in the declaring experiment, with the same lifetime as the legacy permanent block. All layers and their callbacks inherit the selected context. "
+				+ "Typed declarations directly inside the block are persistent lexical locals, not attributes of self, simulation or experiment. "
+				+ "They are initialized in declaration order, once per owner/output instance, before the block's facets and child outputs. "
+				+ "Experiment-owned locals needed by layout facets are initialized during GUI preparation, after experiment attributes but before its init behavior. "
+				+ "Locals remain live across refreshes and inline remote callbacks; recreating the owner recreates their values. "
+				+ "Displays use the enclosing output's locals and cannot declare their own persistent variables. "
+				+ "Ordinary initialization and assignment are supported; attribute update/function facets are not.",
 		usages = { @usage (
+				value = "Declare presentation variables in the output for use by its displays:",
+				examples = @example (
+						value = """
+								output {
+								    font label_font <- font("Helvetica", 14);
+								    rgb accent <- #teal;
+								    display main background: accent {
+								        graphics labels { draw "Hello" font: label_font color: accent; }
+								    }
+								}""",
+						isExecutable = false)),
+				@usage (
 				value = "Its basic syntax is: ",
 				examples = { @example (
 						value = "experiment exp_name type: gui {",
@@ -104,6 +131,11 @@ public class SimulationOutputManager extends AbstractOutputManager {
 
 		@Override
 		public void validate(final IDescription description) {
+			if (IExperimentDescription.isExperimentContext(description)
+					&& !description.getEnclosingDescription().isExperiment()) {
+				description.error("output of: experiment must be declared inside an experiment.",
+						IGamlIssue.WRONG_CONTEXT, IKeyword.OF);
+			}
 			Iterable<IDescription> displays = description.getChildrenWithKeyword(DISPLAY);
 			Map<String, IDescription> map = new HashMap<>();
 			for (IDescription display : displays) {

@@ -905,7 +905,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 */
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String aName) {
-		IDescription enc = getEnclosingDescription();
+		IDescription enc = getEnclosingContext();
 		return enc == null ? null : enc.getDescriptionDeclaringVar(aName);
 	}
 
@@ -921,7 +921,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 */
 	@Override
 	public ITypeDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
-		IDescription enc = getEnclosingDescription();
+		IDescription enc = getEnclosingContext();
 		return enc == null ? null : enc.getDescriptionDeclaringAction(aName, superInvocation);
 	}
 
@@ -1073,7 +1073,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 */
 	@Override
 	public ITypeDescription getTypeContext() {
-		IDescription desc = getEnclosingDescription();
+		IDescription desc = getEnclosingContext();
 		if (desc == null) return null;
 		return desc.getTypeContext();
 	}
@@ -1348,6 +1348,9 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 		return valid[0];
 	}
 
+	/** Returns the evaluation context without changing this description's structural parent. */
+	protected IDescription getFacetCompilationContext(final String facet) { return this; }
+
 	/**
 	 * Compiles an expression for a facet, handling various special cases.
 	 *
@@ -1369,10 +1372,10 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 		} else if (!fp.isLabel()) {
 			if (fp.isRemote() && this instanceof StatementRemoteWithChildrenDescription srwc) {
 				IDescription previousEnclosingDescription = srwc.pushRemoteContext();
-				exp = expr.compile(SymbolDescription.this);
+				exp = expr.compile(getFacetCompilationContext(facet));
 				srwc.popRemoteContext(previousEnclosingDescription);
 			} else {
-				exp = expr.compile(SymbolDescription.this);
+				exp = expr.compile(getFacetCompilationContext(facet));
 			}
 		} else {
 			exp = expr.getExpression();

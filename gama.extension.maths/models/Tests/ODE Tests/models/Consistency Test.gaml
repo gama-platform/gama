@@ -115,9 +115,9 @@ global{
 
 experiment consistency_test type: test {
 	test "consistency" {
-		with_viz <- false;
-		assert diff1 < 0.6;
-		assert diff2 < 10^-3;
+		simulation.with_viz <- false;
+		assert simulation.diff1 < 0.6;
+		assert simulation.diff2 < 10^-3;
 	}
 }
 

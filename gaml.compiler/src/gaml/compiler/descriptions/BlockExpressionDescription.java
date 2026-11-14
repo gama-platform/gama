@@ -12,8 +12,10 @@ package gaml.compiler.descriptions;
 
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -46,9 +48,15 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 		// sd = sd.getModelDescription();
 		final boolean control = "ui_button".equals(context.getKeyword()) || "ui_switch".equals(context.getKeyword())
 				|| "ui_slider".equals(context.getKeyword()) || "ui_radio".equals(context.getKeyword());
+		final boolean simulationParameter = context instanceof IVariableDescription parameter
+				&& parameter.isExperimentParameter() && sd.isModel()
+				&& context.getEnclosingDescription() instanceof IExperimentDescription;
+		// Keep the declaring experiment available for explicitly qualified access in simulation callbacks.
+		final IDescription declaration = simulationParameter ? context.getEnclosingDescription() : sd;
 		final IStatementDescription action =
-				(IStatementDescription) GAML.getDescriptionFactory().create(element, sd, null);
+				(IStatementDescription) GAML.getDescriptionFactory().create(element, declaration, null);
 		if (action != null) {
+			if (simulationParameter && action instanceof ActionDescription callback) { callback.useModelContext(); }
 			if (control && (!"ui_button".equals(context.getKeyword())
 					|| context instanceof UiControlDescription ui && ui.isToggle())) {
 				((StatementWithChildrenDescription) action).addTemp(action, null, "ui_value",

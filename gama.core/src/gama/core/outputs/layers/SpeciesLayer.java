@@ -53,9 +53,11 @@ public class SpeciesLayer extends AgentLayer {
 
 	@Override
 	public IList<? extends IAgent> getAgentsForMenu(final IScope scope) {
-		return GamaListFactory.createWithoutCasting(Types.AGENT, getDefinition().getSpecies().getPopulation(scope));
-		// return
-		// ImmutableSet.copyOf(scope.getSimulation().getMicroPopulation(getDefinition().getSpecies()).iterator());
+		final IMacroAgent owner = scope.getRoot();
+		final IPopulation<? extends IAgent> population =
+				owner == null || owner.dead() ? null : owner.getMicroPopulation(getDefinition().getSpecies());
+		return population == null ? GamaListFactory.create(Types.AGENT)
+				: GamaListFactory.createWithoutCasting(Types.AGENT, population);
 	}
 
 	@Override
@@ -65,7 +67,7 @@ public class SpeciesLayer extends AgentLayer {
 	public void privateDraw(final IGraphicsScope scope, final IGraphics g) throws GamaRuntimeException {
 		shapes.clear();
 		final ISpecies species = getDefinition().getSpecies();
-		final IMacroAgent world = scope.getSimulation();
+		final IMacroAgent world = scope.getRoot();
 		if (world != null && !world.dead()) {
 			final IPopulation<? extends IAgent> microPop = world.getMicroPopulation(species);
 			if (microPop != null) {

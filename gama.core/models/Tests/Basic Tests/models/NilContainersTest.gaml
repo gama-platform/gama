@@ -15,6 +15,21 @@ global {
 	map global_absent_map <- nil;
 	list<int> global_absent_typed_list <- nil;
 	map<string,int> global_absent_typed_map <- nil;
+	
+		test "Global attributes distinguish omitted and explicit nil" {
+		assert global_list = [] and global_list != nil;
+		assert global_map = map([]) and global_map != nil;
+		assert string(type_of(global_typed_list)) = "list<int>" and empty(global_typed_list);
+		assert string(type_of(global_typed_map)) = "map<string, int>" and empty(global_typed_map);
+		assert global_absent_list = nil and global_absent_map = nil;
+		assert global_absent_typed_list = nil and global_absent_typed_map = nil;
+		global_list <- nil;
+		global_map <- nil;
+		global_typed_list <- nil;
+		global_typed_map <- nil;
+		assert global_list = nil and global_map = nil;
+		assert global_typed_list = nil and global_typed_map = nil;
+	}
 }
 
 species holder {
@@ -32,6 +47,8 @@ class container_data {
 	list<int> values;
 	map<string,int> entries;
 }
+
+
 
 experiment NilContainersTest type: test autorun: true {
 	list experiment_list;
@@ -86,20 +103,7 @@ experiment NilContainersTest type: test autorun: true {
 		assert empty(l) and empty(m) and empty(tl) and empty(tm);
 	}
 
-	test "Global attributes distinguish omitted and explicit nil" {
-		assert global_list = [] and global_list != nil;
-		assert global_map = map([]) and global_map != nil;
-		assert string(type_of(global_typed_list)) = "list<int>" and empty(global_typed_list);
-		assert string(type_of(global_typed_map)) = "map<string, int>" and empty(global_typed_map);
-		assert global_absent_list = nil and global_absent_map = nil;
-		assert global_absent_typed_list = nil and global_absent_typed_map = nil;
-		global_list <- nil;
-		global_map <- nil;
-		global_typed_list <- nil;
-		global_typed_map <- nil;
-		assert global_list = nil and global_map = nil;
-		assert global_typed_list = nil and global_typed_map = nil;
-	}
+
 
 	test "Species defaults are independent between agents and attributes" {
 		create holder number: 2 returns: aa;

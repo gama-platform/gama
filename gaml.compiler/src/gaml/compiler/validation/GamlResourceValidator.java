@@ -21,6 +21,7 @@ import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.validation.CheckMode;
+import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
@@ -28,6 +29,9 @@ import org.eclipse.xtext.validation.Issue;
 import com.google.inject.Inject;
 
 import gama.api.GAMA;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
@@ -154,6 +158,30 @@ public class GamlResourceValidator implements IResourceValidator {
 				r.validate();
 				if (cancelled.isCanceled()) throw new OperationCanceledException();
 				collectValidationErrors(r, mode, acceptor);
+				return result;
+			} catch (final OperationCanceledException e) {
+				throw e;
+			} catch (final RuntimeException e) {
+				if (cancelled.isCanceled()) throw new OperationCanceledException();
+				final boolean diagnostic = e instanceof GamaRuntimeException;
+				if (!diagnostic) { DEBUG.ERR("Internal error while validating " + resource.getURI(), e); }
+				final Issue.IssueImpl issue = new Issue.IssueImpl();
+				issue.setSeverity(Severity.ERROR);
+				issue.setCode(IGamlIssue.GENERAL);
+				issue.setType(mode == CheckMode.NORMAL_ONLY ? CheckType.NORMAL
+						: mode == CheckMode.EXPENSIVE_ONLY ? CheckType.EXPENSIVE : CheckType.FAST);
+				issue.setUriToProblem(resource.getURI());
+				issue.setLineNumber(1);
+				issue.setColumn(1);
+				issue.setOffset(0);
+				issue.setLength(0);
+				issue.setMessage(diagnostic ? e.getMessage()
+						: "An internal error occurred during validation: "
+								+ (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+				r.getValidationContext().add(GamlCompilationError.create(issue.getMessage(), IGamlIssue.GENERAL,
+						resource.getURI(), GamlCompilationError.Type.Error));
+				r.updateWith(null, true);
+				acceptor.accept(issue);
 				return result;
 			} finally {
 				GamlResourceServices.discardValidationContext(r);

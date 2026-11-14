@@ -42,27 +42,23 @@ experiment Keyboard_2D type: gui {
 				draw "Events received: " + event_count at: {12, 202} color: #black font: font("SansSerif", 14);
 			}
 
-			event "a" { ask simulation { do record("Legacy A event"); } }
+			event "a" { do record("Legacy A event"); } 
 			// #ctrl retains its value "ctrl": this compact expression produces "ctrla".
-			event #ctrl + "a" { ask simulation { do record("CTRL+A (compact constant syntax)"); } }
-			event "ctrl+shift+a" { ask simulation { do record("CTRL+SHIFT+A (exact modifier match)"); } }
-			event #shift + "b" { ask simulation { do record("SHIFT+B (compact constant)"); } }
-			event #alt + "c" { ask simulation { do record("ALT+C (compact constant)"); } }
-			event #cmd + "c" { ask simulation { do record("Command/Windows+C (compact constant)"); } }
-			event #ctrl + #shift + "b" { ask simulation { do record("CTRL+SHIFT+B (compact constants)"); } }
+			event #ctrl + "a" { do record("CTRL+A (compact constant syntax)"); } 
+			event "ctrl+shift+a" { do record("CTRL+SHIFT+A (exact modifier match)"); }
+			event #shift + "b" { do record("SHIFT+B (compact constant)"); } 
+			event #alt + "c" { do record("ALT+C (compact constant)"); } 
+			event #cmd + "c" { do record("Command/Windows+C (compact constant)"); } 
+			event #ctrl + #shift + "b" { do record("CTRL+SHIFT+B (compact constants)"); } 
 			event #alt + "+" + #arrow_up {
-				ask simulation {
 					cursor <- cursor + {0, -2};
 					do record("ALT+UP");
-				}
 			}
 			event #cmd + "+enter" {
-				ask simulation {
 					cursor <- {50, 50};
 					do record("Command/Windows+Enter");
-				}
 			}
-			event "shift+space" { ask simulation { do record("SHIFT+SPACE"); } }
+			event "shift+space" { do record("SHIFT+SPACE"); } 
 
 			// Standalone modifier constants remain valid, subject to native event delivery.
 			event #ctrl { write "Standalone CTRL"; }
@@ -78,15 +74,13 @@ experiment Keyboard_3D type: gui {
 		display Keyboard type: 3d {
 			graphics { draw sphere(3) at: cursor color: #blue; }
 			// CTRL warnings apply on Windows; camera and display shortcuts remain active on every platform.
-			event #ctrl + "a" { ask simulation { do record("CTRL+A in OpenGL"); } }
-			event "ctrl+shift+a" { ask simulation { do record("CTRL+SHIFT+A in OpenGL"); } }
+			event #ctrl + "a" { do record("CTRL+A in OpenGL"); } 
+			event "ctrl+shift+a" { do record("CTRL+SHIFT+A in OpenGL"); } 
 			event #alt + "+" + #arrow_up {
-				ask simulation {
 					cursor <- cursor + {0, -2};
 					do record("ALT+UP: camera navigation may also run");
-				}
 			}
-			event #cmd + "+enter" { ask simulation { do record("Command/Windows+Enter in OpenGL"); } }
+			event #cmd + "+enter" { do record("Command/Windows+Enter in OpenGL"); } 
 			overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 100} background: #white border: #gray {
 				draw "Click to focus. CTRL+A, CTRL+SHIFT+A" at: {12, 26} color: #black font: font("SansSerif", 14);
 				draw "ALT+UP, CMD/WIN+ENTER" at: {12, 50} color: #black font: font("SansSerif", 14);

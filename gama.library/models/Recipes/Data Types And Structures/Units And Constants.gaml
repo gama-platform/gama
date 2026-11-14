@@ -161,7 +161,9 @@ global {
 // E.g, #teal, #aliceblue, antiquewhite .... (Model menu in GAMA lists all of them). 
 experiment exp {
 	
-	// #bold, #italic and #plan can be used to defin the font style (#bbold and #italic can be combined).
+
+	output {
+			// #bold, #italic and #plan can be used to defin the font style (#bbold and #italic can be combined).
 	font my_font_bold <- font("Helvetica", 12, #bold);
 	font my_font_italic <- font("Arial", 12, #italic);
 	font my_font_bold_italic <- font("SansSerif", 12, #bold + #italic);
@@ -171,8 +173,7 @@ experiment exp {
 	map<string, point> anchors <- ["center"::#center, "top_left"::#top_left, "left_center"::#left_center, "bottom_left"::#bottom_left, 
 		"bottom_center"::#bottom_center, "bottom_right"::#bottom_right, "right_center"::#right_center, "top_right"::#top_right, 
 		"top_center"::#top_center];
-
-	output {
+		
 		// GAML provides several ways to split the various displays (at the launch of the simulation).
 		// Each of them can be set using the one of the following constants:
 		// #horizontal, #vertical, #stack, #split (displays split in a grid-like structure) or #none (no split).	
@@ -234,7 +235,7 @@ experiment exp {
 				draw line([#user_location + {0,1.0/#zoom ,0}, #user_location - {0,1.0/#zoom ,0}]) at:#user_location color: #red ;						
 			}
 			event #mouse_move {			
-				do update_outputs();		
+				ask experiment {do update_outputs();}		
 			}	
 		}
 	}

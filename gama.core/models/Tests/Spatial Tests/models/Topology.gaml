@@ -22,6 +22,44 @@ global {
 		create dummy number:100;
 	}
 	
+		
+	
+	test "Distance_to using topology" {
+		
+		float dc4 <- using((cell4[0,0] distance_to cell4[0,1]), topology(cell4));
+		float dc4_bis <- (cell4[0,0] distance_to cell4[0,1]) using topology(cell4);
+		float dc4_ter;
+		using topology(cell4){dc4_ter <- cell4[0,0] distance_to cell4[0,1];}
+		
+		assert dc4 = dc4_ter and dc4 = dc4_bis and dc4_bis = dc4_ter;
+		assert dc4 = 1.0;
+		
+		float dw4 <- (cell4[0,0].location distance_to cell4[0,1].location) using topology(self);
+		float dw4_bis;
+		using topology(self){dw4_bis <- cell4[0,0].location distance_to cell4[0,1].location;}
+		
+		assert dw4 = dw4_bis; 
+		assert dw4 = shape.height/10.0;
+		
+		float dg4 <- (cell4[0,0] distance_to cell4[0,1]) using topology(c_graph4);
+		float dg4_bis;
+		using topology(c_graph4){dg4_bis <- cell4[0,0] distance_to cell4[0,1];}
+		
+		assert dg4 = geometry(c_graph4 edge_between (cell4[0,0]::cell4[0,1])).perimeter;
+		
+		float dg6 <- (cell6[0,0] distance_to cell6[0,1]) using topology(c_graph6);
+		float dg6_bis;
+		using topology(c_graph6){dg6_bis <- cell6[0,0] distance_to cell6[0,1];}
+		
+		assert dg6 = geometry(c_graph6 edge_between (cell6[0,0]::cell6[0,1])).perimeter;
+		
+		float dg8 <- (cell8[0,0] distance_to cell8[0,1]) using topology(c_graph8);
+		float dg8_bis;
+		using topology(c_graph8){dg8_bis <- cell8[0,0] distance_to cell8[0,1];}
+		
+		assert dg8 = geometry(c_graph8 edge_between (cell8[0,0]::cell8[0,1])).perimeter;
+	}
+	
 }
 
 grid cell4 width: x_cells height: y_cells neighbors: 4 {}
@@ -46,42 +84,6 @@ experiment visu type: gui {
 }
 
 experiment Topology type: test autorun: true {	
-	
-	
-	test "Distance_to using topology" {
-		
-		float dc4 <- using((cell4[0,0] distance_to cell4[0,1]), topology(cell4));
-		float dc4_bis <- (cell4[0,0] distance_to cell4[0,1]) using topology(cell4);
-		float dc4_ter;
-		using topology(cell4){dc4_ter <- cell4[0,0] distance_to cell4[0,1];}
-		
-		assert dc4 = dc4_ter and dc4 = dc4_bis and dc4_bis = dc4_ter;
-		assert dc4 = 1.0;
-		
-		float dw4 <- (cell4[0,0].location distance_to cell4[0,1].location) using topology(world);
-		float dw4_bis;
-		using topology(world){dw4_bis <- cell4[0,0].location distance_to cell4[0,1].location;}
-		
-		assert dw4 = dw4_bis; 
-		assert dw4 = world.shape.height/10.0;
-		
-		float dg4 <- (cell4[0,0] distance_to cell4[0,1]) using topology(c_graph4);
-		float dg4_bis;
-		using topology(c_graph4){dg4_bis <- cell4[0,0] distance_to cell4[0,1];}
-		
-		assert dg4 = geometry(c_graph4 edge_between (cell4[0,0]::cell4[0,1])).perimeter;
-		
-		float dg6 <- (cell6[0,0] distance_to cell6[0,1]) using topology(c_graph6);
-		float dg6_bis;
-		using topology(c_graph6){dg6_bis <- cell6[0,0] distance_to cell6[0,1];}
-		
-		assert dg6 = geometry(c_graph6 edge_between (cell6[0,0]::cell6[0,1])).perimeter;
-		
-		float dg8 <- (cell8[0,0] distance_to cell8[0,1]) using topology(c_graph8);
-		float dg8_bis;
-		using topology(c_graph8){dg8_bis <- cell8[0,0] distance_to cell8[0,1];}
-		
-		assert dg8 = geometry(c_graph8 edge_between (cell8[0,0]::cell8[0,1])).perimeter;
-	}
+
 	
 }

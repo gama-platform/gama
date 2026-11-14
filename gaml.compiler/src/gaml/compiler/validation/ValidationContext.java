@@ -179,7 +179,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true if the error was added to this context, false if it was filtered out or suppressed
 	 */
 	@Override
-	public boolean add(final GamlCompilationError error) {
+	public synchronized boolean add(final GamlCompilationError error) {
 		// Filter out warnings/info if disabled
 		if (error.isWarning() && (state.contains(Flag.NO_WARNING) || !WARNINGS_ENABLED.getValue())) return false;
 		if (error.isInfo() && (state.contains(Flag.NO_INFO) || !INFO_ENABLED.getValue())) return false;
@@ -221,7 +221,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true if syntax errors were detected in the current resource, false otherwise
 	 */
 	@Override
-	public boolean hasInternalSyntaxErrors() {
+	public synchronized boolean hasInternalSyntaxErrors() {
 		return state.contains(Flag.HAS_SYNTAX_ERRORS);
 	}
 
@@ -241,7 +241,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true if any errors exist, false otherwise
 	 */
 	@Override
-	public boolean hasErrors() {
+	public synchronized boolean hasErrors() {
 		return hasInternalSyntaxErrors() || hasInternalErrors() || hasImportedErrors();
 	}
 
@@ -256,7 +256,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true if internal errors exist, false otherwise
 	 */
 	@Override
-	public boolean hasInternalErrors() {
+	public synchronized boolean hasInternalErrors() {
 		return errors != null && !errors.isEmpty();
 	}
 
@@ -271,7 +271,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true if imported errors exist, false otherwise
 	 */
 	@Override
-	public boolean hasImportedErrors() {
+	public synchronized boolean hasImportedErrors() {
 		return importedErrors != null && !importedErrors.isEmpty();
 	}
 
@@ -286,8 +286,8 @@ public class ValidationContext implements IValidationContext {
 	 * @return the internal errors
 	 */
 	@Override
-	public Iterable<GamlCompilationError> getInternalErrors() {
-		return errors == null ? Collections.emptyList() : errors;
+	public synchronized Iterable<GamlCompilationError> getInternalErrors() {
+		return errors == null ? Collections.emptyList() : List.copyOf(errors);
 	}
 
 	/**
@@ -296,8 +296,8 @@ public class ValidationContext implements IValidationContext {
 	 * @return the imported errors
 	 */
 	@Override
-	public Collection<GamlCompilationError> getImportedErrors() {
-		return importedErrors == null ? Collections.emptyList() : importedErrors;
+	public synchronized Collection<GamlCompilationError> getImportedErrors() {
+		return importedErrors == null ? Collections.emptyList() : List.copyOf(importedErrors);
 	}
 
 	/**
@@ -311,8 +311,8 @@ public class ValidationContext implements IValidationContext {
 	 * @return the warnings
 	 */
 	@Override
-	public Iterable<GamlCompilationError> getWarnings() {
-		return warnings == null ? Collections.emptyList() : warnings;
+	public synchronized Iterable<GamlCompilationError> getWarnings() {
+		return warnings == null ? Collections.emptyList() : List.copyOf(warnings);
 	}
 
 	/**
@@ -326,7 +326,9 @@ public class ValidationContext implements IValidationContext {
 	 * @return the infos
 	 */
 	@Override
-	public Iterable<GamlCompilationError> getInfos() { return infos == null ? Collections.emptyList() : infos; }
+	public synchronized Iterable<GamlCompilationError> getInfos() {
+		return infos == null ? Collections.emptyList() : List.copyOf(infos);
+	}
 
 	/**
 	 * Clears all errors, warnings, and info messages from this validation context. Resets the context to its initial
@@ -334,7 +336,7 @@ public class ValidationContext implements IValidationContext {
 	 * actually instantiated (lazy initialization).
 	 */
 	@Override
-	public void clear() {
+	public synchronized void clear() {
 		if (errors != null) { errors.clear(); }
 		if (warnings != null) { warnings.clear(); }
 		if (infos != null) { infos.clear(); }
@@ -349,8 +351,8 @@ public class ValidationContext implements IValidationContext {
 	 * @return an iterator over all errors (internal and imported), limited to MAX_SIZE
 	 */
 	@Override
-	public Iterator<GamlCompilationError> iterator() {
-		// Combine all three collections + imported errors
+	public synchronized Iterator<GamlCompilationError> iterator() {
+		// Combine snapshots of all three collections + imported errors
 		return Iterables
 				.limit(Iterables.concat(getInternalErrors(), getWarnings(), getInfos(), getImportedErrors()), MAX_SIZE)
 				.iterator();
@@ -362,7 +364,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return the imported errors as strings
 	 */
 	@Override
-	public Map<String, URI> getImportedErrorsAsStrings() {
+	public synchronized Map<String, URI> getImportedErrorsAsStrings() {
 		if (importedErrors == null) return Collections.emptyMap();
 		Map<String, URI> result = new LinkedHashMap<>();
 		importedErrors.forEach(e -> result
@@ -375,7 +377,7 @@ public class ValidationContext implements IValidationContext {
 	 * suppressed and not stored. This setting persists until {@link #resetInfoAndWarning()} is called.
 	 */
 	@Override
-	public void setNoWarning() {
+	public synchronized void setNoWarning() {
 		state.add(Flag.NO_WARNING);
 	}
 
@@ -384,7 +386,7 @@ public class ValidationContext implements IValidationContext {
 	 * suppressed and not stored. This setting persists until {@link #resetInfoAndWarning()} is called.
 	 */
 	@Override
-	public void setNoInfo() {
+	public synchronized void setNoInfo() {
 		state.add(Flag.NO_INFO);
 	}
 
@@ -393,7 +395,7 @@ public class ValidationContext implements IValidationContext {
 	 * {@link #setNoInfo()}, allowing warnings and info messages to be collected again.
 	 */
 	@Override
-	public void resetInfoAndWarning() {
+	public synchronized void resetInfoAndWarning() {
 		state.remove(Flag.NO_INFO);
 		state.remove(Flag.NO_WARNING);
 	}
@@ -410,7 +412,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true, if successful
 	 */
 	@Override
-	public boolean hasErrorOn(final EObject... objects) {
+	public synchronized boolean hasErrorOn(final EObject... objects) {
 		if (errors == null) return false;
 		final List<EObject> list = Arrays.asList(objects);
 		return StreamEx.of(errors).anyMatch(p -> list.contains(p.source()));
@@ -420,7 +422,7 @@ public class ValidationContext implements IValidationContext {
 	 * Sets the no experiment flag.
 	 */
 	@Override
-	public void setNoExperiment() {
+	public synchronized void setNoExperiment() {
 		state.add(Flag.NO_EXPERIMENT);
 	}
 
@@ -430,7 +432,7 @@ public class ValidationContext implements IValidationContext {
 	 * @return true if the model has no experiment defined
 	 */
 	@Override
-	public boolean getNoExperiment() { return state.contains(Flag.NO_EXPERIMENT); }
+	public synchronized boolean getNoExperiment() { return state.contains(Flag.NO_EXPERIMENT); }
 
 	/**
 	 * Verify plugins. Returns true if all the plugins are present in the current platform

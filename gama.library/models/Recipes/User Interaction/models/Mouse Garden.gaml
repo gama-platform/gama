@@ -62,10 +62,10 @@ experiment Garden type: gui {
 			species blossom;
 
 			event #mouse_listener {
-				ask simulation { do react_to_mouse(); }
+				do react_to_mouse(); 
 			}
 			event #key_listener {
-				ask simulation { do react_to_key(); }
+				do react_to_key(); 
 			}
 
 			overlay coordinates: #screen position: {0.02, 0.02} size: {0.96, 150} background: #white border: #gray {

@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler;
 
+import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
 import org.eclipse.xtext.linking.ILinkingDiagnosticMessageProvider;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
@@ -28,6 +29,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import com.google.inject.Binder;
 
 import gama.dev.DEBUG;
+import gaml.compiler.formatting2.GamlTextRegionAccessBuilder;
 import gaml.compiler.linking.GamlLinkingErrorMessageProvider;
 import gaml.compiler.linking.GamlLinkingService;
 import gaml.compiler.naming.GamlNameConverter;
@@ -55,6 +57,7 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 	public void configure(final Binder binder) {
 		super.configure(binder);
 		binder.bind(IDefaultResourceDescriptionStrategy.class).to(GamlResourceDescriptionStrategy.class);
+		binder.bind(TextRegionAccessBuilder.class).to(GamlTextRegionAccessBuilder.class);
 		binder.bind(IQualifiedNameConverter.class).to(GamlNameConverter.class);
 		binder.bind(IResourceValidator.class).to(GamlResourceValidator.class);
 		binder.bind(ErrorToDiagnoticTranslator.class);

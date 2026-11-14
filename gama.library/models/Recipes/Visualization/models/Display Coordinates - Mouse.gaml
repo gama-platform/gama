@@ -26,11 +26,9 @@ experiment "Mouse in three referentials" type: gui {
             }
             event #mouse_listener {
                 if #mouse_action = #mouse_down and #mouse_button = "left" {
-                    ask simulation {
                         clicked_world <- #mouse_location_in_world;
                         clicked_screen <- #mouse_location_in_display;
                         clicks <- clicks + 1;
-                    }
                 }
             }
             overlay coordinates: #screen position: {16, 16} size: {0.92, 250}

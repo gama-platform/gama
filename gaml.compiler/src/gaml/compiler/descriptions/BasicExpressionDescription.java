@@ -20,6 +20,7 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
@@ -155,6 +156,11 @@ public class BasicExpressionDescription implements IExpressionDescription {
 
 	@Override
 	public IExpressionDescription cleanCopy() {
+		if (expression != null && expression.findAny(e -> e instanceof IVarExpression.Persistent)) {
+			// Rebind inherited expressions to the copy's lexical declarations rather than the original instance.
+			return target == null ? new StringBasedExpressionDescription(expression.serializeToGaml(false))
+					: new BasicExpressionDescription(target);
+		}
 		final BasicExpressionDescription result = new BasicExpressionDescription(target);
 		result.expression = expression;
 		return result;
@@ -166,6 +172,8 @@ public class BasicExpressionDescription implements IExpressionDescription {
 		if (expression == null) return Types.NO_TYPE;
 		if (expression instanceof TypeExpression te) return te.getDenotedType();
 		IType type = expression.getGamlType();
+		// A resolved variable's contextual type must not be replaced by a type with the same spelling.
+		if (expression instanceof IVarExpression) return type;
 		IModelDescription md = context.getModelDescription();
 		if (md != null) {
 			final ITypesManager tm = md.getTypesManager();

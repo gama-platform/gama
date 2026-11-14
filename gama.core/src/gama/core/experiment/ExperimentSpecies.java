@@ -334,14 +334,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 					var.initializeWith(scope, agent, initGet, inits.containsKey(s));
 					names.remove(s);
 				}
-				// Trick to initialize the simulation variables (and not only
-				// the experiment's variables)
-				// See discussion in #3198
-				for (final String s : names) {
-					final Object initGet = empty/*
-												 * || !allowVarInitToBeOverridenByExternalInit(var)
-												 */ ? null : inits.get(s);
-					agent.getScope().setAgentVarValue(agent, s, initGet);
+				if (!names.isEmpty()) {
+					try (IScope configuration = new ParameterScope(ExperimentSpecies.this, agent)) {
+						for (final String name : names) { configuration.setGlobalVarValue(name, inits.get(name)); }
+					}
 				}
 				if (sequence != null && !sequence.isEmpty()) { scope.execute(sequence, agent, null); }
 				scope.pop(agent);
@@ -498,7 +494,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			for (final IVariable v : getVars()) {
 				if (v.isParameter()) {
 					final ExperimentParameter p = new ExperimentParameter(myScope, v);
-					final String parameterName = "(Experiment) " + p.getName();
+					final String parameterName = IExperimentDescription.parameterKey(p.getName(), true);
 					final boolean already = parameters.containsKey(parameterName);
 					if (!already) {
 						parameters.put(parameterName, p);
@@ -526,7 +522,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 * Adds the default parameters.
 	 */
 	protected void addDefaultParameters() {
-		for (final IParameter.Batch p : agent.getDefaultParameters()) { addParameter(p); }
+		for (final IParameter.Batch p : agent.getDefaultParameters()) {
+			if (!parameters.containsKey(IExperimentDescription.parameterKey(p.getName(), p.isDefinedInExperiment()))) {
+				addParameter(p);
+			}
+		}
 	}
 
 	@Override
@@ -554,8 +554,13 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 					exploration = ie;
 					break;
 				case SimulationOutputManager som: {
-					if (originalSimulationOutputs != null) {
-						originalSimulationOutputs.setChildren(som);
+					if (IExperimentDescription.isExperimentContext(som.getDescription())) {
+						final ExperimentOutputManager outputs = new ExperimentOutputManager(som.getDescription());
+						outputs.setChildren(som.getChildren());
+						outputs.setLayout(som.getLayout());
+						addExperimentOutputs(outputs);
+					} else if (originalSimulationOutputs != null) {
+						originalSimulationOutputs.setChildren(som.getChildren());
 					} else {
 						originalSimulationOutputs = som;
 					}
@@ -568,7 +573,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 						displayables.add(pb);
 						continue;
 					}
-					final String parameterName = pb.getName();
+					final String parameterName =
+							IExperimentDescription.parameterKey(pb.getName(), pb.isDefinedInExperiment());
 					final boolean already = parameters.containsKey(parameterName);
 					if (!already) {
 						displayables.add(pb);
@@ -577,11 +583,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 				}
 					break;
 				case ExperimentOutputManager eom:
-					if (experimentOutputs != null) {
-						experimentOutputs.setChildren(eom);
-					} else {
-						experimentOutputs = eom;
-					}
+					addExperimentOutputs(eom);
 					break;
 				default:
 					continue;
@@ -598,6 +600,15 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			}
 		}
 		displayables.addAll(getUserCommands());
+	}
+
+	private void addExperimentOutputs(final ExperimentOutputManager outputs) {
+		if (experimentOutputs == null) {
+			experimentOutputs = outputs;
+		} else {
+			experimentOutputs.setChildren(outputs.getChildren());
+			if (outputs.getLayout() != null) { experimentOutputs.setLayout(outputs.getLayout()); }
+		}
 	}
 
 	/**
@@ -618,7 +629,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// evaluate variables in the opening of the
 		// experiment
 		// Make sure that the attributes in experiment are initialized (see #3842)
-		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
+		for (final IParameter parameter : parameters.values()) {
+			if (parameter.isDefinedInExperiment()) {
+				agent.setDirectVarValue(agent.getScope(), parameter.getName(), parameter.value(agent.getScope()));
+			}
+		}
 		myScope.push(agent);
 		prepareGui(); // TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
@@ -641,17 +656,18 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	void prepareGui() {
 		if (isTest()) return;
 		final ExperimentOutputManager manager = (ExperimentOutputManager) agent.getOutputManager();
+		final IScope outputScope = manager.getInitializationScope(myScope);
 		Symbol layout = manager.getLayout() == null ? manager : manager.getLayout();
-		final Boolean keepTabs = layout.getFacetValue(myScope, "tabs", true);
-		final Boolean keepToolbars = layout.getFacetValue(myScope, "toolbars", null);
-		final Boolean showConsoles = layout.getFacetValue(myScope, "consoles", null);
-		final Boolean showNavigator = layout.getFacetValue(myScope, "navigator", false);
-		final Boolean showControls = layout.getFacetValue(myScope, "controls", null);
-		final Boolean showParameters = layout.getFacetValue(myScope, "parameters", null);
-		final Boolean keepTray = layout.getFacetValue(myScope, "tray", false);
-		final Boolean showEditors = layout.hasFacet("editors") ? layout.getFacetValue(myScope, "editors", false)
+		final Boolean keepTabs = layout.getFacetValue(outputScope, "tabs", true);
+		final Boolean keepToolbars = layout.getFacetValue(outputScope, "toolbars", null);
+		final Boolean showConsoles = layout.getFacetValue(outputScope, "consoles", null);
+		final Boolean showNavigator = layout.getFacetValue(outputScope, "navigator", false);
+		final Boolean showControls = layout.getFacetValue(outputScope, "controls", null);
+		final Boolean showParameters = layout.getFacetValue(outputScope, "parameters", null);
+		final Boolean keepTray = layout.getFacetValue(outputScope, "tray", false);
+		final Boolean showEditors = layout.hasFacet("editors") ? layout.getFacetValue(outputScope, "editors", false)
 				: !GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue();
-		Supplier<IColor> color = () -> layout.getFacetValue(myScope, "background", null);
+		Supplier<IColor> color = () -> layout.getFacetValue(outputScope, "background", null);
 		myScope.getGui().arrangeExperimentViews(myScope, this, keepTabs, keepToolbars, showConsoles, showParameters,
 				showNavigator, showControls, keepTray, color, showEditors);
 	}
@@ -812,7 +828,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 *            the p
 	 */
 	public void addParameter(final IParameter p) {
-		final String parameterName = p.getName();
+		final String parameterName = IExperimentDescription.parameterKey(p.getName(), p.isDefinedInExperiment());
 		final IParameter already = parameters.get(parameterName);
 		if (already != null) { p.setValue(myScope, already.getInitialValue(myScope)); }
 		parameters.put(parameterName, p);
@@ -864,9 +880,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	}
 
 	/**
-	 * A short-circuited scope that represents the scope of the experiment plan, before any agent is defined. If a
-	 * simulation is available, it refers to it and gains access to its global scope. If not, it throws the appropriate
-	 * runtime exceptions when a feature dependent on the existence of a simulation is accessed
+	 * Context of the experiment plan. Attribute access follows the active target when one is pushed, including during
+	 * experiment initialization. Without an active target, it uses simulation-parameter configuration.
 	 *
 	 * @author Alexis Drogoul
 	 * @since November 2011
@@ -883,6 +898,12 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			super(null, additionalName);
 		}
 
+		@Override
+		public IModelSpecies getModel() { return model; }
+
+		@Override
+		public IExperimentAgent getExperiment() { return agent; }
+
 		/**
 		 * Sets the global var value.
 		 *
@@ -895,9 +916,21 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		@Override
 		public void setGlobalVarValue(final String name, final Object v) throws GamaRuntimeException {
-			if (hasParameter(name)) { setParameterValue(this, name, v); }
-			// final SimulationAgent a = getCurrentSimulation();
-			// if (a != null) { a.setDirectVarValue(this, name, v); }
+			if (getCurrentObjectOrAgent() != null) {
+				super.setGlobalVarValue(name, v);
+				return;
+			}
+			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
+				configuration.setGlobalVarValue(name, v);
+			}
+		}
+
+		@Override
+		public boolean hasAccessToGlobalVar(final String name) {
+			if (getCurrentObjectOrAgent() != null) return super.hasAccessToGlobalVar(name);
+			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
+				return configuration.hasAccessToGlobalVar(name);
+			}
 		}
 
 		/**
@@ -911,10 +944,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		@Override
 		public Object getGlobalVarValue(final String varName) throws GamaRuntimeException {
-			if (hasParameter(varName)) return getParameterValue(varName);
-			// final SimulationAgent a = getCurrentSimulation();
-			// if (a != null) return a.getDirectVarValue(this, varName);
-			return null;
+			if (getCurrentObjectOrAgent() != null) return super.getGlobalVarValue(varName);
+			try (IScope configuration = new ParameterScope(ExperimentSpecies.this)) {
+				return configuration.getGlobalVarValue(varName);
+			}
 		}
 
 	}

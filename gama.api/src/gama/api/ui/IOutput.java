@@ -53,6 +53,13 @@ import gama.api.ui.layers.ILayerStatement;
  *
  * <h2>Computation vs Display:</h2>
  * <p>
+ * Non-permanent outputs are compiled in the model context and instantiated for each simulation. Their detached scope
+ * belongs to that simulation, including when the model is imported; it must not be redirected to the first experiment
+ * or current simulation of another owner. Display bounds are derived from that scope's simulation envelope, without
+ * changing coordinate units or transformations. Permanent outputs keep their experiment scope. The syntax tree still places
+ * both kinds of output inside the declaring experiment.
+ * </p>
+ * <p>
  * Since 2018, outputs have had reduced computational responsibilities:
  * </p>
  * <ul>

@@ -475,7 +475,7 @@ experiment Simulation type: gui autorun: true  {
 			species button aspect: modern;
 			
 			// event listener for mouse clicks
-			event #mouse_down {ask simulation {do buttonPressed();}} 
+			event #mouse_down {do buttonPressed();}
 			
 			// window title
 			// A zero-size frame deliberately leaves the heading unclipped.

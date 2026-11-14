@@ -25,8 +25,7 @@ global {
 	
 	bool show_info <- false;
 	
-	rgb back_color_team <- #blue;
-	rgb front_color_team <- #red;
+
 }
 
 species info_player1 mirrors:player_intelligentTeam {
@@ -58,6 +57,8 @@ species info_player2 mirrors:player_stupidTeam {
 }
 
 experiment intelligentTeam_vs_stupidTeam type:gui {
+	rgb back_color_team <- #blue;
+	rgb front_color_team <- #red;
 	init {
 		// instantialization of the game (contains global information about the game)
 		create soccer_game (back_color_team::back_color_team,front_color_team::front_color_team) returns:soccerGame;
@@ -104,6 +105,8 @@ experiment intelligentTeam_vs_stupidTeam type:gui {
 }
 
 experiment intelligentTeam_vs_intelligentTeam type:gui {
+	rgb back_color_team <- #blue;
+	rgb front_color_team <- #red;
 	init {
 		// instantialization of the game (contains global information about the game)
 		create soccer_game (back_color_team::back_color_team,front_color_team::front_color_team) returns:soccerGame;

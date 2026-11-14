@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base {
 	
 	output {
 		layout #split parameters: false consoles: false;
-		display Ants antialias: false type: opengl axes: false map_order: true{
+		display Ants antialias: false type: 3d axes: false map_order: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
@@ -237,7 +237,7 @@ experiment "Classic" type: gui parent:base {
 				ui_slider "Signal diffusion / cycle" var: diffusion_rate min: 0.0 max: 1.0 step: 0.01 at: {12, 62} size: {276, 40};
 				ui_switch "Use agent icons" var: use_icons at: {12, 112} size: {276, 28} ;
 				ui_switch "Display agent state" var: display_state at: {12, 162} size: {276, 28} ;
-				ui_button "Add food" at: {12, 212} size: {276, 28} { ask simulation {do add_food();}}	
+				ui_button "Add food" at: {12, 212} size: {276, 28} {do add_food();}	
 			} 
 		}
 

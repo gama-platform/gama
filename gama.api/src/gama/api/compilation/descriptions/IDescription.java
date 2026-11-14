@@ -314,6 +314,15 @@ public interface IDescription
 	IDescription getEnclosingDescription();
 
 	/**
+	 * Returns the enclosing context used for expression lookup and species-relative typing. Normally this is the
+	 * enclosing description, but simulation-facing outputs, parameters and their inline callbacks use the model instead.
+	 * This does not change the syntax tree, declaration placement, inheritance or serialization.
+	 *
+	 * @return the enclosing evaluation context, or {@code null} at a lookup boundary
+	 */
+	default IDescription getEnclosingContext() { return getEnclosingDescription(); }
+
+	/**
 	 * Sets the enclosing description of this node, linking it into the description tree.
 	 *
 	 * @param desc
@@ -330,8 +339,8 @@ public interface IDescription
 	IModelDescription getModelDescription();
 
 	/**
-	 * Returns the nearest enclosing {@link ISpeciesDescription}, traversing the tree upward. Statements and variables
-	 * use this to resolve species-relative type information and variable scopes.
+	 * Returns the nearest species in the evaluation context, following {@link #getEnclosingContext()}. Statements and
+	 * variables use this to resolve species-relative type information and variable scopes.
 	 *
 	 * @return the nearest species context, or {@code null}
 	 */
@@ -420,8 +429,8 @@ public interface IDescription
 	// =========================================================================
 
 	/**
-	 * Walks up the description tree to find the nearest {@link IVarDescriptionProvider} that declares a variable with
-	 * the given name.
+	 * Walks up the evaluation contexts to find the nearest {@link IVarDescriptionProvider} that declares a variable
+	 * with the given name. Remote contexts may also search their caller's lexical context.
 	 *
 	 * @param name
 	 *            the variable name to look up
@@ -430,8 +439,8 @@ public interface IDescription
 	IVarDescriptionProvider getDescriptionDeclaringVar(final String name);
 
 	/**
-	 * Walks up the description tree to find the nearest {@link ITypeDescription} that declares an action with the given
-	 * name.
+	 * Walks up the evaluation contexts to find the nearest {@link ITypeDescription} that declares an action with the
+	 * given name.
 	 *
 	 * @param name
 	 *            the action name to look up
