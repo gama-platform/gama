@@ -161,7 +161,9 @@ global {
 // E.g, #teal, #aliceblue, antiquewhite .... (Model menu in GAMA lists all of them). 
 experiment exp {
 	
-	// #bold, #italic and #plan can be used to defin the font style (#bbold and #italic can be combined).
+
+	output {
+			// #bold, #italic and #plan can be used to defin the font style (#bbold and #italic can be combined).
 	font my_font_bold <- font("Helvetica", 12, #bold);
 	font my_font_italic <- font("Arial", 12, #italic);
 	font my_font_bold_italic <- font("SansSerif", 12, #bold + #italic);
@@ -171,8 +173,7 @@ experiment exp {
 	map<string, point> anchors <- ["center"::#center, "top_left"::#top_left, "left_center"::#left_center, "bottom_left"::#bottom_left, 
 		"bottom_center"::#bottom_center, "bottom_right"::#bottom_right, "right_center"::#right_center, "top_right"::#top_right, 
 		"top_center"::#top_center];
-
-	output {
+		
 		// GAML provides several ways to split the various displays (at the launch of the simulation).
 		// Each of them can be set using the one of the following constants:
 		// #horizontal, #vertical, #stack, #split (displays split in a grid-like structure) or #none (no split).	
@@ -185,13 +186,13 @@ experiment exp {
 				// The loop displays for each anchor an associated text
 				loop p over: anchors.pairs {
 					draw circle(0.5) at: {50, y} color: #red;
-					draw p.key at: {50, y} anchor: p.value color: #black font: experiment.my_font_bold_italic;
+					draw p.key at: {50, y} anchor: p.value color: #black font: my_font_bold_italic;
 					y <- y + 7;
 				}
 
 				// These anchors can also been defined at hand using a point
 				draw circle(0.5) at: {50, y} color: #red;
-				draw "custom {0.6, 0.1}" at: {50, y} anchor: {0.6, 0.1} color: #black font: experiment.my_font_italic;
+				draw "custom {0.6, 0.1}" at: {50, y} anchor: {0.6, 0.1} color: #black font: my_font_italic;
 			}
 
 		}
@@ -206,11 +207,11 @@ experiment exp {
 				draw "Camera orientation:  " + string(#camera_orientation with_precision 3) at:{10#px,40#px,0} color: #black font: my_font_plain;
 				draw "Camera up axis:  " + string(#camera_up with_precision 3) at:{10#px,60#px,0} color: #black font: my_font_plain;
 				draw "Camera right axis:  " + string(#camera_right with_precision 3) at:{10#px,80#px,0} color: #black font: my_font_plain;
-				draw "Zoom level:  " + string(#zoom) at:{10#px,60#px,0} color: #black font: experiment.my_font_plain;	
+				draw "Zoom level:  " + string(#zoom) at:{10#px,60#px,0} color: #black font: my_font_plain;	
 				// Screen-context dimensions describe the viewport and do not change with world zoom.
-				draw "Viewport height:  " + string(#display_height) at:{10,100} color: #black font: experiment.my_font_plain;
-				draw "Viewport width:  " + string(#display_width) at:{10,120} color: #black font: experiment.my_font_plain;
-				draw "Screen pixel unit:  " + string(#px) at:{10,140} color: #black font: experiment.my_font_plain;
+				draw "Viewport height:  " + string(#display_height) at:{10,100} color: #black font: my_font_plain;
+				draw "Viewport width:  " + string(#display_width) at:{10,120} color: #black font: my_font_plain;
+				draw "Screen pixel unit:  " + string(#px) at:{10,140} color: #black font: my_font_plain;
 			}
 					
 			// #mouse_location_in_world (also #user_location) keeps world meaning in every referential.
@@ -234,7 +235,7 @@ experiment exp {
 				draw line([#user_location + {0,1.0/#zoom ,0}, #user_location - {0,1.0/#zoom ,0}]) at:#user_location color: #red ;						
 			}
 			event #mouse_move {			
-				do update_outputs();		
+				ask experiment {do update_outputs();}		
 			}	
 		}
 	}

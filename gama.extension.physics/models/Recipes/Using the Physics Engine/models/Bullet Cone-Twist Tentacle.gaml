@@ -99,25 +99,25 @@ experiment Tentacle type: gui {
 	parameter "Selected segment" var: selected_segment min: 0 max: 7 category: "Interaction";
 	parameter "Push strength (impulse)" var: push_strength min: 0.5 max: 10.0 category: "Interaction";
 	user_command "Push forward (+x)" category: "Interaction" color: rgb(133, 177, 205) {
-		ask world {
+		ask simulation {
 			do push({1, 0, 0});
 		}
 	}
 
 	user_command "Push backward (-x)" category: "Interaction" color: rgb(133, 177, 205) {
-		ask world {
+		ask simulation {
 			do push({-1, 0, 0});
 		}
 	}
 
 	user_command "Push sideways (+y)" category: "Interaction" color: rgb(133, 177, 205) {
-		ask world {
+		ask simulation {
 			do push({0, 1, 0});
 		}
 	}
 
 	user_command "Push up (+z)" category: "Interaction" color: rgb(218, 157, 164) {
-		ask world {
+		ask simulation {
 			do push({0, 0, 1});
 		}
 	}

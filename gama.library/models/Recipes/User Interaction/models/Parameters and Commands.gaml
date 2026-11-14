@@ -111,9 +111,9 @@ experiment "Show Parameters" type: gui {
 	
 	// Category: interactive update
 	//////////////////////////////////////////////
-	parameter "Update the among and max values of next parameters" category: "Update parameters" var: an_int_to_build_a_list min: 1 updates: [a_string_among_others, an_int_with_an_updated_slider];
-	parameter "A string to choose among updated values" category: "Update parameters" var: a_string_among_others among: (0 to an_int_to_build_a_list) collect string(each);
-	parameter "An int with an updated slider" slider: true category: "Update parameters" var: an_int_with_an_updated_slider min: 0 max: an_int_to_build_a_list;
+	parameter "Update the among and max values of next parameters" of: experiment category: "Update parameters" var: an_int_to_build_a_list min: 1 updates: [a_string_among_others, an_int_with_an_updated_slider];
+	parameter "A string to choose among updated values" of: experiment  category: "Update parameters" var: a_string_among_others among: (0 to an_int_to_build_a_list) collect string(each);
+	parameter "An int with an updated slider" of: experiment slider: true category: "Update parameters" var: an_int_with_an_updated_slider min: 0 max: an_int_to_build_a_list;
 	
 	// Category: interaction through button	
 	//////////////////////////////////////////////
@@ -121,15 +121,15 @@ experiment "Show Parameters" type: gui {
 	// parameter is modified.
 	parameter "Float (with on_change listener)" category:"Interactive" var: float_on_change {write ""+float_on_change;}
 	// A user_command adds a button to the interface in order to call an action or a set of statements when it is clicked.
-	user_command "Display parameter" category: "Interactive" color:#darkblue {ask world {do writing_parameters();}}
-	user_command "Light color for commands" category: "Interactive" color:#lightgray {ask world {do writing_parameters();}}
-	user_command "Default color for commands" category: "Interactive" {ask world {do writing_parameters();}}
+	user_command "Display parameter" category: "Interactive" color:#darkblue {ask simulation {do writing_parameters();}}
+	user_command "Light color for commands" category: "Interactive" color:#lightgray {ask simulation {do writing_parameters();}}
+	user_command "Default color for commands" category: "Interactive" {ask simulation {do writing_parameters();}}
 	text "Monitors can now be added to the parameters view (see Preferences>Interface)" category: "Monitors" color: #gray font: font("Helvetica",14, #bold);
 
 	
 	output {
 		monitor "A simple random monitor" value: rnd(100) color: #red;
 		monitor "A monitor with the color of the simulation" value: 1000 + rnd(10) ;
-		monitor "A monitor on an agent" value: simulation color: #lightgray;
+		monitor "A monitor on an agent" value: self color: #lightgray;
 	}
 }

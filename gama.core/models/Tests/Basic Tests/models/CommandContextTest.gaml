@@ -37,7 +37,7 @@ experiment CommandContextTest type: test autorun: true {
 		assert c.status = 0;
 		assert empty(c.commands);
 		assert empty(c.results);
-		assert world.same_folder(c.directory, folder("."));
+		assert simulation.same_folder(c.directory, folder("."));
 		assert c.directory.is_folder;
 	}
 
@@ -60,26 +60,26 @@ experiment CommandContextTest type: test autorun: true {
 	}
 
 	test "Shell variables persist between commands" {
-		context c <- command(world.set_variable("GAMA_CONTEXT_VALUE", "42"), context());
-		c <- command(world.echo_variable("GAMA_CONTEXT_VALUE"), c);
+		context c <- command(simulation.set_variable("GAMA_CONTEXT_VALUE", "42"), context());
+		c <- command(simulation.echo_variable("GAMA_CONTEXT_VALUE"), c);
 		assert trim(c.result) = "42";
 		c.close();
 	}
 
 	test "Changing directory in the shell updates the directory attribute" {
 		context c <- command("cd ..", context());
-		assert world.same_folder(c.directory, folder(".."));
-		c <- command(world.print_directory(), c);
-		assert world.same_folder(folder(trim(c.result)), folder(".."));
+		assert simulation.same_folder(c.directory, folder(".."));
+		c <- command(simulation.print_directory(), c);
+		assert simulation.same_folder(folder(trim(c.result)), folder(".."));
 		c.close();
 	}
 
 	test "Assigning the directory moves the live shell without losing its state" {
-		context c <- command(world.set_variable("GAMA_CONTEXT_STATE", "kept"), context());
+		context c <- command(simulation.set_variable("GAMA_CONTEXT_STATE", "kept"), context());
 		c.directory <- folder("..");
-		c <- command(world.print_directory(), c);
-		assert world.same_folder(folder(trim(c.result)), folder(".."));
-		c <- command(world.echo_variable("GAMA_CONTEXT_STATE"), c);
+		c <- command(simulation.print_directory(), c);
+		assert simulation.same_folder(folder(trim(c.result)), folder(".."));
+		c <- command(simulation.echo_variable("GAMA_CONTEXT_STATE"), c);
 		assert trim(c.result) = "kept";
 		c.close();
 	}
@@ -107,7 +107,7 @@ experiment CommandContextTest type: test autorun: true {
 	test "A background command returns immediately with an empty result" {
 		context c <- context();
 		float start <- gama.machine_time;
-		c <- command((windows ? "ping -n 3 127.0.0.1" : "sleep 2") + " &", c);
+		c <- command((simulation.windows ? "ping -n 3 127.0.0.1" : "sleep 2") + " &", c);
 		assert gama.machine_time - start < 1000;
 		assert c.result = "";
 		assert last(c.commands) contains "&";
@@ -115,13 +115,13 @@ experiment CommandContextTest type: test autorun: true {
 	}
 
 	test "The exit status of an exiting shell is kept and a fresh shell is restarted" {
-		context c <- command(world.set_variable("GAMA_CONTEXT_LOST", "value"), context());
+		context c <- command(simulation.set_variable("GAMA_CONTEXT_LOST", "value"), context());
 		c <- command("cd ..", c);
 		c <- command("exit 3", c);
 		assert c.status = 3;
-		c <- command(world.echo_variable("GAMA_CONTEXT_LOST"), c);
+		c <- command(simulation.echo_variable("GAMA_CONTEXT_LOST"), c);
 		assert !(c.result contains "value");
-		assert world.same_folder(c.directory, folder(".."));
+		assert simulation.same_folder(c.directory, folder(".."));
 		c.close();
 	}
 
@@ -142,10 +142,10 @@ experiment CommandContextTest type: test autorun: true {
 	}
 
 	test "Contexts are independent" {
-		context first <- command(world.set_variable("GAMA_CONTEXT_OWNER", "first"), context());
-		context second <- command(world.set_variable("GAMA_CONTEXT_OWNER", "second"), context());
-		first <- command(world.echo_variable("GAMA_CONTEXT_OWNER"), first);
-		second <- command(world.echo_variable("GAMA_CONTEXT_OWNER"), second);
+		context first <- command(simulation.set_variable("GAMA_CONTEXT_OWNER", "first"), context());
+		context second <- command(simulation.set_variable("GAMA_CONTEXT_OWNER", "second"), context());
+		first <- command(simulation.echo_variable("GAMA_CONTEXT_OWNER"), first);
+		second <- command(simulation.echo_variable("GAMA_CONTEXT_OWNER"), second);
 		assert trim(first.result) = "first";
 		assert trim(second.result) = "second";
 		first.close();

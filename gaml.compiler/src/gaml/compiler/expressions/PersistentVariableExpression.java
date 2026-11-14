@@ -18,7 +18,7 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.PersistentLocalVariables;
 
-/** An output/display-local binding keeps its declaring lexical scope when the execution target changes. */
+/** An output-local binding keeps its declaring lexical scope when the execution target changes. */
 public final class PersistentVariableExpression extends TempVariableExpression implements IVarExpression.Persistent {
 
 	public PersistentVariableExpression(final String name, final IType<?> type, final IDescription owner) {
@@ -44,7 +44,7 @@ public final class PersistentVariableExpression extends TempVariableExpression i
 
 	@Override
 	public IGamlDocumentation getDocumentation() {
-		return new GamlConstantDocumentation(getTitle() + "<br>Initialized once per owning output/display instance.");
+		return new GamlConstantDocumentation(getTitle() + "<br>Initialized once per owning output instance.");
 	}
 
 	@Override

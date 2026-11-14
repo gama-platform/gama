@@ -46,7 +46,6 @@ public class StatementWithChildrenDescription extends StatementDescription {
 	protected List<IDescription> children;
 
 	private boolean persistentVariablesPrepared;
-	private boolean preparingPersistentVariables;
 
 	/**
 	 * Instantiates a new statement with children description.
@@ -143,8 +142,7 @@ public class StatementWithChildrenDescription extends StatementDescription {
 	}
 
 	private boolean hasPersistentVariables() {
-		return IKeyword.OUTPUT.equals(getKeyword()) || IKeyword.PERMANENT.equals(getKeyword())
-				|| IKeyword.DISPLAY.equals(getKeyword());
+		return IKeyword.OUTPUT.equals(getKeyword()) || IKeyword.PERMANENT.equals(getKeyword());
 	}
 
 	@Override
@@ -155,33 +153,11 @@ public class StatementWithChildrenDescription extends StatementDescription {
 
 	private boolean preparePersistentVariables() {
 		if (persistentVariablesPrepared) return true;
-		if (preparingPersistentVariables) {
-			error("Circular display inheritance.", IGamlIssue.WRONG_CONTEXT, IKeyword.PARENT);
-			return false;
+		for (final IDescription child : getOwnChildren()) {
+			if (IKeyword.LET.equals(child.getKeyword()) && child.validate() == null) return false;
 		}
-		preparingPersistentVariables = true;
-		try {
-			if (IKeyword.DISPLAY.equals(getKeyword()) && hasFacet(IKeyword.PARENT)) {
-				final String parentName = getLitteral(IKeyword.PARENT);
-				for (final IDescription sibling : getEnclosingDescription().getChildrenWithKeyword(IKeyword.DISPLAY)) {
-					if (!sibling.getName().equals(parentName)
-							|| !(sibling instanceof StatementWithChildrenDescription parent)) continue;
-					if (!parent.preparePersistentVariables()) return false;
-					if (parent.temps != null) {
-						if (temps == null) { temps = new LinkedHashMap<>(); }
-						parent.temps.forEach(temps::putIfAbsent);
-					}
-					break;
-				}
-			}
-			for (final IDescription child : getOwnChildren()) {
-				if (IKeyword.LET.equals(child.getKeyword()) && child.validate() == null) return false;
-			}
-			persistentVariablesPrepared = true;
-			return true;
-		} finally {
-			preparingPersistentVariables = false;
-		}
+		persistentVariablesPrepared = true;
+		return true;
 	}
 
 	/**

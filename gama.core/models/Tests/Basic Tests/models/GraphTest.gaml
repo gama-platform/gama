@@ -62,7 +62,7 @@ experiment GraphTest type: test {
 	}
 	
 	test "My Graph Test" {
-		
+	ask simulation {
 		// Directed graph test
 		assert the_graph in_degree_of (node_agent[2])=2;
 		assert the_graph out_degree_of (node_agent[2])=2;
@@ -85,6 +85,6 @@ experiment GraphTest type: test {
 		assert the_graph source_of(link(node_agent[2],node_agent[3]))=node_agent[2];
 		assert the_graph target_of(link(node_agent[2],node_agent[3]))=node_agent[3];
 		
-	}
+	}}
 	
 }

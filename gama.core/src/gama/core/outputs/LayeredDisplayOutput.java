@@ -12,7 +12,9 @@ package gama.core.outputs;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.Iterables;
@@ -62,7 +64,6 @@ import gama.core.outputs.layers.properties.CameraStatement;
 import gama.core.outputs.layers.properties.LightStatement;
 import gama.core.outputs.layers.properties.RotationStatement;
 import gama.dev.DEBUG;
-import gama.gaml.statements.LetStatement;
 
 /**
  * The Class LayerDisplayOutput.
@@ -213,11 +214,9 @@ import gama.gaml.statements.LetStatement;
 @serializer (DisplaySerializer.class)
 @doc (
 		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts. "
-				+ "Typed declarations directly inside it define private persistent lexical locals, initialized in declaration order "
-				+ "before display, camera, light and layer facets, in the enclosing output's owner context. They can shadow output locals. "
-				+ "Inline layers and handlers keep these bindings even when self denotes a remote agent; separately declared species actions/aspects do not inherit them. "
-				+ "Locals survive refreshes and reopenings of the same display, but are recreated with a new display or owner. "
-				+ "Inherited declarations are initialized independently in each child display; inherited layers retain their declaring lexical bindings.",
+				+ "Declare persistent presentation variables in the enclosing output or permanent block, not directly inside the display. "
+				+ "These locals are available in display facets, layers and inline handlers, including remote callbacks. "
+				+ "Ordinary temporary declarations inside graphics blocks and event handlers retain their execution lifetime.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = @example (
@@ -238,8 +237,6 @@ import gama.gaml.statements.LetStatement;
 										value = "}",
 										isExecutable = false) }) })
 public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Display {
-
-	private final OutputLocalVariables localVariables = new OutputLocalVariables();
 
 	static {
 		DEBUG.OFF();
@@ -306,7 +303,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		@Override
 		public void validate(final IDescription d) {
 
-			handleInheritance(d);
+			if (!handleInheritance(d, new HashSet<>())) return;
 
 			IExpressionDescription name = d.getFacet(NAME);
 			IExpressionDescription title = d.getFacet(TITLE);
@@ -346,15 +343,19 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		/**
 		 * @param d
 		 */
-		private void handleInheritance(final IDescription d) {
+		private boolean handleInheritance(final IDescription d, final Set<IDescription> ancestors) {
 			final IExpressionDescription parentExp = d.getFacet(PARENT);
-			if (parentExp == null) return;
+			if (parentExp == null) return true;
+			if (!ancestors.add(d)) {
+				d.error("Circular display inheritance.", IGamlIssue.WRONG_CONTEXT, PARENT);
+				return false;
+			}
 			if (!parentExp.getExpression().isConst()) {
 				d.error("The parent display name must be a constant");
-				return;
+				return false;
 			}
 			final String string = parentExp.getExpression().literalValue();
-			handleInheritance(d, string);
+			return handleInheritance(d, string, ancestors);
 		}
 
 		/**
@@ -365,16 +366,17 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		 * @param string
 		 *            the string
 		 */
-		private void handleInheritance(final IDescription d, final String string) {
+		private boolean handleInheritance(final IDescription d, final String string, final Set<IDescription> ancestors) {
 			final IDescription output = d.getEnclosingDescription();
 			for (final IDescription parentDisplay : output.getChildrenWithKeyword(DISPLAY)) {
 				if (parentDisplay.getName().equals(string)) {
-					handleInheritance(parentDisplay);
+					if (!handleInheritance(parentDisplay, ancestors)) return false;
 					handleInheritanceBetween(d, parentDisplay);
-					return;
+					return true;
 				}
 			}
 			d.error("No parent display named '" + string + "' found");
+			return false;
 		}
 
 		/**
@@ -416,7 +418,6 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		final boolean result = super.init(scope);
 		if (!result) return false;
 		final IScope displayScope = getScope();
-		localVariables.initialize(displayScope);
 		if (rotation != null) {
 			getData().setRotation(rotation.getDefinition());
 			rotation.init(displayScope);
@@ -488,7 +489,6 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		surface = null;
 		getLayers().clear();
 		getData().dispose();
-		localVariables.dispose();
 	}
 
 	/**
@@ -553,9 +553,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 
 	@Override
 	public List<? extends ISymbol> getChildren() {
-		final List<ISymbol> children = new ArrayList<>(localVariables.getDeclarations());
-		children.addAll(getLayers());
-		return children;
+		return getLayers();
 	}
 
 	@Override
@@ -563,7 +561,6 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		final List<AbstractLayerStatement> list = new ArrayList<>();
 		for (final ISymbol s : commands) {
 			switch (s) {
-				case LetStatement declaration -> localVariables.add(declaration);
 				case CameraStatement cs -> cameras.add(cs);
 				case RotationStatement rs -> rotation = rs;
 				case LightStatement ls -> lights.add(ls);

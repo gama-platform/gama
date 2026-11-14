@@ -7,11 +7,16 @@
 
 model Slicing
 
-global{
+
+species dummy;
+
+experiment "Slicing tests" type:test {
+	
 	list l <- [1,2,3,4,5,6];
 	string s <- "this is a test string";
 	matrix<float> mf <- matrix([[1.0,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]]);
 	field f <- field(mf);
+	
 	matrix<int> mi <- matrix(range(1,3) collect (c: range(0,2) collect (r: c+r*3)));
 	matrix<dummy> md;
 	list<dummy> ld;
@@ -21,12 +26,6 @@ global{
 		md <- matrix(range(0, 2) collect (c: range(0, 2) collect (r: dummy(c+r*3))));
 		ld <- as_list(md);
 	}
-	
-}
-
-species dummy;
-
-experiment "Slicing tests" type:test {
 	
 	test copyBetween {
 		assert l copy_between(0, 3) = [1,2,3];

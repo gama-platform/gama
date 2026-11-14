@@ -84,7 +84,7 @@ experiment "Copy Snapshot to Clipboard" type: gui {
 	output synchronized: true {
 		display "My Display" type:3d axes: false{
 			species bug;
-			event "c" {if (copy_to_clipboard(snapshot(simulation, "My Display"))) {write "Snapshot copied to the clipboard !" ;}}
+			event "c" {if (copy_to_clipboard(snapshot(self, "My Display"))) {write "Snapshot copied to the clipboard !" ;}}
 		}
 	}
 

@@ -8,13 +8,14 @@ model ant_foraging_tests
 import "Ant Foraging.gaml"
 
 experiment Trail_timing title: "Trail timing" type: test {
+	
 	test "Ants detect weak trails before evaporation" {
 		ask ant { do die(); }
 		ask ant_grid {
 			road <- 0.0;
 			food <- 0;
 		}
-		ant_grid trail <- ant_grid({gridsize - 10.0, gridsize / 2.0});
+		ant_grid trail <- ant_grid({simulation.gridsize - 10.0, simulation.gridsize / 2.0});
 		trail.road <- 1.0;
 		ant a <- ant(location: trail.location, speed: 0.0) ;
 		ask simulation { do _step_(); }
@@ -28,26 +29,26 @@ experiment Trail_timing title: "Trail timing" type: test {
 			road <- 0.0;
 			food <- 0;
 		}
-		ant_grid trail <- ant_grid({gridsize - 10.0, gridsize / 2.0});
+		ant_grid trail <- ant_grid({simulation.gridsize - 10.0, simulation.gridsize / 2.0});
 		create ant (location: trail.location, speed: 0.0, has_food: true);
 		ask simulation { do _step_(); }
-		assert trail.road = 100.0 - evaporation_per_cycle;
+		assert trail.road = 100.0 - simulation.evaporation_per_cycle;
 	}
 
 	test "Evaporation respects the grid update frequency" {
 		ask ant { do die(); }
 		ask ant_grid { road <- 0.0; }
-		grid_frequency <- 2;
-		diffusion_rate <- 0.0;
-		ant_grid trail <- ant_grid({gridsize - 10.0, gridsize / 2.0});
+		simulation.grid_frequency <- 2;
+		simulation.diffusion_rate <- 0.0;
+		ant_grid trail <- ant_grid({simulation.gridsize - 10.0, simulation.gridsize / 2.0});
 		trail.road <- 100.0;
 		loop times: 3 {
 			float previous <- trail.road;
-			bool grid_updates <- (simulation.cycle mod grid_frequency) = 0;
+			bool grid_updates <- (simulation.cycle mod simulation.grid_frequency) = 0;
 			ask simulation { do _step_(); }
-			assert trail.road = previous - (grid_updates ? evaporation_per_cycle : 0.0);
+			assert trail.road = previous - (grid_updates ? simulation.evaporation_per_cycle : 0.0);
 		}
-		grid_frequency <- 1;
-		diffusion_rate <- 1.0;
+		simulation.grid_frequency <- 1;
+		simulation.diffusion_rate <- 1.0;
 	}
 }

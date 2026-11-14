@@ -201,7 +201,7 @@ experiment StatementsAdvancedTest type: test autorun: true {
 
 		// Using statement dynamically changes the topology/scope
 		int seen_in_world_topology <- 0;
-		using topology(world) {
+		using topology(simulation) {
 			seen_in_world_topology <- length(container_agent); 
 		}
 		assert seen_in_world_topology = length(container_agent);

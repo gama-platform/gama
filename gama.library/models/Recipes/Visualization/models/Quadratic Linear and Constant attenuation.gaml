@@ -42,12 +42,12 @@ experiment Display type: gui autorun: true {
 	int angle;
 	int height;
 	int distance;
-	parameter "Spot light angle" var:angle <- 0 min:0 max:360 slider:true category:"Spot light location" unit: "°";
-	parameter "Spot light height" var:height <- 0 min:-30 max:30 slider:true category:"Spot light location";
-	parameter "Spot light distance from ball" var:distance <- 10 min:2 max:30 slider:true category:"Spot light location";
-	parameter "Quadratic attenuation" var:quad <- 0.0001 min:0.0000001 max:0.001 slider:true category:"Light attenuation";
-	parameter "Linear attenuation" var:linear <- 0.001 min:0.0000001 max:0.1 slider:true category:"Light attenuation";
-	parameter "Constant attenuation" var:constant <- 0.1 min:0.0000001 max:9.0 slider:true category:"Light attenuation";
+	parameter "Spot light angle" of: experiment var:angle <- 0 min:0 max:360 slider:true category:"Spot light location" unit: "°";
+	parameter "Spot light height" of: experiment var:height <- 0 min:-30 max:30 slider:true category:"Spot light location";
+	parameter "Spot light distance from ball" of: experiment var:distance <- 10 min:2 max:30 slider:true category:"Spot light location";
+	parameter "Quadratic attenuation" of: experiment var:quad <- 0.0001 min:0.0000001 max:0.001 slider:true category:"Light attenuation";
+	parameter "Linear attenuation" of: experiment var:linear <- 0.001 min:0.0000001 max:0.1 slider:true category:"Light attenuation";
+	parameter "Constant attenuation" of: experiment var:constant <- 0.1 min:0.0000001 max:9.0 slider:true category:"Light attenuation";
 	
 	output {
 		layout #split;
@@ -60,13 +60,13 @@ experiment Display type: gui autorun: true {
 			light #default intensity: 0;
 			light "1" 
 				kind: #spot 
-				location: {(world.shape.width/2 + distance) * cos(angle) + world.shape.width/2, (world.shape.height/2 + distance) * sin(angle) + world.shape.height / 2, height} 
-				direction:{cos(angle + 180), sin(angle + 180), 0} 
+				location: {(shape.width/2 + experiment.distance) * cos(experiment.angle) + world.shape.width/2, (shape.height/2 + experiment.distance) * sin(experiment.angle) + world.shape.height / 2, experiment.height} 
+				direction:{cos(experiment.angle + 180), sin(experiment.angle + 180), 0} 
 				intensity: #red 
 				show: true 
-				linear_attenuation:linear 
-				constant_attenuation:constant 
-				quadratic_attenuation: quad 
+				linear_attenuation:experiment.linear 
+				constant_attenuation:experiment.constant 
+				quadratic_attenuation: experiment.quad 
 				dynamic: true;
 			
 			species GAMAGeometry2D;

@@ -227,22 +227,22 @@ species HUD skills:[thread]{
 experiment snake_game type: gui autorun: true{
 	float minimum_cycle_duration <- 0.3;
 	parameter "Size of the environment" var: environment_size <- 30 min: 10 max: 100;
-	parameter "Game speed (0.0: fast; 1.0: slow)" var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
+	parameter "Game speed (0.0: fast; 1.0: slow)" of: experiment var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
 	output {
 		display map type:2d antialias:false {
 			species wall;
 			species snake;
 			species food;
 			species HUD;
-			event "e" {ask simulation { do move_up();}}
-			event #arrow_up {ask simulation { do move_up();}}
-			event "d" {ask simulation { do move_down();}}
-			event #arrow_down {ask simulation { do move_down();}}
-			event "f" {ask simulation { do move_right();}}
-			event #arrow_right {ask simulation { do move_right();}}
-			event "s" {ask simulation { do move_left();}}
-			event #arrow_left {ask simulation { do move_left();}}
-			event " " { ask simulation { do start_count_down();}}
+			event "e" {do move_up();}
+			event #arrow_up {do move_up();}
+			event "d" { do move_down();}
+			event #arrow_down {do move_down();}
+			event "f" {do move_right();}
+			event #arrow_right {do move_right();}
+			event "s" {do move_left();}
+			event #arrow_left {do move_left();}
+			event " " { do start_count_down();}
 			
 		}
 	}

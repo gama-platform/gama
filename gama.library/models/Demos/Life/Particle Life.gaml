@@ -228,6 +228,50 @@ global {
         attraction_matrix[4,2] <- A_4_2; attraction_matrix[4,3] <- A_4_3;
         attraction_matrix[4,4] <- A_4_4;
     }
+    
+        
+    /**
+     * randomize_matrix - Assigns random values to all matrix cells.
+     * Available in the GAMA "Actions" panel during the simulation.
+     */
+    action randomize_matrix() {
+        A_0_0<-rnd(-1.0,1.0); A_0_1<-rnd(-1.0,1.0); A_0_2<-rnd(-1.0,1.0); A_0_3<-rnd(-1.0,1.0); A_0_4<-rnd(-1.0,1.0);
+        A_1_0<-rnd(-1.0,1.0); A_1_1<-rnd(-1.0,1.0); A_1_2<-rnd(-1.0,1.0); A_1_3<-rnd(-1.0,1.0); A_1_4<-rnd(-1.0,1.0);
+        A_2_0<-rnd(-1.0,1.0); A_2_1<-rnd(-1.0,1.0); A_2_2<-rnd(-1.0,1.0); A_2_3<-rnd(-1.0,1.0); A_2_4<-rnd(-1.0,1.0);
+        A_3_0<-rnd(-1.0,1.0); A_3_1<-rnd(-1.0,1.0); A_3_2<-rnd(-1.0,1.0); A_3_3<-rnd(-1.0,1.0); A_3_4<-rnd(-1.0,1.0);
+        A_4_0<-rnd(-1.0,1.0); A_4_1<-rnd(-1.0,1.0); A_4_2<-rnd(-1.0,1.0); A_4_3<-rnd(-1.0,1.0); A_4_4<-rnd(-1.0,1.0);
+        do sync_matrix_from_vars();
+        write "New random matrix applied.";
+    }
+
+    /**
+     * preset_chains - Each type attracts the next type (ring cycle).
+     * Produces characteristic spirals and rotating chains.
+     * Red->Green->Blue->Yellow->Purple->Red
+     */
+    action preset_chains() {
+        A_0_0<- -0.3; A_0_1<-  0.9; A_0_2<-  0.0; A_0_3<-  0.0; A_0_4<-  0.0;
+        A_1_0<-  0.0; A_1_1<- -0.3; A_1_2<-  0.9; A_1_3<-  0.0; A_1_4<-  0.0;
+        A_2_0<-  0.0; A_2_1<-  0.0; A_2_2<- -0.3; A_2_3<-  0.9; A_2_4<-  0.0;
+        A_3_0<-  0.0; A_3_1<-  0.0; A_3_2<-  0.0; A_3_3<- -0.3; A_3_4<-  0.9;
+        A_4_0<-  0.9; A_4_1<-  0.0; A_4_2<-  0.0; A_4_3<-  0.0; A_4_4<- -0.3;
+        do sync_matrix_from_vars();
+        write "Preset 'Chains' applied.";
+    }
+
+    /**
+     * preset_clusters - Each type attracts itself and repels the others.
+     * Produces well-separated colour clusters.
+     */
+    action preset_clusters() {
+        A_0_0<-  0.8; A_0_1<- -0.5; A_0_2<- -0.5; A_0_3<- -0.5; A_0_4<- -0.5;
+        A_1_0<- -0.5; A_1_1<-  0.8; A_1_2<- -0.5; A_1_3<- -0.5; A_1_4<- -0.5;
+        A_2_0<- -0.5; A_2_1<- -0.5; A_2_2<-  0.8; A_2_3<- -0.5; A_2_4<- -0.5;
+        A_3_0<- -0.5; A_3_1<- -0.5; A_3_2<- -0.5; A_3_3<-  0.8; A_3_4<- -0.5;
+        A_4_0<- -0.5; A_4_1<- -0.5; A_4_2<- -0.5; A_4_3<- -0.5; A_4_4<-  0.8;
+        do sync_matrix_from_vars();
+        write "Preset 'Clusters' applied.";
+    }
 
 
     // ════════════════════════════════════════════════════════════════════════
@@ -410,80 +454,12 @@ experiment ParticleLife type: gui {
     parameter "Purple <- Yellow"  var: A_4_3 min: -1.0 max: 1.0 category: "Matrix Purple";
     parameter "Purple <- Purple"  var: A_4_4 min: -1.0 max: 1.0 category: "Matrix Purple";
     
-    // ════════════════════════════════════════════════════════════════════════
-    // ACTIONS
-    // ════════════════════════════════════════════════════════════════════════
 
-    /**
-     * sync_matrix_from_vars - Copies the 25 A_i_j variables into the internal matrix.
-     * Called automatically each cycle by the sync_matrix reflex,
-     * allowing slider changes to take effect immediately during the simulation.
-     */
-    action sync_matrix_from_vars() {
-        attraction_matrix <- 0.0 as_matrix {nb_types, nb_types};
-        attraction_matrix[0,0] <- A_0_0; attraction_matrix[0,1] <- A_0_1;
-        attraction_matrix[0,2] <- A_0_2; attraction_matrix[0,3] <- A_0_3;
-        attraction_matrix[0,4] <- A_0_4;
-        attraction_matrix[1,0] <- A_1_0; attraction_matrix[1,1] <- A_1_1;
-        attraction_matrix[1,2] <- A_1_2; attraction_matrix[1,3] <- A_1_3;
-        attraction_matrix[1,4] <- A_1_4;
-        attraction_matrix[2,0] <- A_2_0; attraction_matrix[2,1] <- A_2_1;
-        attraction_matrix[2,2] <- A_2_2; attraction_matrix[2,3] <- A_2_3;
-        attraction_matrix[2,4] <- A_2_4;
-        attraction_matrix[3,0] <- A_3_0; attraction_matrix[3,1] <- A_3_1;
-        attraction_matrix[3,2] <- A_3_2; attraction_matrix[3,3] <- A_3_3;
-        attraction_matrix[3,4] <- A_3_4;
-        attraction_matrix[4,0] <- A_4_0; attraction_matrix[4,1] <- A_4_1;
-        attraction_matrix[4,2] <- A_4_2; attraction_matrix[4,3] <- A_4_3;
-        attraction_matrix[4,4] <- A_4_4;
-    }
+
     
-    /**
-     * randomize_matrix - Assigns random values to all matrix cells.
-     * Available in the GAMA "Actions" panel during the simulation.
-     */
-    action randomize_matrix() {
-        A_0_0<-rnd(-1.0,1.0); A_0_1<-rnd(-1.0,1.0); A_0_2<-rnd(-1.0,1.0); A_0_3<-rnd(-1.0,1.0); A_0_4<-rnd(-1.0,1.0);
-        A_1_0<-rnd(-1.0,1.0); A_1_1<-rnd(-1.0,1.0); A_1_2<-rnd(-1.0,1.0); A_1_3<-rnd(-1.0,1.0); A_1_4<-rnd(-1.0,1.0);
-        A_2_0<-rnd(-1.0,1.0); A_2_1<-rnd(-1.0,1.0); A_2_2<-rnd(-1.0,1.0); A_2_3<-rnd(-1.0,1.0); A_2_4<-rnd(-1.0,1.0);
-        A_3_0<-rnd(-1.0,1.0); A_3_1<-rnd(-1.0,1.0); A_3_2<-rnd(-1.0,1.0); A_3_3<-rnd(-1.0,1.0); A_3_4<-rnd(-1.0,1.0);
-        A_4_0<-rnd(-1.0,1.0); A_4_1<-rnd(-1.0,1.0); A_4_2<-rnd(-1.0,1.0); A_4_3<-rnd(-1.0,1.0); A_4_4<-rnd(-1.0,1.0);
-        do sync_matrix_from_vars();
-        write "New random matrix applied.";
-    }
-
-    /**
-     * preset_chains - Each type attracts the next type (ring cycle).
-     * Produces characteristic spirals and rotating chains.
-     * Red->Green->Blue->Yellow->Purple->Red
-     */
-    action preset_chains() {
-        A_0_0<- -0.3; A_0_1<-  0.9; A_0_2<-  0.0; A_0_3<-  0.0; A_0_4<-  0.0;
-        A_1_0<-  0.0; A_1_1<- -0.3; A_1_2<-  0.9; A_1_3<-  0.0; A_1_4<-  0.0;
-        A_2_0<-  0.0; A_2_1<-  0.0; A_2_2<- -0.3; A_2_3<-  0.9; A_2_4<-  0.0;
-        A_3_0<-  0.0; A_3_1<-  0.0; A_3_2<-  0.0; A_3_3<- -0.3; A_3_4<-  0.9;
-        A_4_0<-  0.9; A_4_1<-  0.0; A_4_2<-  0.0; A_4_3<-  0.0; A_4_4<- -0.3;
-        do sync_matrix_from_vars();
-        write "Preset 'Chains' applied.";
-    }
-
-    /**
-     * preset_clusters - Each type attracts itself and repels the others.
-     * Produces well-separated colour clusters.
-     */
-    action preset_clusters() {
-        A_0_0<-  0.8; A_0_1<- -0.5; A_0_2<- -0.5; A_0_3<- -0.5; A_0_4<- -0.5;
-        A_1_0<- -0.5; A_1_1<-  0.8; A_1_2<- -0.5; A_1_3<- -0.5; A_1_4<- -0.5;
-        A_2_0<- -0.5; A_2_1<- -0.5; A_2_2<-  0.8; A_2_3<- -0.5; A_2_4<- -0.5;
-        A_3_0<- -0.5; A_3_1<- -0.5; A_3_2<- -0.5; A_3_3<-  0.8; A_3_4<- -0.5;
-        A_4_0<- -0.5; A_4_1<- -0.5; A_4_2<- -0.5; A_4_3<- -0.5; A_4_4<-  0.8;
-        do sync_matrix_from_vars();
-        write "Preset 'Clusters' applied.";
-    }
-    
-    user_command "Random matrix"      action: randomize_matrix;
-    user_command "Preset : Chains"    action: preset_chains;
-    user_command "Preset : Clusters"  action: preset_clusters;
+    user_command "Random matrix"      {simulation.randomize_matrix();} 
+    user_command "Preset : Chains"    {simulation.preset_chains();}
+    user_command "Preset : Clusters"  {simulation.preset_clusters();}
     
 
     output {

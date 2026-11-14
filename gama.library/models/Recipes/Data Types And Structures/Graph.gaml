@@ -2,7 +2,7 @@
 * Name: Graph
 * Author: Kevin Chapuis
 * Description: A comprehensive overview of graph operators and graph-related features in GAML. Covers creating graphs
-*   from various generators (random, scale-free, small-world, complete, distance-based, intersection-based, grid-based),
+*   from various generators (random, scale-free, small-simulation, complete, distance-based, intersection-based, grid-based),
 *   applying different layout algorithms (Circle, Forced, Grid), and manipulating graph structure at runtime. The model
 *   lets users interactively explore different combinations of graph topology and layout to understand how graph data
 *   structures work in a GAMA simulation.
@@ -21,7 +21,7 @@ global {
 	int y_cells <- 10;
 	graph<geometry,geometry> g_graph;
 	string the_layout init: "Circle" among: ["Circle", "Forced", "Grid"];
-	string graph_generator init: "Complete" among: ["Random","Scall-free", "Small-world", "Complete", "Distance", "Intersection", "Grid"];
+	string graph_generator init: "Complete" among: ["Random","Scall-free", "Small-simulation", "Complete", "Distance", "Intersection", "Grid"];
 
 	init {
 		write "- Using dedicated agent that extends 'graph_node' =>  'species my_node parent: graph_node edge_species: my_edge' with my_edge parent: base_edge";
@@ -100,12 +100,12 @@ global {
 	}
 
 	/*
-	 * Generate a graph with small-world network structural properties
-	 * https://en.wikipedia.org/wiki/Small-world_network
+	 * Generate a graph with small-simulation network structural properties
+	 * https://en.wikipedia.org/wiki/Small-simulation_network
 	 * 
 	 */
-	action small_world (){
-		write "- Small-world : Watts-Strogatz = generate_watts_strogatz(node_species, edge_species, nb_nodes, rewire_proba, start_degree, synchronize)";
+	action small_simulation (){
+		write "- Small-simulation : Watts-Strogatz = generate_watts_strogatz(node_species, edge_species, nb_nodes, rewire_proba, start_degree, synchronize)";
 		do clean();
 		float rewirering_probability <- 0.1;
 		int fake_lattice_start_degree <- 4; // Even and more than 2
@@ -281,14 +281,14 @@ global {
 
 	action c_layout (){
 		write "Circle classical layout : nodes are randomly placed on a circle";
-		g_graph <- layout_circle(g_graph, world.shape, // The geometry to spatialize nodes in 
+		g_graph <- layout_circle(g_graph, shape, // The geometry to spatialize nodes in 
 		false // Shuffle or not the nodes
 );
 	}
 
 	action f_layout (){
 		write "Forced based layout : connected node pull each other, while unconnected node push each other away";
-		g_graph <- layout_force(g_graph, world.shape, // The geometry to spatialize nodes in 
+		g_graph <- layout_force(g_graph, shape, // The geometry to spatialize nodes in 
 		0.4, // The pull/push force
 		0.01, // The cooling rate of the algorithm
 		100 // Maximum number of iterations
@@ -297,7 +297,7 @@ global {
 
 	action g_layout() {
 		write "Homemade grid based layout : distributes nodes over a grid to minimize edge crossing";
-		graph q <- layout_grid(g_graph, world.shape, // The geometry to spatialize nodes in
+		graph q <- layout_grid(g_graph, shape, // The geometry to spatialize nodes in
 		1.5 // The ratio of possible grid position over the total number of nodes (should be higher than 1.0 )
 		);
 
@@ -368,50 +368,50 @@ experiment Graph type: gui {
 	float minimum_cycle_duration <- 1#s;
 	text "You have to play the simulation model in order to build and play with network";
 	user_command "Accessing/modifying graphs" {
-		ask world {
+		ask simulation {
 			do access_and_modify_edge_and_node();
 		}
 
 	}
 
 	user_command "Connectivity of node and edge" {
-		ask world {
+		ask simulation {
 			do connectivity_of_node_and_edge();
 		}
 
 	}
 
 	user_command "Connectivity of graph" {
-		ask world {
+		ask simulation {
 			do connectivity_of_graph();
 		}
 
 	}
 
 	user_command "Layout graph" {
-		ask world {
+		ask simulation {
 			do layout_graph();
 		}
 
 	}
 
 	user_command "Path with graph" {
-		ask world {
+		ask simulation {
 			do path_finding_graph();
 		}
 
 	}
 
 	user_command "Create graphs" {
-		the_path <- nil;
-		switch graph_generator {
-			match "Random" { ask world {do random();} }
-			match "Scall-free" { ask world { do scale_free(); } }
-			match "Small-world" { ask world { do small_world(); } }
-			match "Complete" { ask world { do complete(); } }
-			match "Distance" { ask world { do from_nodes(); } }
-			match "Intersection" { ask world { do from_polygons(); } }
-			match "Grid" { ask world { do grid_graph(av_degree); } }
+		simulation.the_path <- nil;
+		switch simulation.graph_generator {
+			match "Random" { ask simulation {do random();} }
+			match "Scall-free" { ask simulation { do scale_free(); } }
+			match "Small-simulation" { ask simulation { do small_simulation(); } }
+			match "Complete" { ask simulation { do complete(); } }
+			match "Distance" { ask simulation { do from_nodes(); } }
+			match "Intersection" { ask simulation { do from_polygons(); } }
+			match "Grid" { ask simulation { do grid_graph(av_degree); } }
 		}
 
 	}

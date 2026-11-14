@@ -23,7 +23,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.PersistentLocalVariables;
 import gama.gaml.statements.LetStatement;
 
-/** Declaration storage and one-time initialization shared by output managers and displays. */
+/** Declaration storage and one-time initialization for output managers. */
 final class OutputLocalVariables {
 
 	private final List<LetStatement> declarations = new ArrayList<>();
@@ -45,13 +45,12 @@ final class OutputLocalVariables {
 		final Set<IDescription> owners = new HashSet<>();
 		for (final LetStatement declaration : declarations) {
 			if (!(declaration.getFacet(IKeyword.NAME) instanceof IVarExpression.Persistent variable))
-				throw GamaRuntimeException.error("An output/display declaration must have persistent lexical storage.", scope);
+				throw GamaRuntimeException.error("An output declaration must have persistent lexical storage.", scope);
 			final IDescription description = variable.getDefinitionDescription();
 			if (owners.add(description)) { PersistentLocalVariables.push(scope, description); }
-			// Display inheritance can include the same declaration more than once.
 			if (!PersistentLocalVariables.isInitialized(scope, description, variable.getName())
 					&& !scope.execute(declaration).passed())
-				throw GamaRuntimeException.error("Could not initialize output/display local '" + variable.getName() + "'.", scope);
+				throw GamaRuntimeException.error("Could not initialize output local '" + variable.getName() + "'.", scope);
 		}
 		owner = scope.getRoot();
 		variables = PersistentLocalVariables.current(scope);

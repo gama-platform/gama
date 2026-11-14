@@ -12,6 +12,7 @@
 | [Part 0](#part-0-changelog-at-a-glance) | Changelog at a glance |
 | [Part 1](#part-1-whats-new-and-why-it-matters) | What's new and why it matters |
 | [Part 2](#part-2-migration-reference) | Step-by-step migration reference |
+| [Presentation variables](#presentation-variables-in-experiments-migrate-to-output-locals) | Output locals, ownership, lifetime and inheritance |
 
 ---
 
@@ -65,6 +66,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Grid attribute brackets are typed matrix reads and writes | Replace `matrix_with(cell, "attribute")` with `cell[attribute]` and `set_values` with `cell[attribute] <- matrix;` |
 | Attribute brackets also support ordinary species | `species[attribute]` reads a typed list; assigning a list requires exactly one element per current agent |
 | Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
+| Explicit output owners and persistent presentation locals (draft PR) | Keep model/controller state as attributes; move output-only styling into `output` instead of relying on implicit experiment lookup |
 
 ## Engine, UI, and Graphics
 
@@ -364,7 +366,264 @@ Work through each section that applies to your plugin. Each section is self-cont
 
 ## 1. GAML Language Syntax Changes
 
-These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
+These changes affect `.gaml` model files. Simple syntax replacements can often be applied globally;
+changes involving ownership, state or presentation variables require reviewing their uses.
+
+### Presentation variables in experiments: migrate to output locals
+
+**Development status:** implemented on the branch of draft
+[PR #1313](https://github.com/gama-platform/gama/pull/1313), including commit
+[`828cff24c`](https://github.com/gama-platform/gama/commit/828cff24c50f24b1e173f9d1c3418ac09a2c13cf).
+This feature is not yet merged or released.
+
+Experiment attributes often exist only to configure displays: fonts, colors, text positions,
+line widths, palettes or other presentation settings. Such definitions can now be placed
+directly inside `output` and `permanent`. They become **persistent lexical
+locals**, not attributes of the experiment or simulation.
+
+Declarations directly inside `display` are not supported. Put even single-display
+presentation variables in the enclosing output. Display bodies contain layers and display
+configuration; `image name;` always denotes a layer there, not a declaration.
+Ordinary temporary declarations inside graphics blocks and event handlers remain supported.
+
+This also provides a migration path for the stricter experiment/simulation boundaries:
+plain `output { ... }` means `output of: simulation { ... }`; it no longer implicitly reads
+experiment-only attributes. Do not move styling into `global` merely to satisfy that lookup
+if it is only used by outputs.
+
+Parameter declarations use the same owner selector: omitted `of:` means simulation;
+`parameter "Controller setting" of: experiment var: setting;` explicitly targets an
+experiment attribute. The two owners keep separate parameter namespaces, including
+homonymous built-ins such as `seed`.
+
+#### Before and after
+
+The following historical pattern relied on experiment attributes being implicitly visible
+inside simulation-facing output code:
+
+```gaml
+global {}
+
+experiment styled type: gui {
+    font label_font <- font("Helvetica", 14);
+    rgb accent <- #teal;
+
+    output {
+        display main background: accent {
+            graphics labels {
+                draw "Hello" font: label_font color: accent;
+            }
+        }
+    }
+}
+```
+
+When these values are presentation-only, move both the font and the color into the output:
+
+```gaml
+global {}
+
+experiment styled type: gui {
+    output {
+        font label_font <- font("Helvetica", 14);
+        rgb accent <- #teal;
+
+        display main background: accent {
+            graphics labels {
+                draw "Hello" font: label_font color: accent;
+            }
+        }
+        display summary {
+            graphics labels {
+                draw "Summary" font: label_font;
+            }
+        }
+    }
+}
+```
+
+Both locals are available to both displays, including their header facets, layers and
+inline handlers. Neither declaration creates
+`experiment.label_font`, `simulation.label_font` or `self.accent`.
+
+#### Choose storage and ownership deliberately
+
+| Definition | Visibility and storage |
+|---|---|
+| Experiment attribute | Controller/model state owned by the experiment; use explicit qualification from simulation outputs |
+| Output local | Visible to that output block's child displays, monitors, inspectors, browse outputs and other child declarations |
+| Local inside a layer, action or handler | Ordinary temporary variable with its existing execution lifetime, not a persistent presentation local |
+
+The enclosing output selects the initialization and execution owner:
+
+| Output spelling | Owner and lifetime |
+|---|---|
+| `output { ... }` or `output of: simulation { ... }` | Independent output/local instances for each simulation |
+| `output of: experiment { ... }` | The declaring experiment instance, shared across its simulations |
+| `permanent { ... }` | Legacy spelling of experiment-owned output, with the same local-variable rules |
+
+Choose the owner based on what the output does, not just on where its fonts used to be
+declared. A simulation visualization should normally remain simulation-owned after moving
+its styling. An experiment-wide dashboard may use `of: experiment`.
+`of:` does not select a particular simulation instance. Experiment-owned species layers
+cannot implicitly borrow a simulation's population; keep those layers in
+`output of: simulation` unless the population is genuinely owned by the experiment.
+
+If a value is also used by experiment actions, model behavior, parameter declarations or
+external consumers, keep it as an attribute. For example, a parameter controlling a font
+size still needs an attribute target; a parameter declared outside the output cannot
+bind an output local:
+
+```gaml
+experiment adjustable type: gui {
+    int label_size <- 14;
+    parameter "Label size" of: experiment var: label_size min: 8 max: 40;
+
+    output {
+        display main {
+            graphics labels {
+                draw "Hello" font: font("Helvetica", experiment.label_size);
+            }
+        }
+    }
+}
+```
+
+Likewise, keeping an experiment-owned font attribute and using
+`font: experiment.label_font` is valid. Moving an attribute is optional, not an automatic
+rename or a blanket requirement to remove all experiment presentation attributes.
+
+#### Initialization, mutation and refresh
+
+Direct declarations are initialized **once per output instance**, in declaration
+order and in the selected owner's context, before evaluating its facets and child outputs.
+This makes output locals available in display header facets such as `background: accent`.
+An initializer may use an earlier local from the same output block.
+Do not rely on forward references or dependency sorting.
+
+Experiment-owned output locals are prepared before early layout-facet evaluation.
+Consequently, they are initialized after experiment attributes but **before the
+experiment's GAML `init` behavior**, rather than waiting for the first rendered frame.
+Do not initialize such locals from state that is only established by that behavior.
+Display refreshes and reopenings do not rerun the enclosing output's declarations.
+Recreating the owner or output instance creates new local storage and reevaluates
+the initializers. In particular, experiment-owned locals are not reset just because
+another simulation is created.
+
+An initializer is not a dynamic getter. A local computed from `cycle`, a random draw,
+an attribute or a parameter retains its initial value until explicitly assigned.
+Declarations support ordinary typed initialization and assignment, not attribute facets
+such as `update:` or `function:`. Keep changing expressions in drawing/refresh facets,
+or update the persistent local from code inside its lexical scope.
+
+Inline overlay controls may bind persistent locals through `var:` and modify them from
+their handlers. Ordinary transient locals remain invalid control bindings. Assignments
+are visible to the other child outputs sharing that output local.
+
+Typed defaults and nil semantics are unchanged:
+
+```gaml
+output {
+    list<int> numbers;          // a new empty list, retained by this output
+    map<string,int> scores;     // a new empty map, retained by this output
+    list<int> missing <- nil;   // nil, not an empty list
+    display main {
+        graphics labels { draw string(length(numbers)); }
+    }
+}
+```
+
+Independent storage does not imply a deep copy of every initializer result. An initializer
+that explicitly reads a shared mutable object can still introduce an alias.
+
+#### Remote layers and callbacks
+
+Persistent locals remain available through nested `remote_context` statements, including
+`ask`, remote inline drawing code and event/control callbacks. Entering a remote context
+changes `self` to the target agent, not the lexical binding of a presentation local.
+The closest lexical declaration wins over an unqualified target attribute with the same
+name; use `self.attribute` to explicitly access the target's attribute.
+
+```gaml
+// With particle declared in the model:
+output {
+    int selected_count <- 0;
+    display main {
+        event 'a' {
+            selected_count <- 0;
+            ask particle {
+                selected_count <- selected_count + 1;
+            }
+        }
+    }
+}
+```
+
+Separately declared species actions/aspects, global reflexes and experiment actions do not
+gain access to the caller's output locals. Move inline presentation code with its
+declarations, or retain explicitly accessible attributes for code outside the output tree.
+Sharing storage also does not make a parallel read-modify-write expression an atomic
+reduction.
+
+#### Experiment inheritance and overrides
+
+Experiment inheritance copies output **declarations**, not a running parent's
+local values. Each child initializes its own storage in its selected owner context.
+Inherited expressions are rebound to the copied lexical declarations, rather than keeping
+references to the parent's live output scope.
+
+If the child defines its own output block, the existing merge rules apply: its same-name
+local declaration replaces the inherited declaration; missing parent declarations and
+outputs are copied into the child. A duplicate declaration within one block remains an
+error. For example, a child can override the size used by an inherited font and display:
+
+```gaml
+experiment base type: gui {
+    output of: experiment {
+        int label_size <- 14;
+        font label_font <- font("Helvetica", label_size);
+        display main {
+            graphics labels { draw "Hello" font: label_font; }
+        }
+    }
+}
+
+experiment larger parent: base type: gui {
+    output of: experiment {
+        int label_size <- 20;
+    }
+}
+```
+
+The inherited font initializer in `larger` uses its local size `20`; the parent's
+declarations are unchanged. The two owner contexts are inherited/merged separately:
+simulation output and experiment output are not one shared namespace.
+
+The merge keeps the child's declarations first and appends missing inherited declarations.
+There is no dependency-based reordering: a new child initializer cannot assume that a
+later appended inherited local is already available. Redeclare required prerequisites
+before dependent child declarations. Keep override types compatible with the inherited
+expressions that use them; a different type can invalidate those expressions.
+
+Explicit **display inheritance** (`display child parent: base`) is distinct from experiment
+inheritance. It inherits display facets and layers, without creating display-local storage.
+Displays in the same output share its locals; inherited layers keep their declaration-site
+bindings.
+
+#### Migration checklist
+
+1. Find experiment attributes used only by output declarations, layers and inline callbacks.
+2. Move presentation-only values into their output block, including values used by only
+   one display. Move any existing direct display declarations there too.
+3. Keep parameters, controller/model state and values used by separately declared
+   actions/aspects as attributes, with explicit owner/receiver access where needed.
+4. Review initializer order, one-time versus dynamic evaluation, and early experiment layout
+   preparation before `init`.
+5. Review inherited overrides, local name collisions and qualified accesses that still
+   assume an agent attribute.
+
+See the [changelog entry](CHANGELOG_2026.md#draft-follow-up-persistent-output-presentation-locals)
+and [PR #1313](https://github.com/gama-platform/gama/pull/1313) for implementation status.
 
 ### Explicit container types for built-in action arguments
 

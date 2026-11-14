@@ -60,7 +60,7 @@ public final class PersistentLocalVariables {
 		final PersistentLocalVariables variables = find(scope, owner);
 		synchronized (variables.values) {
 			if (!variables.values.containsKey(name))
-				throw GamaRuntimeException.error("Output/display local variable '" + name + "' is not initialized.", scope);
+				throw GamaRuntimeException.error("Output local variable '" + name + "' is not initialized.", scope);
 			return variables.values.get(name);
 		}
 	}
@@ -70,7 +70,7 @@ public final class PersistentLocalVariables {
 		final PersistentLocalVariables variables = find(scope, owner);
 		synchronized (variables.values) {
 			if (!create && !variables.values.containsKey(name))
-				throw GamaRuntimeException.error("Output/display local variable '" + name + "' is not initialized.", scope);
+				throw GamaRuntimeException.error("Output local variable '" + name + "' is not initialized.", scope);
 			variables.values.put(name, value);
 		}
 	}

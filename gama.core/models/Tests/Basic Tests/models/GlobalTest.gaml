@@ -14,6 +14,6 @@ global torus: true {
 experiment GlobalTest type: test autorun: true {
 	
 	test "Global Dimensions and Torus" {
-		assert world.shape.area = 10000.0;
+		assert simulation.shape.area = 10000.0;
 	}
 }

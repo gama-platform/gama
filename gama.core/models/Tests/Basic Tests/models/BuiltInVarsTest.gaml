@@ -14,18 +14,18 @@ global {
 experiment BuiltInVarsTest type: test autorun: true {
 	
 	test "Global Variables and Cycles" {
-		assert step = 1.5;
+		assert simulation.step = 1.5;
 		
 		// At initialization, cycle is usually 0
-		assert cycle = 0;
-		assert time = 0.0;
+		assert simulation.cycle = 0;
+		assert simulation.time = 0.0;
 	}
 	
 	test "World and Agents Access" {
-		assert world != nil;
+		assert simulation.world != nil;
 		
-		// In an experiment, 'agents' returns all agents in the current simulation/world
-		assert length(agents) > 0;
-		assert agents contains world = true;
+		// In a simulation, 'agents' returns all agents in the current simulation/world
+		assert length(simulation.agents) > 0;
+		assert simulation.agents contains simulation = true;
 	}
 }

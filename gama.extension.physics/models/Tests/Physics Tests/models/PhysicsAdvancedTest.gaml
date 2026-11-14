@@ -29,10 +29,10 @@ species wall skills: [static_body] {
 experiment PhysicsAdvancedTest type: test autorun: true {
 
 	test "The physical world exposes its documented defaults" {
-		assert world.gravity = {0, 0, -9.80665};
-		assert world.automated_registration = true;
-		assert world.max_substeps = 0;
-		assert world.accurate_collision_detection = false;
+		assert simulation.gravity = {0, 0, -9.80665};
+		assert simulation.automated_registration = true;
+		assert simulation.max_substeps = 0;
+		assert simulation.accurate_collision_detection = false;
 	}
 
 	test "A static body reports the engine's own conventions" {
@@ -82,7 +82,7 @@ experiment PhysicsAdvancedTest type: test autorun: true {
 
 	test "Bodies can be registered in the physical world" {
 		create ball number: 3 returns: balls;
-		ask world { do register(bodies: balls); }
+		ask simulation { do register(bodies: balls); }
 		assert length(balls) = 3;
 	}
 

@@ -523,7 +523,7 @@ experiment main {
 			
 			}
 			event "r" {
-				ask simulation {do reload;}
+				do reload;
 				score <- 0;
 				level<-1;
 				

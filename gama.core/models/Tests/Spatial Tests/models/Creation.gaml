@@ -67,23 +67,27 @@ experiment Visualisation type: gui {
 experiment "Creation Test" type: test autorun: true {	
 		
 	test "Circle tests with tolerance" {
-		assert p_circles all_match (each distance_to circle1.contour < (each distance_to circle1.location * circle_tolerance));
-		assert p_circles all_match (each distance_to inner_circle.contour < (each distance_to inner_circle.location * circle_tolerance));
-		
-		assert c_square covers circle1;
+		ask simulation {
+			assert p_circles all_match (each distance_to circle1.contour < (each distance_to circle1.location * circle_tolerance));
+			assert p_circles all_match (each distance_to inner_circle.contour < (each distance_to inner_circle.location * circle_tolerance));
+			assert c_square covers circle1;
+		}
 	}
 	
 	test "Elipse test" {
+		ask simulation {
 		assert s_ellipse.area < circle1.area;
 		assert circle1 covers s_ellipse;
-		
 		assert l_ellipse.area > circle1.area;
 		assert l_ellipse covers circle1;
+		}
 	}
 	
 	test "Arc test" {
+		ask simulation {
 		assert circle1 covers arc1;
 		assert arc1.area - (circle1.area * amplitude / 360) < (circle1.area * amplitude / 360 * arc_tolerance);
+		}
 	}
 	
 }

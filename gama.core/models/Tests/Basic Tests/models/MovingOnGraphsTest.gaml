@@ -80,7 +80,7 @@ experiment MovingOnGraphsTest type: test autorun: true {
 			ask w { do wander(); }
 			visited <+ w.location;
 		}
-		assert visited all_match (world.shape covers each);
+		assert visited all_match (simulation.shape covers each);
 		ask created { do die(); }
 	}
 

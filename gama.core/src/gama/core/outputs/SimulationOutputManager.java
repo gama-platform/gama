@@ -83,15 +83,16 @@ import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
 				+ "They are initialized in declaration order, once per owner/output instance, before the block's facets and child outputs. "
 				+ "Experiment-owned locals needed by layout facets are initialized during GUI preparation, after experiment attributes but before its init behavior. "
 				+ "Locals remain live across refreshes and inline remote callbacks; recreating the owner recreates their values. "
-				+ "Each display can declare private locals that shadow output locals. Ordinary initialization and assignment are supported; attribute update/function facets are not.",
+				+ "Displays use the enclosing output's locals and cannot declare their own persistent variables. "
+				+ "Ordinary initialization and assignment are supported; attribute update/function facets are not.",
 		usages = { @usage (
-				value = "Share output-local styling while keeping display-local colors private:",
+				value = "Declare presentation variables in the output for use by its displays:",
 				examples = @example (
 						value = """
 								output {
 								    font label_font <- font("Helvetica", 14);
+								    rgb accent <- #teal;
 								    display main background: accent {
-								        rgb accent <- #teal;
 								        graphics labels { draw "Hello" font: label_font color: accent; }
 								    }
 								}""",

@@ -5,21 +5,19 @@
 model Display_UI_Controls
 
 global {
-	float speed <- 25.0;
-	bool running <- true;
+
 }
 
 experiment "Overlay controls" type: gui {
+	float speed <- 25.0;
+	bool running <- true;
 	action reset_controls() {
 		speed <- 25.0;
 		running <- true;
 	}
 
-	output {
+	output of: experiment {
 		display "Controls" type: java2D {
-			graphics {
-				draw world.shape color: #lightgray;
-			}
 			overlay position: {16, 16} size: {240, 300} background: rgb(242, 247, 255, 190)
 				border: rgb(255, 255, 255, 225) rounded: true {
 				ui_button "Reset" at: {12, 12} size: {216, 28}

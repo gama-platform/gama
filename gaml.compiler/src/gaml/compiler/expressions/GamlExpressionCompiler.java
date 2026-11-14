@@ -12,6 +12,7 @@ package gaml.compiler.expressions;
 
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
@@ -22,6 +23,7 @@ import gama.api.GAMA;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -144,6 +146,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 				return compile(s.toString(), ctx.getContext(), context);
 			}
 			return compile(expression, ctx);
+		} catch (final OperationCanceledException | GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
 			if (parsingContext != null) {
 				parsingContext.error("An internal error occurred during expression compilation: " + e.getMessage());
@@ -183,6 +187,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 				CONSTANT_SYNTHETIC_EXPRESSIONS.put(expression, result);
 			}
 			return result;
+		} catch (final OperationCanceledException | GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
 			if (parsingContext != null) {
 				parsingContext
@@ -215,6 +221,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			final boolean compileArgValues) {
 		try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(command)) {
 			return new ExpressionCompilationSwitch(ctx).parseArguments(action, o, command, compileArgValues);
+		} catch (final OperationCanceledException | GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
 			if (command != null) {
 				command.error("An internal error occurred during argument compilation: " + e.getMessage());
@@ -239,6 +247,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		if (owner instanceof Expression ownerExpr && field instanceof Expression fieldExpr) {
 			try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(ownerExpr, fieldExpr, null);
+			} catch (final OperationCanceledException | GamaRuntimeException e) {
+				throw e;
 			} catch (final Exception e) {
 				if (parsingContext != null) {
 					parsingContext
@@ -267,6 +277,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		if (field instanceof Expression fieldExpr) {
 			try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(owner, fieldExpr, null);
+			} catch (final OperationCanceledException | GamaRuntimeException e) {
+				throw e;
 			} catch (final Exception e) {
 				if (parsingContext != null) {
 					parsingContext
@@ -313,6 +325,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			final gama.api.compilation.descriptions.ITypeDescription species = parsingContext.getTypeContext();
 			if (species == null) return null;
 			return sw.compileActionCallFromFacets(nameExpr, target, facets, species);
+		} catch (final OperationCanceledException | GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
 			if (parsingContext != null) {
 				parsingContext.error(

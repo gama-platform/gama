@@ -48,8 +48,8 @@ global {
 experiment Display
 {
 	parameter "Zoom" var: map_zoom  {
-		ask simulation  {do load_map();}
-		do update_outputs(true);
+		do load_map();
+		experiment.update_outputs(true);
 	}
 
 	output

@@ -44,7 +44,7 @@ public class UiControlDescription extends StatementWithChildrenDescription {
 				|| binding instanceof IVarExpression variable
 						&& variable.getOwner() instanceof TempVariableExpression
 						&& !(variable.getOwner() instanceof IVarExpression.Persistent)) {
-			error("var: cannot bind a temporary variable; use a persistent output/display local, model or experiment variable.");
+			error("var: cannot bind a temporary variable; use a persistent output local, model or experiment variable.");
 		}
 		visitFacets((name, expression) -> {
 			if ("action".equals(name) || "on_change".equals(name)) return true;

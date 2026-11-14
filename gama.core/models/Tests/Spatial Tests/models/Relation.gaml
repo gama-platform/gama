@@ -60,7 +60,7 @@ experiment RelationTests type: test {
 	}
 	test "distance_between" {
 		//distance_between with continuous topology
-		float distance <- topology(world) distance_between [dummy(9), dummy(8), dummy(1)];
+		float distance <- topology(simulation) distance_between [dummy(9), dummy(8), dummy(1)];
 		assert (distance with_precision 3)= 130.349;
 		
 		//distance_between with grid topology
@@ -82,17 +82,17 @@ experiment RelationTests type: test {
 	
 	test "path_between" {
 		//path_between with continuous topology
-		path the_path <- topology(world) path_between (dummy(9), dummy(8));
+		path the_path <- topology(simulation) path_between (dummy(9), dummy(8));
 		assert (the_path.shape.perimeter with_precision 3)= 56.613;
-		the_path <- topology(world) path_between [dummy(9), dummy(8), dummy(1)];
+		the_path <- topology(simulation) path_between [dummy(9), dummy(8), dummy(1)];
 		assert (the_path.shape.perimeter with_precision 3)= 130.349;
 		
 		//path_between with grid topology
-		ask world{the_path <-  topology(cell) path_between([dummy(9)]);}
+		ask simulation{the_path <-  topology(cell) path_between([dummy(9)]);}
 		assert the_path.weight = 0;
-		ask world{the_path <-  topology(cell) path_between([dummy(9), dummy(8)]);}
+		ask simulation{the_path <-  topology(cell) path_between([dummy(9), dummy(8)]);}
 		assert the_path.weight = 8;
-		ask world{the_path <-  topology(cell) path_between([dummy(9), dummy(8), dummy(1)]);}
+		ask simulation{the_path <-  topology(cell) path_between([dummy(9), dummy(8), dummy(1)]);}
 		assert the_path.weight = 18;
 		
 		//path_between on a grid with obstacles
@@ -102,7 +102,7 @@ experiment RelationTests type: test {
 		assert the_path.weight = 12;
 		the_path <- (cell where (each.color != #pink)) path_between (dummy(9), dummy(8));
 		assert the_path.weight = 12;
-		ask world{the_path <-  (cell where (each.color != #pink)) path_between([dummy(9), dummy(8), dummy(1)]);}
+		ask simulation{the_path <-  (cell where (each.color != #pink)) path_between([dummy(9), dummy(8), dummy(1)]);}
 		
 		assert the_path.weight = 23;
 		
@@ -113,7 +113,7 @@ experiment RelationTests type: test {
 		assert the_path.weight= 8;
 		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between (dummy(9), dummy(8));
 		assert the_path.weight= 8;
-		ask world{the_path <-  (cell as_map (each::(each.color = #pink ? 10.0 : 2.0)))  path_between([dummy(9), dummy(8), dummy(1)]);}
+		ask simulation{the_path <-  (cell as_map (each::(each.color = #pink ? 10.0 : 2.0)))  path_between([dummy(9), dummy(8), dummy(1)]);}
 		assert the_path.weight = 19;
 	}
 

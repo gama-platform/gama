@@ -14,7 +14,7 @@ experiment "Trail timing" type: test {
 			road <- 0.0;
 			food <- 0;
 		}
-		ant_grid trail <- ant_grid({gridsize - 10.0, gridsize / 2.0});
+		ant_grid trail <- ant_grid({simulation.gridsize - 10.0, simulation.gridsize / 2.0});
 		trail.road <- 1.0;
 		ant a <- ant (location: trail.location, speed: 0.0);
 		ask simulation { do _step_(); }
@@ -28,9 +28,9 @@ experiment "Trail timing" type: test {
 			road <- 0.0;
 			food <- 0;
 		}
-		ant_grid trail <- ant_grid({gridsize - 10.0, gridsize / 2.0});
+		ant_grid trail <- ant_grid({simulation.gridsize - 10.0, simulation.gridsize / 2.0});
 		create ant (location: trail.location, speed: 0.0, hasFood: true);
 		ask simulation { do _step_(); }
-		assert trail.road = 100.0 - evaporation_per_cycle;
+		assert trail.road = 100.0 - simulation.evaporation_per_cycle;
 	}
 }

@@ -52,7 +52,7 @@ experiment Run {
 			species eyes aspect: outside transparency: closed ? 0 : 0.5;
 			event #mouse_exit {
 				closed <- true;
-				do update_outputs();
+				experiment.update_outputs();
 			}
 
 			event #mouse_enter {

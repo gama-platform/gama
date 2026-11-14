@@ -57,13 +57,14 @@ species people skills: [moving] control: fsm {
 }
 
 experiment FirstModel type: gui {
-	map<string, rgb> colors <- ["S"::#green,"I"::#red,"R"::#blue];
+
 	parameter "Recovery time " var: recovery_time min: 10 max: 100 unit: "cycles";
 	parameter "Number of people" var: number_of_people min: 10 max: 2000;
 	parameter "Number of initially infected agents" var: number_of_infected min: 1 max: number_of_people;
 	parameter "Contact radius" var: contact_distance min: 1.0 max: 10.0 unit: #m;
 	
 	output {
+		map<string, rgb> colors <- ["S"::#green,"I"::#red,"R"::#blue];
 		display "My Display" type:2d{
 			species people {
 				draw circle(1) color: (state = "I")? #red : ((state="R") ? #blue : #green);

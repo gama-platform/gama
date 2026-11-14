@@ -144,8 +144,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 		final Facets copy = super.getFacetsCopy();
 		final IDescription enclosing = getEnclosingDescription();
 		if (copy != null && IKeyword.LET.equals(getKeyword()) && enclosing != null
-				&& (IKeyword.OUTPUT.equals(enclosing.getKeyword()) || IKeyword.PERMANENT.equals(enclosing.getKeyword())
-						|| IKeyword.DISPLAY.equals(enclosing.getKeyword()))) {
+				&& (IKeyword.OUTPUT.equals(enclosing.getKeyword()) || IKeyword.PERMANENT.equals(enclosing.getKeyword()))) {
 			// A declaring label is mutable: compiling the copy must not replace the parent's binding.
 			final IExpressionDescription name =
 					GAML.getExpressionDescriptionFactory().createLabel(getLitteral(IKeyword.NAME));

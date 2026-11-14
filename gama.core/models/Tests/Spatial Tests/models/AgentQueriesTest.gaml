@@ -10,13 +10,6 @@ model AgentQueriesTestModel
 
 global {
 	geometry shape <- square(100);
-}
-
-species dot { }
-
-species zone { }
-
-experiment AgentQueriesTest type: test autorun: true {
 
 	// four dots, the first two close to each other
 	dot dot_a;
@@ -68,7 +61,7 @@ experiment AgentQueriesTest type: test autorun: true {
 		list<zone> touching_main; list<zone> partially_overlapping_main; list<zone> overlapping_main;
 		list<zone> intersecting_main; list<zone> crossing_the_line; list<zone> covering_dot_a;
 		list<zone> covering_main; list<zone> touching_away; list<zone> overlapping_away;
-		using topology(world) {
+		using topology(self) {
 			touching_main <- zone touching main;
 			partially_overlapping_main <- zone partially_overlapping main;
 			overlapping_main <- zone overlapping main;
@@ -111,7 +104,7 @@ experiment AgentQueriesTest type: test autorun: true {
 	test "Queries among all the agents" {
 		list<agent> touching_main; list<agent> partially_overlapping_main; list<agent> crossing_the_line;
 		list<agent> covering_dot_a; list<agent> inside_main; list<agent> overlapping_main; list<agent> intersecting_main;
-		using topology(world) {
+		using topology(self) {
 			touching_main <- agents_touching(main);
 			partially_overlapping_main <- agents_partially_overlapping(main);
 			crossing_the_line <- agents_crossing(crossing_line);
@@ -133,7 +126,7 @@ experiment AgentQueriesTest type: test autorun: true {
 	test "Closest and farthest agents" {
 		dot closest_dot; dot farthest_dot; list<dot> two_closest_dots; zone closest_zone_to_a; zone closest_zone_to_far;
 		dot closest_in_list; agent closest_agent; agent farthest_agent;
-		using topology(world) {
+		using topology(self) {
 			closest_dot <- dot closest_to {49, 49};
 			farthest_dot <- dot farthest_to {0, 0};
 			two_closest_dots <- dot closest_to ({49, 49}, 2);
@@ -195,7 +188,7 @@ experiment AgentQueriesTest type: test autorun: true {
 
 	test "Clustering agents by distance" {
 		list<list<dot>> clusters <- [];
-		using topology(world) {
+		using topology(self) {
 			clusters <- list<list<dot>>(simple_clustering_by_distance(dot, 5));
 		}
 		assert length(clusters) = 3;
@@ -203,4 +196,12 @@ experiment AgentQueriesTest type: test autorun: true {
 		assert same_elements(pair_cluster, [dot_a, dot_b]);
 		assert clusters count (length(each) = 1) = 2;
 	}
+}
+
+species dot { }
+
+species zone { }
+
+experiment AgentQueriesTest type: test autorun: true {
+
 }

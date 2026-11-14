@@ -18,9 +18,8 @@ global {
 	geometry long_line <- line([{30,40},{70,55}]);
 	point pt_center <- {50,50};
 	point pt_0 <- {0,0};
-}
 
-experiment TopologyTests type: test {
+
 	test "Cover"{
 		assert (pt_0 covers pt_0);
 		assert not(pt_center covers pt_0);
@@ -92,7 +91,10 @@ experiment TopologyTests type: test {
 		assert not(poly_square touches poly_triangle);
 		assert not(poly_square touches poly_circle);
 	}
-} 
+
+}
+
+experiment TopologyTests type: test {} 
 
 experiment with_visualization type: gui {
 	output {

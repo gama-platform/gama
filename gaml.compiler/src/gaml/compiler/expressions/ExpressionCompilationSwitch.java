@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
@@ -56,6 +57,7 @@ import gama.api.compilation.factories.IExpressionDescriptionFactory;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -160,6 +162,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			final IExpression expr = doSwitch(s.eClass().getClassifierID(), s);
 			if (expr != null && context.getContext() != null) { context.getDocumentationContext().document(s, expr); }
 			return expr;
+		} catch (final OperationCanceledException | GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
 			if (context.getContext() != null) {
 				context.getContext().error("An internal error occurred while compiling expression: " + e.getMessage(),
@@ -1440,7 +1444,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 
 	@Override
 	public IExpression caseVarDefinition(final VarDefinition object) {
-		return skill(object.getName());
+		return caseVar(object.getName(), object);
 	}
 
 	@Override
