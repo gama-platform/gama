@@ -80,14 +80,16 @@ import gama.extension.batch.BatchAgent;
 						doc = @doc ("number of iterations per level of temperature")),
 				@facet (
 						name = IKeyword.MAXIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to maximize")),
+						doc = @doc ("the fitness expression to maximize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.MINIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to minimize")),
+						doc = @doc ("the fitness expression to minimize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.AGGREGATION,
 						type = IType.LABEL,
@@ -96,7 +98,7 @@ import gama.extension.batch.BatchAgent;
 						doc = @doc ("the agregation method")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm is an implementation of the Simulated Annealing algorithm. See the wikipedia article and [batch161 the batch dedicated page].",
+		value = "This algorithm is an implementation of the Simulated Annealing algorithm. See the wikipedia article and [batch161 the batch dedicated page]. Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "As other batch methods, the basic syntax of the annealing statement uses `method annealing` instead of the expected `annealing name: id` : ",
 				examples = { @example (
@@ -141,7 +143,6 @@ public class SimulatedAnnealing extends ALocalSearchAlgorithm {
 	 */
 	public SimulatedAnnealing(final IDescription species) {
 		super(species);
-		initParams();
 	}
 
 	// @Override

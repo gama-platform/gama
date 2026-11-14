@@ -74,7 +74,7 @@ experiment Terrain type: gui {
 	}
 	
 	user_command "Save" {
-		simulation.save_tif();
+		do save_tif();
 	}
 
 	

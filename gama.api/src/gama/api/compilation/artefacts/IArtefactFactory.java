@@ -287,4 +287,14 @@ public interface IArtefactFactory {
 				declaresNewTemp);
 	}
 
+	default IArtefact.Facet createFacetArtefact(final String name, final int[] types, final int contentType,
+			final int keyType, final String[] values, final boolean optional, final boolean internal,
+			final boolean isRemote, final boolean declaresNewTemp, final String[] specificTo, final String[] excludes,
+			final String[] requires, final gama.annotations.facet.Context context) {
+		if (context != gama.annotations.facet.Context.ENCLOSING)
+			throw new UnsupportedOperationException("This artefact factory does not support facet compilation contexts");
+		return createFacetArtefact(name, types, contentType, keyType, values, optional, internal, isRemote,
+				declaresNewTemp, specificTo, excludes, requires);
+	}
+
 }

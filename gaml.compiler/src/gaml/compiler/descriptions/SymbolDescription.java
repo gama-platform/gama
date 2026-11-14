@@ -35,6 +35,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.compilation.validation.Assert;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
@@ -1287,6 +1288,10 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 				// Some expressions might not be compiled
 				IExpression exp = compileExpression(facet, expr, fp);
 				if (exp != null && !isBuiltIn && !fp.isNewTemp()) {
+					if ((IKeyword.ASK.equals(getKeyword()) && IKeyword.TARGET.equals(facet))
+							|| (IKeyword.LOOP.equals(getKeyword()) && IKeyword.OVER.equals(facet))) {
+						Assert.populationIsAccessible(this, exp, expr.getTarget());
+					}
 					final IType<?> actualType = exp.getGamlType();
 					// Special case for init. Temporary solution before we can pass ITypeProvider.OWNER_TYPE to the init
 					// facet. Concerned types are point and date, which belong to "OrdinalAttributeDeclaration" and can
@@ -1349,7 +1354,15 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	}
 
 	/** Returns the evaluation context without changing this description's structural parent. */
-	protected IDescription getFacetCompilationContext(final String facet) { return this; }
+	protected IDescription getFacetCompilationContext(final String facet) {
+		final IArtefact.Facet prototype = artefact.getFacet(facet);
+		if (prototype == null || prototype.getCompilationContext() != gama.annotations.facet.Context.MODEL)
+			return this;
+		return new StatementDescription(getKeyword(), this, false, getUnderlyingElement(), null, null) {
+			@Override
+			public IDescription getEnclosingContext() { return getModelDescription(); }
+		};
+	}
 
 	/**
 	 * Compiles an expression for a facet, handling various special cases.
@@ -1436,8 +1449,9 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 				compatible = actualType.equals(definedType) && actualType.getKeyType().equals(keyType)
 						&& actualType.getContentType().equals(contentType)
 						|| !isNone && actualType.isTranslatableInto(definedType)
-								&& actualType.getKeyType().isTranslatableInto(keyType)
-								&& actualType.getContentType().isTranslatableInto(contentType);
+								&& (actualType.getKeyType().isTranslatableInto(keyType) || keyType == Types.NO_TYPE)
+								&& (actualType.getContentType().isTranslatableInto(contentType)
+										|| contentType == Types.NO_TYPE);
 			} else {
 				compatible = actualType.equals(definedType) || !isNone && actualType.isTranslatableInto(definedType);
 			}

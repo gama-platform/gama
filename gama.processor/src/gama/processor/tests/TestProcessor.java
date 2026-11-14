@@ -85,6 +85,16 @@ public class TestProcessor extends ElementProcessor<tests> {
 		for (final test test : tests.value()) { createTest(sb, e, test); }
 	}
 
+	/**
+	 * Creates the test.
+	 *
+	 * @param sb
+	 *            the sb
+	 * @param e
+	 *            the e
+	 * @param test
+	 *            the test
+	 */
 	private void createTest(final StringBuilder sb, final Element e, final test test) {
 		sb.append(ln).append(tab).append("test ").append(getTestName(determineName(e, test))).append(" {");
 		for (final String line : determineText(test).split(";")) {
@@ -102,12 +112,16 @@ public class TestProcessor extends ElementProcessor<tests> {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	public void writeTests(final Writer sb) throws IOException {
-		sb.append("experiment ").append(toJavaString("Tests for " + context.currentPlugin)).append(" type: test {");
+
+		sb.append("model ").append("tests_for_" + context.shortcut).append(ln).append(ln).append("global {").append(ln);
+
 		for (final StringBuilder tests : serializedElements.values()) {
 			sb.append(ln);
 			sb.append(tests);
 		}
 		sb.append(ln).append('}');
+		sb.append(ln).append("experiment ").append(toJavaString("Tests for " + context.currentPlugin))
+				.append(" type: test ;");
 		namesAlreadyUsed.clear();
 	}
 

@@ -9,25 +9,8 @@
 
 model StatementRobustnessTestModel
 
-species counter {
-	int value <- 0;
-}
-
-species victim {
-}
-
-species holder {
-	species inner {
-	}
-}
-
-species recursive_agent {
-	int depth(int n) {
-		return n <= 0 ? 0 : 1 + depth(n - 1);
-	}
-}
-
-experiment StatementRobustnessTest type: test autorun: true {
+global {
+	
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");
 	}
@@ -213,4 +196,25 @@ experiment StatementRobustnessTest type: test autorun: true {
 		}
 		assert problem contains "raised on purpose";
 	}
+	
 }
+
+species counter {
+	int value <- 0;
+}
+
+species victim {
+}
+
+species holder {
+	species inner {
+	}
+}
+
+species recursive_agent {
+	int depth(int n) {
+		return n <= 0 ? 0 : 1 + depth(n - 1);
+	}
+}
+
+experiment StatementRobustnessTest type: test autorun: true;

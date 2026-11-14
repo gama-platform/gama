@@ -570,8 +570,8 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	 *
 	 * <p>
 	 * The population is retrieved from the current agent in the scope. If the current agent doesn't directly contain a
-	 * population of this species, the method attempts to find it through the agent's hierarchy. This is particularly
-	 * useful for experiments accessing simulation populations.
+	 * population of this species, the method attempts to find it through the agent's hierarchy. Access to simulation
+	 * populations from an experiment requires an explicit simulation context.
 	 * </p>
 	 *
 	 * @param scope
@@ -583,8 +583,6 @@ public class GamlSpecies extends Symbol implements ISpecies {
 		final IAgent a = scope.getAgent();
 		IPopulation result = null;
 		if (a != null) {
-			// AD 19/09/13 Patch to allow experiments to gain access to the
-			// simulation populations
 			result = a.getPopulationFor(this);
 		}
 		return result;

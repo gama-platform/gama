@@ -7,15 +7,8 @@
 
 model AgentTestModel
 
-species basic_agent {
-	int my_value <- 10;
+global {
 	
-	action multiply(int factor) {
-		my_value <- my_value * factor;
-	}
-}
-
-experiment AgentTest type: test autorun: true {
 	
 	test "Agent Creation and Death" {
 		create basic_agent number: 5;
@@ -82,4 +75,15 @@ experiment AgentTest type: test autorun: true {
 		
 		ask ags { do die(); }
 	}
+	
 }
+
+species basic_agent {
+	int my_value <- 10;
+	
+	action multiply(int factor) {
+		my_value <- my_value * factor;
+	}
+}
+
+experiment AgentTest type: test autorun: true;

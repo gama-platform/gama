@@ -159,9 +159,10 @@ import gama.gaml.statements.LayoutStatement;
 						doc = @doc ("In the case of a batch experiment, expresses hom many times the simulations must be repeated")),
 				@facet (
 						name = IKeyword.UNTIL,
+						context = facet.Context.MODEL,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("In the case of a batch experiment, an expression that will be evaluated to know when a simulation should be terminated")),
+						doc = @doc ("In a batch experiment, an expression compiled in the model context and evaluated in each simulation to determine when it should be terminated. Use experiment.attribute to access experiment state explicitly.")),
 				@facet (
 						name = IKeyword.PARALLEL,
 						type = { IType.BOOL, IType.INT },
@@ -186,9 +187,10 @@ import gama.gaml.statements.LayoutStatement;
 						doc = @doc ("A container of agents (a species, a dynamic list, or a combination of species and containers) , which represents which agents will be actually scheduled when the population is scheduled for execution. For instance, 'species a schedules: (10 among a)' will result in a population that schedules only 10 of its own agents every cycle. 'species b schedules: []' will prevent the agents of 'b' to be scheduled. Note that the scope of agents covered here can be larger than the population, which allows to build complex scheduling controls; for instance, defining 'global schedules: [] {...} species b schedules: []; species c schedules: b + world; ' allows to simulate a model where the agents of b are scheduled first, followed by the world, without even having to create an instance of c.")),
 				@facet (
 						name = IKeyword.RECORD,
+						context = facet.Context.MODEL,
 						type = { IType.BOOL },
 						optional = true,
-						doc = @doc ("Cannot be used in batch experiments. Whether the simulations run by this experiment are recorded so that they be run backward. Boolean expression expected, which will be evaluated by simulations at each cycle, so that the recording can occur based on specific conditions (for instance 'every(10#cycles)'). A value of 'true' will record each step.")),
+						doc = @doc ("Cannot be used in batch experiments. Whether the simulations run by this experiment are recorded so that they can be run backward. The boolean expression is compiled in the model context and evaluated separately in each simulation when recording is considered (for example 'every(10#cycles)'). Use experiment.attribute for experiment state. A value of 'true' records each step.")),
 				@facet (
 						name = IKeyword.AUTORUN,
 						type = IType.BOOL,

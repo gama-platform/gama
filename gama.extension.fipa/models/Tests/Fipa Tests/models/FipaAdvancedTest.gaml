@@ -8,38 +8,8 @@
 
 model FipaAdvancedTestModel
 
-species communicator skills: [fipa] {
-	bool has_agreed <- false;
-	bool has_informed <- false;
-	bool has_proposed <- false;
-	bool has_accepted <- false;
-
-	// In the fipa_request protocol a request is first agreed to, and only then informed
-	reflex answer_requests {
-		loop msg over: copy(requests) {
-			do agree (message: msg, contents: ['ok']);
-			has_agreed <- true;
-			do inform (message: msg, contents: ['done']);
-			has_informed <- true;
-		}
-	}
-
-	reflex answer_cfps {
-		loop msg over: copy(cfps) {
-			do propose (message: msg, contents: [100.0]);
-			has_proposed <- true;
-		}
-	}
-
-	reflex answer_proposes {
-		loop msg over: copy(proposes) {
-			do accept_proposal (message: msg, contents: ['deal']);
-			has_accepted <- true;
-		}
-	}
-}
-
-experiment FipaAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "A request is delivered, agreed to, then informed" {
 		create communicator number: 2 returns: talkers;
@@ -327,4 +297,38 @@ experiment FipaAdvancedTest type: test autorun: true {
 		assert length(a1.agrees) = 1;
 		assert length(a1.informs) = 1;
 	}
+	
 }
+
+species communicator skills: [fipa] {
+	bool has_agreed <- false;
+	bool has_informed <- false;
+	bool has_proposed <- false;
+	bool has_accepted <- false;
+
+	// In the fipa_request protocol a request is first agreed to, and only then informed
+	reflex answer_requests {
+		loop msg over: copy(requests) {
+			do agree (message: msg, contents: ['ok']);
+			has_agreed <- true;
+			do inform (message: msg, contents: ['done']);
+			has_informed <- true;
+		}
+	}
+
+	reflex answer_cfps {
+		loop msg over: copy(cfps) {
+			do propose (message: msg, contents: [100.0]);
+			has_proposed <- true;
+		}
+	}
+
+	reflex answer_proposes {
+		loop msg over: copy(proposes) {
+			do accept_proposal (message: msg, contents: ['deal']);
+			has_accepted <- true;
+		}
+	}
+}
+
+experiment FipaAdvancedTest type: test autorun: true {}

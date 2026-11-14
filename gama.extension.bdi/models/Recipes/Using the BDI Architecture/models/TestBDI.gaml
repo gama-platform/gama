@@ -7,8 +7,8 @@
 
 model bdi_test
 
-species bdi_agent control: simple_bdi;
-experiment testBDI type: test autorun: true {
+global {
+	
 	setup {
 		create bdi_agent {
 			do add_belief(new_predicate("test1", ["loc"::{1,1}, "name"::"b1"]));
@@ -35,4 +35,8 @@ experiment testBDI type: test autorun: true {
 	
 	
 	
+	
 }
+
+species bdi_agent control: simple_bdi;
+experiment testBDI type: test autorun: true;

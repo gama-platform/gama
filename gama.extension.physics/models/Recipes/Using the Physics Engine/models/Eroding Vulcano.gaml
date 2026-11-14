@@ -96,13 +96,13 @@ species lava skills: [dynamic_body] {
 
 
 experiment "3D view" type: gui {
-	font title  <- font("Helvetica", 12, #bold);
+
 	parameter "Show inside structures (velocities and aabbs)" var: draw_inside <- false;
 	parameter "Better collision detection" var: accurate_collision_detection <- false;
 	parameter "Enable erosion" var: erosion <- false;
 	parameter "Show legend" var: show_legend <- true;
 	output {
-		
+		font title  <- font("Helvetica", 12, #bold);
 		display "3D" type: 3d axes: false background: #black camera:#from_up_front antialias: false {
 			graphics title {
 				if (show_legend) {

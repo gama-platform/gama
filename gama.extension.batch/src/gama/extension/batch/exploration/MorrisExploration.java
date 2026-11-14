@@ -77,9 +77,10 @@ import gama.extension.stats.sampling.Morris;
 						doc = @doc ("Number of level each trajectories is made of, can't be 1 / should be even - 4 by default")),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
+						context = facet.Context.MODEL,
 						type = IType.LIST,
 						optional = false,
-						doc = @doc ("The list of output variables to analyze through morris method")),
+						doc = @doc ("The list of output variables to analyze through morris method. Names refer to variables of each completed simulation")),
 				@facet (
 						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
@@ -102,7 +103,7 @@ import gama.extension.stats.sampling.Morris;
 						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris SAMPLING will be perform and saved in the corresponding file")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment",
+		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (

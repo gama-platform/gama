@@ -26,6 +26,7 @@ import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractPlaceHolderStatement;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
@@ -83,7 +84,7 @@ import gama.api.types.color.IColor;
 						declares_new_temp = true,
 						type = ITypeProvider.INFERRED_TYPE,
 						optional = false,
-						doc = @doc ("a new local variable containing the value given by the user")),
+						doc = @doc ("an existing compatible variable or a new local variable receiving the value given by the user")),
 				@facet (
 						name = IKeyword.AMONG,
 						type = IType.LIST,
@@ -122,6 +123,9 @@ public class UserInputStatement extends AbstractPlaceHolderStatement implements 
 	/** The slider. */
 	IExpression min, max, among, init, slider;
 
+	/** The returns. */
+	final IVarExpression returns;
+
 	/** The temp var. */
 	String tempVar;
 
@@ -139,6 +143,7 @@ public class UserInputStatement extends AbstractPlaceHolderStatement implements 
 		max = getFacet(IKeyword.MAX);
 		among = getFacet(IKeyword.AMONG);
 		slider = getFacet("slider");
+		returns = (IVarExpression) getFacet(IKeyword.RETURNS);
 		tempVar = getLiteral(IKeyword.RETURNS);
 	}
 
@@ -192,7 +197,14 @@ public class UserInputStatement extends AbstractPlaceHolderStatement implements 
 
 	@Override
 	protected Object privateExecuteIn(final IScope scope) {
-		scope.addVarWithValue(tempVar, currentValue);
+		if (returns != null) {
+			final boolean create = !(returns instanceof IVarExpression.Agent)
+					&& !(returns instanceof IVarExpression.Persistent) && scope.getExecutionContext() != null
+					&& !scope.getExecutionContext().hasTempVar(returns.getName());
+			returns.setVal(scope, currentValue, create);
+		} else {
+			scope.addVarWithValue(tempVar, currentValue);
+		}
 		return currentValue;
 	}
 

@@ -9,9 +9,16 @@
  ********************************************************************************************************/
 package gaml.compiler.formatting2;
 
-import org.eclipse.emf.ecore.EObject;
+import java.util.List;
+
+import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.formatting2.AbstractJavaFormatter;
 import org.eclipse.xtext.formatting2.IFormattableDocument;
+import org.eclipse.xtext.formatting2.ITextReplacer;
+import org.eclipse.xtext.formatting2.ITextReplacerContext;
+import org.eclipse.xtext.formatting2.internal.CommentReplacer;
+import org.eclipse.xtext.formatting2.internal.WhitespaceReplacer;
+import org.eclipse.xtext.formatting2.regionaccess.IComment;
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion;
 
 import com.google.inject.Inject;
@@ -32,23 +39,25 @@ import gaml.compiler.gaml.Parameter;
 import gaml.compiler.gaml.Point;
 import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Callable;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
 import gaml.compiler.gaml.S_Experiment;
+import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_Loop;
-import gaml.compiler.gaml.S_Method;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_Switch;
 import gaml.compiler.gaml.S_Try;
-import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StandaloneBlock;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.StandaloneExpression;
+import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.TypeInfo;
 import gaml.compiler.gaml.TypeRef;
 import gaml.compiler.gaml.Unary;
@@ -131,6 +140,22 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		doc.format(node.getExpr());
 	}
 
+	/**
+	 * Formats a {@link StandaloneExperiment} — a standalone experiment declaration used outside a full model.
+	 *
+	 * @param node
+	 *            the standalone experiment AST node
+	 * @param doc
+	 *            the formattable document
+	 */
+	protected void format(final StandaloneExperiment node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		for (final Facet f : node.getFacets()) {
+			doc.format(f);
+		}
+		if (node.getBlock() != null) { formatBlock(node.getBlock(), doc); }
+	}
+
 	// ════════════════════════════════════════════════════════════════════════════════════════
 	// MODEL & TOP-LEVEL
 	// ════════════════════════════════════════════════════════════════════════════════════════
@@ -144,7 +169,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>Two blank lines after the {@code model} keyword / model name.</li>
 	 * <li>One blank line after each {@code import} directive.</li>
-	 * <li>Comments are formatted according to single- and multi-line comment rules.</li>
 	 * <li>Recursively formats every pragma, every import and the model block.</li>
 	 * </ul>
 	 *
@@ -154,25 +178,25 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final Model model, final IFormattableDocument doc) {
+		//Recursively format pragmas
+		for (final Pragma p : model.getPragmas()) {
+			doc.format(p);
+			doc.append(p, it -> it.setNewLines(1, 1, 2));
+		}
 		// Two blank lines after the model name assignment
 		final ISemanticRegion nameRegion =
 				regionFor(model).assignment(ga.getModelAccess().getNameAssignment_1());
 		if (nameRegion != null) { doc.append(nameRegion, it -> it.setNewLines(2)); }
-		// Format imports: one blank line after each
-		for (final Import imp : model.getImports()) {
+		// Format imports: 1 newline between consecutive imports, 2 newlines after the last import
+		final List<Import> imports = model.getImports();
+		for (int i = 0; i < imports.size(); i++) {
+			final Import imp = imports.get(i);
 			doc.format(imp);
-			final ISemanticRegion impRegion =
-					regionFor(imp).assignment(ga.getImportAccess().getImportURIAssignment_1());
-			if (impRegion != null) { doc.append(impRegion, it -> it.setNewLines(1)); }
-		}
-		// Recursively format pragmas
-		for (final Pragma p : model.getPragmas()) {
-			doc.format(p);
+			final int nl = i == imports.size() - 1 ? 2 : 1;
+			doc.append(imp, it -> it.setNewLines(nl, nl, 2));
 		}
 		// Recursively format the model block
 		doc.format(model.getBlock());
-		// Comment formatting – applied globally
-		formatComments(model, doc);
 	}
 
 	/**
@@ -185,8 +209,15 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final Pragma node, final IFormattableDocument doc) {
-		// No space between '@' and name — default Xtext behaviour covers this
-		if (node.getPlugins() != null) { doc.format(node.getPlugins()); }
+		final ISemanticRegion at = regionFor(node).keyword("@");
+		if (at != null) { doc.append(at, it -> it.noSpace()); }
+		if (node.getPlugins() != null) {
+			final ISemanticRegion lb = regionFor(node).keyword("[");
+			final ISemanticRegion rb = regionFor(node).keyword("]");
+			if (lb != null) { doc.surround(lb, it -> it.noSpace()); }
+			if (rb != null) { doc.prepend(rb, it -> it.noSpace()); }
+			doc.format(node.getPlugins());
+		}
 	}
 
 	/**
@@ -224,6 +255,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Species node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -248,6 +280,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Experiment node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -260,7 +293,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 
 	/**
 	 * Formats a generic {@link Statement} (fallback for any statement not otherwise specialised).
-	 * Formats each facet and the inner block when present.
+	 * Formats its expression, each facet, the terminating semicolon, and the inner block when present.
 	 *
 	 * @param node
 	 *            the statement AST node
@@ -268,6 +301,11 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final Statement node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		if (node.getExpr() != null) {
+			doc.prepend(node.getExpr(), it -> it.oneSpace());
+			doc.format(node.getExpr());
+		}
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -275,14 +313,15 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	}
 
 	/**
-	 * Formats an {@link S_Do} statement ({@code do} or {@code invoke}).
+	 * Formats an {@link S_Do} statement ({@code do}, {@code invoke}, or {@code target.action(...);}).
 	 *
 	 * <p>
 	 * Rules applied:
 	 * </p>
 	 * <ul>
+	 * <li>No space around the dot in action-call syntax ({@code target.action();}).</li>
 	 * <li>No space before the terminating semicolon.</li>
-	 * <li>Recursively formats each facet.</li>
+	 * <li>Recursively formats target, expression, and each facet.</li>
 	 * </ul>
 	 *
 	 * @param node
@@ -291,10 +330,17 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Do node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).keyword(ga.getS_DoAccess().getSemicolonKeyword_3()), it -> it.noSpace());
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		if (node.getTarget() != null) {
+			doc.format(node.getTarget());
+			final ISemanticRegion dot = regionFor(node).keyword(".");
+			if (dot != null) { doc.surround(dot, it -> it.noSpace()); }
+		}
+		if (node.getExpr() != null) { doc.format(node.getExpr()); }
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
+		if (node.getBlock() != null) { formatBlock(node.getBlock(), doc); }
 	}
 
 	/**
@@ -314,6 +360,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Loop node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -338,12 +385,19 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_If node, final IFormattableDocument doc) {
-		doc.format(node.getExpr());
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		if (node.getExpr() != null) {
+			doc.prepend(node.getExpr(), it -> it.oneSpace());
+			doc.format(node.getExpr());
+		}
 		if (node.getBlock() != null) { formatBlock(node.getBlock(), doc); }
 		if (node.getElse() != null) {
 			// No line-wrap before 'else' — keep it on the same line as the closing brace
-			doc.prepend(regionFor(node).keyword(ga.getS_IfAccess().getElseKeyword_3_0()),
-					it -> it.setNewLines(0));
+			doc.prepend(regionFor(node).keyword(ga.getS_IfAccess().getElseKeyword_3_0()), it -> {
+				it.setNewLines(0);
+				it.oneSpace();
+			});
+			doc.prepend(node.getElse(), it -> it.oneSpace());
 			doc.format(node.getElse());
 		}
 	}
@@ -365,10 +419,13 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Try node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
 		if (node.getBlock() != null) { formatBlock(node.getBlock(), doc); }
 		if (node.getCatch() != null) {
-			doc.prepend(regionFor(node).keyword(ga.getS_TryAccess().getCatchKeyword_2_0()),
-					it -> it.setNewLines(0));
+			doc.prepend(regionFor(node).keyword(ga.getS_TryAccess().getCatchKeyword_2_0()), it -> {
+				it.setNewLines(0);
+				it.oneSpace();
+			});
 			formatBlock(node.getCatch(), doc);
 		}
 	}
@@ -390,7 +447,10 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Switch node, final IFormattableDocument doc) {
-		doc.format(node.getExpr());
+		if (node.getExpr() != null) {
+			doc.prepend(node.getExpr(), it -> it.oneSpace());
+			doc.format(node.getExpr());
+		}
 		if (node.getBlock() != null) { formatBlock(node.getBlock(), doc); }
 	}
 
@@ -411,8 +471,11 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Return node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).keyword(ga.getS_ReturnAccess().getSemicolonKeyword_2()), it -> it.noSpace());
-		if (node.getExpr() != null) { doc.format(node.getExpr()); }
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		if (node.getExpr() != null) {
+			doc.prepend(node.getExpr(), it -> it.oneSpace());
+			doc.format(node.getExpr());
+		}
 	}
 
 	/**
@@ -432,39 +495,43 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Definition node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).keyword(ga.getS_DefinitionAccess().getSemicolonKeyword_3()),
-				it -> it.noSpace());
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
 		if (node.getTkey() != null) { doc.format(node.getTkey()); }
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
+		if (node.getBlock() != null) { formatBlock(node.getBlock(), doc); }
 	}
 
 	/**
-	 * Formats an {@link S_Method} typed action definition (e.g. {@code int toto(int a) { … }}).
+	 * Formats an {@link S_Callable} action or method definition (e.g. {@code action foo(int a) { … }} or
+	 * {@code int toto(int a) { … }}).
 	 *
 	 * <p>
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
-	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
-	 * <li>No space before the opening parenthesis {@code (}.</li>
-	 * <li>No space before the closing parenthesis {@code )}.</li>
+	 * <li>One blank line before/after the declaration is inserted by the enclosing
+	 *     {@link #formatBlock}.</li>
+	 * <li>No space around the opening parenthesis {@code (} or before the closing parenthesis {@code )}.</li>
+	 * <li>Comma spacing between argument definitions.</li>
 	 * <li>Each argument definition and each facet are formatted recursively.</li>
 	 * <li>The inner block is formatted with indentation.</li>
 	 * </ul>
 	 *
 	 * @param node
-	 *            the method definition AST node
+	 *            the callable definition AST node
 	 * @param doc
 	 *            the formattable document
 	 */
-	protected void format(final S_Method node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).keyword(ga.getS_MethodAccess().getLeftParenthesisKeyword_3()),
-				it -> it.noSpace());
-		doc.prepend(regionFor(node).keyword(ga.getS_MethodAccess().getRightParenthesisKeyword_5()),
-				it -> it.noSpace());
+	protected void format(final S_Callable node, final IFormattableDocument doc) {
+		doc.surround(regionFor(node).keyword("("), it -> it.noSpace());
+		doc.prepend(regionFor(node).keyword(")"), it -> it.noSpace());
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		for (final ISemanticRegion comma : regionFor(node).keywords(",")) {
+			doc.prepend(comma, it -> it.noSpace());
+			doc.append(comma, it -> it.oneSpace());
+		}
 		if (node.getTkey() != null) { doc.format(node.getTkey()); }
 		for (final ArgumentDefinition arg : node.getArgs()) {
 			doc.format(arg);
@@ -476,12 +543,13 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	}
 
 	/**
-	 * Formats an {@link S_Assignment} statement (e.g. {@code my_var <- 5;}).
+	 * Formats an {@link S_Assignment} statement (e.g. {@code my_var <- 5;} or {@code f(x) = y;}).
 	 *
 	 * <p>
 	 * Rules applied:
 	 * </p>
 	 * <ul>
+	 * <li>One space around the assignment operator ({@code <-}, {@code =}, {@code <<}, etc.).</li>
 	 * <li>No space before the terminating semicolon.</li>
 	 * <li>The left-hand side expression, the right-hand side value and all facets are formatted recursively.</li>
 	 * </ul>
@@ -492,12 +560,11 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Assignment node, final IFormattableDocument doc) {
-		// No space before the trailing ';'
-		for (final ISemanticRegion sc : allRegionsFor(node).keywords(";")) {
-			doc.prepend(sc, it -> it.noSpace());
-		}
-		doc.format(node.getExpr());
-		doc.format(node.getValue());
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		final ISemanticRegion op = regionFor(node).feature(GamlPackage.Literals.FACETS_AND_BLOCK__KEY);
+		if (op != null) { doc.surround(op, it -> it.oneSpace()); }
+		if (node.getExpr() != null) { doc.format(node.getExpr()); }
+		if (node.getValue() != null) { doc.format(node.getValue()); }
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -510,10 +577,10 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
-	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
+	 * <li>One blank line before/after the declaration is inserted by the enclosing
+	 *     {@link #formatBlock}.</li>
 	 * <li>The inner {@code {…}} braces are indented with the same rules as a regular block.</li>
-	 * <li>Each facet is formatted recursively.</li>
+	 * <li>Each facet and inner equation is formatted recursively.</li>
 	 * </ul>
 	 *
 	 * @param node
@@ -525,18 +592,26 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
-		// Opening brace
-		final ISemanticRegion open =
-				regionFor(node).keyword(ga.getS_EquationsAccess().getLeftCurlyBracketKeyword_3_0_0());
-		// Closing brace
-		final ISemanticRegion close =
-				regionFor(node).keyword(ga.getS_EquationsAccess().getRightCurlyBracketKeyword_3_0_2());
+		final ISemanticRegion open = regionFor(node).keyword("{");
+		final ISemanticRegion close = regionFor(node).keyword("}");
 		if (open != null && close != null) {
+			doc.prepend(open, it -> it.oneSpace());
 			doc.append(open, it -> it.newLine());
 			doc.interior(open, close, it -> it.indent());
 			if (open.getNextHiddenRegion() != close.getPreviousHiddenRegion()) {
 				doc.prepend(close, it -> it.newLine());
 			}
+			for (final ISemanticRegion sc : regionFor(node).keywords(";")) {
+				doc.prepend(sc, it -> it.noSpace());
+				if (sc.getNextHiddenRegion() != close.getPreviousHiddenRegion()) {
+					doc.append(sc, it -> it.setNewLines(1, 1, 2));
+				}
+			}
+			for (final S_Assignment eq : node.getEquations()) {
+				doc.format(eq);
+			}
+		} else {
+			doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
 		}
 	}
 
@@ -547,7 +622,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Each facet is formatted recursively.</li>
+	 * <li>The equation reference and each facet are formatted recursively.</li>
 	 * <li>The inner block (if present) is formatted with indentation.</li>
 	 * </ul>
 	 *
@@ -557,6 +632,11 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Solve node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		if (node.getExpr() != null) {
+			doc.prepend(node.getExpr(), it -> it.oneSpace());
+			doc.format(node.getExpr());
+		}
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -593,8 +673,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
-	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
+	 * <li>One blank line before/after the declaration is inserted by the enclosing
+	 *     {@link #formatBlock}.</li>
 	 * <li>Each facet is formatted recursively.</li>
 	 * <li>The inner block is formatted with indentation.</li>
 	 * </ul>
@@ -605,6 +685,11 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Reflex node, final IFormattableDocument doc) {
+		doc.prepend(regionFor(node).keyword(";"), it -> it.noSpace());
+		if (node.getExpr() != null) {
+			doc.prepend(node.getExpr(), it -> it.oneSpace());
+			doc.format(node.getExpr());
+		}
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -629,70 +714,51 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	}
 
 	/**
-	 * Shared helper that applies block-level spacing rules to any {@link Block} node.
-	 *
-	 * <p>
-	 * Specifically:
-	 * </p>
-	 * <ul>
-	 * <li>A newline after the opening {@code {}.</li>
-	 * <li>Indentation of the interior between the braces.</li>
-	 * <li>A newline before the closing {@code }} in non-empty blocks; empty blocks
-	 *     share the opening brace's newline rule.</li>
-	 * <li>Each statement inside the block is recursively formatted, with a newline before it.</li>
-	 * </ul>
-	 *
-	 * <p>
-	 * No rule is set <em>after</em> the closing {@code }} to avoid a
-	 * {@code ConflictingRegionsException}: when blocks are nested, the hidden region immediately
-	 * following an inner {@code }} is the same region that immediately precedes the outer {@code }},
-	 * and both an {@code append} on the inner close-brace and a {@code prepend} on the outer
-	 * close-brace would target it simultaneously.
-	 * </p>
-	 *
-	 * @param block
-	 *            the block to format; must not be {@code null}
-	 * @param doc
-	 *            the formattable document
+	 * Returns {@code true} if {@code s} has an associated statement or equation block.
 	 */
-	/**
-	 * Returns {@code true} if {@code s} is a "major" declaration that should be separated from
-	 * its neighbours by two blank lines (one blank line = two newlines).
-	 *
-	 * @param s the statement to test
-	 * @return {@code true} for {@link S_Reflex}, {@link S_Species}, {@link S_Experiment},
-	 *         {@link S_Method} and {@link S_Equations}
-	 */
-	private static boolean isMajorDeclaration(final Statement s) {
-		return s instanceof S_Reflex || s instanceof S_Species || s instanceof S_Experiment
-				|| s instanceof S_Method || s instanceof S_Equations;
+	private static boolean hasBlock(final Statement s) {
+		return s.getBlock() != null || s instanceof S_Equations eq && !eq.getEquations().isEmpty();
 	}
 
 	/**
-	 * Shared helper that applies block-level spacing rules to any {@link Block} node.
+	 * Returns {@code true} if {@code s} is a block-bodied statement or a major declaration that should be
+	 * separated from its neighbours by one blank line (two newlines).
+	 *
+	 * @param s the statement to test
+	 * @return {@code true} if {@code s} should be separated by a blank line
+	 */
+	private static boolean isMajorDeclaration(final Statement s) {
+		if (hasBlock(s)) return true;
+		if (s instanceof S_Species)
+			return !(s.eContainer() instanceof Block b && b.eContainer() instanceof S_Display);
+		return s instanceof S_Global || s instanceof S_Reflex || s instanceof S_Experiment
+				|| s instanceof S_Callable || s instanceof S_Equations;
+	}
+
+	/**
+	 * Shared helper that applies block-level spacing rules to any {@link Block} node
+	 * ({@code Block}, {@code DisplayBlock}, {@code MatchBlock}, or {@code ModelBlock}).
 	 *
 	 * <p>Rules applied:</p>
 	 * <ul>
-	 * <li>A newline after the opening {@code {}.</li>
+	 * <li>One space before and a newline after the opening {@code {}.</li>
 	 * <li>Indentation of the interior between the braces via {@code doc.interior()}.</li>
 	 * <li>A newline before the closing {@code }} in non-empty blocks; empty blocks
 	 *     share the opening brace's newline rule.</li>
-	 * <li>Two blank lines (i.e. {@code setNewLines(2)}) are inserted <em>between</em> statements
-	 *     whenever the next or the previous statement is a major declaration, by appending to the
-	 *     hidden region <em>after</em> the preceding statement. The {@code append} direction avoids
-	 *     any conflict with the {@code interior} rule, which writes to regions from the
-	 *     {@code prepend} side.</li>
+	 * <li>A newline between consecutive statements, or two newlines (one blank line) whenever
+	 *     either adjacent statement is a major declaration.</li>
 	 * </ul>
 	 *
 	 * @param block the block to format; must not be {@code null}
 	 * @param doc   the formattable document
 	 */
 	private void formatBlock(final Block block, final IFormattableDocument doc) {
-		final ISemanticRegion openBrace =
-				regionFor(block).keyword(ga.getBlockAccess().getLeftCurlyBracketKeyword_1());
-		final ISemanticRegion closeBrace =
-				regionFor(block).keyword(ga.getBlockAccess().getRightCurlyBracketKeyword_2_1());
+		final ISemanticRegion openBrace = regionFor(block).keyword("{");
+		final ISemanticRegion closeBrace = regionFor(block).keyword("}");
 		if (openBrace != null && closeBrace != null) {
+			if (openBrace.getPreviousSemanticRegion() != null) {
+				doc.prepend(openBrace, it -> it.oneSpace());
+			}
 			doc.append(openBrace, it -> it.newLine());
 			doc.interior(openBrace, closeBrace, it -> it.indent());
 			// Empty blocks have only one hidden region between the braces.
@@ -701,19 +767,15 @@ public class GamlFormatter extends AbstractJavaFormatter {
 			}
 		}
 
-		final java.util.List<Statement> stmts = block.getStatements();
+		final List<Statement> stmts = block.getStatements();
 		for (int i = 0; i < stmts.size(); i++) {
 			final Statement s = stmts.get(i);
-			// Insert extra blank line *after* the previous statement when the current or the
-			// previous one is a major declaration. We use append (not prepend) so we never touch
-			// the same region that interior() has already written a prepend rule onto.
 			if (i > 0) {
 				final Statement prev = stmts.get(i - 1);
 				if (isMajorDeclaration(s) || isMajorDeclaration(prev)) {
-					final ISemanticRegion prevClose = regionFor(prev).keyword("}");
-					if (prevClose != null) {
-						doc.append(prevClose, it -> it.setNewLines(2));
-					}
+					doc.append(prev, it -> it.setNewLines(2, 2, 2));
+				} else {
+					doc.append(prev, it -> it.setNewLines(1, 1, 2));
 				}
 			}
 			doc.format(s);
@@ -731,6 +793,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
+	 * <li>One space before the facet and after its key.</li>
 	 * <li>The facet expression is formatted recursively.</li>
 	 * <li>An inner block (e.g. action facet) is formatted with indentation.</li>
 	 * </ul>
@@ -741,6 +804,10 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final Facet facet, final IFormattableDocument doc) {
+		doc.prepend(facet, it -> it.oneSpace());
+		final ISemanticRegion keyRegion = regionFor(facet).feature(GamlPackage.Literals.FACET__KEY);
+		if (keyRegion != null) { doc.append(keyRegion, it -> it.oneSpace()); }
+		doc.prepend(regionFor(facet).keyword(";"), it -> it.noSpace());
 		if (facet.getExpr() != null) { doc.format(facet.getExpr()); }
 		if (facet.getBlock() != null) { formatBlock(facet.getBlock(), doc); }
 	}
@@ -795,7 +862,13 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	protected void format(final BinaryOperator node, final IFormattableDocument doc) {
 		final ISemanticRegion opRegion =
 				regionFor(node).feature(GamlPackage.Literals.BINARY_OPERATOR__OP);
-		if (opRegion != null) { doc.surround(opRegion, it -> it.oneSpace()); }
+		if (opRegion != null) {
+			if ("::".equals(node.getOp())) {
+				doc.surround(opRegion, it -> it.noSpace());
+			} else {
+				doc.surround(opRegion, it -> it.oneSpace());
+			}
+		}
 		doc.format(node.getLeft());
 		doc.format(node.getRight());
 	}
@@ -808,7 +881,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * </p>
 	 * <ul>
 	 * <li>One space before and after the {@code ?} operator.</li>
-	 * <li>One space before the {@code :} separator.</li>
+	 * <li>One space before and after the {@code :} separator.</li>
 	 * <li>Left, right and ifFalse sub-expressions are formatted recursively.</li>
 	 * </ul>
 	 *
@@ -823,7 +896,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		if (qm != null) { doc.surround(qm, it -> it.oneSpace()); }
 		final ISemanticRegion colon =
 				regionFor(node).keyword(ga.getIfAccess().getColonKeyword_1_3_0());
-		if (colon != null) { doc.prepend(colon, it -> it.oneSpace()); }
+		if (colon != null) { doc.surround(colon, it -> it.oneSpace()); }
 		doc.format(node.getLeft());
 		doc.format(node.getRight());
 		if (node.getIfFalse() != null) { doc.format(node.getIfFalse()); }
@@ -895,7 +968,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>No space before the {@code [} or {@code .} operator.</li>
+	 * <li>No space before or after the {@code [} or {@code .} operator.</li>
 	 * <li>No space before the closing {@code ]}.</li>
 	 * <li>The left and right sub-expressions are formatted recursively.</li>
 	 * </ul>
@@ -909,10 +982,9 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		// op is '[' or '.'
 		final ISemanticRegion op =
 				regionFor(node).feature(GamlPackage.Literals.ACCESS__OP);
-		if (op != null) { doc.prepend(op, it -> it.noSpace()); }
-		// closing ']'
-		final ISemanticRegion closeBracket =
-				regionFor(node).keyword(ga.getAccessAccess().getRightSquareBracketKeyword_1_1_0_2());
+		if (op != null) { doc.surround(op, it -> it.noSpace()); }
+		// closing ']' (in both Access and ActionCallTarget)
+		final ISemanticRegion closeBracket = regionFor(node).keyword("]");
 		if (closeBracket != null) { doc.prepend(closeBracket, it -> it.noSpace()); }
 		doc.format(node.getLeft());
 		if (node.getRight() != null) { doc.format(node.getRight()); }
@@ -954,6 +1026,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>No space after the opening {@code {}.</li>
 	 * <li>No space before the closing {@code }}.</li>
+	 * <li>No space before and one space after each {@code ,}.</li>
 	 * <li>The coordinate expressions are formatted recursively.</li>
 	 * </ul>
 	 *
@@ -969,6 +1042,10 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		final ISemanticRegion close =
 				regionFor(node).keyword(ga.getPrimaryAccess().getRightCurlyBracketKeyword_4_6());
 		if (close != null) { doc.prepend(close, it -> it.noSpace()); }
+		for (final ISemanticRegion comma : regionFor(node).keywords(",")) {
+			doc.prepend(comma, it -> it.noSpace());
+			doc.append(comma, it -> it.oneSpace());
+		}
 		doc.format(node.getLeft());
 		doc.format(node.getRight());
 		if (node.getZ() != null) { doc.format(node.getZ()); }
@@ -981,7 +1058,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>No space before the opening {@code (}.</li>
+	 * <li>No space around the opening {@code (}.</li>
 	 * <li>No space before the closing {@code )}.</li>
 	 * <li>The argument list (right) and the optional type info are formatted recursively.</li>
 	 * </ul>
@@ -994,7 +1071,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	protected void format(final Function node, final IFormattableDocument doc) {
 		final ISemanticRegion lp =
 				regionFor(node).keyword(ga.getFunctionAccess().getLeftParenthesisKeyword_3());
-		if (lp != null) { doc.prepend(lp, it -> it.noSpace()); }
+		if (lp != null) { doc.surround(lp, it -> it.noSpace()); }
 		final ISemanticRegion rp =
 				regionFor(node).keyword(ga.getFunctionAccess().getRightParenthesisKeyword_5());
 		if (rp != null) { doc.prepend(rp, it -> it.noSpace()); }
@@ -1003,12 +1080,14 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	}
 
 	/**
-	 * Formats an {@link ExpressionList} (comma-separated list of expressions or parameters).
+	 * Formats an {@link ExpressionList} (comma-separated list of expressions or parameters, or a
+	 * parenthesized expression).
 	 *
 	 * <p>
 	 * Rules applied:
 	 * </p>
 	 * <ul>
+	 * <li>No space after an enclosing {@code (} or before an enclosing {@code )}.</li>
 	 * <li>No space before each {@code ,}.</li>
 	 * <li>One space after each {@code ,}.</li>
 	 * <li>Each contained expression / parameter is formatted recursively.</li>
@@ -1020,7 +1099,13 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final ExpressionList node, final IFormattableDocument doc) {
-		for (final ISemanticRegion comma : allRegionsFor(node).keywords(",")) {
+		final ISemanticRegion lp =
+				regionFor(node).keyword(ga.getPrimaryAccess().getLeftParenthesisKeyword_2_0());
+		if (lp != null) { doc.append(lp, it -> it.noSpace()); }
+		final ISemanticRegion rp =
+				regionFor(node).keyword(ga.getPrimaryAccess().getRightParenthesisKeyword_2_2());
+		if (rp != null) { doc.prepend(rp, it -> it.noSpace()); }
+		for (final ISemanticRegion comma : regionFor(node).keywords(",")) {
 			doc.prepend(comma, it -> it.noSpace());
 			doc.append(comma, it -> it.oneSpace());
 		}
@@ -1078,6 +1163,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>No space before the opening {@code <}.</li>
 	 * <li>No space after the opening {@code <}.</li>
+	 * <li>No space before and one space after {@code ,}.</li>
 	 * <li>No space before the closing {@code >}.</li>
 	 * <li>The contained type references are formatted recursively.</li>
 	 * </ul>
@@ -1090,9 +1176,12 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	protected void format(final TypeInfo node, final IFormattableDocument doc) {
 		final ISemanticRegion lt =
 				regionFor(node).keyword(ga.getTypeInfoAccess().getLessThanSignKeyword_0());
-		if (lt != null) {
-			doc.prepend(lt, it -> it.noSpace());
-			doc.append(lt, it -> it.noSpace());
+		if (lt != null) { doc.surround(lt, it -> it.noSpace()); }
+		final ISemanticRegion comma =
+				regionFor(node).keyword(ga.getTypeInfoAccess().getCommaKeyword_2_0());
+		if (comma != null) {
+			doc.prepend(comma, it -> it.noSpace());
+			doc.append(comma, it -> it.oneSpace());
 		}
 		final ISemanticRegion gt =
 				regionFor(node).keyword(ga.getTypeInfoAccess().getGreaterThanSignKeyword_3());
@@ -1102,33 +1191,25 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	}
 
 	// ════════════════════════════════════════════════════════════════════════════════════════
-	// COMMENT HANDLING (applied globally from the model root)
+	// COMMENT HANDLING
 	// ════════════════════════════════════════════════════════════════════════════════════════
 
 	/**
-	 * Applies comment-formatting rules to the whole document starting from the given root.
-	 *
-	 * <p>
-	 * Rules applied:
-	 * </p>
-	 * <ul>
-	 * <li>0–1–2 newlines before single-line ({@code //}) comments.</li>
-	 * <li>0–1–2 newlines before multi-line ({@code /* … *\/}) comments.</li>
-	 * <li>0–1 newlines after multi-line comments.</li>
-	 * </ul>
-	 *
-	 * @param root
-	 *            the root AST node from which hidden-region iteration starts
-	 * @param doc
-	 *            the formattable document on which comment rules are set
+	 * Creates a comment replacer that indents single-line ({@code //}) comments according to their
+	 * enclosing block (even if they originally started at column 0) while preserving their internal text.
 	 */
-	private void formatComments(final EObject root, final IFormattableDocument doc) {
-		for (final ISemanticRegion region : allRegionsFor(root).keywords("//")) {
-			doc.prepend(region, it -> it.setNewLines(0, 1, 2));
-		}
-		for (final ISemanticRegion region : allRegionsFor(root).keywords("/*")) {
-			doc.prepend(region, it -> it.setNewLines(0, 1, 2));
-			doc.append(region, it -> it.setNewLines(0, 1, 1));
-		}
+	@Override
+	public ITextReplacer createCommentReplacer(final IComment comment) {
+		if (comment.getGrammarElement() instanceof AbstractRule rule && rule.getName().startsWith("SL"))
+			return new CommentReplacer(comment) {
+				@Override
+				public ITextReplacerContext createReplacements(final ITextReplacerContext context) {
+					return context;
+				}
+
+				@Override
+				public void configureWhitespace(final WhitespaceReplacer leading, final WhitespaceReplacer trailing) {}
+			};
+		return super.createCommentReplacer(comment);
 	}
 }

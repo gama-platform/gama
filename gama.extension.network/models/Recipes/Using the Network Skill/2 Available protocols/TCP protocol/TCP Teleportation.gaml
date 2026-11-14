@@ -115,8 +115,8 @@ experiment start {
 
 	init {
 		int nb_simul <- 3;
-		simulation_id <- 0;
-		seed <- 1.0;
+		simulation.simulation_id <- 0;
+		simulation.seed <- 1.0;
 		loop i from: 1 to: nb_simul - 1 {
 			create simulation(simulation_id:i, seed:1 + i, numberOfSimulation:nb_simul);
 		}

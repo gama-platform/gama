@@ -104,7 +104,7 @@ experiment "Test it !" type: gui {
 	float minimum_cycle_duration <- 1.0 / 120;
 	parameter "Impulse" var: ball_impulse;
 
-	user_command "  Reset balls" color: rgb(133, 177, 205) {
+	user_command "  Reset balls" color: rgb(133, 177, 205) of: experiment {
 		ask simulations {
 			ask ball { do die(); }
 			ball_hits <- 0;

@@ -26,8 +26,8 @@ import org.eclipse.core.runtime.Platform;
 
 import gama.annotations.doc;
 import gama.annotations.example;
-import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
+import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.tests;
@@ -59,39 +59,35 @@ import gama.core.util.CommandContext;
 import gama.core.util.CommandProcessManager;
 
 /**
- * Provides GAML system-level and introspection operators for the GAMA modeling and simulation
- * platform. The operators defined here cover the following families:
+ * Provides GAML system-level and introspection operators for the GAMA modeling and simulation platform. The operators
+ * defined here cover the following families:
  *
  * <ul>
- *   <li><b>Agent lifecycle:</b> {@code dead}, {@code copy} — query agent liveness and create
- *       deep copies of GAML values. The related operators {@code pause} and {@code halt} are
- *       defined elsewhere in the GAML kernel.</li>
- *   <li><b>Type introspection:</b> {@code type_of}, {@code species_of}, {@code is_skill},
- *       {@code is_number} — operators that inspect the runtime type or species of a value, or
- *       test whether a string names a numeric type. These operators are defined in the GAML
- *       type-system and casting utilities.</li>
- *   <li><b>String / value conversion:</b> {@code string}, {@code int}, {@code float},
- *       {@code bool} casts and {@code eval_gaml} — convert values between GAML types or
- *       evaluate a GAML expression supplied as a string at runtime. Defined in the GAML
- *       casting operators.</li>
- *   <li><b>Error handling:</b> {@code is_error}, {@code is_warning} — wrap any GAML
- *       sub-expression and return whether its evaluation raised a runtime error or warning,
- *       without propagating the exception to the caller.</li>
- *   <li><b>I/O &amp; simulation control:</b> {@code user_input_dialog}, {@code user_confirm},
- *       {@code wizard}, {@code wizard_page}, {@code enter}, {@code choose}, {@code command}
- *       — open interactive dialogs to collect user input during a running experiment, or
- *       execute a system shell command and capture its output.</li>
- *   <li><b>Networking:</b> {@code is_reachable} — probe whether a remote host:port is
- *       reachable within a given timeout (milliseconds).</li>
- *   <li><b>Miscellaneous:</b> {@code play_sound}, {@code copy_to_clipboard},
- *       {@code copy_from_clipboard} — audio playback and system clipboard integration.
- *       {@code file_exists} and {@code copy_between} (which delegates to
- *       {@link gama.gaml.operators.Strings}) are defined in related operator classes.</li>
+ * <li><b>Agent lifecycle:</b> {@code dead}, {@code copy} — query agent liveness and create deep copies of GAML values.
+ * The related operators {@code pause} and {@code halt} are defined elsewhere in the GAML kernel.</li>
+ * <li><b>Type introspection:</b> {@code type_of}, {@code species_of}, {@code is_skill}, {@code is_number} — operators
+ * that inspect the runtime type or species of a value, or test whether a string names a numeric type. These operators
+ * are defined in the GAML type-system and casting utilities.</li>
+ * <li><b>String / value conversion:</b> {@code string}, {@code int}, {@code float}, {@code bool} casts and
+ * {@code eval_gaml} — convert values between GAML types or evaluate a GAML expression supplied as a string at runtime.
+ * Defined in the GAML casting operators.</li>
+ * <li><b>Error handling:</b> {@code is_error}, {@code is_warning} — wrap any GAML sub-expression and return whether its
+ * evaluation raised a runtime error or warning, without propagating the exception to the caller.</li>
+ * <li><b>I/O &amp; simulation control:</b> {@code user_input_dialog}, {@code user_confirm}, {@code wizard},
+ * {@code wizard_page}, {@code enter}, {@code choose}, {@code command} — open interactive dialogs to collect user input
+ * during a running experiment, or execute a system shell command and capture its output.</li>
+ * <li><b>Networking:</b> {@code is_reachable} — probe whether a remote host:port is reachable within a given timeout
+ * (milliseconds).</li>
+ * <li><b>Miscellaneous:</b> {@code play_sound}, {@code copy_to_clipboard}, {@code copy_from_clipboard} — audio playback
+ * and system clipboard integration. {@code file_exists} and {@code copy_between} (which delegates to
+ * {@link gama.gaml.operators.Strings}) are defined in related operator classes.</li>
  * </ul>
  *
- * <p><b>Note on automated tests:</b> Many operators in this class are annotated with
- * {@code @no_test} because they require an active simulation, a running experiment, or a
- * graphical UI context that cannot be provided by the automated unit-test harness.</p>
+ * <p>
+ * <b>Note on automated tests:</b> Many operators in this class are annotated with {@code @no_test} because they require
+ * an active simulation, a running experiment, or a graphical UI context that cannot be provided by the automated
+ * unit-test harness.
+ * </p>
  *
  * @author drogoul
  * @see gama.gaml.operators.Strings
@@ -133,7 +129,7 @@ public class System {
 					isExecutable = false))
 	@test ("dead(nil)")
 	@test ("dead(agent(nil))")
-	@test ("not(dead(simulation))")
+	@test ("not(dead(self))")
 	public static Boolean opDead(final IScope scope, final IAgent a) {
 		return a == null || a.dead();
 	}
@@ -158,19 +154,16 @@ public class System {
 					"is_error evaluates the expression in a try-catch manner; if an error is raised, it returns true without propagating the error.",
 					"Only thrown failures are detected. This operator does not enable GAML try mode, force report-only recovery paths to throw, or itself update #current_error. Evaluating the expression can have side effects.",
 					"is_error(1/0) = true (integer division by zero is an error in GAML)." })
-	@tests ({
-			@test ("!is_error(1.0 = 1)"),
-			@test ("is_error(1/0)"),
-			@test ("!is_error(1/1)"),
-			@test ("is_error(10 / 0)"),
-			@test ("is_error(date(\"not a date\"))")
-	})
+	@tests ({ @test ("!is_error(1.0 = 1)"), @test ("is_error(1/0)"), @test ("!is_error(1/1)"),
+			@test ("is_error(10 / 0)"), @test ("is_error(date(\"not a date\"))") })
 	public static Boolean is_error(final IScope scope, final IExpression expr) {
 		try {
 			expr.value(scope);
 		} catch (final GamaRuntimeException e) {
 			return !e.isWarning();
-		} catch (final Exception e1) {return true;}
+		} catch (final Exception e1) {
+			return true;
+		}
 		return false;
 	}
 
@@ -325,8 +318,7 @@ public class System {
 	@doc (
 			value = "Returns whether or not the given web address is reachable or not before a time_out time in milliseconds. Uses port 80 (HTTP) by default.",
 			returns = "a {@code bool}: {@code true} if a TCP connection to the given host on port 80 can be established within the timeout; {@code false} otherwise.",
-			special_cases = {
-					"Uses port 80 (HTTP) by default for the TCP connection check.",
+			special_cases = { "Uses port 80 (HTTP) by default for the TCP connection check.",
 					"Returns false if the host is unreachable, the port is closed, or the DNS lookup fails." },
 			examples = { @example (
 					value = "write sample(is_reachable(\"www.google.com\", 200));",

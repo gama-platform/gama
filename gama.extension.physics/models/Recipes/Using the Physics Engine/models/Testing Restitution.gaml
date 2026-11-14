@@ -104,13 +104,13 @@ experiment "Test Restitution !" type: gui {
 	float minimum_cycle_duration <- 1.0 / 60;
 	parameter "Impulse" var: ball_impulse;
 
-	user_command "  Move balls" color: rgb(133, 177, 205) {
+	user_command "  Move balls" color: rgb(133, 177, 205) of: experiment{
 		ask simulations {
 			ask ball { do apply(impulse: ball_impulse); }
 		}
 	}
 
-	user_command "  Reset balls" color: rgb(218, 157, 164) {
+	user_command "  Reset balls" color: rgb(218, 157, 164) of: experiment {
 		ask simulations {
 			ask ball { do die(); }
 			ball_hits <- 0;

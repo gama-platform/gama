@@ -368,50 +368,35 @@ experiment Graph type: gui {
 	float minimum_cycle_duration <- 1#s;
 	text "You have to play the simulation model in order to build and play with network";
 	user_command "Accessing/modifying graphs" {
-		ask simulation {
 			do access_and_modify_edge_and_node();
-		}
-
 	}
 
 	user_command "Connectivity of node and edge" {
-		ask simulation {
 			do connectivity_of_node_and_edge();
-		}
-
 	}
 
 	user_command "Connectivity of graph" {
-		ask simulation {
 			do connectivity_of_graph();
-		}
-
 	}
 
 	user_command "Layout graph" {
-		ask simulation {
 			do layout_graph();
-		}
-
 	}
 
 	user_command "Path with graph" {
-		ask simulation {
 			do path_finding_graph();
-		}
-
 	}
 
 	user_command "Create graphs" {
-		simulation.the_path <- nil;
-		switch simulation.graph_generator {
-			match "Random" { ask simulation {do random();} }
-			match "Scall-free" { ask simulation { do scale_free(); } }
-			match "Small-simulation" { ask simulation { do small_simulation(); } }
-			match "Complete" { ask simulation { do complete(); } }
-			match "Distance" { ask simulation { do from_nodes(); } }
-			match "Intersection" { ask simulation { do from_polygons(); } }
-			match "Grid" { ask simulation { do grid_graph(av_degree); } }
+	the_path <- nil;
+		switch graph_generator {
+			match "Random" {do random();} 
+			match "Scall-free" {do scale_free(); } 
+			match "Small-simulation" {do small_simulation(); } 
+			match "Complete" {do complete(); } 
+			match "Distance" { do from_nodes(); } 
+			match "Intersection" {do from_polygons(); } 
+			match "Grid" {do grid_graph(av_degree); } 
 		}
 
 	}

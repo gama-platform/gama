@@ -295,6 +295,9 @@ public class SymbolProcessor extends ElementProcessor<symbol> {
 		}
 		toArrayOfStrings(exclusions.toArray(new String[0]), sb).append(',');
 		toArrayOfStrings(child.requires(), sb);
+		if (child.context() != facet.Context.ENCLOSING) {
+			sb.append(",gama.annotations.facet.Context.").append(child.context().name());
+		}
 
 		verifyDoc(e, "facet " + child.name(), child);
 		sb.append(')');

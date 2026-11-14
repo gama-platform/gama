@@ -13,6 +13,8 @@
 | [Part 1](#part-1-whats-new-and-why-it-matters) | What's new and why it matters |
 | [Part 2](#part-2-migration-reference) | Step-by-step migration reference |
 | [Presentation variables](#presentation-variables-in-experiments-migrate-to-output-locals) | Output locals, ownership, lifetime and inheritance |
+| [Experiment and simulation ownership](#experiment-and-simulation-ownership) | Populations, commands and batch facet contexts |
+| [Facet compilation contexts](#facet-compilation-contexts-for-plugin-developers) | Declaring and implementing model-context facets |
 
 ---
 
@@ -67,6 +69,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Attribute brackets also support ordinary species | `species[attribute]` reads a typed list; assigning a list requires exactly one element per current agent |
 | Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
 | Explicit output owners and persistent presentation locals (draft PR) | Keep model/controller state as attributes; move output-only styling into `output` instead of relying on implicit experiment lookup |
+| Explicit experiment/simulation contexts (unreleased) | Select a simulation before accessing its populations; review command owners and batch facet name resolution |
 
 ## Engine, UI, and Graphics
 
@@ -368,6 +371,63 @@ Work through each section that applies to your plugin. Each section is self-cont
 
 These changes affect `.gaml` model files. Simple syntax replacements can often be applied globally;
 changes involving ownership, state or presentation variables require reviewing their uses.
+
+### Experiment and simulation ownership
+
+**Development status:** these changes are unreleased. The experiment is not the owner of its
+simulations' ordinary species populations. Replace an implicit experiment-side creation or lookup
+with an explicit simulation target:
+
+```gaml
+// Before: implicitly used the current simulation from experiment code.
+init {
+    create dummy number: 9;
+    agents <- list(dummy);
+}
+
+// After: select the simulation; qualify the experiment-owned destination.
+init {
+    ask simulation {
+        create dummy number: 9;
+        experiment.agents <- list(dummy);
+    }
+}
+```
+
+Select a particular simulation from `simulations` if the current one is not the intended target,
+and account for `simulation = nil` when no simulation exists. The compiler diagnoses known
+experiment-side population uses, including `length(dummy)`, `empty(dummy)`, iteration, indexing
+and conversion to a list. A species name can still be used as a type or species value; population
+access through a dynamically determined species can instead fail at runtime. Directly imported
+comodel experiments remain a supported, distinct creation case.
+
+Commands declared directly in an experiment now use `of: simulation` by default, just like
+parameters. Add `of: experiment` when the command's unqualified actions, attributes or block
+belong to the experiment:
+
+```gaml
+// Previously ran in the experiment; make that ownership explicit.
+user_command "Pause" of: experiment { do pause; }
+
+// Operates on one current simulation, not on all simulations.
+user_command "Update model" of: simulation { do update_model; }
+```
+
+There is no automatic action/name fallback between owners. In particular, the legacy `action:`
+fallback from an experiment to a global action on **all** simulations has been removed. Explicitly
+iterate over the desired simulations if that behavior is required. Commands in global, a species
+or a user panel retain their existing context; `monitor` has not acquired `of:`.
+
+Review batch expressions too: `until:`, `record:`, and method `minimize:`/`maximize:` use model
+name resolution and the appropriate simulation scope; other method configuration facets use
+experiment context. `record:` is ignored in batch experiments. Method `outputs:` contains
+simulation attribute names, not arbitrary computed expressions. Use explicit `experiment.name`
+for experiment state in a simulation-context expression. If model and experiment both define the
+same name, an unqualified model-context expression selects the model attribute.
+
+The [experiment guide](EXPERIMENT_AGENT.md#experiment-and-simulation-contexts) gives complete
+examples, behavior before a simulation exists, multi-simulation semantics and compatibility
+details. Plugin authors should also read [facet compilation contexts](#facet-compilation-contexts-for-plugin-developers).
 
 ### Presentation variables in experiments: migrate to output locals
 
@@ -1061,6 +1121,82 @@ use the new metadata. Custom implementations/callers of `IArtefactFactory.create
 must pass the new `declaresNewTemp` boolean; custom facet artefacts must expose their raw
 content/key descriptors through `getContentTypeProvider()` and `getKeyTypeProvider()`.
 Ordinary expression facets keep `declares_new_temp = false` (the default).
+
+---
+
+### Facet compilation contexts for plugin developers
+
+The `context` member of `@facet` declares **where an expression is compiled**:
+
+```java
+import gama.annotations.facet;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.types.IType;
+
+@facet(name = IKeyword.MINIMIZE, type = IType.FLOAT, optional = true,
+       context = facet.Context.MODEL)
+```
+
+`ENCLOSING` is the default and preserves the ordinary enclosing context. `MODEL`
+resolves names and species-relative types against the enclosing model while
+retaining the declaration's structural parent. It is per facet: do not switch
+an entire batch method to the model context, because its configuration facets
+are experiment expressions. `MODEL` does not mean “whatever simulation is
+currently selected”, and is not an implicit `ask` or a runtime scope switch.
+`CALLER` and `CALLEE` are not currently supported values.
+
+The annotation processor passes non-default context metadata through
+`AbstractGamlAdditions` and `IArtefactFactory` into `IArtefact.Facet`; the
+compiler's `SymbolDescription.getFacetCompilationContext` uses it when
+compiling ordinary expression facets. Labels are handled as labels, not as
+ordinary compiled expressions. `IDescription.getEnclosingDescription()` is
+still the structural parent; `getEnclosingContext()` controls expression
+lookup and typing. Do not change structural ancestry merely to resolve a
+facet against a model. `remote_context` is a different mechanism: it describes
+the target of a remote statement and its `self`/`myself` relationship.
+
+The symbol implementation is responsible for matching runtime evaluation to
+the declared compilation context. For result facets, use the scope of the
+specific simulation whose result is being collected, not the experiment scope
+or a global/frontmost scope. The batch implementation evaluates fitness and
+reads tracked attributes on the completed simulation's thread and scope.
+`outputs:` extracts names from its list entries; it is not a general expression
+evaluator. The experiment's `until:` and `record:` use the same `MODEL`
+metadata, but are evaluated at their respective stop and recording points.
+
+Optimization configuration is initialized with the batch experiment scope
+through `initializeFor`, rather than the globally current scope during
+construction. This occurs before the experiment's GAML `init` behavior; do not
+rely on values assigned there when initializing those configuration facets.
+Overrides of `initializeFor` must preserve the superclass initialization.
+
+Rebuild the annotation processor and regenerate the declaring bundle's GAML
+contributions after changing facet metadata. Existing factories and facet
+artefacts default to `ENCLOSING`; a custom `IArtefactFactory` must implement
+the context-aware overload and return a facet whose `getCompilationContext()`
+reports `MODEL` when it supports that context. The default overload explicitly
+rejects unsupported non-default contexts instead of silently compiling them as
+`ENCLOSING`. Inspect generated contributions when diagnosing incremental
+annotation processing.
+
+Experiment `user_command` ownership is a separate, dynamic-by-declaration
+rule: `of:` changes the command description's enclosing lookup context, its
+body and its passed arguments. Its structural parent stays the experiment.
+At runtime, dispatch on the selected owner and use that owner's scope; preserve
+caller arguments when crossing scopes. The parameters panel dispatches on the
+selected experiment or simulation executor. A simulation-scoped invocation
+retains that simulation; an experiment-scoped invocation resolves the current
+simulation. Do not iterate over all simulations as an implicit fallback.
+
+Likewise, `ExperimentAgent.getPopulationFor` no longer forwards ordinary
+model-species requests to its current simulation or fabricates an empty
+population. It still handles its simulation population and directly imported
+comodel-experiment populations. Resolve an ordinary population through the
+intended simulation agent; `SimulationAgent.getPopulationFor` preserves the
+simulation's species resolution. A known invalid `create` is rejected by
+`CreateStatement` validation, but dynamic requests still need the runtime
+guard. See the [experiment guide](EXPERIMENT_AGENT.md#experiment-and-simulation-contexts)
+for model-facing behavior and compatibility.
 
 ---
 

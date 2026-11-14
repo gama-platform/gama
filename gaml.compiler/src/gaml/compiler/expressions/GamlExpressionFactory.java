@@ -38,6 +38,7 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.factories.IExpressionFactory;
+import gama.api.compilation.validation.Assert;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
@@ -50,6 +51,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
@@ -1095,6 +1097,15 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		// Validate that artefact is an operator and passes validation rules
 		if (artefact instanceof OperatorArtefact proto
 				&& proto.getValidator().validate(context, currentEObject, exprs)) {
+			final Signature signature = proto.getSignature();
+			for (int i = 0; i < exprs.length && i < signature.size(); i++) {
+				final IType<?> parameter = signature.get(i);
+				if ((parameter.isContainer() && parameter.id() != IType.SPECIES)
+						|| (i == 0 && proto.isVarOrField() && parameter.id() == IType.SPECIES
+								&& ISpecies.POPULATION.equals(proto.getName()))) {
+					Assert.populationIsAccessible(context, exprs[i], currentEObject);
+				}
+			}
 			if (proto.isVarOrField() && context != null) {
 				final String deprecationMessage = proto.getDeprecated();
 				if (deprecationMessage != null) {

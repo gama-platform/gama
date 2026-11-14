@@ -7,6 +7,91 @@
 
 model RelationTest
 
+global {
+	
+	test "distance_to" {
+		//distance_to with continuous topology
+		float distance <- dummy(8) distance_to dummy(8);
+		assert (distance)= 0;
+		distance <- dummy(8) distance_to dummy(9);
+		assert (distance with_precision 3)= 56.613;
+		
+		//distance_to with grid topology
+		using topology(cell) {distance <- dummy(8) distance_to dummy(8);}
+		assert distance = 0.0;
+		using topology(cell) {distance <- dummy(8) distance_to dummy(9);}
+		assert distance = 7.0;
+		
+		//distance_between with continuous topology
+		
+	}
+	test "distance_between" {
+		//distance_between with continuous topology
+		float distance <- topology(self) distance_between [dummy(9), dummy(8), dummy(1)];
+		assert (distance with_precision 3)= 130.349;
+		
+		//distance_between with grid topology
+		distance <-topology(cell) distance_between [dummy(9), dummy(8), dummy(1)];
+		assert distance = 17.0;
+	}
+	
+	test "path_to" {
+		//path_to with continuous topology
+		path the_path <- dummy(8) path_to dummy(9);
+		assert (the_path.shape.perimeter with_precision 3)= 56.613;
+		
+		//path_to with grid topology
+		using topology(cell) {the_path <- dummy(8) path_to dummy(9);}
+		assert the_path.weight = 8.0;
+		
+		
+	}
+	
+	test "path_between" {
+		//path_between with continuous topology
+		path the_path <- topology(self) path_between (dummy(9), dummy(8));
+		assert (the_path.shape.perimeter with_precision 3)= 56.613;
+		the_path <- topology(self) path_between [dummy(9), dummy(8), dummy(1)];
+		assert (the_path.shape.perimeter with_precision 3)= 130.349;
+		
+		//path_between with grid topology
+		the_path <-  topology(cell) path_between([dummy(9)]);
+		assert the_path.weight = 0;
+		the_path <-  topology(cell) path_between([dummy(9), dummy(8)]);
+		assert the_path.weight = 8;
+		the_path <-  topology(cell) path_between([dummy(9), dummy(8), dummy(1)]);
+		assert the_path.weight = 18;
+		
+		//path_between on a grid with obstacles
+		the_path <- (cell where (each.color != #pink)) path_between ([dummy(9)]);
+		assert the_path.weight = 0;
+		the_path <- (cell where (each.color != #pink)) path_between ([dummy(9), dummy(8)]);
+		assert the_path.weight = 12;
+		the_path <- (cell where (each.color != #pink)) path_between (dummy(9), dummy(8));
+		assert the_path.weight = 12;
+		the_path <-  (cell where (each.color != #pink)) path_between([dummy(9), dummy(8), dummy(1)]);
+		
+		assert the_path.weight = 23;
+		
+		//path_between on a grid with weighted cells
+		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between ([dummy(9)]);
+		assert the_path.weight= 0;
+		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between ([dummy(9), dummy(8)]);
+		assert the_path.weight= 8;
+		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between (dummy(9), dummy(8));
+		assert the_path.weight= 8;
+		the_path <-  (cell as_map (each::(each.color = #pink ? 10.0 : 2.0)))  path_between([dummy(9), dummy(8), dummy(1)]);
+		assert the_path.weight = 19;
+	}
+
+	test "towards" {
+		float angle <- dummy(8) towards dummy(9);
+		angle <- angle > 0 ? angle  : (360.0 + angle);
+		assert angle = 305.65532809790034;
+	}
+	
+}
+
 species dummy {
 	rgb color <- #yellow;
 	aspect default {
@@ -41,88 +126,7 @@ global {
 		}
 	}
 }
-experiment RelationTests type: test {
-	test "distance_to" {
-		//distance_to with continuous topology
-		float distance <- dummy(8) distance_to dummy(8);
-		assert (distance)= 0;
-		distance <- dummy(8) distance_to dummy(9);
-		assert (distance with_precision 3)= 56.613;
-		
-		//distance_to with grid topology
-		using topology(cell) {distance <- dummy(8) distance_to dummy(8);}
-		assert distance = 0.0;
-		using topology(cell) {distance <- dummy(8) distance_to dummy(9);}
-		assert distance = 7.0;
-		
-		//distance_between with continuous topology
-		
-	}
-	test "distance_between" {
-		//distance_between with continuous topology
-		float distance <- topology(simulation) distance_between [dummy(9), dummy(8), dummy(1)];
-		assert (distance with_precision 3)= 130.349;
-		
-		//distance_between with grid topology
-		distance <-topology(cell) distance_between [dummy(9), dummy(8), dummy(1)];
-		assert distance = 17.0;
-	}
-	
-	test "path_to" {
-		//path_to with continuous topology
-		path the_path <- dummy(8) path_to dummy(9);
-		assert (the_path.shape.perimeter with_precision 3)= 56.613;
-		
-		//path_to with grid topology
-		using topology(cell) {the_path <- dummy(8) path_to dummy(9);}
-		assert the_path.weight = 8.0;
-		
-		
-	}
-	
-	test "path_between" {
-		//path_between with continuous topology
-		path the_path <- topology(simulation) path_between (dummy(9), dummy(8));
-		assert (the_path.shape.perimeter with_precision 3)= 56.613;
-		the_path <- topology(simulation) path_between [dummy(9), dummy(8), dummy(1)];
-		assert (the_path.shape.perimeter with_precision 3)= 130.349;
-		
-		//path_between with grid topology
-		ask simulation{the_path <-  topology(cell) path_between([dummy(9)]);}
-		assert the_path.weight = 0;
-		ask simulation{the_path <-  topology(cell) path_between([dummy(9), dummy(8)]);}
-		assert the_path.weight = 8;
-		ask simulation{the_path <-  topology(cell) path_between([dummy(9), dummy(8), dummy(1)]);}
-		assert the_path.weight = 18;
-		
-		//path_between on a grid with obstacles
-		the_path <- (cell where (each.color != #pink)) path_between ([dummy(9)]);
-		assert the_path.weight = 0;
-		the_path <- (cell where (each.color != #pink)) path_between ([dummy(9), dummy(8)]);
-		assert the_path.weight = 12;
-		the_path <- (cell where (each.color != #pink)) path_between (dummy(9), dummy(8));
-		assert the_path.weight = 12;
-		ask simulation{the_path <-  (cell where (each.color != #pink)) path_between([dummy(9), dummy(8), dummy(1)]);}
-		
-		assert the_path.weight = 23;
-		
-		//path_between on a grid with weighted cells
-		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between ([dummy(9)]);
-		assert the_path.weight= 0;
-		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between ([dummy(9), dummy(8)]);
-		assert the_path.weight= 8;
-		the_path <- (cell as_map (each::(each.color = #pink ? 10.0 : 2.0))) path_between (dummy(9), dummy(8));
-		assert the_path.weight= 8;
-		ask simulation{the_path <-  (cell as_map (each::(each.color = #pink ? 10.0 : 2.0)))  path_between([dummy(9), dummy(8), dummy(1)]);}
-		assert the_path.weight = 19;
-	}
-
-	test "towards" {
-		float angle <- dummy(8) towards dummy(9);
-		angle <- angle > 0 ? angle  : (360.0 + angle);
-		assert angle = 305.65532809790034;
-	}
-} 
+experiment RelationTests type: test ;
 
 experiment with_visualization type: gui {
 	output {

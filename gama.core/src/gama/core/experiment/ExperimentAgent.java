@@ -28,7 +28,6 @@ import gama.annotations.experiment;
 import gama.annotations.species;
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.constants.Generators;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
@@ -77,7 +76,6 @@ import gama.core.experiment.parameters.ParametersSet;
 import gama.core.experiment.tools.ActionExecuter;
 import gama.core.experiment.tools.ExperimentClock;
 import gama.core.outputs.ExperimentOutputManager;
-import gama.core.population.GamaPopulation;
 import gama.core.population.InternalPopulationFactory;
 import gama.core.simulation.SimulationPopulation;
 import gama.dev.DEBUG;
@@ -1080,21 +1078,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public IPopulation<? extends IAgent> getPopulationFor(final ISpecies species) {
 		if (species == getModel()) return getSimulationPopulation();
-		final ISimulationAgent sim = getSimulation();
-		if (sim == null) return createEmptyPopulation(species);
-		// Issue #3983
-		final IModelDescription micro = species.getDescription().getModelDescription();
-		final IModelDescription main = this.getModel().getDescription();
-		if (main.getMicroModel(micro.getMicroAlias()) == null) return sim.getPopulationFor(species.getName());
-		return sim.getPopulationFor(species);
-	}
-
-	/**
-	 * @param species
-	 * @return
-	 */
-	private IPopulation<? extends IAgent> createEmptyPopulation(final ISpecies species) {
-		return new GamaPopulation<>(null, species);
+		if (species instanceof IExperimentSpecies) {
+			final String alias = species.getDescription().getModelDescription().getMicroAlias();
+			return getExternMicroPopulationFor(alias + "." + species.getName());
+		}
+		throw GamaRuntimeException.error("The population of " + species.getName()
+				+ " belongs to a simulation. Access it in an explicit simulation context, for example "
+				+ "ask simulation { ... }.", ownScope);
 	}
 
 	/**

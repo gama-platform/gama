@@ -55,6 +55,7 @@ import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.factories.IExpressionDescriptionFactory;
 import gama.api.compilation.factories.IExpressionFactory;
+import gama.api.compilation.validation.Assert;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -228,6 +229,12 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 */
 	private IExpression casting(final IType type, final IExpression toCast, final Expression typeObject) {
 		if (toCast == null) return null;
+		if (type.isContainer() && type.id() != IType.SPECIES && type.id() != IType.CONTAINER) {
+			Assert.populationIsAccessible(context.getContext(), toCast, typeObject);
+		} else if (type.isAgentType() && (toCast.getGamlType().id() == IType.INT
+				|| toCast.getGamlType().id() == IType.POINT)) {
+			Assert.populationIsAccessible(context.getContext(), type.getSpecies(), typeObject);
+		}
 
 		final IType castingType = type.typeIfCasting(toCast);
 		final TypeParameters typeParams = extractTypeParameters(typeObject, castingType);
@@ -1074,6 +1081,9 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			final IExpression attribute = speciesAttribute(container, reference, false);
 			if (attribute != null) return attribute;
 		}
+		if (contType.id() == IType.SPECIES) {
+			Assert.populationIsAccessible(context.getContext(), container, object);
+		}
 		try (final Collector.AsList<IExpression> result = Collector.getList()) {
 			final int size = list.size();
 
@@ -1132,6 +1142,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (species == null || !species.hasAttribute(name)) return null;
 		final IExpression attribute = species.getVarExpr(name, true);
 		if (!(attribute instanceof IVarExpression variable)) return null;
+		Assert.populationIsAccessible(context.getContext(), container, reference);
 		context.getDocumentationContext().document(reference, attribute);
 		return assignment ? new SpeciesAttributeExpression.Assignment(container, variable)
 				: new SpeciesAttributeExpression(container, variable);

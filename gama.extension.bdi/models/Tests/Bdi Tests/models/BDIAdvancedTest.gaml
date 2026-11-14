@@ -7,22 +7,8 @@
 
 model BDIAdvancedTestModel
 
-species advanced_bdi_agent control: simple_bdi {
-	bool desire_added <- false;
-	bool plan_executed <- false;
+global {
 	
-	perceive target: advanced_bdi_agent {
-		// Just a dummy perception
-		focus id: "other_agent" var: location;
-	}
-	
-	plan my_plan intention: new_predicate("test_desire") {
-		plan_executed <- true;
-		do remove_intention(new_predicate("test_desire"), true);
-	}
-}
-
-experiment BDIAdvancedTest type: test autorun: true {
 	
 	test "BDI Desires and Intentions" {
 		create advanced_bdi_agent number: 1 returns: created_agents;
@@ -51,4 +37,22 @@ experiment BDIAdvancedTest type: test autorun: true {
 		}
 		assert has_b = true;
 	}
+	
 }
+
+species advanced_bdi_agent control: simple_bdi {
+	bool desire_added <- false;
+	bool plan_executed <- false;
+	
+	perceive target: advanced_bdi_agent {
+		// Just a dummy perception
+		focus id: "other_agent" var: location;
+	}
+	
+	plan my_plan intention: new_predicate("test_desire") {
+		plan_executed <- true;
+		do remove_intention(new_predicate("test_desire"), true);
+	}
+}
+
+experiment BDIAdvancedTest type: test autorun: true ;

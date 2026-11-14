@@ -87,13 +87,16 @@ species child_agent { }
 experiment SchedulingTest type: test autorun: true {
 
 	test "A freshly created agent has not run yet" {
-		create default_agent number: 1 returns: created_agents;
+		list<default_agent> created_agents;
+		ask simulation {create default_agent number: 1 returns: created_agents;}
 		assert created_agents[0].run_count = 0;
 		ask created_agents { do die(); }
 	}
 
 	test "Stepping the simulation runs the reflexes of its agents" {
-		create default_agent number: 3 returns: created_agents;
+		list<default_agent> created_agents;
+		ask simulation {
+		create default_agent number: 3 returns: created_agents;}
 		ask simulation { do _step_(); }
 		assert created_agents all_match (each.run_count = 1);
 		ask simulation { do _step_(); }
@@ -103,7 +106,9 @@ experiment SchedulingTest type: test autorun: true {
 	}
 
 	test "An empty schedule prevents the agents from running" {
-		create never_agent number: 2 returns: created_agents;
+		list<never_agent> created_agents;
+		ask simulation {
+		create never_agent number: 2 returns: created_agents;}
 		ask simulation { do _step_(); }
 		ask simulation { do _step_(); }
 		assert created_agents all_match (each.run_count = 0);
@@ -116,7 +121,9 @@ experiment SchedulingTest type: test autorun: true {
 	}
 
 	test "The schedules facet is evaluated at each step" {
-		create filtered_agent number: 2 returns: created_agents;
+				list<filtered_agent> created_agents;
+		ask simulation {
+		create filtered_agent number: 2 returns: created_agents;}
 		filtered_agent kept <- created_agents[0];
 		filtered_agent dropped <- created_agents[1];
 
@@ -137,18 +144,22 @@ experiment SchedulingTest type: test autorun: true {
 	}
 
 	test "The schedules facet drives the order of execution" {
-		create ranked_agent number: 3 returns: created_agents;
+		list<ranked_agent> created_agents;
+		ask simulation {
+		create ranked_agent number: 3 returns: created_agents;}
 		created_agents[0].rank <- 1;
 		created_agents[1].rank <- 3;
 		created_agents[2].rank <- 2;
-		execution_log <- [];
+		simulation.execution_log <- [];
 		ask simulation { do _step_(); }
-		assert execution_log = ["rank 3", "rank 2", "rank 1"];
+		assert simulation.execution_log = ["rank 3", "rank 2", "rank 1"];
 		ask created_agents { do die(); }
 	}
 
 	test "Reflexes run in their order of definition" {
-		create two_reflexes_agent number: 1 returns: created_agents;
+		list<two_reflexes_agent> created_agents;
+		ask simulation {
+		create two_reflexes_agent number: 1 returns: created_agents;}
 		ask simulation { do _step_(); }
 		assert created_agents[0].value = 3;
 		ask simulation { do _step_(); }
@@ -157,7 +168,9 @@ experiment SchedulingTest type: test autorun: true {
 	}
 
 	test "A reflex only runs when its condition holds" {
-		create conditional_agent number: 1 returns: created_agents;
+		list<conditional_agent> created_agents;
+		ask simulation {
+		create conditional_agent number: 1 returns: created_agents;}
 		conditional_agent ag <- created_agents[0];
 		ask simulation { do _step_(); }
 		assert ag.run_count = 0;
@@ -171,7 +184,9 @@ experiment SchedulingTest type: test autorun: true {
 	}
 
 	test "Attributes are updated before the reflexes run" {
-		create updated_agent number: 1 returns: created_agents;
+		list<updated_agent> created_agents;
+		ask simulation {		
+		create updated_agent number: 1 returns: created_agents;}
 		updated_agent ag <- created_agents[0];
 		assert ag.counter = 0;
 		ask simulation { do _step_(); }
@@ -189,23 +204,25 @@ experiment SchedulingTest type: test autorun: true {
 	}
 
 	test "Agents can die while being scheduled" {
-		create mortal_agent number: 3 returns: created_agents;
+				list<mortal_agent> created_agents;
+		ask simulation { create mortal_agent number: 3 returns: created_agents; }
 		ask simulation { do _step_(); }
-		assert length(mortal_agent) = 3;
+		assert length(simulation.mortal_agent) = 3;
 		assert created_agents all_match (each.age = 1);
 		ask simulation { do _step_(); }
-		assert empty(mortal_agent);
+		assert empty(simulation.mortal_agent);
 		assert created_agents all_match dead(each);
 	}
 
 	test "Agents can be created while the simulation steps" {
-		create parent_agent number: 2 returns: created_agents;
-		assert empty(child_agent);
+		list<parent_agent> created_agents;
+		ask simulation { create parent_agent number: 2 returns: created_agents; }
+		assert empty(simulation.child_agent);
 		ask simulation { do _step_(); }
-		assert length(child_agent) = 2;
+		assert length(simulation.child_agent) = 2;
 		ask simulation { do _step_(); }
-		assert length(child_agent) = 4;
+		assert length(simulation.child_agent) = 4;
 		ask created_agents { do die(); }
-		ask child_agent { do die(); }
+		ask simulation.child_agent { do die(); }
 	}
 }

@@ -31,7 +31,7 @@ species objects skills: [moving] {
 }
 
 experiment Display type: gui autorun: true {
-	point p -> first(objects).location;
+	point p -> first(simulation.objects).location;
 	float factor <- 1.0;
 	//parameter "Shared zoom" of: experiment var: factor min: 0.01 max: 10.0;
 	float minimum_cycle_duration <- 0.01;

@@ -18,7 +18,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gama.api.GAMA;
 import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.IExperimentAgent;
@@ -200,14 +202,20 @@ public class ExperimentsParametersList extends EditorsList<String> {
 				}
 				case TextStatement text -> addEditor(var, EditorFactory.getInstance().create(scope, text));
 				case MonitorOutput monitor -> addMonitor(scope, monitor);
-				case UserCommandStatement command -> addEditor(var,
-						EditorFactory.getInstance().create(scope, command, (Command) e -> exp.executeAction(s -> {
-							final Object result = scope.execute(command).getValue();
-							if (exp.dead()) { // in case the experiment is killed in the meantime
-								exp.getExperiment().getSpecies().refreshAllOutputs();
+				case UserCommandStatement command -> addEditor(var, EditorFactory.getInstance().create(scope, command,
+						(Command) e -> {
+							try {
+								command.getExecutionTarget(scope).executeAction(s -> {
+									final Object result = s.execute(command).getValue();
+									if (exp.dead()) { // in case the experiment is killed in the meantime
+										exp.getExperiment().getSpecies().refreshAllOutputs();
+									}
+									return result;
+								});
+							} catch (final GamaRuntimeException ex) {
+								GAMA.reportError(scope, ex, false);
 							}
-							return result;
-						})));
+						}));
 				case null, default -> {
 				}
 			}

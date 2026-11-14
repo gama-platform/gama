@@ -740,7 +740,9 @@ public interface ISpecies
 	 */
 	@Override
 	@getter (POPULATION)
-	@doc ("Returns the population of agents that belong to this species")
+	@doc ("Returns the population of agents that belong to this species in the current agent's context. "
+			+ "From an experiment, access a simulation's populations in an explicit simulation context "
+			+ "(for example, ask simulation { ... }).")
 	IPopulation<? extends IAgent> getPopulation(IScope scope);
 
 	/**

@@ -7,13 +7,9 @@
 
 model PedestrianAdvancedTestModel
 
-species obstacle { }
 
-species ped_agent skills: [pedestrian] {
-	float speed <- 5.0;
-}
-
-experiment PedestrianAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "Documented defaults of the social-force attributes" {
 		create ped_agent number: 1 returns: walkers;
@@ -146,4 +142,14 @@ experiment PedestrianAdvancedTest type: test autorun: true {
 		assert left_walker distance_to right_walker > 0.1;
 		ask walkers { do die(); }
 	}
+	
 }
+
+
+species obstacle { }
+
+species ped_agent skills: [pedestrian] {
+	float speed <- 5.0;
+}
+
+experiment PedestrianAdvancedTest type: test autorun: true {}

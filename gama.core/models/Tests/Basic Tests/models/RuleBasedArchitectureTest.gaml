@@ -7,57 +7,8 @@
 
 model RuleBasedArchitectureTestModel
 
-species rule_agent control: rules {
-	int step_count <- 0;
-	bool rule1_executed <- false;
-
-	// A rule is executed if its condition is true
-	do_rule rule1 when: step_count = 0 {
-		rule1_executed <- true;
-		step_count <- step_count + 1;
-	}
-
-	do_rule rule2 when: step_count > 0 {
-		step_count <- step_count + 1;
-	}
-}
-
-species prioritised_agent control: rules {
-	list<string> fired <- [];
-	int energy <- 0;
-	float urgency <- 5.0;
-
-	do_rule low when: energy < 5 priority: 1 {
-		fired <+ "low";
-	}
-
-	do_rule high when: energy < 5 priority: 10 {
-		fired <+ "high";
-	}
-
-	// the priority is an expression, evaluated at each step
-	do_rule variable when: energy < 5 priority: urgency {
-		fired <+ "variable";
-	}
-
-	do_rule never when: false priority: 100 {
-		fired <+ "never";
-	}
-}
-
-species mixed_agent control: rules {
-	list<string> fired <- [];
-
-	do_rule a_rule when: true {
-		fired <+ "rule";
-	}
-
-	reflex a_reflex {
-		fired <+ "reflex";
-	}
-}
-
-experiment RuleBasedArchitectureTest type: test autorun: true {
+global {
+	
 
 	test "Rule Execution" {
 		create rule_agent number: 1 returns: created_agents;
@@ -114,4 +65,57 @@ experiment RuleBasedArchitectureTest type: test autorun: true {
 		ask ag { do _step_(); }
 		assert ag.fired = ["reflex", "rule"];
 	}
+	
 }
+
+species rule_agent control: rules {
+	int step_count <- 0;
+	bool rule1_executed <- false;
+
+	// A rule is executed if its condition is true
+	do_rule rule1 when: step_count = 0 {
+		rule1_executed <- true;
+		step_count <- step_count + 1;
+	}
+
+	do_rule rule2 when: step_count > 0 {
+		step_count <- step_count + 1;
+	}
+}
+
+species prioritised_agent control: rules {
+	list<string> fired <- [];
+	int energy <- 0;
+	float urgency <- 5.0;
+
+	do_rule low when: energy < 5 priority: 1 {
+		fired <+ "low";
+	}
+
+	do_rule high when: energy < 5 priority: 10 {
+		fired <+ "high";
+	}
+
+	// the priority is an expression, evaluated at each step
+	do_rule variable when: energy < 5 priority: urgency {
+		fired <+ "variable";
+	}
+
+	do_rule never when: false priority: 100 {
+		fired <+ "never";
+	}
+}
+
+species mixed_agent control: rules {
+	list<string> fired <- [];
+
+	do_rule a_rule when: true {
+		fired <+ "rule";
+	}
+
+	reflex a_reflex {
+		fired <+ "reflex";
+	}
+}
+
+experiment RuleBasedArchitectureTest type: test autorun: true;

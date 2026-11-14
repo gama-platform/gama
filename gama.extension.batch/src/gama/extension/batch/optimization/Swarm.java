@@ -84,14 +84,16 @@ import gama.extension.batch.StoppingCriterionMaxIt;
 						doc = @doc ("weight for the social component")),
 				@facet (
 						name = IKeyword.MAXIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to maximize")),
+						doc = @doc ("the fitness expression to maximize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.MINIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to minimize")),
+						doc = @doc ("the fitness expression to minimize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.AGGREGATION,
 						type = IType.LABEL,
@@ -100,7 +102,7 @@ import gama.extension.batch.StoppingCriterionMaxIt;
 						doc = @doc ("the agregation method")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm is an implementation of the Particle Swarm Optimization algorithm. Only usable for numerical paramaters and based on a continuous parameter space search. See the wikipedia article for more details.",
+		value = "This algorithm is an implementation of the Particle Swarm Optimization algorithm. Only usable for numerical paramaters and based on a continuous parameter space search. See the wikipedia article for more details. Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "As other batch methods, the basic syntax of the `pso` statement uses `method pso` instead of the expected `pso name: id` : ",
 				examples = { @example (
@@ -163,7 +165,6 @@ public class Swarm extends AOptimizationAlgorithm {
 	 */
 	public Swarm(final IDescription species) {
 		super(species);
-		initParams();
 	}
 
 	@Override

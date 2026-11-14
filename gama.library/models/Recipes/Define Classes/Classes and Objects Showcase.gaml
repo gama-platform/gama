@@ -500,7 +500,7 @@ experiment "Object diagnostics" type: gui parent: base_params {
 	 */
 	reflex diagnose when: (cycle mod 10) = 0 and cycle > 0 {
 		write "═══ Cycle " + cycle + " ══════════════════════════════════════";
-		ask painter {
+		ask simulation.painter {
 			write "  " + name
 				+ "  shapes=" + length(my_shapes)
 				+ "  circles=" + count_circles()

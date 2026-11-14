@@ -457,9 +457,9 @@ experiment ParticleLife type: gui {
 
 
     
-    user_command "Random matrix"      {simulation.randomize_matrix();} 
-    user_command "Preset : Chains"    {simulation.preset_chains();}
-    user_command "Preset : Clusters"  {simulation.preset_clusters();}
+    user_command "Random matrix"      {do randomize_matrix();} 
+    user_command "Preset : Chains"    {do preset_chains();}
+    user_command "Preset : Clusters"  {do preset_clusters();}
     
 
     output {

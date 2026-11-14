@@ -7,14 +7,12 @@
 
 model ExperimentAdvancedTestModel
 
-global {
-	int my_param <- 10;
-	float my_float_param <- 5.0;
-}
 
 experiment ExperimentAdvancedTest type: test autorun: true {
+		int my_param <- 10;
+	float my_float_param <- 5.0;
 	
-	parameter "My Param" var: my_param init: 20;
+	parameter "My Param" of: experiment var: my_param init: 20;
 	
 	test "Parameter Initialization" {
 		// Because the parameter init overrides the global init in this experiment

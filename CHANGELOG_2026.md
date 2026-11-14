@@ -20,6 +20,31 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Development follow-up: explicit experiment and simulation contexts
+
+Experiment code no longer implicitly borrows the current simulation's ordinary species
+populations. Select a simulation explicitly for creation and population access. Creation of
+directly imported comodel experiments remains supported.
+Direct population operations on a statically known model species in experiment context now
+produce compilation errors; species values remain usable, and dynamic accesses are guarded at runtime.
+
+An experiment's `user_command` now selects its owner with `of: simulation` (the default) or
+`of: experiment`, like parameters. Compilation, action lookup and execution follow that owner.
+The former `action:` fallback that ran a global action on every simulation is removed; a
+simulation-owned command targets one simulation. Commands in global, species and user panels
+keep their existing context; monitors are unchanged.
+
+The experiment's `until:` and `record:` and batch method `minimize:`/`maximize:` compile in the
+model context and evaluate in the relevant simulation. Exploration `outputs:` names simulation
+attributes; other method configuration facets use experiment context. Optimization configuration
+is initialized in the experiment scope. The new per-facet `@facet(context = ...)` metadata
+separates static name resolution from runtime scope selection without changing structural ancestry.
+
+These are development changes, not a released compatibility promise. See the
+[model migration](MIGRATION_GUIDE_2026.md#experiment-and-simulation-ownership),
+[plugin guidance](MIGRATION_GUIDE_2026.md#facet-compilation-contexts-for-plugin-developers) and
+[experiment guide](EXPERIMENT_AGENT.md#experiment-and-simulation-contexts).
+
 ### Mesh source name resolution
 
 Bare identifiers in statements such as `mesh terrain` now use normal name resolution,

@@ -99,14 +99,16 @@ import gama.extension.batch.StoppingCriterionMaxIt;
 						doc = @doc ("maximal size of the considered cycles")),
 				@facet (
 						name = IKeyword.MAXIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to maximize")),
+						doc = @doc ("the fitness expression to maximize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.MINIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to minimize")),
+						doc = @doc ("the fitness expression to minimize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.AGGREGATION,
 						type = IType.LABEL,
@@ -115,7 +117,7 @@ import gama.extension.batch.StoppingCriterionMaxIt;
 						doc = @doc ("the agregation method")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm is a simple implementation of the Reactive Tabu Search algorithm ((Battiti et al., 1993)). This Reactive Tabu Search is an enhance version of the Tabu search. It adds two new elements to the classic Tabu Search. The first one concerns the size of the tabu list: in the Reactive Tabu Search, this one is not constant anymore but it dynamically evolves according to the context. Thus, when the exploration process visits too often the same solutions, the tabu list is extended in order to favor the diversification of the search process. On the other hand, when the process has not visited an already known solution for a high number of iterations, the tabu list is shortened in order to favor the intensification of the search process. The second new element concerns the adding of cycle detection capacities. Thus, when a cycle is detected, the process applies random movements in order to break the cycle. See the batch dedicated page.",
+		value = "This algorithm is a simple implementation of the Reactive Tabu Search algorithm ((Battiti et al., 1993)). This Reactive Tabu Search is an enhance version of the Tabu search. It adds two new elements to the classic Tabu Search. The first one concerns the size of the tabu list: in the Reactive Tabu Search, this one is not constant anymore but it dynamically evolves according to the context. Thus, when the exploration process visits too often the same solutions, the tabu list is extended in order to favor the diversification of the search process. On the other hand, when the process has not visited an already known solution for a high number of iterations, the tabu list is shortened in order to favor the intensification of the search process. The second new element concerns the adding of cycle detection capacities. Thus, when a cycle is detected, the process applies random movements in order to break the cycle. See the batch dedicated page. Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "As other batch methods, the basic syntax of the reactive_tabu statement uses `method reactive_tabu` instead of the expected `reactive_tabu name: id` : ",
 				examples = { @example (
@@ -178,7 +180,6 @@ public class TabuSearchReactive extends ALocalSearchAlgorithm {
 	 */
 	public TabuSearchReactive(final IDescription species) {
 		super(species);
-		initParams();
 
 	}
 

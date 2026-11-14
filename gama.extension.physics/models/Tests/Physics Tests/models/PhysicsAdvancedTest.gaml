@@ -9,30 +9,15 @@ model PhysicsAdvancedTestModel
 
 global parent: physical_world {
 	float step <- 0.01;
-}
+	
+	
 
-species ball skills: [dynamic_body] {
-	geometry shape <- sphere(1);
-}
-
-species heavy_ball skills: [dynamic_body] {
-	geometry shape <- sphere(1);
-	float mass <- 5.0;
-	float restitution <- 0.9;
-	float damping <- 0.0;
-}
-
-species wall skills: [static_body] {
-	geometry shape <- box(10, 10, 1);
-}
-
-experiment PhysicsAdvancedTest type: test autorun: true {
 
 	test "The physical world exposes its documented defaults" {
-		assert simulation.gravity = {0, 0, -9.80665};
-		assert simulation.automated_registration = true;
-		assert simulation.max_substeps = 0;
-		assert simulation.accurate_collision_detection = false;
+		assert gravity = {0, 0, -9.80665};
+		assert automated_registration = true;
+		assert max_substeps = 0;
+		assert accurate_collision_detection = false;
 	}
 
 	test "A static body reports the engine's own conventions" {
@@ -82,7 +67,7 @@ experiment PhysicsAdvancedTest type: test autorun: true {
 
 	test "Bodies can be registered in the physical world" {
 		create ball number: 3 returns: balls;
-		ask simulation { do register(bodies: balls); }
+		do register(bodies: balls); 
 		assert length(balls) = 3;
 	}
 
@@ -158,4 +143,22 @@ experiment PhysicsAdvancedTest type: test autorun: true {
 		assert b.aabb.location.x with_precision 5 = 50.0;
 		assert b.aabb.location.y with_precision 5 = 50.0;
 	}
+
 }
+
+species ball skills: [dynamic_body] {
+	geometry shape <- sphere(1);
+}
+
+species heavy_ball skills: [dynamic_body] {
+	geometry shape <- sphere(1);
+	float mass <- 5.0;
+	float restitution <- 0.9;
+	float damping <- 0.0;
+}
+
+species wall skills: [static_body] {
+	geometry shape <- box(10, 10, 1);
+}
+
+experiment PhysicsAdvancedTest type: test autorun: true {}

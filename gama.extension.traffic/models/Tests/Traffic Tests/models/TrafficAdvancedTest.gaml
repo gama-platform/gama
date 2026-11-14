@@ -7,19 +7,9 @@
 
 model TrafficAdvancedTestModel
 
-species intersection skills: [intersection_skill] { }
 
-species road skills: [road_skill] { }
-
-species vehicle skills: [driving] { }
-
-species tuned_vehicle skills: [driving] {
-	float max_speed <- 10.0;
-	float vehicle_length <- 3.0;
-	float min_safety_distance <- 2.0;
-}
-
-experiment TrafficAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "Documented defaults of the driving skill" {
 		create vehicle number: 1 returns: cars;
@@ -268,4 +258,20 @@ experiment TrafficAdvancedTest type: test autorun: true {
 		assert gaps all_match (each >= leader.vehicle_length);
 		do clear_network();
 	}
+	
 }
+
+
+species intersection skills: [intersection_skill] { }
+
+species road skills: [road_skill] { }
+
+species vehicle skills: [driving] { }
+
+species tuned_vehicle skills: [driving] {
+	float max_speed <- 10.0;
+	float vehicle_length <- 3.0;
+	float min_safety_distance <- 2.0;
+}
+
+experiment TrafficAdvancedTest type: test autorun: true {}

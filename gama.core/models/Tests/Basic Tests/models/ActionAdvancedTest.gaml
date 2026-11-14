@@ -7,23 +7,8 @@
 
 model ActionAdvancedTestModel
 
-species action_agent {
+global {
 	
-	int calc(int a, int b <- 10) {
-		return a + b;
-	}
-	
-	string greet(string myname, string title <- "Mr") {
-		return "Hello " + title + " " + myname;
-	}
-	
-	// Test passing by reference using a map
-	action modify_map(map<string, int> m) {
-		m["new"] <- 100;
-	}
-}
-
-experiment ActionAdvancedTest type: test autorun: true {
 	
 	test "Default Arguments" {
 		create action_agent number: 1 returns: created_agents;
@@ -53,4 +38,23 @@ experiment ActionAdvancedTest type: test autorun: true {
 		assert length(my_map) = 2;
 		assert my_map["new"] = 100;
 	}
+	
 }
+
+species action_agent {
+	
+	int calc(int a, int b <- 10) {
+		return a + b;
+	}
+	
+	string greet(string myname, string title <- "Mr") {
+		return "Hello " + title + " " + myname;
+	}
+	
+	// Test passing by reference using a map
+	action modify_map(map<string, int> m) {
+		m["new"] <- 100;
+	}
+}
+
+experiment ActionAdvancedTest type: test autorun: true;

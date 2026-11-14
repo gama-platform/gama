@@ -295,6 +295,10 @@ public interface IArtefact extends IGamlDescription {
 	 */
 	interface Facet extends IArtefact {
 
+		default gama.annotations.facet.Context getCompilationContext() {
+			return gama.annotations.facet.Context.ENCLOSING;
+		}
+
 		default Set<String> getSpecificTo() { return Set.of(); }
 
 		default Set<String> getExcludes() { return Set.of(); }

@@ -49,6 +49,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
@@ -121,7 +122,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 						type = IType.LIST,
 						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
-						doc = @doc ("a new temporary variable name containing the list of created agents (a list, even if only one agent has been created). A species name or an expression of type species<agent_type> both produce a list<agent_type>.")),
+						doc = @doc ("an existing compatible variable or a new temporary variable name receiving the list of created agents (a list, even if only one agent has been created). A species name or an expression of type species<agent_type> both produce a list<agent_type>.")),
 				@facet (
 						name = FROM,
 						type = IType.NONE,
@@ -149,6 +150,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 @doc (
 		value = "Allows an agent to create one or more agents of a given `species`. Agents can be created with explicit initial attribute values, from a file (shapefile, .csv, .asc, OSM), from a set of geometries, or from a database query result. "
 				+ "When the species is known at compile time, the preferred form is the functional notation `species_name(attribute: value, ...)` rather than the `create` statement with a `with:` facet. "
+				+ "From an experiment, agents belonging to a simulation must be created in an explicit simulation context, for example `ask simulation { create a_species; }`. Select a particular simulation if needed and ensure it exists. Known invalid creation is rejected during compilation; dynamic population access can fail at runtime. "
 				+ "An experiment declared by an imported comodel can also be created inside an experiment of the model that imports it. This creates an experiment agent in the host experiment's comodel population and immediately initializes that agent and its initial simulation, using the host simulation's topology. The child is not a second top-level GAMA experiment: it does not replace the current experiment or launch an independent GAMA run. This permission applies only to experiments declared by a model directly imported by the host model; it does not grant access to experiments in unrelated models.",
 		usages = { @usage (
 				value = "Simple creation of `n` agents of a known species — the preferred functional form:",
@@ -288,6 +290,13 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 					&& callerSpecies instanceof IExperimentDescription hostExperiment
 					&& hostExperiment.getModelDescription() != null
 					&& hostExperiment.getModelDescription().getMicroModel(microModel.getMicroAlias()) == microModel;
+			if (callerSpecies instanceof IExperimentDescription && macro instanceof IModelDescription
+					&& !spec.isExperiment()
+					&& !creatingImportedExperiment && speciesExpr instanceof IExpression.Species) {
+				cd.error("Agents of " + sd.getName() + " must be created in an explicit simulation context, "
+						+ "for example ask simulation { ... }", WRONG_CONTEXT, SPECIES);
+				return;
+			}
 			if (!creatingModelFromModel && !creatingImportedExperiment && macro instanceof ISpeciesDescription callerSd
 					&& callerSpecies instanceof ISpeciesDescription callerSpeciesDesc && callerSpeciesDesc != macro
 					&& !callerSpeciesDesc.hasMacroSpecies(callerSd) && !callerSpeciesDesc.hasParent(macro)) {
@@ -351,7 +360,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	private final IExpression from, number, species, header;
 
 	/** The returns. */
-	private final String returns;
+	private final IVarExpression returns;
 
 	/** The sequence. */
 	private final RemoteSequence sequence;
@@ -364,7 +373,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 */
 	public CreateStatement(final IDescription desc) {
 		super(desc);
-		returns = getLiteral(RETURNS);
+		returns = (IVarExpression) getFacet(RETURNS);
 		from = getFacet(FROM);
 		number = getFacet(NUMBER);
 		species = getFacet(SPECIES);
@@ -386,7 +395,11 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 	@Override
 	public void enterScope(final IScope scope) {
-		if (returns != null) { scope.addVarWithValue(returns, null); }
+		if (returns != null && !(returns instanceof IVarExpression.Agent)
+				&& !(returns instanceof IVarExpression.Persistent) && scope.getExecutionContext() != null
+				&& !scope.getExecutionContext().hasTempVar(returns.getName())) {
+			scope.addVarWithValue(returns.getName(), null);
+		}
 		super.enterScope(scope);
 	}
 
@@ -428,7 +441,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		final Integer max = number == null ? null : Cast.asInt(scope, number.value(scope));
 		if (from == null && max != null && max <= 0) {
 			final IList<? extends IAgent> agents = GamaListFactory.getEmptyList();
-			if (returns != null) { scope.setVarValue(returns, agents); }
+			if (returns != null) { returns.setVal(scope, agents, false); }
 			return agents;
 		}
 
@@ -452,7 +465,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		}
 		// and we create and return the agent(s)
 		if (agents == null) { agents = createAgents(scope, pop, inits); }
-		if (returns != null) { scope.setVarValue(returns, agents); }
+		if (returns != null) { returns.setVal(scope, agents, false); }
 		return agents;
 	}
 

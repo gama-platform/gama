@@ -41,9 +41,9 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
-import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.Invocation;
@@ -94,10 +94,16 @@ import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 						optional = true,
 						doc = @doc ("a category label, used to group parameters in the interface")),
 				@facet (
-						name = IKeyword.ACTION,
-						type = IType.ACTION,
+						name = IKeyword.OF,
+						type = IType.LABEL,
+						values = { IKeyword.EXPERIMENT, IKeyword.SIMULATION },
 						optional = true,
-						doc = @doc ("the identifier of the action to be executed. This action should be accessible in the context in which the user_command is defined (an experiment, the global section or a species). A special case is allowed to maintain the compatibility with older versions of GAMA, when the user_command is declared in an experiment and the action is declared in 'global'. In that case, all the simulations managed by the experiment will run the action in response to the user executing the command")),
+						doc = @doc ("Only for a command directly declared in an experiment. Selects its execution context: the current simulation (default) or the experiment. Names, actions, arguments, the block and dynamic facets use that owner; there is no implicit fallback.")),
+				@facet (
+						name = IKeyword.ACTION,
+						type = IType.LABEL,
+						optional = true,
+						doc = @doc ("the identifier of an action accessible in the selected execution context")),
 				@facet (
 						name = IKeyword.NAME,
 						type = IType.LABEL,
@@ -115,7 +121,7 @@ import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 						doc = @doc ("the map of the parameters::values required by the action")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "Anywhere in the global block, in a species or in an (GUI) experiment, user_command statements allows to either call directly an existing action (with or without arguments) or to be followed by a block that describes what to do when this command is run.",
+		value = "A user_command can call an action or execute a block. When directly declared in an experiment, of: simulation (the default) runs it in the current simulation, while of: experiment runs it in the experiment. Its expressions, action and block use the selected context, without fallback to the other owner. A simulation command runs on one simulation, not all of them, and reports an error if no simulation is available. Use explicit experiment references or ask to cross contexts. Commands declared in global, a species or a user_panel retain their declaring agent's context.",
 		usages = { @usage (
 				value = "The general syntax is for example:",
 				examples = @example (
@@ -146,27 +152,16 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 						IGamlIssue.DEPRECATED, ACTION, (String[]) null);
 			}
 			final IDescription enclosing = description.getEnclosingDescription();
-			if (action != null && enclosing.getAction(action) == null) {
-				// 2 cases: we are in a simulation or in a "normal" species and
-				// we emit an error, or we are in an experiment, in which case
-				// we try to see if the simulations can run it. In that case we
-				// emit a warning (see Issue #1595)
-				if (enclosing instanceof IExperimentDescription) {
-					final IModelDescription model = enclosing.getModelDescription();
-					if (model.hasAction(action, false)) {
-						description.warning("Action " + action
-								+ " should be defined in the experiment, not in global. To maintain the compatibility with GAMA 1.6.1, the command will execute it on all the simulations managed by this experiment",
-								IGamlIssue.WRONG_CONTEXT, ACTION);
-					} else {
-						description.error("Action " + action + " does not exist in this experiment",
-								IGamlIssue.UNKNOWN_ACTION, ACTION);
-					}
-				} else {
-					final String enclosingName =
-							enclosing instanceof IModelDescription ? "global" : enclosing.getName();
-					description.error("Action " + action + " does not exist in " + enclosingName,
-							IGamlIssue.UNKNOWN_ACTION, ACTION);
-				}
+			if (description.hasFacet(IKeyword.OF) && !(enclosing instanceof IExperimentDescription)) {
+				description.error("The 'of' facet is only available for commands declared in an experiment.",
+						IGamlIssue.WRONG_CONTEXT, IKeyword.OF);
+			}
+			final IDescription target = enclosing instanceof IExperimentDescription
+					&& !IExperimentDescription.isExperimentContext(description) ? enclosing.getModelDescription() : enclosing;
+			if (action != null && target.getAction(action) == null) {
+				final String targetName = target instanceof IModelDescription ? "global" : target.getName();
+				description.error("Action " + action + " does not exist in " + targetName,
+						IGamlIssue.UNKNOWN_ACTION, ACTION);
 			}
 		}
 	}
@@ -179,6 +174,9 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 
 	/** The action name. */
 	final String actionName;
+
+	private final boolean declaredInExperiment;
+	private final boolean experimentOwner;
 
 	/**
 	 * The category. Declared {@code volatile} because it can be lazily initialised by {@link #getCategory()} after
@@ -204,6 +202,8 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 		actionName = getLiteral(IKeyword.ACTION);
 		category = desc.getLitteral(IKeyword.CATEGORY);
 		when = getFacet(IKeyword.WHEN);
+		declaredInExperiment = desc.getEnclosingDescription() instanceof IExperimentDescription;
+		experimentOwner = declaredInExperiment && IExperimentDescription.isExperimentContext(desc);
 	}
 
 	/**
@@ -232,35 +232,66 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		// The runtime arguments are handed by the scope (the command is shared by all the simulations and threads)
 		final Invocation invocation = scope.takeInvocation(this);
 		final Arguments currentRuntimeArgs = invocation == null ? null : invocation.args();
+		if (declaredInExperiment) {
+			final ITopLevelAgent target = getExecutionTarget(scope);
+			if (scope.getRoot() != target || scope.getAgent() != target) {
+				Arguments forwarded = currentRuntimeArgs;
+				if (forwarded != null) {
+					final var caller = invocation.caller();
+					final boolean pushed = caller != null && scope.push(caller);
+					try {
+						forwarded = forwarded.evaluateAgainst(scope);
+					} finally {
+						if (pushed) { scope.pop(caller); }
+					}
+				}
+				return scope.execute(this, target, true, forwarded).getValue();
+			}
+		}
 		if (isEnabled(scope)) {
-			// Addition of a simplification to the definition of this statement.
 			if (actionName == null) {
 				if (currentRuntimeArgs != null) { scope.stackArguments(currentRuntimeArgs, invocation.caller()); }
-				// AD 2/1/16 : Addition of this to address Issue #1339
 				for (final IStatement s : inputs) { if (!scope.execute(s).passed()) return null; }
 				return super.privateExecuteIn(scope);
 			}
-			ISpecies context = scope.getAgent().getSpecies();
-			IStatement.WithArgs executer = context.getAction(actionName);
-			boolean isWorkaroundForIssue1595 = false;
-			if (executer == null) {
-				// See Issue #1595
-				if (!(context instanceof IExperimentSpecies))
-					throw GamaRuntimeException.error("Unknown action: " + actionName, scope);
-				context = ((IExperimentSpecies) context).getModel();
-				executer = context.getAction(actionName);
-				isWorkaroundForIssue1595 = true;
-			}
+			final ISpecies context = scope.getAgent().getSpecies();
+			final IStatement.WithArgs executer = context.getAction(actionName);
+			if (executer == null) throw GamaRuntimeException.error("Unknown action: " + actionName, scope);
 			final Arguments tempArgs = new Arguments(args.get());
 			if (currentRuntimeArgs != null) { tempArgs.complementWith(currentRuntimeArgs); }
-			if (!isWorkaroundForIssue1595) return scope.execute(executer, tempArgs).getValue();
-			final IPopulation<ISimulationAgent> simulations = scope.getExperiment().getSimulationPopulation();
-			for (final ISimulationAgent sim : simulations.iterable(scope)) { scope.execute(executer, sim, tempArgs); }
+			return scope.execute(executer, tempArgs).getValue();
 		}
 		return null;
+	}
+
+	private ITopLevelAgent owner(final IScope scope) {
+		if (!declaredInExperiment) return scope.getRoot();
+		final IExperimentAgent experiment = scope.getExperiment();
+		if (experiment == null) return null;
+		if (experimentOwner) return experiment;
+		if (scope.getRoot() instanceof ISimulationAgent simulation && simulation.getExperiment() == experiment)
+			return simulation;
+		return experiment.getSimulation();
+	}
+
+	/** Returns the selected owner for a command declared in an experiment. */
+	public ITopLevelAgent getExecutionTarget(final IScope scope) {
+		final ITopLevelAgent target = owner(scope);
+		if (target == null || target.dead())
+			throw GamaRuntimeException.error("No " + (experimentOwner ? "experiment" : "simulation")
+					+ " is available for user_command " + getName(), scope);
+		return target;
+	}
+
+	private Object evaluateFacet(final IScope scope, final IExpression expression) {
+		if (!declaredInExperiment || expression.isConst()) return expression.value(scope);
+		final ITopLevelAgent target = getExecutionTarget(scope);
+		if (scope.getRoot() == target && scope.getAgent() == target) return expression.value(scope);
+		try (IScope evaluation = target.getScope().detachedCopy("in user_command " + getName())) {
+			return expression.value(evaluation);
+		}
 	}
 
 	/**
@@ -271,7 +302,11 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	 * @return true, if is enabled
 	 */
 	public boolean isEnabled(final IScope scope) {
-		return when == null || Cast.asBool(scope, when.value(scope));
+		if (declaredInExperiment) {
+			final ITopLevelAgent target = owner(scope);
+			if (target == null || target.dead()) return false;
+		}
+		return when == null || Cast.asBool(scope, evaluateFacet(scope, when));
 	}
 
 	/**
@@ -285,7 +320,11 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	public IColor getColor(final IScope scope) {
 		final IExpression exp = getFacet(IKeyword.COLOR);
 		if (exp == null) return null;
-		return GamaColorFactory.castToColor(scope, exp.value(scope));
+		if (declaredInExperiment && !exp.isConst()) {
+			final ITopLevelAgent target = owner(scope);
+			if (target == null || target.dead()) return null;
+		}
+		return GamaColorFactory.castToColor(scope, evaluateFacet(scope, exp));
 	}
 
 	/**
@@ -298,7 +337,11 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	public boolean isContinue(final IScope scope) {
 		final IExpression exp = getFacet(IKeyword.CONTINUE);
 		if (exp == null) return false;
-		return Cast.asBool(scope, exp.value(scope));
+		if (declaredInExperiment && !exp.isConst()) {
+			final ITopLevelAgent target = owner(scope);
+			if (target == null || target.dead()) return false;
+		}
+		return Cast.asBool(scope, evaluateFacet(scope, exp));
 	}
 
 	@Override
@@ -319,9 +362,6 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	public void setUnitLabel(final String label) {}
 
 	@Override
-	public boolean isDefinedInExperiment() {
-		// By default. Maybe it should be computed (looking at the action in experiment or in model ?
-		return false;
-	}
+	public boolean isDefinedInExperiment() { return experimentOwner; }
 
 }
