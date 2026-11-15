@@ -7,22 +7,8 @@
 
 model ReflexTestModel
 
-species reflex_agent {
-	int tick <- 0;
-	bool has_run_unconditional <- false;
-	bool has_run_conditional <- false;
+global {
 	
-	reflex unconditional {
-		has_run_unconditional <- true;
-		tick <- tick + 1;
-	}
-	
-	reflex conditional when: tick > 0 {
-		has_run_conditional <- true;
-	}
-}
-
-experiment ReflexTest type: test autorun: true {
 	
 	test "Reflex Execution Order and Conditions" {
 		create reflex_agent number: 1 returns: created_agents;
@@ -45,4 +31,22 @@ experiment ReflexTest type: test autorun: true {
 		assert ag.has_run_conditional = true;
 		assert ag.tick = 2;
 	}
+	
 }
+
+species reflex_agent {
+	int tick <- 0;
+	bool has_run_unconditional <- false;
+	bool has_run_conditional <- false;
+	
+	reflex unconditional {
+		has_run_unconditional <- true;
+		tick <- tick + 1;
+	}
+	
+	reflex conditional when: tick > 0 {
+		has_run_conditional <- true;
+	}
+}
+
+experiment ReflexTest type: test autorun: true;

@@ -286,18 +286,21 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			}
 			final boolean creatingModelFromModel =
 					macro instanceof IModelDescription && callerSpecies instanceof IModelDescription;
+			final boolean creatingSimulation = sd instanceof IModelDescription
+					&& callerSpecies instanceof IExperimentDescription;
 			final boolean creatingImportedExperiment = macro instanceof IModelDescription microModel
 					&& callerSpecies instanceof IExperimentDescription hostExperiment
 					&& hostExperiment.getModelDescription() != null
 					&& hostExperiment.getModelDescription().getMicroModel(microModel.getMicroAlias()) == microModel;
 			if (callerSpecies instanceof IExperimentDescription && macro instanceof IModelDescription
-					&& !spec.isExperiment()
+					&& !spec.isExperiment() && !creatingSimulation
 					&& !creatingImportedExperiment && speciesExpr instanceof IExpression.Species) {
 				cd.error("Agents of " + sd.getName() + " must be created in an explicit simulation context, "
 						+ "for example ask simulation { ... }", WRONG_CONTEXT, SPECIES);
 				return;
 			}
-			if (!creatingModelFromModel && !creatingImportedExperiment && macro instanceof ISpeciesDescription callerSd
+			if (!creatingModelFromModel && !creatingSimulation && !creatingImportedExperiment
+					&& macro instanceof ISpeciesDescription callerSd
 					&& callerSpecies instanceof ISpeciesDescription callerSpeciesDesc && callerSpeciesDesc != macro
 					&& !callerSpeciesDesc.hasMacroSpecies(callerSd) && !callerSpeciesDesc.hasParent(macro)) {
 				cd.error("No instance of " + macro.getName() + " available for creating instances of " + sd.getName());

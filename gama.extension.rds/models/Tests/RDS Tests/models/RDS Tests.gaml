@@ -1,5 +1,23 @@
 model RdsTests
 
+global {
+	
+	test "Mixed species are rejected" {
+		snapshot_agent first <- snapshot_agent();
+		other_snapshot_agent second <- other_snapshot_agent();
+		list<agent> mixed <- [first, second];
+		bool failed <- false;
+		try {
+			save mixed to: "../results/mixed.rds" format: "rds";
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+		assert not file_exists("../results/mixed.rds");
+		ask mixed { do die(); }
+	}
+}
+
 species snapshot_agent {
 	int amount <- 7;
 }
@@ -89,7 +107,8 @@ experiment "RDS Tests" type: test autorun: true {
 	}
 
 	test "Agent snapshots and attribute selection" {
-		create snapshot_agent number: 2 returns: agents_to_save;
+		list<snapshot_agent> agents_to_save <- [];
+		ask simulation {create snapshot_agent number: 2 returns: agents_to_save;}
 		save agents_to_save to: "../results/agents.rds" format: "rds";
 		dataframe defaults <- dataframe(rds_file("../results/agents.rds"));
 		assert defaults["amount"] = [7, 7];
@@ -139,20 +158,6 @@ experiment "RDS Tests" type: test autorun: true {
 		assert delete_file("../results/preserved.rds");
 	}
 
-	test "Mixed species are rejected" {
-		create snapshot_agent number: 1 returns: first_species;
-		create other_snapshot_agent number: 1 returns: second_species;
-		list<agent> mixed <- first_species + second_species;
-		bool failed <- false;
-		try {
-			save mixed to: "../results/mixed.rds" format: "rds";
-		} catch {
-			failed <- true;
-		}
-		assert failed;
-		assert not file_exists("../results/mixed.rds");
-		ask mixed { do die(); }
-	}
 
 	test "Unknown attributes are rejected even for empty populations" {
 		list<snapshot_agent> nobody <- [];

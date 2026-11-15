@@ -7,18 +7,8 @@
 
 model SoundAdvancedTestModel
 
-species player {
-
-	action play_missing_file() {
-		start_sound source: "this_file_does_not_exist.mp3" {}
-	}
-
-	action play_unsupported_format() {
-		start_sound source: "not_audio.txt" {}
-	}
-}
-
-experiment SoundAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "Starting a sound from a missing file raises an error" {
 		create player number: 1 returns: players;
@@ -45,4 +35,18 @@ experiment SoundAdvancedTest type: test autorun: true {
 		}
 		assert failed;
 	}
+	
 }
+
+species player {
+
+	action play_missing_file() {
+		start_sound source: "this_file_does_not_exist.mp3" {}
+	}
+
+	action play_unsupported_format() {
+		start_sound source: "not_audio.txt" {}
+	}
+}
+
+experiment SoundAdvancedTest type: test autorun: true;

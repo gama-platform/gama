@@ -287,6 +287,47 @@ accessible to the experiment. Creating an experiment from a directly imported
 comodel remains a separate supported operation; it does not make ordinary
 model-species populations experiment-owned.
 
+### Experiment actions in a simulation context
+
+For an adapter with many actions operating on the same simulation, opt in once
+on its experiment:
+
+```gaml
+experiment adapter type: gui actions_context: simulation {
+    int extra <- 1; // experiment attribute
+
+    int count_dummies(int increment <- 0) {
+        create dummy number: increment;
+        return length(dummy) + experiment.extra;
+    }
+
+    int count_again() {
+        return experiment.count_dummies(0);
+    }
+}
+```
+
+The actions remain declared on, and called on, the experiment, for example
+`adapter_agent.count_dummies(2)`. Their bodies and default argument expressions
+resolve model globals, species and actions; `self` is the simulation. Use
+`experiment.extra` for experiment attributes and `experiment.count_dummies(...)`
+for another experiment action. Explicit arguments are evaluated in the caller's
+context; return values are returned to the caller.
+
+Each call uses the **current simulation of the receiving experiment**, including
+when another model calls a comodel experiment. Its scope supplies the clock,
+random generator, topology and populations. If that simulation is absent or
+dead, the call reports an error. This does not run the action on all simulations
+or select the frontmost experiment. To operate on a different simulation, select
+it explicitly instead of assuming it is current.
+
+Omitting `actions_context:` (or writing `actions_context: experiment`) keeps
+the normal experiment context. The facet affects only user actions directly
+declared in that experiment, not inherited or built-in actions, synthetic
+callbacks, experiment `init`, reflexes, parameters, commands or outputs.
+Inherited actions retain the context of their declaration. This is separate
+from the `of:` facet of parameters and user commands.
+
 ### Parameters and user commands
 
 For `parameter` and `user_command` **directly declared in an experiment**,

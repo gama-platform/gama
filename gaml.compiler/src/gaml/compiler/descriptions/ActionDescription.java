@@ -27,6 +27,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -60,7 +61,8 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 
 	@Override
 	public IDescription getEnclosingContext() {
-		return evaluatesInModel ? getModelDescription() : super.getEnclosingContext();
+		return evaluatesInModel || IExperimentDescription.actionsUseSimulation(this)
+				? getModelDescription() : super.getEnclosingContext();
 	}
 
 	/**

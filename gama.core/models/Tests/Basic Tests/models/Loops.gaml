@@ -33,6 +33,7 @@ experiment loop_over type:test{
 	
 	test loop_over_species {
 		int i <- 1;
+		ask simulation {
 		create dummy number:4 {
 			value <- i;
 			i <- i + 1;
@@ -44,13 +45,15 @@ experiment loop_over type:test{
 		assert sum = 10;
 		ask dummy {
 			do die;
-		}
+		}}
 	}
 	
 	test loop_over_empty_species {
 		int sum <- 0;
+		ask simulation {
 		loop d over: dummy{
 			sum <- sum + d.value;
+		}
 		}
 		assert sum = 0;
 	}

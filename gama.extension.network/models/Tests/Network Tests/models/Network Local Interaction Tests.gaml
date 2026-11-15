@@ -7,17 +7,8 @@
 
 model networktest
 
-species Person skills:[network]
-{
-	string myGroup;
-	init
-	{
-	 	self.connect(with_name:name);
-	}
-}
-
-
-experiment "Tests for gama.extension.network" type: test {
+global {
+	
 	
 	init {
 		gama.pref_test_timeout <- 120;
@@ -248,4 +239,17 @@ experiment "Tests for gama.extension.network" type: test {
 		assert (p1);
 	}
 	
+	
 }
+
+species Person skills:[network]
+{
+	string myGroup;
+	init
+	{
+	 	self.connect(with_name:name);
+	}
+}
+
+
+experiment "Tests for gama.extension.network" type: test ;

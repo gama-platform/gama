@@ -578,6 +578,7 @@ public class TypesManager implements ITypesManager {
 	 */
 	@Override
 	public boolean containsType(final String s) {
+		if (s == null) return false;
 		final IType t = types.get(s);
 		if (t != null) return true;
 		if (parent == null) return false;

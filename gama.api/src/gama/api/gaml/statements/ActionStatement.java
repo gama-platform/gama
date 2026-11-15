@@ -23,13 +23,18 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.compilation.validation.ActionValidator;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.statements.ActionStatement.ActionSerializer;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.runtime.scope.Invocation;
 
 /**
  * Implementation of GAML action statements.
@@ -262,6 +267,8 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 	/** The formal parameter declarations for this action. */
 	Arguments formalArgs = new Arguments();
 
+	private final boolean simulationContext;
+
 	/**
 	 * Constructs a new action statement.
 	 *
@@ -275,7 +282,34 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 	public ActionStatement(final IDescription desc) {
 		super(desc);
 		if (hasFacet(IKeyword.NAME)) { name = getLiteral(IKeyword.NAME); }
+		simulationContext = IExperimentDescription.actionsUseSimulation(desc);
 
+	}
+
+	@Override
+	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		if (!simulationContext || scope.getAgent() instanceof ISimulationAgent)
+			return super.privateExecuteIn(scope);
+		if (!(scope.getAgent() instanceof IExperimentAgent experiment))
+			throw GamaRuntimeException.error("Action " + getName() + " requires its experiment as receiver.", scope);
+		final ISimulationAgent simulation = experiment.getSimulation();
+		if (simulation == null || simulation.dead())
+			throw GamaRuntimeException.error("No current simulation is available for action " + getName(), scope);
+		final Invocation invocation = scope.takeInvocation(this);
+		Arguments forwarded = invocation == null ? null : invocation.args();
+		if (forwarded != null) {
+			final var caller = invocation.caller();
+			final boolean pushed = caller != null && scope.push(caller);
+			try {
+				forwarded = forwarded.evaluateAgainst(scope);
+			} finally {
+				if (pushed) { scope.pop(caller); }
+			}
+		}
+		final var result = scope.execute(this, simulation, true, forwarded);
+		if (!result.passed())
+			throw GamaRuntimeException.error("Could not execute action " + getName() + " in its simulation.", scope);
+		return result.getValue();
 	}
 
 	/**

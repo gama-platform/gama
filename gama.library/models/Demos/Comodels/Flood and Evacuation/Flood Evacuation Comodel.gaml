@@ -37,16 +37,16 @@ global
 		ask Evacuation.movecomodel
 		{
 			centroid <- myself.offset[int(self)];
-			target_point <- myself.exits[int(self)];
+			simulation.target_point <- myself.exits[int(self)];
 			//transform the environment and the agents to new location (near the river)
 			self.transform_environment();
-			loop t over: list(building)
+			loop t over: list(simulation.building)
 			{
-				the_free_shape <- myself.the_free_shape - (t.shape+ people_size);
+				myself.the_free_shape <- myself.the_free_shape - (t.shape + simulation.people_size);
 			}
 			
-			free_space<-copy(myself.the_free_shape);			
-			free_space <- free_space simplification(1.0);
+			simulation.free_space <- copy(myself.the_free_shape);
+			simulation.free_space <- simulation.free_space simplification(1.0);
 		}
 
 	}

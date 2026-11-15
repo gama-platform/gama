@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment movecomodel model:'../../../Evacuation/models/Continuous Move.gaml' type:gui {
+experiment movecomodel model:'../../../Evacuation/models/Continuous Move.gaml' type:gui actions_context: simulation {
 	point centroid <- { 200, 580 };
 	list<building> get_building()
 	{
@@ -18,14 +18,14 @@ experiment movecomodel model:'../../../Evacuation/models/Continuous Move.gaml' t
 		loop t over: list(building)
 		{
 			t.shape <- t.shape * 20;
-			t.location <- (t.location * 10) + centroid;
+			t.location <- (t.location * 10) + experiment.centroid;
 		}
 
 		loop t over: list(people)
 		{
 			t.speed <- t.speed * 10;
 			t.size <- t.size * 10;
-			t.location <- (t.location * 10) + centroid;
+			t.location <- (t.location * 10) + experiment.centroid;
 			t.shape<-(square(1) at_location t.location); 
 			t.target_loc <- target_point;
 		}

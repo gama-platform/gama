@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IInternalFacets;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgentCreator;
@@ -24,6 +25,8 @@ import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescrip
  *
  */
 public interface IExperimentDescription extends ISpeciesDescription {
+
+	String ACTIONS_CONTEXT = "actions_context";
 
 	/** The experiment creators. */
 	Map<String, IExperimentAgentCreator> CREATORS = new HashMap<>();
@@ -112,6 +115,14 @@ public interface IExperimentDescription extends ISpeciesDescription {
 	static boolean isExperimentContext(final IDescription description) {
 		return IKeyword.PERMANENT.equals(description.getKeyword())
 				|| IKeyword.EXPERIMENT.equals(description.getLitteral(IKeyword.OF));
+	}
+
+	/** Whether a directly declared action uses the experiment's selected simulation as its execution context. */
+	static boolean actionsUseSimulation(final IDescription action) {
+		return !action.isBuiltIn() && action.getName() != null
+				&& !action.getName().startsWith(IInternalFacets.SYNTHETIC)
+				&& action.getEnclosingDescription() instanceof IExperimentDescription experiment
+				&& IKeyword.SIMULATION.equals(experiment.getLitteral(ACTIONS_CONTEXT));
 	}
 
 	/** Keeps experiment parameters separate from simulation parameters with the same target name. */

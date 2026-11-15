@@ -7,17 +7,9 @@
 
 model networktest
 
-species Person skills:[network]
-{
-	string myGroup;
-	init
-	{
-		gama.pref_test_timeout <- 120;
-		do connect(with_name:name, force_network_use:true);
-	}
-}
 
-experiment "Tests for gama.extension.network" type: test {
+global {
+	
 	bool already_build <- false;
 	string group_spice <- "spice girls";
 	list<string> girls <- ["Victoria","Mel","Melanie","Geri","Emma"];
@@ -242,4 +234,17 @@ experiment "Tests for gama.extension.network" type: test {
 		assert (p1);
 	}
 	
+	
 }
+
+species Person skills:[network]
+{
+	string myGroup;
+	init
+	{
+		gama.pref_test_timeout <- 120;
+		do connect(with_name:name, force_network_use:true);
+	}
+}
+
+experiment "Tests for gama.extension.network" type: test;

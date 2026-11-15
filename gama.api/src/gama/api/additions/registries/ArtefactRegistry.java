@@ -198,6 +198,7 @@ public class ArtefactRegistry {
 	 * @return the matching artefact prototype, or {@code null} if none is found
 	 */
 	public final static IArtefact.Symbol getArtefact(final String keyword, final IDescription superDesc) {
+		if (keyword == null) return null;
 		// Check statement artefacts first
 		IArtefact.Symbol artefact = STATEMENT_ARTEFACTS.get(keyword);
 		// If not a statement, try var declaration artefact
@@ -214,6 +215,7 @@ public class ArtefactRegistry {
 	 * @return the var proto
 	 */
 	public final static IArtefact.Symbol getVarArtefact(final String keyword, final IDescription superDesc) {
+		if (keyword == null) return null;
 		// Not a type and not a statement. So probably a species
 		if (!Types.containsType(keyword) && !STATEMENT_ARTEFACTS.containsKey(keyword))
 			return VAR_DECLARATION_ARTEFACTS.get(Types.AGENT.getVarKind());

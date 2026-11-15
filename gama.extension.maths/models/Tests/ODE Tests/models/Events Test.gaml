@@ -207,9 +207,9 @@ experiment test type: test {
 	test "Equations" {
 		create SplitTest_model(with_viz:false);
 		//write "Distance between the static split system\nand the static regular system: "+error;
-		assert error = 0;
+		assert simulation.error = 0;
 		create SplitTest_model(with_viz:false, dynamics_creation:true);
 		//write "Distance between the dynamics split system\nand the dynamics regular system: "+error;
-		assert error = 0;
+		assert simulation.error = 0;
 	}	
 }

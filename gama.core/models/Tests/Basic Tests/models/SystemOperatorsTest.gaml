@@ -7,9 +7,8 @@
 
 model SystemOperatorsTestModel
 
-species sys_agent {}
-
-experiment SystemOperatorsTest type: test autorun: true {
+global {
+	
 	
 	test "System Operators" {
 		create sys_agent number: 1 returns: created_agents;
@@ -40,4 +39,9 @@ experiment SystemOperatorsTest type: test autorun: true {
 		assert length(m) = 1;
 		assert length(mc) = 2;
 	}
+	
 }
+
+species sys_agent {}
+
+experiment SystemOperatorsTest type: test autorun: true;

@@ -50,7 +50,7 @@ experiment FileInputRobustnessTest type: test autorun: true {
 
 	test "Agents created from a malformed shapefile" {
 		string problem <- nil;
-		try { create feature from: shape_file("../includes/truncated.shp"); } catch { problem <- #current_error; }
+		try {ask simulation { create feature from: shape_file("../includes/truncated.shp"); }} catch { problem <- #current_error; }
 		assert handled(problem) label: problem;
 	}
 

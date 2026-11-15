@@ -401,6 +401,15 @@ and conversion to a list. A species name can still be used as a type or species 
 access through a dynamically determined species can instead fail at runtime. Directly imported
 comodel experiments remain a supported, distinct creation case.
 
+For an experiment whose adapter actions should all operate on its current
+simulation, declare `actions_context: simulation` once on the experiment.
+Actions remain callable on that experiment, but their bodies use its selected
+simulation as `self`. Qualify experiment attributes and calls to other
+experiment actions with `experiment.`. Without the facet, action bodies retain
+experiment context; the facet does not change `init`, reflexes, commands or
+inherited actions. A missing or dead current simulation produces an error.
+See [experiment actions in a simulation context](EXPERIMENT_AGENT.md#experiment-actions-in-a-simulation-context).
+
 Commands declared directly in an experiment now use `of: simulation` by default, just like
 parameters. Add `of: experiment` when the command's unqualified actions, attributes or block
 belong to the experiment:
@@ -1187,6 +1196,15 @@ caller arguments when crossing scopes. The parameters panel dispatches on the
 selected experiment or simulation executor. A simulation-scoped invocation
 retains that simulation; an experiment-scoped invocation resolves the current
 simulation. Do not iterate over all simulations as an implicit fallback.
+
+The experiment's `actions_context:` is distinct from facet metadata and command
+ownership. `IExperimentDescription.actionsUseSimulation` identifies eligible
+direct user-action declarations; `ActionDescription.getEnclosingContext`
+selects model lookup while the structural parent remains the experiment.
+`ActionStatement` dispatches on the receiving experiment's current simulation
+using that simulation's scope. Caller arguments must be evaluated before the
+scope change; defaults are evaluated in the action context. Preserve synthetic
+callbacks, built-in actions and inherited declaration contexts.
 
 Likewise, `ExperimentAgent.getPopulationFor` no longer forwards ordinary
 model-species requests to its current simulation or fabricates an empty

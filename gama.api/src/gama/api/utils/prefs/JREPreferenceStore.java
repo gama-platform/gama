@@ -84,6 +84,7 @@ public class JREPreferenceStore extends GamaPreferenceStore<Preferences> {
 	 */
 	@Override
 	public <T> void putInStore(final String key, final T value) {
+		overriddenKeys.add(key);
 		switch (value) {
 			case null -> store.put(key, "");
 			case String s -> store.put(key, s);

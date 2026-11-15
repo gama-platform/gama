@@ -174,6 +174,12 @@ import gama.gaml.statements.LayoutStatement;
 						optional = false,
 						doc = @doc ("The type of the experiment: `gui`, `batch`, `test`, etc.")),
 				@facet (
+						name = IExperimentDescription.ACTIONS_CONTEXT,
+						type = IType.LABEL,
+						values = { IKeyword.EXPERIMENT, IKeyword.SIMULATION },
+						optional = true,
+						doc = @doc ("The execution context of actions declared directly in this experiment: experiment (the default), or its current simulation. Simulation-context actions remain callable on the experiment and fail if it has no current simulation.")),
+				@facet (
 						name = IKeyword.VIRTUAL,
 						type = IType.BOOL,
 						optional = true,

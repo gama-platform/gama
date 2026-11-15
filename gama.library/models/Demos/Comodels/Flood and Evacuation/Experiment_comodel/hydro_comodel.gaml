@@ -6,7 +6,7 @@
 */
 
 
-experiment hydrocomodel model:'../../../Flood Simulation/models/Hydrological Model.gaml' type:gui {
+experiment hydrocomodel model:'../../../Flood Simulation/models/Hydrological Model.gaml' type:gui actions_context: simulation {
 	point newSize <- { 0.07, 0.07 };
 	cell get_cell_at (agent p)
 	{	 

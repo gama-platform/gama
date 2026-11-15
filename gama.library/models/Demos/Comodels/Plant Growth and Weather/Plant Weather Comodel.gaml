@@ -38,7 +38,7 @@ global {
 	reflex coupling {
 		
 		ask weather_simu.plotWeather {
-			list<plotGrow> overlapped_plots <- plantGrow_simu.plotGrow where (each.shape.location overlaps self);
+			list<plotGrow> overlapped_plots <- myself.plantGrow_simu.plotGrow where (each.shape.location overlaps self);
 						
 			ask overlapped_plots {
 				available_water <- available_water + myself.rain;

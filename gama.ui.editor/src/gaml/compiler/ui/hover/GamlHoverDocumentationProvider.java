@@ -44,6 +44,7 @@ import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Parameter;
+import gaml.compiler.gaml.S_Callable;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
@@ -298,6 +299,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			if (IKeyword.SPECIES.equals(layerName)) {
 				key = IKeyword.SPECIES_LAYER;
 			} else if (IKeyword.GRID.equals(layerName)) { key = IKeyword.GRID_LAYER; }
+		} else if (cont instanceof S_Callable) {
+			key = IKeyword.ACTION;
 		} else if (cont instanceof S_Definition sd && IKeyword.METHOD.equals(key)) { key = sd.getName(); }
 		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(key, null);
 		if (p != null) return p.getPossibleFacets(key).get(facetName);

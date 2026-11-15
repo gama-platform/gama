@@ -28,6 +28,11 @@ directly imported comodel experiments remains supported.
 Direct population operations on a statically known model species in experiment context now
 produce compilation errors; species values remain usable, and dynamic accesses are guarded at runtime.
 
+Experiments can opt their directly declared actions into the current simulation
+with `actions_context: simulation`, reducing adapter boilerplate without changing
+action ownership or implicitly selecting all simulations. Imported model simulations
+remain valid simulation-creation targets in an experiment.
+
 An experiment's `user_command` now selects its owner with `of: simulation` (the default) or
 `of: experiment`, like parameters. Compilation, action lookup and execution follow that owner.
 The former `action:` fallback that ran a global action on every simulation is removed; a

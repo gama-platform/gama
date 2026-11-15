@@ -15,7 +15,7 @@ global
 {
 }
 
-experiment Simple type: gui
+experiment Simple type: gui actions_context: simulation
 {
 	geometry shape <- square(100);
 	list<prey> get_prey()
