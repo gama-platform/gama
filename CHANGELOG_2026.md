@@ -2161,7 +2161,7 @@ wheel-car, cone-twist-tentacle and pedestrian-flow/evacuation examples
   alongside dataframe, physics and matrix-computation examples
   ([`b06758d31`](https://github.com/gama-platform/gama/commit/b06758d31),
   [`951060883`](https://github.com/gama-platform/gama/commit/951060883)).
-- New **SIRAnalysis** tutorials cover Latin hypercube, Morris, Sobol, stochasticity and
+- New **SIR Analysis** tutorials cover Latin hypercube, Morris, Sobol, stochasticity and
   beta-distribution exploration; **Particle Life** demonstrates emergent particle interactions.
   Pedestrian-network examples improve free-space connectivity; traffic, grid paths, raster
   import, driving and color-brewer demonstrations are repaired. The broken satellite-image
