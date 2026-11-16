@@ -4013,52 +4013,26 @@ ruleDisplayBlock returns [EObject current=null]
 		}
 		(
 			(
-				((
-					ruleS_Definition
-				)
-				)=>
-				(
-					{
-						newCompositeNode(grammarAccess.getDisplayBlockAccess().getStatementsS_DefinitionParserRuleCall_2_0_0());
+				{
+					newCompositeNode(grammarAccess.getDisplayBlockAccess().getStatementsS_OtherParserRuleCall_2_0());
+				}
+				lv_statements_2_0=ruleS_Other
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getDisplayBlockRule());
 					}
-					lv_statements_2_0=ruleS_Definition
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getDisplayBlockRule());
-						}
-						add(
-							$current,
-							"statements",
-							lv_statements_2_0,
-							"gaml.compiler.Gaml.S_Definition");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-			    |
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getDisplayBlockAccess().getStatementsS_OtherParserRuleCall_2_1_0());
-					}
-					lv_statements_3_0=ruleS_Other
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getDisplayBlockRule());
-						}
-						add(
-							$current,
-							"statements",
-							lv_statements_3_0,
-							"gaml.compiler.Gaml.S_Other");
-						afterParserOrEnumRuleCall();
-					}
-				)
+					add(
+						$current,
+						"statements",
+						lv_statements_2_0,
+						"gaml.compiler.Gaml.S_Other");
+					afterParserOrEnumRuleCall();
+				}
 			)
 		)*
-		otherlv_4='}'
+		otherlv_3='}'
 		{
-			newLeafNode(otherlv_4, grammarAccess.getDisplayBlockAccess().getRightCurlyBracketKeyword_3());
+			newLeafNode(otherlv_3, grammarAccess.getDisplayBlockAccess().getRightCurlyBracketKeyword_3());
 		}
 	)
 ;
