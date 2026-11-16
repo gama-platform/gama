@@ -118,7 +118,8 @@ import gama.api.runtime.scope.Invocation;
 		unique_name = true,
 		concept = { IConcept.SPECIES, IConcept.ACTION })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS },
+		symbols = { "ui_button", "ui_switch", "ui_slider", "ui_radio" })
 @facets (
 		value = { @facet (
 				name = IKeyword.NAME,
@@ -267,6 +268,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 	/** The formal parameter declarations for this action. */
 	Arguments formalArgs = new Arguments();
 
+	/** The simulation context. */
 	private final boolean simulationContext;
 
 	/**
@@ -288,8 +290,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		if (!simulationContext || scope.getAgent() instanceof ISimulationAgent)
-			return super.privateExecuteIn(scope);
+		if (!simulationContext || scope.getAgent() instanceof ISimulationAgent) return super.privateExecuteIn(scope);
 		if (!(scope.getAgent() instanceof IExperimentAgent experiment))
 			throw GamaRuntimeException.error("Action " + getName() + " requires its experiment as receiver.", scope);
 		final ISimulationAgent simulation = experiment.getSimulation();
