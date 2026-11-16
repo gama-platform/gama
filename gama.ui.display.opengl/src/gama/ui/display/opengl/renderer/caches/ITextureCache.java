@@ -61,6 +61,27 @@ public interface ITextureCache {
 	/**
 	 * Gets the texture.
 	 *
+	 * @param img
+	 *            the img
+	 * @param mipmap
+	 *            the mipmap
+	 * @return the texture
+	 */
+	default Texture getTexture(final BufferedImage img, final boolean mipmap) {
+		return getTexture(img);
+	}
+
+	/**
+	 * Ensure mipmaps.
+	 *
+	 * @param texture
+	 *            the texture
+	 */
+	default void ensureMipmaps(final int texture) {}
+
+	/**
+	 * Gets the texture.
+	 *
 	 * @param file
 	 *            the file
 	 * @param isAnimated

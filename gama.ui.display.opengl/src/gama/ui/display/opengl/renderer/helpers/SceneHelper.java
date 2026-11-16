@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import gama.api.GAMA;
+import gama.api.runtime.GeneralSynchronizer;
 import gama.api.ui.layers.ILayer;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.IOpenGL;
@@ -45,7 +47,7 @@ import gama.ui.display.opengl.scene.layers.LayerObject;
 public class SceneHelper extends AbstractRendererHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The back scene. */
@@ -159,6 +161,14 @@ public class SceneHelper extends AbstractRendererHelper {
 		pendingUpdate.set(true);
 	}
 
+	/**
+	 * Retains a refresh request and unblocks any caller waiting on {@code synchronizer}, since this update was skipped.
+	 */
+	public void requestUpdate(final GeneralSynchronizer synchronizer) {
+		requestUpdate();
+		if (synchronizer != null) { synchronizer.release(); }
+	}
+
 	public boolean hasPendingUpdate() { return pendingUpdate.get(); }
 
 	/**
@@ -172,11 +182,21 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * End updating scene.
 	 */
 	public void endUpdatingScene() {
+		endUpdatingScene(null);
+	}
+
+	/**
+	 * End updating scene and attach {@code synchronizer} to the resulting scene so it is released once rendered.
+	 */
+	public void endUpdatingScene(final GeneralSynchronizer synchronizer) {
 		try {
 			// If there is no scene to update, it means it has been cancelled by
 			// another thread (hiding/showing layers, most probably) so we just skip
 			// this step
-			if (backScene == null) return;
+			if (backScene == null) {
+				if (synchronizer != null) { synchronizer.release(); }
+				return;
+			}
 			// We ask the backScene to stop updating
 			backScene.endDrawingLayers();
 			// Newly visible static layers can be added after the first scene was created.
@@ -188,15 +208,17 @@ public class SceneHelper extends AbstractRendererHelper {
 			// If there is another frontScene, we discard it (will be disposed of
 			// later)
 			if (frontScene != null) {
-				if (!frontScene.rendered()) {
+				if (!frontScene.rendered() && !GAMA.isSynchronized() && synchronizer == null) {
 					requestUpdate();
 					garbage.add(backScene);
 					backScene = null;
 					return;
 				}
+				frontScene.releaseSynchronizer();
 				garbage.add(frontScene);
 
 			}
+			backScene.setSynchronizer(synchronizer);
 			// We switch the scenes
 			frontScene = backScene;
 			// ... and clear the backScene
@@ -319,6 +341,7 @@ public class SceneHelper extends AbstractRendererHelper {
 		try {
 			discardStaticScene();
 			if (backScene != null) {
+				backScene.releaseSynchronizer();
 				garbage.add(backScene);
 				backScene = null;
 			}

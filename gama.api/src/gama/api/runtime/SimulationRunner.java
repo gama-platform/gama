@@ -89,8 +89,14 @@ public class SimulationRunner implements ISimulationRunner {
 	/** Sentinel posted to a mailbox to terminate its thread. */
 	private static final Runnable POISON = () -> {};
 
+	/** No-op task posted to wake up a thread waiting in {@link SimulationThread#helpUntil(BooleanSupplier)}. */
+	private static final Runnable WAKEUP = () -> {};
+
 	/** Maps each simulation agent to its dedicated thread. */
 	final Map<ISimulationAgent, SimulationThread> threads = new ConcurrentHashMap<>();
+
+	/** Threads currently waiting in {@link SimulationThread#helpUntil(BooleanSupplier)} for a step permit. */
+	private final Set<SimulationThread> waitingForPermit = ConcurrentHashMap.newKeySet();
 
 	/** The concurrency level (number of simulations that can step concurrently, at least 1). */
 	final int concurrency;
@@ -315,11 +321,19 @@ public class SimulationRunner implements ISimulationRunner {
 		 * this one cannot deadlock.
 		 */
 		void stepWithPermit() {
-			helpUntil(stepPermits::tryAcquire);
+			if (!stepPermits.tryAcquire()) {
+				waitingForPermit.add(this);
+				try {
+					helpUntil(stepPermits::tryAcquire);
+				} finally {
+					waitingForPermit.remove(this);
+				}
+			}
 			try {
 				agent.step();
 			} finally {
 				stepPermits.release();
+				for (final SimulationThread waiting : waitingForPermit) { waiting.post(WAKEUP); }
 			}
 		}
 
@@ -476,7 +490,12 @@ public class SimulationRunner implements ISimulationRunner {
 		final Thread current = Thread.currentThread();
 		// No thread (yet or anymore), or in the display thread, which must never wait for a simulation
 		if (t == null || GAMA.getGui().isInDisplayThread()) return task.get();
-		final FutureTask<T> future = new FutureTask<>(task::get);
+		final FutureTask<T> future = new FutureTask<>(task::get) {
+			@Override
+			protected void done() {
+				if (current instanceof SimulationThread other) { other.post(WAKEUP); }
+			}
+		};
 		if (!t.post(future)) return task.get();
 		if (current instanceof SimulationThread other) {
 			other.helpUntil(future::isDone);
