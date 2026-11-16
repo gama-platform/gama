@@ -317,15 +317,7 @@ public class GamaPreferences {
 				create(IWorkspaceManager.KEY_WORSPACE_PATH, "Workspace directory to use",
 						() -> new GamaFolderFile(null,
 								GAMA.getWorkspaceManager().getLastSetWorkspaceDirectory(), false),
-						IType.DIRECTORY, false).in(NAME, WORKSPACE).inPlayer(false).restartRequired()
-								.onChange(newValue -> {
-									if (newValue != null) {
-										String path = newValue.getPath(null);
-										if (path != null && !path.isEmpty()) {
-											GAMA.getWorkspaceManager().checkWorkspaceDirectory(path, true, true, false);
-										}
-									}
-								});
+						IType.DIRECTORY, false).in(NAME, WORKSPACE).inPlayer(false).restartRequired();
 
 		/** Whether GAMA should ask before automatically rebuilding a corrupted workspace. */
 		public static final Pref<Boolean> CORE_ASK_REBUILD =
