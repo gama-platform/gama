@@ -21,6 +21,12 @@ public class GamlDirtyStateSupport extends DirtyStateEditorSupport {
 	private static final ISchedulingRule SCHEDULING_RULE = SchedulingRuleFactory.INSTANCE.newSequence();
 
 	@Override
+	public void markEditorClean(final IDirtyStateEditorSupportClient client) {
+		if (!isDirty()) return;
+		super.markEditorClean(client);
+	}
+
+	@Override
 	protected UpdateEditorStateJob createUpdateEditorJob() {
 		return new UpdateEditorStateJob(SCHEDULING_RULE) {
 
