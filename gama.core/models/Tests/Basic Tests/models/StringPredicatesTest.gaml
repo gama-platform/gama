@@ -5,7 +5,7 @@
 * Tags: string, regex, test
 */
 
-experiment StringPredicatesTest type: test autorun: true {
+experiment StringPredicatesTest mode: test autorun: true {
 	test "Tokenizers" {
 		// each character of the right operand is a delimiter
 		assert "a,b;c" tokenize ",;" = ["a", "b", "c"];

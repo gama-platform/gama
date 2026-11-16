@@ -304,7 +304,7 @@ global {
    }
 
 
-experiment Run type: gui {
+experiment Run mode: gui {
    parameter "Shapefile for the river" var:river_shapefile category:"Water data";
    parameter "Shapefile for the dykes" var:dykes_shapefile category:"Obstacles";
    parameter "Shapefile for the buildings" var:buildings_shapefile category:"Obstacles";
@@ -313,7 +313,7 @@ experiment Run type: gui {
    parameter "Vertical exaggeration (display only)" var: vertical_exaggeration min: 1.0 max: 20.0 category: "Visualization";
    output { 
  	  layout vertical([0::7778,1::2222]) tabs:false editors: false;
-      display map type: 3d background: paper axes: false {
+      display map renderer: 3d background: paper axes: false {
          camera 'default' location: {8352.5541,7067.0558,2635.9505} target: {5189.4135,3903.9151,0.0};
          light #ambient intensity: 150;
          grid cell elevation: grid_value * vertical_exaggeration triangulation: true;
@@ -333,7 +333,7 @@ experiment Run type: gui {
             draw "Right-click a dyke to destroy it" at: {14#px, 140#px} color: ink font: font("Helvetica", 11);
          }
       }
-      display chart_display refresh: every(24#cycles) type: 3d background: paper {
+      display chart_display refresh: every(24#cycles) renderer: 3d background: paper {
          chart "Dyke pressure" kind: series background: paper axes: ink color: ink
             x_label: "Time (hours)" y_label: "Pressure / fraction of dykes" y_range: {0.0, 1.0}
             legend_font: font("Helvetica", 11) label_font: font("Helvetica", 12)

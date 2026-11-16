@@ -25,4 +25,4 @@ global {
 
 species serv skills:[network] {}
 
-experiment "Tests for gama.extension.network" type: test {}
+experiment "Tests for gama.extension.network" mode: test {}

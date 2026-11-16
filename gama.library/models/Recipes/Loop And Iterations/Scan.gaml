@@ -63,4 +63,4 @@ global {
 	}
 }
 
-experiment "Run scan recipes" type: gui {}
+experiment "Run scan recipes" mode: gui {}

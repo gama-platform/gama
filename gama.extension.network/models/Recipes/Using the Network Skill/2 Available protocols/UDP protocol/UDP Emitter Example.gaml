@@ -44,7 +44,7 @@ species NetworkingAgent skills:[network] {
 	}
 }
 
-experiment Client_testdd type: gui {
+experiment Client_testdd mode: gui {
 
 	output {
 		display "My display" { 

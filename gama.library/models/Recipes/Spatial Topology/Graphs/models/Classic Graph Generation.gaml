@@ -55,7 +55,7 @@ species node_agent {
 	}
 }
 
-experiment loadgraph type: gui {
+experiment loadgraph mode: gui {
 	parameter "Graph type" var: graph_type;
 	parameter "Number of nodes" var: nb_nodes min: 10 ;
 	parameter "Probability to rewire an edge (beta)" var: p min: 0.0 max: 1.0 category: "small-world";
@@ -63,7 +63,7 @@ experiment loadgraph type: gui {
 	parameter "Number of edges added per novel node" var: m min: 1 max: 10 category: "scale-free";
 	
 	output {
-		display map type: 2d{
+		display map renderer: 2d{
 			species edge_agent ;
 			species node_agent ;
 		}

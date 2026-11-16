@@ -390,10 +390,10 @@ experiment base virtual:true{
 	
 }
 
-experiment "Simple" type: gui parent:base{
+experiment "Simple" mode: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
-		display RealBoids type: 3d {
+		display RealBoids renderer: 3d {
 			picture file_path_to_ocean refresh: false;
 			species boids coordinates: #world aspect: dynamicColor position: {0, 0, 0.1} trace: 30;
 			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.1};
@@ -404,18 +404,18 @@ experiment "Simple" type: gui parent:base{
 
 }
 
-experiment "Trajectory Analysis" type: gui parent:base{
+experiment "Trajectory Analysis" mode: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
 		layout #split;
-		display RealBoids type: 3d {
+		display RealBoids renderer: 3d {
 			picture file_path_to_ocean refresh: false;
 			species boids coordinates: #world aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
 			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.1};
 			species obstacle coordinates: #world position: {0, 0, 0.1};
 		}
 
-		display AggregatedBoidsTrajectory type: 3d {
+		display AggregatedBoidsTrajectory renderer: 3d {
 			picture file_path_to_ocean refresh: false;
 			species aggregatedboids aspect: base trace: 100 fading: true;
 			species boids_goal aspect: default;
@@ -425,18 +425,18 @@ experiment "Trajectory Analysis" type: gui parent:base{
 
 }
 
-experiment "Space & Time Cube" type: gui parent:base{
+experiment "Space & Time Cube" mode: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
 		layout #split;
-		display RealBoids type: 3d {
+		display RealBoids renderer: 3d {
 			picture file_path_to_ocean refresh: false;
 			species boids coordinates: #world aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
 			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.1};
 			species obstacle coordinates: #world position: {0, 0, 0.1};
 		}
 
-		display SpaceTimeCubeAll type: 3d camera: #from_up_front {
+		display SpaceTimeCubeAll renderer: 3d camera: #from_up_front {
 			picture file_path_to_ocean refresh: false;
 			species boids trace: 100 {
 				draw triangle(20) size: 15 rotate: heading color: hsb(float(heading) / 360.0, 1.0, 1.0) border: hsb(float(heading) / 360.0, 1.0, 1.0) depth: 5 at:
@@ -449,7 +449,7 @@ experiment "Space & Time Cube" type: gui parent:base{
 
 		}
 
-		display SpaceTimeCubeAggregated type: 3d camera: #from_up_front {
+		display SpaceTimeCubeAggregated renderer: 3d camera: #from_up_front {
 			picture file_path_to_ocean refresh: false;
 			species aggregatedboids trace: 500 {
 				draw sphere(10) color: rgb('red') at: {location.x, location.y, location.z + time};
@@ -465,11 +465,11 @@ experiment "Space & Time Cube" type: gui parent:base{
 
 }
 
-experiment "Multiple views" type: gui parent:base{
+experiment "Multiple views" mode: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output synchronized: true {
 		layout #split;
-		display RealBoids type: 2d antialias: false {
+		display RealBoids renderer: 2d antialias: false {
 			picture file_path_to_ocean refresh: false;
 			species boids coordinates: #world aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
 			species boids_goal coordinates: #world transparency: 0.2 position: {0, 0, 0.25};
@@ -477,7 +477,7 @@ experiment "Multiple views" type: gui parent:base{
 			species boids coordinates: #world aspect: dynamicColor transparency: 0.2 position: {0, 0, 0.24};
 		}
 
-		display ThirdPerson type: 3d antialias: false {
+		display ThirdPerson renderer: 3d antialias: false {
 			camera "default" dynamic: true location: {int(first(boids).location.x), int(first(boids).location.y), 500} target:
 			{int(first(boids).location.x), int(first(boids).location.y), 0};
 			// A plan-view mini-map: the frame performs the reduction, not agent locations.
@@ -493,7 +493,7 @@ experiment "Multiple views" type: gui parent:base{
 			species boids_goal transparency: 0.2;
 		}
 
-		display FirstPerson type: 3d antialias: false {
+		display FirstPerson renderer: 3d antialias: false {
 			camera "default" dynamic: true location: {int(first(boids).location.x), int(first(boids).location.y), 10} target:
 			{cos(first(boids).heading) * first(boids).speed + int(first(boids).location.x), sin(first(boids).heading) * first(boids).speed + int(first(boids).location.y), 5};
 			picture file_path_to_ocean;

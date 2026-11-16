@@ -47,7 +47,7 @@ global {
 	}
 } 
 
-experiment "Show Parameters" type: gui {
+experiment "Show Parameters" mode: gui {
 	
 	// Variables can also be declared in the experiment
 	int an_int_to_build_a_list <- 10;

@@ -27,7 +27,7 @@ import gaml.compiler.ui.wizards.action.ActionBodyContext;
 import gaml.compiler.ui.wizards.species.SpeciesDraft;
 
 /**
- * Lossless GAML source adapter for one experiment. Edits replace only the tokens that changed (name, type, header facet
+ * Lossless GAML source adapter for one experiment. Edits replace only the tokens that changed (name, mode, header facet
  * values, attribute/parameter/monitor fields, the text between the init braces), remove deleted facets and entries
  * and add new ones after the existing ones of the same kind. Everything the draft does not represent (displays,
  * methods, tests, reflexes, actions, permanent outputs, comments, unknown facets of attributes, parameters and
@@ -134,16 +134,19 @@ public final class ExperimentSource {
 	private ExperimentDraft read() {
 		if (experiment.getBlock() == null) throw new IllegalArgumentException("This experiment has no block.");
 		String type = ExperimentDraft.GUI;
+		boolean hasMode = false;
 		List<SpeciesDraft.Facet> facets = new ArrayList<>();
 		for (Facet facet : experiment.getFacets()) {
 			String key = key(facet);
 			if (!SpeciesDraft.isIdentifier(key) || facet.getBlock() != null || facet.getExpr() == null || "name".equals(key))
 				throw new IllegalArgumentException("Edit this experiment's " + key + " facet directly in the source.");
 			String value = text(facet.getExpr()).trim();
-			if ("type".equals(key)) {
+			if ("mode".equals(key) || "type".equals(key)) {
+				if (hasMode) throw new IllegalArgumentException("Specify the experiment mode only once, using mode:.");
+				hasMode = true;
 				type = unquote(value);
 				if (!ExperimentDraft.TYPES.contains(type))
-					throw new IllegalArgumentException("Edit this experiment's type directly in the source.");
+					throw new IllegalArgumentException("Edit this experiment's mode directly in the source.");
 			} else facets.add(new SpeciesDraft.Facet(key, value));
 		}
 		List<SpeciesDraft.Variable> variables = new ArrayList<>();
@@ -335,9 +338,10 @@ public final class ExperimentSource {
 	private void patchHeader(final ExperimentDraft draft, final List<Patch> patches) {
 		StringBuilder added = new StringBuilder();
 		if (!draft.type().equals(original.type())) {
-			Facet type = facet(experiment, "type");
+			Facet type = facet(experiment, "mode");
+			if (type == null) type = facet(experiment, "type");
 			if (type != null) replaceTokens(patches, NodeModelUtils.findActualNodeFor(type.getExpr()), draft.type());
-			else added.append(" type: ").append(draft.type());
+			else added.append(" mode: ").append(draft.type());
 		}
 		facets(experiment, original.facets(), draft.facets(), patches, added);
 		if (!added.isEmpty()) patches.add(new Patch(headerEnd(experiment), 0, added.toString()));

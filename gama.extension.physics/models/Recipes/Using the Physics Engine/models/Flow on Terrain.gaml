@@ -64,7 +64,7 @@ species water skills: [dynamic_body] {
 
 } 
 
-experiment "Four different scales" type: gui {
+experiment "Four different scales" mode: gui {
 	
 	string camera_loc <- #from_up_front;
 	int distance <- 200;
@@ -81,7 +81,7 @@ experiment "Four different scales" type: gui {
 	
 	output {
 		layout #split;
-		display "Flow" type: 3d background: #white   antialias: false {
+		display "Flow" renderer: 3d background: #white   antialias: false {
 			camera #default location: experiment.camera_loc distance: experiment.distance dynamic: true;
 			graphics world {
 				draw "Scale: " + z_scale color: #cadetblue font: font("Helvetica", 18, #bold) at: {world.location.x, -10, 25} anchor: #center depth: 2 rotate: -90::{1,0,0};
@@ -101,7 +101,7 @@ experiment "Four different scales" type: gui {
 	
 	}
 	
-experiment "Largest scale" type: gui {
+experiment "Largest scale" mode: gui {
 	
 	string camera_loc <- #from_up_front;
 	int distance <- 200;
@@ -112,7 +112,7 @@ experiment "Largest scale" type: gui {
 	
 	output {
 		layout #split;
-		display "Flow" type: 3d background: #white   antialias: false camera: #from_up_front{
+		display "Flow" renderer: 3d background: #white   antialias: false camera: #from_up_front{
 			mesh terrain grayscale: true triangulation: true refresh: false scale: z_scale;
 			species water;
 		}

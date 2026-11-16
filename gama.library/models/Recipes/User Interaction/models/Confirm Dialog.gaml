@@ -17,4 +17,4 @@ global {
 	}
 }
 
-experiment Confirmdialog_example type: gui ;
+experiment Confirmdialog_example mode: gui ;

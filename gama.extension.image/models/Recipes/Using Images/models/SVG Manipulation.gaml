@@ -45,13 +45,13 @@ global {
 
 }
 
-experiment "Open me" type: gui {
+experiment "Open me" mode: gui {
 	
 	
 	
 	output {
 	
-		display "Loop on geometries" type: 3d {
+		display "Loop on geometries" renderer: 3d {
 			graphics g {
 				loop gg over: geometries {
 					draw gg border: #black width: 0.3;
@@ -59,21 +59,21 @@ experiment "Open me" type: gui {
 			}
 		}
 		
-		display "Wireframe geometry" type: 3d {
+		display "Wireframe geometry" renderer: 3d {
 			graphics g {
 				draw geometry(geometries) wireframe: true border: #black width: 0.3;
 			}
 		}
 		
-		display "Geometries as agents" type: 3d {
+		display "Geometries as agents" renderer: 3d {
 			species shapes;
 		}
 		
-		display "Image Full" type: 3d {
+		display "Image Full" renderer: 3d {
 			picture image(geometries);
 		}
 		
-		display "Images Small" type: 3d {
+		display "Images Small" renderer: 3d {
 			species images;
 		}
 	

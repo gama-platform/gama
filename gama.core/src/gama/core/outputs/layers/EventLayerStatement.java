@@ -69,18 +69,11 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 				optional = false,
 				doc = @doc ("The trigger: #key_listener or #mouse_listener for generic input; a mouse-event constant, a keyboard-event constant, a single character, or an explicit keyboard combination such as 'ctrl+shift+a', 'alt+arrow_up', #ctrl + 'a', or #cmd + '+' + #enter. Keyboard constants include #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down, #ctrl, #cmd, #shift and #alt. Mouse constants include #mouse_up, #mouse_down, #mouse_click, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu and #mouse_drag.")),
 				@facet (
-						name = IKeyword.TYPE,
+						name = IKeyword.DEVICE,
 						type = IType.STRING,
 						optional = true,
 						doc = @doc (
-								deprecated = "use device: instead",
-								value = "Type of device used to generate events. Defaults to 'default', which encompasses keyboard and mouse")),
-				@facet (
-						name = "device",
-						type = IType.STRING,
-						optional = true,
-						doc = @doc (
-								value = "The device used to generate events. Defaults to 'default', which encompasses keyboard and mouse")),
+								value = "The device used to generate events. Defaults to 'default', which encompasses keyboard and mouse. Legacy `type:` is accepted with a deprecation warning.")),
 				@facet (
 						name = IKeyword.ACTION,
 						type = IType.ACTION,
@@ -209,7 +202,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 										value = "",
 										isExecutable = false),
 								@example (
-										value = "experiment Simple type:gui {",
+										value = "experiment Simple mode:gui {",
 										isExecutable = false),
 								@example (
 										value = "   display my_display {",
@@ -341,7 +334,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 		}
 		trigger = description.getLitteral(TRIGGER);
 
-		type = getFacet("device", IKeyword.TYPE);
+		type = getFacet(IKeyword.DEVICE);
 	}
 
 	/**

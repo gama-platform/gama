@@ -9,7 +9,7 @@ model ant_foraging_charts_tests
 
 import "Ant Foraging (Charts examples).gaml"
 
-experiment "Trail timing" type: test {
+experiment "Trail timing" mode: test {
 
 	test "Ants detect weak trails before evaporation" {
 		ask simulation {

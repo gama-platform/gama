@@ -79,7 +79,7 @@ species person skills: [moving] {
 }
 
 // ── GUI experiment (for manual inspection) ────────────────────────────────────
-experiment SIR_gui type: gui {
+experiment SIR_gui mode: gui {
     parameter "Number of agents"    var: nb_agents;
     parameter "Initially infected"  var: nb_infected_init;
     parameter "Infection rate"      var: infection_rate;
@@ -87,10 +87,10 @@ experiment SIR_gui type: gui {
     parameter "Recovery time"       var: recovery_time unit: "cycles";
 
     output {
-        display "Population" type: java2D {
+        display "Population" renderer: java2D {
             species person aspect: base;
         }
-        display "SIR Chart" type: 3d {
+        display "SIR Chart" renderer: 3d {
             chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
@@ -113,7 +113,7 @@ experiment SIR_gui type: gui {
 //  Increase `sample` (number of trajectories) for more robust estimates.
 //  levels: number of grid levels for the OAT design (default 4, must be even).
 //
-experiment SIR_Morris type: batch
+experiment SIR_Morris mode: batch
     repeat: 1
     keep_seed: false
     until: (cycle >= 1000 or nb_infected = 0) {

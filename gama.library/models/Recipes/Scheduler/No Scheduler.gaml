@@ -41,7 +41,7 @@ species no_scheduler schedules:[]
 	}
 }
 
-experiment "No Scheduling" type:gui
+experiment "No Scheduling" mode:gui
 {
 	
 }

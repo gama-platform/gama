@@ -86,7 +86,7 @@ species building {
 	}
 }
 
-experiment main_experiment type:gui{
+experiment main_experiment mode:gui{
 	parameter "Infection distance" var: infection_distance unit: #m;
 	parameter "Proba infection" var: proba_infection min: 0.0 max: 1.0;
 	parameter "Nb people infected at init" var: nb_infected_init ;
@@ -98,7 +98,7 @@ experiment main_experiment type:gui{
 			species building ;
 			species people ;			
 		}
-		display chart refresh: every(10#cycles)  type: 3d {
+		display chart refresh: every(10#cycles)  renderer: 3d {
 			chart "Disease spreading" kind: series style: spline{
 				data "susceptible" value: nb_people_not_infected color: #green marker: false;
 				data "infected" value: nb_people_infected color: #red marker: false;

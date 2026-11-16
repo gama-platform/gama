@@ -145,7 +145,7 @@ species Host  {
 }
 
 
-experiment Simulation type: gui { 
+experiment Simulation mode: gui { 
 	
 	
  	parameter "Number of Susceptible" var: number_S ;// The number of susceptible
@@ -158,12 +158,12 @@ experiment Simulation type: gui {
 	parameter "Size of the neighbours" var:neighbours_size unit: "cells";
  	output { 
  		layout #split;
-	    display sir_display background: paper type:2d antialias:false {
+	    display sir_display background: paper renderer:2d antialias:false {
 	        grid sir_grid border: rgb(218, 210, 192);
 	        species Host aspect: basic;
 	    }
 	        
-	    display chart background: paper refresh: every(10#cycles) type: 3d {
+	    display chart background: paper refresh: every(10#cycles) renderer: 3d {
 			chart "Susceptible" kind: series background: paper axes: rgb(57, 66, 61) style: exploded {
 				data "susceptible" value: Host count (each.is_susceptible) color: susceptible_ink;
 				data "infected" value: Host count (each.is_infected) color: infected_ink;

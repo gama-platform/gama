@@ -32,9 +32,9 @@ species objects skills: [moving]{
 	}
 }	
 
-experiment Display  type: gui {
+experiment Display  mode: gui {
 	output synchronized: true{
-		display ComplexObject type: 3d background:#orange{
+		display ComplexObject renderer: 3d background:#orange{
 			species objects aspect:obj;				
 		}
 	}

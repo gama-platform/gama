@@ -126,9 +126,9 @@ global {
 		}
 	}
 }
-experiment RelationTests type: test ;
+experiment RelationTests mode: test ;
 
-experiment with_visualization type: gui {
+experiment with_visualization mode: gui {
 	output {
 		display map {
 			species cell;

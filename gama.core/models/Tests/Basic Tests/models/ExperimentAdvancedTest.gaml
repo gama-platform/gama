@@ -8,7 +8,7 @@
 model ExperimentAdvancedTestModel
 
 
-experiment ExperimentAdvancedTest type: test autorun: true {
+experiment ExperimentAdvancedTest mode: test autorun: true {
 		int my_param <- 10;
 	float my_float_param <- 5.0;
 	

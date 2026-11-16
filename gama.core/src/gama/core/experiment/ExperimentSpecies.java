@@ -169,10 +169,10 @@ import gama.gaml.statements.LayoutStatement;
 						optional = true,
 						doc = @doc ("Controls how many simulations of this experiment can step concurrently. If omitted or false, simulations run sequentially. true uses the configured thread count; a positive integer sets the maximum number of concurrent simulations. Headless non-batch experiments remain sequential.")),
 				@facet (
-						name = IKeyword.TYPE,
+						name = IKeyword.MODE,
 						type = IType.LABEL,
-						optional = false,
-						doc = @doc ("The type of the experiment: `gui`, `batch`, `test`, etc.")),
+						optional = true,
+						doc = @doc ("The mode of the experiment: `gui` (default), `batch`, `test`, etc. Legacy `type:` is accepted with a deprecation warning.")),
 				@facet (
 						name = IExperimentDescription.ACTIONS_CONTEXT,
 						type = IType.LABEL,
@@ -388,12 +388,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	public ExperimentSpecies(final IDescription description) {
 		super(description);
 		setName(description.getName());
-		experimentType = description.getLitteral(IKeyword.TYPE);
-		// final String type = description.getFacets().getLabel(IKeyword.TYPE);
-		// if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
-
-		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) {
-		// setHeadless(true); }
+		experimentType = description.getLitteral(IKeyword.MODE);
 		final IExpression expr = getFacet(IKeyword.KEEP_SEED);
 		if (expr != null && expr.isConst()) {
 			keepSeed = Cast.asBool(myScope, expr.value(myScope));

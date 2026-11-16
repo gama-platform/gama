@@ -148,7 +148,7 @@ species people {
 
 }
 
-experiment Aspects type: gui {
+experiment Aspects mode: gui {
 	float minimum_cycle_duration <- 0.01;
 	output {
 		layout #split;
@@ -173,9 +173,9 @@ experiment Aspects type: gui {
 			species people;
 		}
 		
-		display displ_openGL type: 3d parent: abstract_display {}
+		display displ_openGL renderer: 3d parent: abstract_display {}
 
-		display displ_2D type: 2d parent: abstract_display {}		
+		display displ_2D renderer: 2d parent: abstract_display {}		
 	}
 
 }

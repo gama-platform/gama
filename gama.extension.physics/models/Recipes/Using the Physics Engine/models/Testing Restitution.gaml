@@ -96,7 +96,7 @@ species ball skills: [dynamic_body] {
 	}
 }
 
-experiment "Test Restitution !" type: gui {
+experiment "Test Restitution !" mode: gui {
 	image_file bang <- image_file("../images/bang.png");
 	image_file bam <- image_file("../images/bam.png");
 	float wall_restitution <- 1.0 min: 0.0 max: 1.0;
@@ -151,7 +151,7 @@ experiment "Test Restitution !" type: gui {
 
 	output {
 		layout #split;
-		display "Restitution" type: 3d axes: false background: rgb(248, 246, 240) {
+		display "Restitution" renderer: 3d axes: false background: rgb(248, 246, 240) {
 			graphics "Grid" refresh: false {
 				loop x from: 0 to: 100 step: 10 {
 					draw line([{x, 0}, {x, 100}]) color: rgb(224, 219, 210) width: 1;

@@ -28,10 +28,10 @@ global {
 	}
 
 
-experiment "Ripples and Fish" type: gui {
+experiment "Ripples and Fish" mode: gui {
 	
 	output synchronized: true{
-		display Ripples  type: 3d camera: #from_up_front
+		display Ripples  renderer: 3d camera: #from_up_front
 		{
 			species fish coordinates: #world position: {0,0,0.05};
 			graphics world transparency: 0.4{ 

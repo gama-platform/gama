@@ -126,7 +126,7 @@ species node_agent {
 	
 }
 
-experiment Simulation_ABM_EBM type: gui {
+experiment Simulation_ABM_EBM mode: gui {
 	parameter 'Number of Susceptible' type: int var: number_S <- 495 category: "Initial population";
 	parameter 'Number of Infected' type: int var: number_I <- 5 category: "Initial population";
 	parameter 'Number of Removed' type: int var: number_R <- 0 category: "Initial population";
@@ -135,25 +135,25 @@ experiment Simulation_ABM_EBM type: gui {
 	parameter 'Size of the neighbours' type: int var: neighbours_size <- 1 min: 1 max: 5 category: "Infection" unit: "cells";
 	output {
 		layout #split;
-		display sir_display type:2d antialias:false { 
+		display sir_display renderer:2d antialias:false { 
 			grid sir_grid border: #lightgray;
 			species Host aspect: basic;	
 		}
-		display ABM  type: 3d  { 
+		display ABM  renderer: 3d  { 
 			chart 'Population' kind: series background: #white style: exploded {
 				data 'susceptible' value: (Host as list) count (each.is_susceptible) color: rgb(46,204,113) marker_size: 0.5;
 				data 'infected' value: (Host as list) count (each.is_infected) color: rgb(231,76,60) marker_size: 0.5;
 				data 'immune' value: (Host as list) count (each.is_immune) color: rgb(52,152,219) marker_size: 0.5;
 			}
 		}
-		display EBM  type: 3d  { 
+		display EBM  renderer: 3d  { 
 			chart "Population" kind: series background: #white {
 				data 'S' value: first(node_agent).S color: rgb(46,204,113) marker: false;
 				data 'I' value: first(node_agent).I color: rgb(231,76,60) marker: false;
 				data 'R' value: first(node_agent).R color: rgb(52,152,219) marker: false;
 			}
 		}
-		display ABM_EBM   type: 3d  { 
+		display ABM_EBM   renderer: 3d  { 
 			chart 'Population' kind: series background: #white style: exploded {
 				data 'susceptible' value: (Host as list) count (each.is_susceptible) color: rgb(39,174,96) marker_size: 0.5;
 				data 'infected' value: (Host as list) count (each.is_infected) color: rgb(192,57,43) marker_size: 0.5;

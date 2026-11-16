@@ -31,7 +31,7 @@ global {
  * 
  */
  
-experiment batch_abstract type:batch virtual:true until:(time > end_cycle) {
+experiment batch_abstract mode:batch virtual:true until:(time > end_cycle) {
 	parameter "Batch mode" var: is_batch <- true among: [true];
 	parameter "Prey max transfer:" var: prey_max_transfer min: 0.05 max: 0.5 step: 0.05;
 	parameter "Prey energy reproduce:" var: prey_energy_reproduce min: 0.05 max: 0.75 step: 0.05;
@@ -41,7 +41,7 @@ experiment batch_abstract type:batch virtual:true until:(time > end_cycle) {
 
 // This experiment runs the full factorial experiment (each combination of parameter) 5 times, that is 14k simulations :) see exhaustive_exploration experiment
 // At the end of each simulation (replicated 5 times), the people agents are saved in a shapefile
-experiment 'Run every possible simulation 5 times' parent: batch_abstract type: batch repeat: 5 keep_seed: true until: world.stop_sim() or (time > end_cycle){
+experiment 'Run every possible simulation 5 times' parent: batch_abstract mode: batch repeat: 5 keep_seed: true until: world.stop_sim() or (time > end_cycle){
 	
 	// the reflex will be activated at the end of each run; in this experiment a run consists of the execution of 5 simulations (repeat: 5)
 	reflex end_of_runs
@@ -60,7 +60,7 @@ experiment 'Run every possible simulation 5 times' parent: batch_abstract type: 
 // This experiment extract the number of replicates that should be made according to two methods:
 // 1. How increasing the number of replicates dimish the standard error
 // 2. coefficient of variation 
-experiment replication_analysis parent: batch_abstract type: batch until: world.stop_sim() or ( time > end_cycle ) 
+experiment replication_analysis parent: batch_abstract mode: batch until: world.stop_sim() or ( time > end_cycle ) 
 	repeat:40 keep_simulations:false {
 	method stochanalyse outputs:[nb_preys, nb_predators] report:"Results/stochanalysis.csv" results:"Results/stochanalysis_raw.csv" sample:3;
 } 
@@ -70,12 +70,12 @@ experiment replication_analysis parent: batch_abstract type: batch until: world.
 // This is what we call 'brute force' exploration - because obviously it is not smart, nor gentle in the exploration approach. 
 // In order to diminish number of explored points, one can use 'factorial' facet (how many value per parameter) or diminish the step
 // facet of parameters each at a time. Another way is to rely on smarter strategy to sample from the parameter space using sampling methods.  
-experiment exhaustive_exploration parent: batch_abstract type: batch keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
+experiment exhaustive_exploration parent: batch_abstract mode: batch keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
 	method exploration;
 	
 	//the permanent section allows to define a output section that will be kept during all the batch experiment
 	permanent {
-		display Comparison  type: 2d {
+		display Comparison  renderer: 2d {
 			chart "Number of people infected" kind: series {
 				//we can access to all the simulations of a run (here composed of 5 simulation -> repeat: 5) by the variable "simulations" of the experiment.
 				//here we display for the 5 simulations, the mean, min and max values of the nb_infected variable.
@@ -89,7 +89,7 @@ experiment exhaustive_exploration parent: batch_abstract type: batch keep_seed: 
 
 // This experiment tests explicit parameters sets combining 2 parameters in 4 different configurations,
 // repeating each simulation three times (the aggregated fitness correspond to the mean fitness), 
-experiment explicit_exploration parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
+experiment explicit_exploration parent: batch_abstract mode: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
 	method exploration with: [
 		["prey_max_transfer"::0.1, "predator_energy_transfer":: 0.1],
 		["prey_max_transfer"::0.5, "predator_energy_transfer":: 0.2],
@@ -99,23 +99,23 @@ experiment explicit_exploration parent: batch_abstract type: batch repeat: 3 kee
 }
 
 // Conducted the same experiment plan but explicitly defined using a csv file
-experiment explicit_from_file parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
+experiment explicit_from_file parent: batch_abstract mode: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
 	method exploration from:"includes/ParameterSets.csv" outputs:[nb_preys,nb_predators,time] results:"Results/exploration.csv";
 }
 
 // This experiment iterate over point of the parameter space choosen following
 // Latin Hypercube Sampling
-experiment exploration_with_sampling  parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
+experiment exploration_with_sampling  parent: batch_abstract repeat:3 mode: batch until:world.stop_sim() or time>end_cycle {
 	method exploration sampling:"latinhypercube" sample:100;
 }
 
-experiment exploration_with_factorial  parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
+experiment exploration_with_factorial  parent: batch_abstract repeat:3 mode: batch until:world.stop_sim() or time>end_cycle {
 	method exploration sampling:"factorial" factorial:4 sample:100;
 }
 
 // This experiment iterate over 100 point randomly drawn from the parameter space
 // Then the model global variables "nb_preys" and "nb_predators" are saved un a csv for each simulation run (including potential replicates)
-experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3 type: batch until:world.stop_sim() or time>end_cycle {
+experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3 mode: batch until:world.stop_sim() or time>end_cycle {
 	method exploration sampling:"uniform" sample:10 outputs:[nb_preys,nb_predators,time] results:"Results/exploration.csv";
 }
 
@@ -123,14 +123,14 @@ experiment exploration_with_sampling_and_outputs parent: batch_abstract repeat:3
 // Sobol index, i.e. a contribution value of each parameters to 
 // observed variance for outcomes of interest, 
 // more on this see https://www.jasss.org/19/1/5.html and http://moeaframework.org for the API
-experiment Sobol parent: batch_abstract type: batch until:( time > end_cycle ) {
+experiment Sobol parent: batch_abstract mode: batch until:( time > end_cycle ) {
 	method sobol outputs:[nb_preys,nb_predators] sample:10 report:"Results/sobol.csv" results:"Results/sobol_raw.csv";
 }
 
 // This experiment perform a Morris analysis (see Morris 1991, doi:10.1080/00401706.1991.10484804)
 // to screen and rank parameters based on elementary effect (changes on outputs due to a small modification of 
 // one paameter value)
-experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) {
+experiment Morris parent: batch_abstract mode: batch until:( time > end_cycle ) {
 	method morris outputs:[nb_preys,nb_predators] sample:10 levels:4 report:"Results/morris.csv" results:"Results/morris_raw.csv";
 }
 
@@ -142,6 +142,6 @@ experiment Morris parent: batch_abstract type: batch until:( time > end_cycle ) 
 // bootstrap facet: how many time a parameter value is duplicated in the final experiment plan, with bootstrap < sample
 // Hence, final sample size is 'sample + sample * bootstrap * |parameter|', with default sample and bootstrap, respectively 132 and 4
 // Sampled point should be high and at least 2 times higher than bootstrap
-experiment Beta_distribution parent: batch_abstract type: batch until:( time > end_cycle ) {
+experiment Beta_distribution parent: batch_abstract mode: batch until:( time > end_cycle ) {
 	method betad outputs:[nb_preys,nb_predators] sampling:"uniform" sample:10 bootstrap:4 report:"Results/betad.csv" results:"Results/betad_raw.csv";
 }

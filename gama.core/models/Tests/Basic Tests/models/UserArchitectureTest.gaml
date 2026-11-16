@@ -46,4 +46,4 @@ species user_agent2 control: user_last {
 	}
 }
 
-experiment UserArchitectureTest type: test autorun: true;
+experiment UserArchitectureTest mode: test autorun: true;

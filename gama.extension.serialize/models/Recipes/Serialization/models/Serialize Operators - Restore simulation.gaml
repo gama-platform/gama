@@ -49,7 +49,7 @@ species other {
 	}
 }
 
-experiment "Repeated Simulations" type: gui {
+experiment "Repeated Simulations" mode: gui {
 
 	string saved_step <- "";
 
@@ -70,7 +70,7 @@ experiment "Repeated Simulations" type: gui {
 			species other aspect: default;
 		}	
 		
-		display c  type: 2d {
+		display c  renderer: 2d {
 			chart "t" {
 				data "location" value: first(people).location.x;
 			}

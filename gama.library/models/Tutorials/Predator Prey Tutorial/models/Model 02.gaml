@@ -37,7 +37,7 @@ grid vegetation_cell width: 50 height: 50 neighbors: 4 {
 	rgb color <- rgb(int(255 * (1 - food)), 255, int(255 * (1 - food))) update: rgb(int(255 * (1 - food)), 255, int(255 * (1 - food)));
 }
 
-experiment prey_predator type: gui {
+experiment prey_predator mode: gui {
 	parameter "Initial number of preys: " var: nb_preys_init min: 1 max: 1000 category: "Prey";
 	output {
 		display main_display map_order: true {

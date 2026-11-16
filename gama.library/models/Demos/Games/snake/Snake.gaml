@@ -224,12 +224,12 @@ species HUD skills:[thread]{
 }
 
 
-experiment snake_game type: gui autorun: true{
+experiment snake_game mode: gui autorun: true{
 	float minimum_cycle_duration <- 0.3;
 	parameter "Size of the environment" var: environment_size <- 30 min: 10 max: 100;
 	parameter "Game speed (0.0: fast; 1.0: slow)" of: experiment var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
 	output {
-		display map type:2d antialias:false {
+		display map renderer:2d antialias:false {
 			species wall;
 			species snake;
 			species food;

@@ -88,11 +88,11 @@ global
 
 }
 
-experiment simple type: gui
+experiment simple mode: gui
 {
 	output synchronized: true
 	{
-		display "Comodel Display"  type:3d
+		display "Comodel Display"  renderer:3d
 		{
 			agents "building" value: Evacuation.movecomodel  accumulate each.get_building();
 			agents "people" value:  Evacuation.movecomodel  accumulate each.get_people();

@@ -353,7 +353,7 @@ grid cell6 width: x_cells height: y_cells neighbors: 6 {
 grid cell8 width: x_cells height: y_cells neighbors: 8 {
 }
 
-experiment Graph type: gui {
+experiment Graph mode: gui {
 	
 	parameter var:init_nb_nodes;
 	parameter var:nb_nodes;

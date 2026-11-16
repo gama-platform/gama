@@ -94,9 +94,9 @@ global {
 
 }
 
-experiment TopologyTests type: test {} 
+experiment TopologyTests mode: test {} 
 
-experiment with_visualization type: gui {
+experiment with_visualization mode: gui {
 	output {
 		display map {
 			graphics "view" {

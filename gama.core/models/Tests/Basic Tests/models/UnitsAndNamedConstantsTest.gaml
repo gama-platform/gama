@@ -5,7 +5,7 @@
 * Tags: constant, unit, test
 */
 
-experiment UnitsAndNamedConstantsTest type: test autorun: true {
+experiment UnitsAndNamedConstantsTest mode: test autorun: true {
 
 	test "Percent literals" {
 		assert 100% = 1.0;

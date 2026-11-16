@@ -400,7 +400,7 @@ species particle {
 }
 
 // ── Main experiment ───────────────────────────────────────────────────────────
-experiment ParticleLife type: gui {
+experiment ParticleLife mode: gui {
 
     // General parameters
     parameter "Number of types"     var: nb_types      min: 1    max: 5     category: "Model";
@@ -463,7 +463,7 @@ experiment ParticleLife type: gui {
     
 
     output {
-        display "Particle Life" type: 2d antialias: true background: #black {
+        display "Particle Life" renderer: 2d antialias: true background: #black {
             species particle aspect: default;
         }
         monitor "Average density"  value: with_precision(mean(particle collect each.local_density), 2);

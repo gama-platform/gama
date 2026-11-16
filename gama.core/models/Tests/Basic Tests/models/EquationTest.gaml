@@ -40,4 +40,4 @@ species ode_agent {
 	}
 }
 
-experiment EquationTest type: test autorun: true;
+experiment EquationTest mode: test autorun: true;

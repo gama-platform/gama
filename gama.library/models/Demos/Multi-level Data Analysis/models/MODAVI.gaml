@@ -277,7 +277,7 @@ reflex initMatrix{
 
 
 
-experiment MODAVI type: gui {
+experiment MODAVI mode: gui {
 	
 	parameter 'Number of Agents' var:nbAgent category: 'Model';
 	parameter 'Number of value per class' var:nbValuePerClass category: 'Model';
@@ -291,7 +291,7 @@ experiment MODAVI type: gui {
 	
 	
 	output synchronized: true {			
-		display MODAVI type:3d axes:false {
+		display MODAVI renderer:3d axes:false {
 //			camera #default location:{world.shape.width*1.5, world.shape.height,world.shape.width*4} target:{world.shape.width*1.5, world.shape.height,0};
 			camera 'default' location: {150.0,100,300} target: {150.0,100.0,0.0};
 			

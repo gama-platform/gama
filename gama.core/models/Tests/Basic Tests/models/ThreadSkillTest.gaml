@@ -34,7 +34,7 @@ species thread_agent skills: [thread] {
 	}
 }
 
-experiment ThreadSkillTest type: test autorun: true {
+experiment ThreadSkillTest mode: test autorun: true {
 	
 
 }

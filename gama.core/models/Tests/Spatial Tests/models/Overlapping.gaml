@@ -41,9 +41,9 @@ species polygon_square {
 	} 	
 }
 
-experiment "Overlapping" type: test;
+experiment "Overlapping" mode: test;
 
-experiment "With Visualization" type: gui {
+experiment "With Visualization" mode: gui {
 	output {
 		display map {
 			

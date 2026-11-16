@@ -152,4 +152,4 @@ species ped_agent skills: [pedestrian] {
 	float speed <- 5.0;
 }
 
-experiment PedestrianAdvancedTest type: test autorun: true {}
+experiment PedestrianAdvancedTest mode: test autorun: true {}

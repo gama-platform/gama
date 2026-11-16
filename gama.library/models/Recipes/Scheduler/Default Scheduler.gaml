@@ -50,7 +50,7 @@ species scheduler_species schedules:scheduler_species
 		write "hello, i'm scheduled "+nb_generated;
 	}
 }
-experiment example_default_scheduler type:gui
+experiment example_default_scheduler mode:gui
 {
 
 }

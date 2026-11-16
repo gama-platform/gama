@@ -106,9 +106,9 @@ species intersection {
 } 
 	
 
-experiment fromOSMtoShapefiles type: gui {
+experiment fromOSMtoShapefiles mode: gui {
 	output {
-		display map type: 2d {
+		display map renderer: 2d {
 			graphics "world" {
 				draw world.shape.contour color:#black;
 			}

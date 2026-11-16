@@ -20,4 +20,4 @@ global {
 	}
 }
 
-experiment UserInputdialog_example type: gui ;
+experiment UserInputdialog_example mode: gui ;

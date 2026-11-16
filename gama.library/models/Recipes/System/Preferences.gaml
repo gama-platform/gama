@@ -15,7 +15,7 @@
 
 model preferences
 
-experiment 'Display __PREFS__' type: gui {
+experiment 'Display __PREFS__' mode: gui {
 init {
 	//Append the name of simulations to their outputs
 	write sample(gama.pref_append_simulation_name);
@@ -348,7 +348,7 @@ init {
 }
 
 
-experiment 'Set __PREFS__' type: gui {
+experiment 'Set __PREFS__' mode: gui {
 init {
 	//Append the name of simulations to their outputs
 	gama.pref_append_simulation_name <- true;

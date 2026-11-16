@@ -95,7 +95,7 @@ species lava skills: [dynamic_body] {
 } 
 
 
-experiment "3D view" type: gui {
+experiment "3D view" mode: gui {
 
 	parameter "Show inside structures (velocities and aabbs)" var: draw_inside <- false;
 	parameter "Better collision detection" var: accurate_collision_detection <- false;
@@ -103,7 +103,7 @@ experiment "3D view" type: gui {
 	parameter "Show legend" var: show_legend <- true;
 	output {
 		font title  <- font("Helvetica", 12, #bold);
-		display "3D" type: 3d axes: false background: #black camera:#from_up_front antialias: false {
+		display "3D" renderer: 3d axes: false background: #black camera:#from_up_front antialias: false {
 			graphics title {
 				if (show_legend) {
 					draw "Average height " + (patches mean_of each.grid_value) with_precision 2 + " / # of lava agents " + length(lava) color: #white font: title at: {world.location.x, 100, patches max_of each.grid_value + 10} anchor: #center depth: 2 rotate: -20::{1,0,0};

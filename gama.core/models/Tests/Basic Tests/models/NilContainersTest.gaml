@@ -79,7 +79,7 @@ class container_data {
 	map<string, int> entries;
 }
 
-experiment NilContainersTest type: test autorun: true {
+experiment NilContainersTest mode: test autorun: true {
 	list experiment_list;
 	map experiment_map;
 	list experiment_absent_list <- nil;

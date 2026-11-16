@@ -331,4 +331,4 @@ species communicator skills: [fipa] {
 	}
 }
 
-experiment FipaAdvancedTest type: test autorun: true {}
+experiment FipaAdvancedTest mode: test autorun: true {}

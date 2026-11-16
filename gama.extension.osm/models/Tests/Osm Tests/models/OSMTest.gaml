@@ -5,7 +5,7 @@
 * Tags: osm, extension, test
 */
 
-experiment OSMTest type: test autorun: true {
+experiment OSMTest mode: test autorun: true {
 
 	test "is_osm recognises the osm extensions" {
 		assert is_osm("city.osm") = true;

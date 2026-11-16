@@ -130,7 +130,7 @@ global {
 	}
 }
 
-experiment Benchmark type: gui {
+experiment Benchmark mode: gui {
 	float minimum_cycle_duration <- 0.0;
 
 	parameter "Load level (factor 2^level)" var: load_level min: 0 max: 10;
@@ -144,7 +144,7 @@ experiment Benchmark type: gui {
 	parameter "CSV output" var: output_file;
 }
 
-experiment Replications type: batch repeat: 3 keep_seed: true parallel: false
+experiment Replications mode: batch repeat: 3 keep_seed: true parallel: false
 	until: finished {
 	float minimum_cycle_duration <- 0.0;
 
@@ -153,12 +153,12 @@ experiment Replications type: batch repeat: 3 keep_seed: true parallel: false
 	parameter "Pause at completion" var: pause_at_end <- false;
 }
 
-experiment Operations type: batch parent: Replications repeat: 3 keep_seed: true parallel: false until: finished {
+experiment Operations mode: batch parent: Replications repeat: 3 keep_seed: true parallel: false until: finished {
 	parameter "Load axis" var: load_axis  <- "operations";
 }
 
-experiment Stress type: batch parent: Replications repeat: 1 keep_seed: true parallel: false until: finished {
+experiment Stress mode: batch parent: Replications repeat: 1 keep_seed: true parallel: false until: finished {
 	parameter "Load axis" var: load_axis <- "both";
 }
 
-experiment Profile type: gui parent: Benchmark benchmark: true {}
+experiment Profile mode: gui parent: Benchmark benchmark: true {}

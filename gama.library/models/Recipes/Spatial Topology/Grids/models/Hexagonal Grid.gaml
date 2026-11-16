@@ -32,11 +32,11 @@ global {
 grid cell height: 10 width: 10 neighbors: 6 horizontal_orientation: orientation = "horizontal";
 
 
-experiment hexagonal type: gui{
+experiment hexagonal mode: gui{
 	parameter var:orientation;
 	float minimum_cycle_duration <- 0.5#s;
 	output  synchronized:true{
-		display view type: 2d{
+		display view renderer: 2d{
 			grid cell border: #black ;
 		}
 	}

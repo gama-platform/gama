@@ -39,12 +39,12 @@ species dot {
     }
 }
 
-experiment "1 - World HUD minimap and chart" type: gui {
+experiment "1 - World HUD minimap and chart" mode: gui {
     text "Purpose: compare a camera-attached world with a fixed screen HUD, world-content mini-map and chart.<br/>Try: run, then resize, zoom and pan. Use equally sized viewports to compare the two renderers.<br/>Expected: only the main world follows the camera. Mini-map and main-view markers represent the same world location. The chart plots world X, from 0 to 100." category: "What to compare";
     text "The chart and mini-map use viewport-relative frame sizes: unequal viewport heights intentionally produce unequal heights. The mini-map fits its world uniformly from the upper-left; unused white space is expected. Exact font shapes can differ between backends." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "World" {
                 draw world.shape color: #lightgray border: #gray;
                 draw line([{0, 50}, {100, 50}]) color: #white;
@@ -75,16 +75,16 @@ experiment "1 - World HUD minimap and chart" type: gui {
                 data "X" value: moving_point.x color: #blue;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "2 - Placement and world-content fitting" type: gui {
+experiment "2 - Placement and world-content fitting" mode: gui {
     text "Purpose: compare fixed pixels, viewport fractions, negative positions and world-content fitting.<br/>Try: resize, zoom and pan; no steps are needed. Allow at least 600 by 480 pixels per view.<br/>Expected: the top blue frame keeps its pixel size; the top-right red frame keeps a 16-pixel outer margin. The bottom green frame scales with the viewport." category: "What to compare";
     text "The two middle frames are both 240 by 140 pixels. A square world is stretched by graphics (purple circle becomes elliptical), but uniformly fitted by the overlay (circle stays round). Neither frame follows the world camera. Drawings may overflow: frames do not imply clipping." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "World" {
                 draw world.shape color: #lightgray border: #gray;
             }
@@ -121,16 +121,16 @@ experiment "2 - Placement and world-content fitting" type: gui {
                 draw circle(6) at: {0.5, 0.5} color: #green;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "3 - Screen threshold and contextual constants" type: gui {
+experiment "3 - Screen threshold and contextual constants" mode: gui {
     text "Purpose: compare the strict screen threshold and contextual #px/display values.<br/>Try: resize and zoom; no steps are needed. Allow at least 480 by 500 pixels per view.<br/>Expected: in the 400-pixel panel, x=0.5 and x=0.5#px both mean 200 pixels; x=1 and x=1.0 mean one pixel. Intrinsic circle radii are pixels even below one. The one-pixel orange frame intentionally allows overflowing drawings." category: "What to compare";
     text "Screen #px remains 1. The world blue circle keeps a 10-pixel radius while its world-unit conversion changes on zoom. The stored global 20#px is an already evaluated number, not an expression that changes referential. Viewport readings must come from the display currently drawing, not its sibling." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "World constants" {
                 draw world.shape color: #lightgray border: #gray;
                 draw circle(10#px) at: {85, 85} color: #blue;
@@ -163,15 +163,15 @@ experiment "3 - Screen threshold and contextual constants" type: gui {
                 draw "One-pixel frame; overflowing contents" at: {40, 26} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "4 - Spatial layers in screen frames" type: gui {
+experiment "4 - Spatial layers in screen frames" mode: gui {
     text "Purpose: compare grid, species and agents layers in world and screen placement.<br/>Try: resize, zoom and pan; no steps are needed.<br/>Expected: the background grid and its twelve dots follow the camera. The two fixed 200-by-200-pixel copies show identical dot locations. Spatial data remains in model units; frame placement does not rewrite locations." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             grid cell border: #gray;
             species dot;
             grid cell coordinates: #screen position: {16, 100} size: {200, 200} border: #gray;
@@ -184,15 +184,15 @@ experiment "4 - Spatial layers in screen frames" type: gui {
                 draw "agents layer" at: {240, 330} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "5 - Image mesh and chart screen frames" type: gui {
+experiment "5 - Image mesh and chart screen frames" mode: gui {
     text "Purpose: compare fixed image and mesh frames alongside a viewport-width chart.<br/>Try: run to populate the chart, then resize and zoom. Allow at least 480 by 450 pixels per view.<br/>Expected: image and mesh stay 200 by 140 pixels; the chart stays 180 pixels high and follows 90 percent of the viewport width. All three are independent of the world camera." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             image "../images/Gama.jpg" coordinates: #screen position: {16, 60} size: {200, 140};
             mesh heights coordinates: #screen position: {240, 60} size: {200, 140}
                 scale: 0 color: palette([#blue, #cyan, #yellow, #red]);
@@ -205,16 +205,16 @@ experiment "5 - Image mesh and chart screen frames" type: gui {
                 draw "Chart: 90% viewport width, 180 pixels high" at: {16, 224} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "6 - Text anchors and pointer events" type: gui {
+experiment "6 - Text anchors and pointer events" mode: gui {
     text "Purpose: compare all nine text anchors, relative text positions and pointer coordinate snapshots.<br/>Try: run, left-click either view, then pan/zoom and resize. Allow at least 610 by 580 pixels per view.<br/>Expected: labels meet their red dots at the named anchors. The blue relative label stays centered. A click records world and screen coordinates from the same event; its red world marker follows the camera. Both displays share the click count." category: "What to compare";
     text "The overlay-local mouse value subtracts {16,320} from viewport pixels; it is not a new mouse unit. Each display supplies its own live readings. All labels reuse the same nominal 16-point font, but backend font substitution may change exact glyphs." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "World" {
                 draw world.shape color: #lightgray border: #gray;
                 draw circle(2) at: clicked_world color: #red;
@@ -253,15 +253,15 @@ experiment "6 - Text anchors and pointer events" type: gui {
                     anchor: #center font: shared_font color: #blue;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "7 - World overlay and omitted sizes" type: gui {
+experiment "7 - World overlay and omitted sizes" mode: gui {
     text "Purpose: compare a world-positioned overlay and a graphics layer with its default world placement and omitted size.<br/>Try: resize, zoom and pan; no steps are needed.<br/>Expected: the purple overlay follows the camera and occupies 40 by 30 model units. Its blue circle is a world drawing, not a ten-pixel symbol. The caption and red bottom-right dot stay on screen in a full-viewport graphics frame with size omitted." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "Default world frame" {
                 draw world.shape color: #lightgray border: #gray;
             }
@@ -276,19 +276,19 @@ experiment "7 - World overlay and omitted sizes" type: gui {
                 draw circle(6#px) at: {-16, -16} color: #red;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "8 - Default full chart frame" type: gui {
+experiment "8 - Default full chart frame" mode: gui {
     text "Purpose: compare the default chart placement and omitted size.<br/>Try: run, pause and resize equally sized views.<br/>Expected: each chart fills its viewport, does not follow the camera and displays the same data. An omitted size means full extent, unlike size: {1,1}, which would mean a one-pixel screen frame." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             chart "Cycle" kind: series {
                 data "Cycle" value: cycle;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }

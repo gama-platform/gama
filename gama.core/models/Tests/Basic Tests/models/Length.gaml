@@ -19,4 +19,4 @@ global {
 grid cell width: 5 height: 5{
 	float grid_value <-1.0;
 }
-experiment length type: test;
+experiment length mode: test;

@@ -57,4 +57,4 @@ species action_agent {
 	}
 }
 
-experiment ActionAdvancedTest type: test autorun: true;
+experiment ActionAdvancedTest mode: test autorun: true;

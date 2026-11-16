@@ -34,7 +34,7 @@ species GAMAGeometry2D {
 
 
 
-experiment Display type: gui autorun: true {
+experiment Display mode: gui autorun: true {
 	float minimum_cycle_duration <- 0.01;
 	float quad;
 	float constant;
@@ -53,7 +53,7 @@ experiment Display type: gui autorun: true {
 		layout #split;
 		// display using spot lights
 		// we set the ambient light to 0 to see better the directional lights (as if we were at night time)
-		display SpotLights type: 3d background: rgb(10, 40, 55) {
+		display SpotLights renderer: 3d background: rgb(10, 40, 55) {
 			
 			camera 'default' location: {-87.5648,126.2534,134.3343} target: {50.0,50.0,0.0};
 			light #ambient intensity: 0;

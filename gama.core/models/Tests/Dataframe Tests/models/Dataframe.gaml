@@ -10,7 +10,7 @@
 @no_warning
 model test_dataframes
 
-experiment Dataframes type: test {
+experiment Dataframes mode: test {
 
 	// ========================= Creation =========================
 

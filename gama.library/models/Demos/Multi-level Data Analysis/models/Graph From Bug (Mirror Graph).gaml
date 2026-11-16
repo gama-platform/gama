@@ -70,7 +70,7 @@ species edge_agent parent: base_edge {
 
 }
 
-experiment AdvancedView type: gui {
+experiment AdvancedView mode: gui {
 	
 	
 	parameter 'Distance' var:distance category: 'Model' unit: "m";
@@ -78,7 +78,7 @@ experiment AdvancedView type: gui {
 	float minimum_cycle_duration <- 0.05#s;
 	
 	output {
-		display graph_plus_bug_layered type: 3d {
+		display graph_plus_bug_layered renderer: 3d {
 			camera 'default' location: {-9.2599,157.3601,111.6399} target: {52.0223,44.4922,0.0}; 
 			species bug aspect: base;
 			species node_agent coordinates: #world aspect: base position: { 0, 0, 0.2 };

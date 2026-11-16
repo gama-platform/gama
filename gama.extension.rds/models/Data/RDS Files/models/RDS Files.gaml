@@ -29,7 +29,7 @@ global {
 	}
 }
 
-experiment "RDS round trips" type: gui {
+experiment "RDS round trips" mode: gui {
 	output {
 		monitor "Dataframe" value: restored_table;
 		monitor "Named list" value: restored_values;

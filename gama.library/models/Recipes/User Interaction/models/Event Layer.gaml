@@ -97,14 +97,14 @@ species dummy  {
 
 
 
-experiment Displays type: gui
+experiment Displays mode: gui
 {
 	float minimum_cycle_duration <-0.01;
 	parameter "Radius of selection" var: radius unit: "m";	// The radius of the disk around the click 
 	output synchronized:true
 	{    
 		layout horizontal([0::5000,1::5000]) tabs:true editors: false;
-		display View_change_color type: 2d
+		display View_change_color renderer: 2d
 		{
 			species cell;
 			species dummy transparency:0.9 aspect: aspect4ViewChangeColor;
@@ -122,7 +122,7 @@ experiment Displays type: gui
 			
 		}
 
-		display View_change_shape type: 3d
+		display View_change_shape renderer: 3d
 		{
 			light #ambient active: false;
 			species cell;

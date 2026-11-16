@@ -36,4 +36,4 @@ species test_species1 {
 }
 
 
-experiment new type: test until: cycle = 10{}
+experiment new mode: test until: cycle = 10{}

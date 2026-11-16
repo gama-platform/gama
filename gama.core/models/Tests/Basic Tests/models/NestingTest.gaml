@@ -23,7 +23,7 @@ species free_agent {
 	int my_val <- 10;
 }
 
-experiment NestingTest type: test autorun: true {
+experiment NestingTest mode: test autorun: true {
 	test "Micro Species Creation" {
 		ask simulation {
 			create macro_agent number: 1 returns: macros;

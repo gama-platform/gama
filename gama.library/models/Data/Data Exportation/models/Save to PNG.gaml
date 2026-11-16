@@ -27,9 +27,9 @@ global {
 
 grid cell width: 50 height: 50 ;
 
-experiment main type: gui {
+experiment main mode: gui {
 	output {
-		display map type:2d antialias:false {
+		display map renderer:2d antialias:false {
 			grid cell border: #black;
 		}
 	}

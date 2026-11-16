@@ -137,7 +137,7 @@ species person {
 	}
 }
 
-experiment RunExamples type: gui {
+experiment RunExamples mode: gui {
 	output {
 		display View {
 			graphics "text" {

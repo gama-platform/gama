@@ -108,7 +108,7 @@ global {
 		
 }
 
-experiment my_xp type:gui {
+experiment my_xp mode:gui {
 	parameter var:condition1;
 	parameter var:condition2;
 	

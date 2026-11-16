@@ -85,4 +85,4 @@ species serialised_agent {
 	string label <- "initial";
 }
 
-experiment SerializeAdvancedTest type: test autorun: true;
+experiment SerializeAdvancedTest mode: test autorun: true;

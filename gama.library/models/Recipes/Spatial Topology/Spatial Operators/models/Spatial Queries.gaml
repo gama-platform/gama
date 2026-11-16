@@ -120,7 +120,7 @@ species point_agent parent:agent_base {
 	}
 }
 
-experiment Spatialqueries type: gui {
+experiment Spatialqueries mode: gui {
 	parameter "Query" var: type_query on_change: {do apply_query(); experiment. update_outputs();};
 	output {
 		display map map_order: true {

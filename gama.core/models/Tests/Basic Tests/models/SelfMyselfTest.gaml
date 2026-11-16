@@ -68,4 +68,4 @@ species receiver_agent {
 	int my_id <- 2;
 }
 
-experiment SelfMyselfTest type: test autorun: true;
+experiment SelfMyselfTest mode: test autorun: true;

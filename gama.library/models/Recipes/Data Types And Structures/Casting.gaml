@@ -141,7 +141,7 @@ species cast_to_map{
 		write sample(map<int,string>(1));				
 	}
 }
-experiment Casting type: gui{
+experiment Casting mode: gui{
 	user_command "to int" {create cast_to_int;}
 	user_command "to float" {create cast_to_float;}
 	user_command "to string" {create cast_to_string;}

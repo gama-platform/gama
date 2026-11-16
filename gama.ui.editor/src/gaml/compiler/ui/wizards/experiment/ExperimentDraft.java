@@ -82,11 +82,11 @@ public record ExperimentDraft(String name, String type, List<Facet> facets, List
 		if (name.isBlank()) return "Experiment name is required.";
 		if (name.contains("\"") || name.contains("\\") || name.contains("\n") || name.contains("\r"))
 			return "Experiment name cannot contain quotes, backslashes or line breaks.";
-		if (!TYPES.contains(type)) return "Experiment type must be gui, batch or test.";
+		if (!TYPES.contains(type)) return "Experiment mode must be gui, batch or test.";
 		var names = new HashSet<String>();
 		for (Facet facet : facets) {
 			if (!SpeciesDraft.isIdentifier(facet.name())) return "Invalid facet name: " + facet.name();
-			if (List.of("name", "type").contains(facet.name())) return "Use the dedicated field for " + facet.name() + ".";
+			if (List.of("name", "mode", "type").contains(facet.name())) return "Use the dedicated field for " + facet.name() + ".";
 			if (!names.add(facet.name())) return "Duplicate facet: " + facet.name();
 			if (facet.value().isBlank()) return "Enter a value for facet " + facet.name() + ".";
 		}
@@ -171,10 +171,10 @@ public record ExperimentDraft(String name, String type, List<Facet> facets, List
 		return List.copyOf(result);
 	}
 
-	/** The header (gui type implicit), e.g. {@code experiment "My exp" type: batch repeat: 2}. */
+	/** The header (gui mode implicit), e.g. {@code experiment "My exp" mode: batch repeat: 2}. */
 	public String header() {
 		StringBuilder result = new StringBuilder("experiment ").append(quoteName(name));
-		if (!GUI.equals(type)) result.append(" type: ").append(type);
+		if (!GUI.equals(type)) result.append(" mode: ").append(type);
 		for (var facet : facets) result.append(' ').append(facet.name()).append(": ").append(facet.value().trim());
 		return result.toString();
 	}

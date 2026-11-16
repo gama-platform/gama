@@ -73,15 +73,15 @@ grid quick_cells height: size width: size {
 } 
 
 
-experiment diffusion type: gui {
+experiment diffusion mode: gui {
 	output {
 		layout #horizontal;
-		display a type: 3d antialias:false{
+		display a renderer: 3d antialias:false{
 			camera 'default' location: {54.9788,112.1365,32.8371} target: {32.0,32.0,0.0};
 			// Display the grid with elevation
 			grid cells elevation: phero*10 triangulation: true;
 		}
-		display quick type: 3d antialias:false{
+		display quick renderer: 3d antialias:false{
 			camera 'default' location: {54.9788,112.1365,32.8371} target: {32.0,32.0,0.0};
 			// Display the grid with elevation
 			grid quick_cells elevation: phero*10 triangulation: true;

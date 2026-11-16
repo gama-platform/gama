@@ -8,7 +8,7 @@ global {
 
 }
 
-experiment "Overlay controls" type: gui {
+experiment "Overlay controls" mode: gui {
 	float speed <- 25.0;
 	bool running <- true;
 	action reset_controls() {
@@ -17,7 +17,7 @@ experiment "Overlay controls" type: gui {
 	}
 
 	output of: experiment {
-		display "Controls" type: java2D {
+		display "Controls" renderer: java2D {
 			overlay position: {16, 16} size: {240, 300} background: rgb(242, 247, 255, 190)
 				border: rgb(255, 255, 255, 225) rounded: true {
 				ui_button "Reset" at: {12, 12} size: {216, 28}

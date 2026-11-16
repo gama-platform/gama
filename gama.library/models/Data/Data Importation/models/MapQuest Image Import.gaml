@@ -55,7 +55,7 @@ experiment Display
 	output
 	{
 		
-		display "MapQuest" type: 3d axes:false
+		display "MapQuest" renderer: 3d axes:false
 		{
 			graphics toto {
 				draw static_map_request;

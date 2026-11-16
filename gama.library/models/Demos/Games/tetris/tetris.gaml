@@ -445,7 +445,7 @@ experiment main {
 	float minimum_cycle_duration <- 20#ms;
 	output {
 		layout 0 tabs:false editors: false;
-		display main fullscreen:false type:2d antialias:false toolbar:false background:hsb( (level mod 360)/360.0 * 20, 0.2,0.7) axes:true{
+		display main fullscreen:false renderer:2d antialias:false toolbar:false background:hsb( (level mod 360)/360.0 * 20, 0.2,0.7) axes:true{
 		
 			//grid cell;
 			species cell;

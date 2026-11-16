@@ -283,4 +283,4 @@ global {
 
 species dummy;
 
-experiment "Slicing tests" type: test autorun: true;
+experiment "Slicing tests" mode: test autorun: true;

@@ -6,7 +6,7 @@
 * Tags: file, folder, system, test
 */
 
-experiment FileOperatorsTest type: test autorun: true {
+experiment FileOperatorsTest mode: test autorun: true {
 
 	string sandbox <- "file_operators_tmp";
 

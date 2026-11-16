@@ -72,13 +72,13 @@ species wall {
 	}
 }
 
-experiment normal_sim type: gui {
+experiment normal_sim mode: gui {
 	
 	parameter var:display_free_space;
 	parameter var:P_shoulder_length;
 	
 	output {
-		display map type: 3d axes:false{
+		display map renderer: 3d axes:false{
 			species wall refresh: false;
 			graphics "open_area" {
 				draw open_area color: #lightpink;

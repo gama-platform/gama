@@ -42,7 +42,7 @@ species NetworkingAgent skills:[network] {
 	}
 }
 
-experiment Server_testdd type: gui {
+experiment Server_testdd mode: gui {
 	output {
 		display d {
 			species NetworkingAgent;	

@@ -6,7 +6,7 @@
 */
 
 
-experiment AdvancedGraphTest type: test autorun: true {
+experiment AdvancedGraphTest mode: test autorun: true {
 	graph g;
 	
 	init {

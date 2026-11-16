@@ -61,13 +61,13 @@ global {
 }
 grid cell width: grid_size height: grid_size neighbors: 4;
 
-experiment "Moran" type: gui {
+experiment "Moran" mode: gui {
 	parameter "grid size: " var: grid_size min: 2 max: 100;
 	parameter "Type of spatial Initialization of grid value: " var: grid_spatial_init;
 	parameter "Weight type used for the computation: " var: weight_type ;
 	
 	output {
-		display map type:2d antialias:false {
+		display map renderer:2d antialias:false {
 			grid cell border: #red;
 			graphics "moran" {
 				draw "I = " + (I with_precision 3) color: #green font:font("Helvetica", 60 * #zoom, #bold);

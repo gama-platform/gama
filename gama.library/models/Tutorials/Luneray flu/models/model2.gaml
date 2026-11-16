@@ -53,7 +53,7 @@ species people skills:[moving]{
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	parameter "Nb people infected at init" var: nb_infected_init min: 1 max: 2147;
 
 	output {
@@ -63,7 +63,7 @@ experiment main type: gui {
 			species people aspect:circle;	
 		}
 		
-		display chart_display refresh: every(10 #cycles)  type: 3d {
+		display chart_display refresh: every(10 #cycles)  renderer: 3d {
 			chart "Disease spreading" kind: series {
 				data "susceptible" value: nb_people_not_infected color: #green;
 				data "infected" value: nb_people_infected color: #red;

@@ -12,7 +12,7 @@ species dummy {
 species walker skills: [moving] {
 }
 
-experiment RNGTest type: test autorun: true {
+experiment RNGTest mode: test autorun: true {
 
 	test "Resetting usage, seed and generator" {
 		loop generator over: ["java", "mersenne", "parallel"] {

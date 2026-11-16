@@ -105,7 +105,7 @@ species people skills: [moving] parallel: true {
 	}
 }
 
-experiment "Road Traffic" type: gui {
+experiment "Road Traffic" mode: gui {
 	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
 	parameter 'Shapefile for the roads:' var: shape_file_roads category: 'GIS';
 	parameter 'Shapefile for the bounds:' var: shape_file_bounds category: 'GIS';
@@ -129,7 +129,7 @@ experiment "Road Traffic" type: gui {
 	}
 
 	output synchronized: false {
-		display city_display type: opengl4 {
+		display city_display renderer: opengl4 {
 			//camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};

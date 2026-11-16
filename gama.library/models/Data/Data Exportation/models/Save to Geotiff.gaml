@@ -24,7 +24,7 @@ grid cell width: 50 height: 50 {
 	rgb color <- rgb(255 * (1 - grid_value / 50), 0,0);
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	output {
 		display map {
 			grid cell border: #black;

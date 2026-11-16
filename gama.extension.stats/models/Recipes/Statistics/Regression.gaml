@@ -58,11 +58,11 @@ species dummy {
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	parameter "Point to test, x value" var: x_val ;
 	parameter "Point to test, y value" var: y_val ;
 	output {
-		display map type: 3d {
+		display map renderer: 3d {
 			camera 'default' location: {-123.6464,147.7097,94.8008} target: {123.9258,66.7844,0.0};
 			species dummy;
 			graphics "new Point " {

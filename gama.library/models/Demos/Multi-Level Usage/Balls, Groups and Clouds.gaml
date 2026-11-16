@@ -473,12 +473,12 @@ species cloud {
 
 }
 
-experiment group_experiment type: gui {
+experiment group_experiment mode: gui {
 	parameter 'Create groups?' var: create_group <- true;
 	parameter 'Create clouds?' var: create_cloud <- false;
 	output {
 		layout horizontal([vertical([1::5000, 0::5000])::5000, 2::5000]) tabs: true editors: false;
-		display 'Standard display' type: 2d background: backdrop {
+		display 'Standard display' renderer: 2d background: backdrop {
 			species group aspect: default {
 				species ball_in_group;
 			}
@@ -491,7 +491,7 @@ experiment group_experiment type: gui {
 			}
 		}
  
-		display 'Ball display' type: 2d background: backdrop {
+		display 'Ball display' renderer: 2d background: backdrop {
 			species ball;
 			overlay coordinates: #screen position: {12, 12} size: {220, 64} background: backdrop rounded: true {
 				draw "FREE BALLS" at: {12#px, 22#px} color: ball_color font: font("Helvetica", 12, #bold);
@@ -499,7 +499,7 @@ experiment group_experiment type: gui {
 			}
 		}
 
-		display 'Group display' type: 2d background: backdrop {
+		display 'Group display' renderer: 2d background: backdrop {
 			species group;
 			overlay coordinates: #screen position: {12, 12} size: {250, 64} background: backdrop rounded: true {
 				draw "GROUP ENVELOPES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
@@ -511,12 +511,12 @@ experiment group_experiment type: gui {
 
 }
 
-experiment cloud_experiment type: gui {
+experiment cloud_experiment mode: gui {
 	parameter 'Create groups?' var: create_group <- true;
 	parameter 'Create clouds?' var: create_cloud <- true;
 	output {
 		layout vertical([horizontal([0::5000, 1::5000])::5000, horizontal([2::5000, 3::5000])::5000]) tabs: true toolbars: true editors: false;
-		display 'Standard display' type: 2d background: backdrop {
+		display 'Standard display' renderer: 2d background: backdrop {
 			species cloud aspect: default {
 				species group_delegation {
 					species ball_in_cloud;
@@ -535,7 +535,7 @@ experiment cloud_experiment type: gui {
 			}
 		}
 
-		display 'Ball display' type: 2d background: backdrop {
+		display 'Ball display' renderer: 2d background: backdrop {
 			species ball;
 			overlay coordinates: #screen position: {12, 12} size: {220, 64} background: backdrop rounded: true {
 				draw "FREE BALLS" at: {12#px, 22#px} color: ball_color font: font("Helvetica", 12, #bold);
@@ -543,7 +543,7 @@ experiment cloud_experiment type: gui {
 			}
 		}
 
-		display 'Group display' type: 2d background: backdrop {
+		display 'Group display' renderer: 2d background: backdrop {
 			species group;
 			overlay coordinates: #screen position: {12, 12} size: {250, 64} background: backdrop rounded: true {
 				draw "GROUP ENVELOPES" at: {12#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
@@ -551,7 +551,7 @@ experiment cloud_experiment type: gui {
 			}
 		}
 
-		display 'Cloud display' type: 2d background: backdrop {
+		display 'Cloud display' renderer: 2d background: backdrop {
 			species cloud;
 			overlay coordinates: #screen position: {12, 12} size: {250, 64} background: backdrop rounded: true {
 				draw "CLOUD ENVELOPES" at: {12#px, 22#px} color: cloud_accent font: font("Helvetica", 12, #bold);

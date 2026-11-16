@@ -34,13 +34,13 @@ grid cell file: grid_data{
 	}
 }
 
-experiment gridloading type: gui {
+experiment gridloading mode: gui {
 	output {
-		display "As DEM" type: 3d axes:false{
+		display "As DEM" renderer: 3d axes:false{
 			grid cell border: #gray elevation: self.grid_value * 300 ;
 		}
 		
-		display "As 2D grid"  type: 2d {
+		display "As 2D grid"  renderer: 2d {
 			grid cell border: #black;
 		}
 	} 

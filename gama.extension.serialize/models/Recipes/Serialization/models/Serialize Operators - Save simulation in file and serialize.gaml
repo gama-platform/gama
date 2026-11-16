@@ -23,7 +23,7 @@ species people {
 	list<int> lo <- [1,2,3];
 }
 
-experiment SaveSimulation type: gui {
+experiment SaveSimulation mode: gui {
 	
 	reflex save_simulation when: cycle mod 2 = 0 {
 		write "================ START SAVE + self " + " - " + cycle ;		

@@ -6,7 +6,7 @@
 * Tags: robustness, graph, eval, json, test
 */
 
-experiment GraphAndEvaluationRobustnessTest type: test autorun: true {
+experiment GraphAndEvaluationRobustnessTest mode: test autorun: true {
 
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");

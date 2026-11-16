@@ -113,4 +113,4 @@ species building_from_shapefile {
 species people_moving skills: [moving] {
 }
 
-experiment Attributeaccess type: gui { }
+experiment Attributeaccess mode: gui { }

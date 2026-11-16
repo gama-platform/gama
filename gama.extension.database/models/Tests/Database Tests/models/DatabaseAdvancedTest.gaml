@@ -168,4 +168,4 @@ global {
 
 species sql_agent skills: [sql] { }
 
-experiment DatabaseAdvancedTest type: test autorun: true;
+experiment DatabaseAdvancedTest mode: test autorun: true;

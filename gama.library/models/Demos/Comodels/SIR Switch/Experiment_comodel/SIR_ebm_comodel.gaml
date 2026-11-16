@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment EBMcomodel model:'../Legacy_models/SIR_EBM.gaml' type:gui actions_context: simulation {
+experiment EBMcomodel model:'../Legacy_models/SIR_EBM.gaml' mode:gui actions_context: simulation {
 	int get_num_S()
 	{
 		return int(first(agent_with_SIR_dynamic).S);

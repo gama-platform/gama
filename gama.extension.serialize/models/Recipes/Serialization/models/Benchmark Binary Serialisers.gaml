@@ -16,7 +16,7 @@ species bench_agent {
 	map<string, float> properties <- ["a"::rnd(1.0), "b"::rnd(1.0)];
 }
 
-experiment Benchmark type: gui {
+experiment Benchmark mode: gui {
 	int repetitions <- 20;
 	int warmups <- 3;
 

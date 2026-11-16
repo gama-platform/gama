@@ -44,4 +44,4 @@ global {
 
 species sys_agent {}
 
-experiment SystemOperatorsTest type: test autorun: true;
+experiment SystemOperatorsTest mode: test autorun: true;

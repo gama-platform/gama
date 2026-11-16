@@ -97,7 +97,7 @@ species person skills: [moving] {
 }
 
 // ── GUI experiment ─────────────────────────────────────────────────────────────
-experiment SIR_gui type: gui {
+experiment SIR_gui mode: gui {
     parameter "Number of agents"    var: nb_agents;
     parameter "Initially infected"  var: nb_infected_init;
     parameter "Infection rate"      var: infection_rate;
@@ -105,10 +105,10 @@ experiment SIR_gui type: gui {
     parameter "Recovery time"       var: recovery_time unit: "cycles";
 
     output {
-        display "Population" type: java2D {
+        display "Population" renderer: java2D {
             species person aspect: base;
         }
-        display "SIR Chart" type: 3d {
+        display "SIR Chart" renderer: 3d {
             chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
@@ -131,7 +131,7 @@ experiment SIR_gui type: gui {
 //  For robust S1/ST estimates, raise sample to 500 or 1000.
 //  The Saltelli (2010) rule of thumb: sample >= 500 for k <= 10 parameters.
 //
-experiment SIR_Sobol type: batch
+experiment SIR_Sobol mode: batch
     repeat: 1
     keep_seed: false
     until: (cycle >= 1000 or nb_infected = 0) {

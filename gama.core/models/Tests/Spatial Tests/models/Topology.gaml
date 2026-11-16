@@ -68,7 +68,7 @@ grid cell8 width: x_cells height: y_cells neighbors: 8 {}
 	
 species dummy { aspect default {draw shape color:#grey;} }
 
-experiment visu type: gui {
+experiment visu mode: gui {
 	output {
 		display map4 {
 			grid cell4 border:#grey;
@@ -83,7 +83,7 @@ experiment visu type: gui {
 	}	
 }
 
-experiment Topology type: test autorun: true {	
+experiment Topology mode: test autorun: true {	
 
 	
 }

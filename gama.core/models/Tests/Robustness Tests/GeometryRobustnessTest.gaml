@@ -8,7 +8,7 @@
 * Tags: robustness, geometry, spatial, test
 */
 
-experiment GeometryRobustnessTest type: test autorun: true {
+experiment GeometryRobustnessTest mode: test autorun: true {
 
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");

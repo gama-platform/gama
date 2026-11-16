@@ -332,7 +332,7 @@ species candidate skills:[moving]{
 } 
 
 
-experiment vote type: gui {
+experiment vote mode: gui {
 	/** Insert here the definition of the input and output of the model */
 	parameter "Number of electors : " var: nb_electors category: "elector";
 	parameter "Moving speed of electors toward another electors : " var: distance_traveled category: "elector";
@@ -356,7 +356,7 @@ experiment vote type: gui {
 			species Group_electors;
 			
 		}
-		display "Voters"  type: 3d {
+		display "Voters"  renderer: 3d {
 			chart "Distribution of electors" kind: pie background: #white  {
 			 	loop cand over: candidate {
 			 		data  cand.name value:cand.percentage_vote color: cand.color ;
@@ -364,7 +364,7 @@ experiment vote type: gui {
 			}
 			
 			}
-		display "Indicators"  type: 3d {
+		display "Indicators"  renderer: 3d {
 			chart "Shannon Entropy" coordinates: #screen kind: series background: #white size: {#display_width,0.5} position: {0, 0} {
 				data "entropy" value: entropy color: #blue ;
 			}

@@ -53,7 +53,7 @@ experiment Display
 	 
 	output
 	{
-		display "Bing Map" type: 3d axes:false
+		display "Bing Map" renderer: 3d axes:false
 		{
 			picture static_map_request refresh:true;
 		}

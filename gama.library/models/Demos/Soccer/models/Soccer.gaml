@@ -485,7 +485,7 @@ species goal {
 }
 
 
-experiment "Match" type:gui {
+experiment "Match" mode:gui {
 	parameter "blue running speed" var:blue_players_speed category:"Blue Team";
 	parameter "red running speed" var:red_players_speed category:"Red Team";
 	// speed of players when they run. Note that a player which have the ball will run at 50% of his max capacity, and he will run at 80% of his max capacity if he does not have the ball.
@@ -518,7 +518,7 @@ experiment "Match" type:gui {
 	// play with or without the "offside" rule.
 	
 	output {
-		display "soccer_field" type:2d{
+		display "soccer_field" renderer:2d{
 			// display the field.
 			picture "../images/soccer_field.png";
 			species player aspect:base;
@@ -534,7 +534,7 @@ experiment "Match" type:gui {
 				}
 			}
 		}
-		display "match_stats"  type: 3d {
+		display "match_stats"  renderer: 3d {
 			// display some statistics about the game
 			chart "ball_possession" coordinates: #screen kind: pie position:{0,0} size:{0.5,0.5} {
 				data "Red possession" value:red_possession color:#red;

@@ -79,21 +79,12 @@ import gama.dev.COUNTER;
 						name = IKeyword.ATTRIBUTES,
 						type = { IType.LIST },
 						optional = true,
-						doc = @doc ("the list of attributes to inspect. A list that can contain strings or pair<string,type>, or a mix of them. These can be variables of the species, but also attributes present in the attributes table of the agent. The type is necessary in that case")),
-				@facet (
-						name = IKeyword.TYPE,
-						type = IType.ID,
-						values = { IKeyword.AGENT, IKeyword.TABLE },
-						optional = true,
-						doc = @doc (
-								deprecated = "Use inspect or browse for respectively individual or collective inspections",
-								value = "the way to inspect agents: in a table, or a set of inspectors")) },
+						doc = @doc ("the list of attributes to inspect. A list that can contain strings or pair<string,type>, or a mix of them. These can be variables of the species, but also attributes present in the attributes table of the agent. The type is necessary in that case")) },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "`" + IKeyword.INSPECT + "` (and `" + IKeyword.BROWSE
-				+ "`) statements allows modeler to inspect a set of agents, in a table with agents and all their attributes or an agent inspector per agent, depending on the type: chosen. Modeler can choose which attributes to display. When `"
-				+ IKeyword.BROWSE + "` is used, type: default value is table, whereas when`" + IKeyword.INSPECT
-				+ "` is used, type: default value is agent.",
+				+ "`) statements allow modelers to inspect agents. Use `inspect` for an inspector per agent and `browse` for a table. Modelers can choose which attributes to display. "
+				+ "Legacy `type: agent` and `type: table` are translated to `inspect` and `browse`, respectively, with a deprecation warning; remove the `type:` facet.",
 		usages = { @usage (
 				value = "An example of syntax is:",
 				examples = { @example (
@@ -135,8 +126,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 			value = getFacet(IKeyword.NAME);
 			expressionText = getValue() == null ? "" : getValue().serializeToGaml(false);
 		}
-		String type = getLiteral(IKeyword.TYPE);
-		isTable = type == null ? IKeyword.BROWSE.equals(getKeyword()) : type == IKeyword.TABLE;
+		isTable = IKeyword.BROWSE.equals(getKeyword());
 		attributes = getFacet(IKeyword.ATTRIBUTES);
 	}
 

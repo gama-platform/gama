@@ -55,9 +55,9 @@ species blossom {
 	}
 }
 
-experiment Garden type: gui {
+experiment Garden mode: gui {
 	output {
-		display "Garden Java2D" type: 2d background: #black locked: true {
+		display "Garden Java2D" renderer: 2d background: #black locked: true {
 			graphics "grass" { draw world color: rgb(18, 45, 37); }
 			species blossom;
 
@@ -77,7 +77,7 @@ experiment Garden type: gui {
 			}
 		}
 
-		display "Garden OpenGL" type: opengl parent: "Garden Java2D" {
+		display "Garden OpenGL" renderer: opengl parent: "Garden Java2D" {
 			camera #from_above locked: true;
 		}
 	}

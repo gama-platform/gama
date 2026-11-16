@@ -40,7 +40,7 @@ species Host skills:[moving]{
 		}
 	}
 }
-experiment SIR_ABM_exp type:gui{
+experiment SIR_ABM_exp mode:gui{
 	output {
 		display "HostDisp" {
 			species Host aspect:base;

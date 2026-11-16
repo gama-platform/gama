@@ -113,7 +113,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 		static boolean isOpenGL(final IDescription d) {
 			// Are we in OpenGL world ?
 			IDescription display = d;
-			final String type = display.getLitteral(TYPE);
+			final String type = display.getLitteral(RENDERER);
 
 			if (type != null)
 				return IKeyword._3D.equals(type) || IKeyword.OPENGL.equals(type) || IDisplayData.OPENGL2.equals(type);

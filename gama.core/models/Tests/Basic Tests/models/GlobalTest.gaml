@@ -11,7 +11,7 @@ global torus: true {
 	geometry shape <- square(100);
 }
 
-experiment GlobalTest type: test autorun: true {
+experiment GlobalTest mode: test autorun: true {
 	
 	test "Global Dimensions and Torus" {
 		assert simulation.shape.area = 10000.0;

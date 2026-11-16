@@ -309,7 +309,7 @@ global {
  * Minimal GUI experiment — all output is written to the console.
  * Run it and observe the Console view.
  */
-experiment "Attributes and Actions" type: gui {
+experiment "Attributes and Actions" mode: gui {
 	output {
 		// No display needed; all output goes to the console via write
 	}

@@ -15,7 +15,7 @@ model DisplayConstants
 experiment "Run" {
 
 	output {
-		display "Display2d" background: #black type: 2d {
+		display "Display2d" background: #black renderer: 2d {
 			graphics back {
 				draw rectangle(shape.width, shape.height) color: #blue;
 			}
@@ -26,7 +26,7 @@ experiment "Run" {
 			event #mouse_move {experiment. update_outputs();}
 			
 		}
-		display "Display3d" background: #black type: 3d {
+		display "Display3d" background: #black renderer: 3d {
 			graphics back {
 				draw rectangle(shape.width, shape.height) color: #blue;
 			}

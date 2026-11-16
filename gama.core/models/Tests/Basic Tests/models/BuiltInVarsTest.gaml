@@ -11,7 +11,7 @@ global {
 	float step <- 1.5;
 }
 
-experiment BuiltInVarsTest type: test autorun: true {
+experiment BuiltInVarsTest mode: test autorun: true {
 	
 	test "Global Variables and Cycles" {
 		assert simulation.step = 1.5;

@@ -18,11 +18,11 @@ global {
         #right_center, #bottom_left, #bottom_center, #bottom_right];
 }
 
-experiment "Font and anchor semantics" type: gui {
+experiment "Font and anchor semantics" mode: gui {
     text "Purpose: reuse one nominal 16-point font in world and screen drawings, and compare the nine text anchors.<br/>Expected: each label aligns its named edge or center with its red dot. The lower blue label is centered in its panel using at: {0.5,0.5}; its font size does not become a fraction or a model-unit length." category: "What this demonstrates";
     text "Try: resize, zoom, pan and compare Java2D and OpenGL; no simulation steps are needed. The screen panels stay fixed in pixels, while the world label follows the world camera. Use a viewport large enough for the fixed 570-pixel-wide panels. Font metrics can differ between backends; anchors position text, not the layer frame." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             graphics "World text" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
                 draw "Shared nominal font: 16" at: {50, 80} anchor: #center
@@ -47,6 +47,6 @@ experiment "Font and anchor semantics" type: gui {
                     font: shared_font color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
+        display "OpenGL" parent: "Java2D" renderer: opengl map_order: true {}
     }
 }

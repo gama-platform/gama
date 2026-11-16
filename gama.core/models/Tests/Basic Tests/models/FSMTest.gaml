@@ -63,4 +63,4 @@ species fsm_agent control: fsm {
 	}
 }
 
-experiment FSMTest type: test autorun: true;
+experiment FSMTest mode: test autorun: true;

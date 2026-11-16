@@ -5,7 +5,7 @@
 * Tags: property, list, map, random, test
 */
 
-experiment ContainerPropertiesTest type: test autorun: true {
+experiment ContainerPropertiesTest mode: test autorun: true {
 
 	int cases <- 200;
 

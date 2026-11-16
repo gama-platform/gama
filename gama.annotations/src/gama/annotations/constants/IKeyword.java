@@ -251,6 +251,8 @@ public interface IKeyword {
 	/** The destination. */
 	String DESTINATION = "destination";
 
+	String DEVICE = "device";
+
 	/** The dif2. */
 	String DIF2 = "diff2";
 
@@ -864,6 +866,8 @@ public interface IKeyword {
 
 	/** The remove. */
 	String REMOVE = "remove";
+
+	String RENDERER = "renderer";
 
 	/** The repeat. */
 	String REPEAT = "repeat";

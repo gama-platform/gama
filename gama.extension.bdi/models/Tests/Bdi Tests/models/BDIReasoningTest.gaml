@@ -322,4 +322,4 @@ species social_agent control: simple_bdi {
 
 species parallel_thought_agent control: parallel_bdi {}
 
-experiment BDIReasoningTest type: test autorun: true;
+experiment BDIReasoningTest mode: test autorun: true;

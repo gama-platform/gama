@@ -38,13 +38,13 @@ grid cell width: nb_classes height: max([1, length(palettes)]) {
     string palette_name;
 }
 
-experiment BrewerPalette type: gui {
+experiment BrewerPalette mode: gui {
     text "Purpose: browse every available ColorBrewer palette and the newer Swiss, Warm Amber and Mineral vintage inks. Each row names its palette and shows its complete native colour list; counts can differ. The catalogue is populated from brewer_palettes(1), so future ColorBrewer additions appear automatically." category: "What this demonstrates";
     text "Sequential palettes encode ordered values; diverging palettes emphasize departures from a midpoint; qualitative palettes distinguish categories without ordering. Pastel1, the former third example row, is qualitative. Vintage inks are also categorical, not sequential data scales." category: "What this demonstrates";
     text "Try: resize the display; no simulation steps are needed. Columns adapt to the viewport. Borders make very pale colours visible against white. The final three rows are labelled Vintage and use vintage_colors(name), not brewer_colors(name). Use the second experiment to assign colour classes to agents." category: "What this demonstrates";
 
     output {
-        display "All palettes" type: java2D background: #white {
+        display "All palettes" renderer: java2D background: #white {
             graphics "Catalogue" coordinates: #screen {
                 int columns <- min([3, max([1, int(#display_width / 360)])]);
                 int rows <- int(ceil(length(catalogue_names) / float(columns)));
@@ -74,11 +74,11 @@ experiment BrewerPalette type: gui {
     }
 }
 
-experiment BrewerColoredAgent type: gui {
+experiment BrewerColoredAgent mode: gui {
     parameter "Number of data classes" var: nb_classes category: "Brewer";
     text "Purpose: assign palette colours to grid agents. Each row is a ColorBrewer palette and each column is one class.<br/>Try: choose the number of classes before initialization, then initialize; no simulation steps are needed.<br/>Expected: only palettes with at least that many native colours are included. Increasing the count can exclude qualitative palettes; it does not interpolate missing colours. Vintage inks are shown in the catalogue experiment." category: "What this demonstrates";
     output {
-        display "Palette classes" type: java2D {
+        display "Palette classes" renderer: java2D {
             grid cell border: #black;
             graphics "Names" coordinates: #world {
                 loop i from: 0 to: length(palettes) - 1 {

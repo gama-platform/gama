@@ -178,7 +178,7 @@ experiment exp {
 		// Each of them can be set using the one of the following constants:
 		// #horizontal, #vertical, #stack, #split (displays split in a grid-like structure) or #none (no split).	
 		layout #split;
-		display "Strings 2D" type: 2d {
+		display "Strings 2D" renderer: 2d {
 			graphics Strings {
 				draw world.shape wireframe: true color: #black;
 				int y <- 7;
@@ -197,7 +197,7 @@ experiment exp {
 
 		}
 
-		display "Strings 3D" type: 3d {
+		display "Strings 3D" renderer: 3d {
 			// In #screen, #pixels (or #px) equals 1; numeric dimensions already denote pixels from 1.
 			// In #world drawings below, #px instead converts a display pixel into model units.
             overlay coordinates: #screen position: {0, 0} size: {300, 200} background: #grey transparency: 0.2 border: #black rounded: true {

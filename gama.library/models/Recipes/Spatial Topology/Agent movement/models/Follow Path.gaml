@@ -96,7 +96,7 @@ species road_of_graph {
 	} 
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	float minimum_cycle_duration <- 0.10;
 	output {
 		display myView { 

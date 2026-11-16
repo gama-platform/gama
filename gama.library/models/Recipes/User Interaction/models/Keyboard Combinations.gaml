@@ -24,9 +24,9 @@ global {
 	}
 }
 
-experiment Keyboard_2D type: gui {
+experiment Keyboard_2D mode: gui {
 	output {
-		display Keyboard type: 2d {
+		display Keyboard renderer: 2d {
 			graphics {
 				draw circle(3) at: cursor color: #blue;
 			}
@@ -69,9 +69,9 @@ experiment Keyboard_2D type: gui {
 	}
 }
 
-experiment Keyboard_3D type: gui {
+experiment Keyboard_3D mode: gui {
 	output {
-		display Keyboard type: 3d {
+		display Keyboard renderer: 3d {
 			graphics { draw sphere(3) at: cursor color: #blue; }
 			// CTRL warnings apply on Windows; camera and display shortcuts remain active on every platform.
 			event #ctrl + "a" { do record("CTRL+A in OpenGL"); } 

@@ -44,4 +44,4 @@ species Participant skills: [fipa] {
 	}
 }
 
-experiment test_propose_interaction_protocol type: gui {}
+experiment test_propose_interaction_protocol mode: gui {}

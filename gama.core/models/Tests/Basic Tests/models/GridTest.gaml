@@ -56,4 +56,4 @@ grid my_grid width: 10 height: 10 {
 	float val <- rnd(1.0);
 }
 
-experiment GridTest type: test autorun: true;
+experiment GridTest mode: test autorun: true;

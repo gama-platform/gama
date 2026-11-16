@@ -116,7 +116,7 @@ species road {
 
 }
 
-experiment traffic type: gui autorun: true{
+experiment traffic mode: gui autorun: true{
 	float minimum_cycle_duration <- 0.01;
 	list<rgb> pal <- palette([ #black, #green, #yellow, #orange, #orange, #red, #red, #red]);
 	map<rgb,string> pollutions <- [#green::"Good",#yellow::"Average",#orange::"Bad",#red::"Hazardous"];
@@ -125,7 +125,7 @@ experiment traffic type: gui autorun: true{
 	font title <- font("Arial", 18, #bold);
 	
 	output synchronized: true{
-		display carte type: opengl axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
+		display carte renderer: opengl axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
 			
 			 // The one-pixel frame deliberately allows the legend to overflow.
 			 overlay coordinates: #screen position: {50, 50} size: {1, 1} background: # black border: #black rounded: false

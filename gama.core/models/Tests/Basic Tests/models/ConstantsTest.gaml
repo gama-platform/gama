@@ -5,7 +5,7 @@
 * Tags: constant, float, int, math, test
 */
 
-experiment ConstantsTest type: test autorun: true {
+experiment ConstantsTest mode: test autorun: true {
 
 	test "Undefined operations raise an error rather than returning a constant" {
 		// by design, dividing by zero is an error and does not yield #infinity or #nan

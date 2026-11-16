@@ -202,7 +202,7 @@ experiment main {
 		layout consoles:false editors:false navigator:false parameters:false toolbars:false tray:false;
 	
 		
-		display main fullscreen:true type:2d {
+		display main fullscreen:true renderer:2d {
 			
 			picture "../includes/background.png";
 			species bird aspect:png;

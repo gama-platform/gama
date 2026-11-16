@@ -13,7 +13,7 @@
 model test_csv_matrix
 
 
-experiment "CSV to matrix tests" type: test {
+experiment "CSV to matrix tests" mode: test {
 
 	// ============================= INT =============================
 

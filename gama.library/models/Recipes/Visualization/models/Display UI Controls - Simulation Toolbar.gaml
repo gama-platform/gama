@@ -21,7 +21,7 @@ species particle skills: [moving] {
 	}
 }
 
-experiment "Simulation toolbar in the display" type: gui {
+experiment "Simulation toolbar in the display" mode: gui {
 	
 	bool show <- false;
 	bool opaque <- true;
@@ -49,7 +49,7 @@ experiment "Simulation toolbar in the display" type: gui {
 	image sync_icon <- image(svg_file("../images/ui-toolbar/experiment.sync.svg"), 32,32);
 
 	output of: experiment {
-		display "Native experiment controls" type: opengl background: #white axes: false {
+		display "Native experiment controls" renderer: opengl background: #white axes: false {
 			
 			agents "Agents" value:simulation.particle;
 

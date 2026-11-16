@@ -42,12 +42,12 @@ grid plotGrow height: grid_size width: grid_size neighbors: 8 {
 
 }
 
-experiment "Plant Growth" type: gui {
+experiment "Plant Growth" mode: gui {
 	output {
-		display d type:2d antialias:false{
+		display d renderer:2d antialias:false{
 			grid plotGrow border: #black;
 		}
-		display biomass  type: 3d {
+		display biomass  renderer: 3d {
 			chart "levels" kind: series {
 				data "water" value: sum(plotGrow collect(each.available_water)) color: #blue;
 				data "biomass" value: sum(plotGrow collect(each.biomass)) color: #green;				
@@ -56,6 +56,6 @@ experiment "Plant Growth" type: gui {
 	}
 }
 
-experiment "Plant Growth Co-Modeling" type: gui {
+experiment "Plant Growth Co-Modeling" mode: gui {
 }
 

@@ -37,7 +37,7 @@ public final class DisplaySource {
 
 	private record Patch(int offset, int length, String text) {}
 	private record Wrapped(String text, S_Display display, int bodyStart) {}
-	private static final String PREFIX = "model display_wizard\nexperiment e type: gui { output { display d {";
+	private static final String PREFIX = "model display_wizard\nexperiment e mode: gui { output { display d {";
 	private static final String SUFFIX = "\n} } }\n";
 	private final String source;
 	private final IParser parser;
@@ -45,6 +45,7 @@ public final class DisplaySource {
 	private final S_Experiment owner;
 	private final Statement selectedOutput;
 	private final DisplayDraft original;
+	private final String rendererFacet;
 
 	public DisplaySource(final String source, final int offset, final IParser parser, final boolean create) {
 		this.source = source;
@@ -57,6 +58,8 @@ public final class DisplaySource {
 			if (("output".equals(statement.getKey()) || "permanent".equals(statement.getKey())) && statement.getBlock() != null
 					&& offset >= node(statement).getOffset() && offset < node(statement).getEndOffset()) output = statement;
 		selectedOutput = output;
+		rendererFacet = display != null && facet(display, "renderer") == null && facet(display, "type") != null
+				? "type" : "renderer";
 		if (create) {
 			if (!canCreate(root, offset)) throw new IllegalArgumentException(
 					"Place the cursor inside an experiment to add a display. Displays belong in its output section; "
@@ -64,9 +67,11 @@ public final class DisplaySource {
 			original = DisplayDraft.empty();
 		} else {
 			if (display == null) throw new IllegalArgumentException("Place the cursor in a display declaration.");
-			var facets = readFacets(display, "type");
+			if (facet(display, "type") != null && facet(display, "renderer") != null)
+				throw new IllegalArgumentException("Use only renderer:, not both type: and renderer:.");
+			var facets = readFacets(display, rendererFacet);
 			Body body = readBody(source, display);
-			original = new DisplayDraft(display.getName(), value(display, "type"), facets, body.layers(), body.trailingSource());
+			original = new DisplayDraft(display.getName(), value(display, rendererFacet), facets, body.layers(), body.trailingSource());
 		}
 	}
 
@@ -148,8 +153,8 @@ public final class DisplaySource {
 		if (!draft.name().equals(original.name())) replace(patches, nameNode(display),
 				ExperimentDraft.quoteName(draft.name()));
 		List<Facet> before = new ArrayList<>(original.facets()), after = new ArrayList<>(draft.facets());
-		if (!original.renderer().isEmpty()) before.add(new Facet("type", original.renderer()));
-		if (!draft.renderer().isEmpty()) after.add(new Facet("type", draft.renderer()));
+		if (!original.renderer().isEmpty()) before.add(new Facet(rendererFacet, original.renderer()));
+		if (!draft.renderer().isEmpty()) after.add(new Facet(rendererFacet, draft.renderer()));
 		patchFacets(patches, display, before, after);
 		if (!draft.layers().equals(original.layers()) || !draft.trailingSource().equals(original.trailingSource())) {
 			int start = open(display.getBlock()) + 1, end = close(display.getBlock());

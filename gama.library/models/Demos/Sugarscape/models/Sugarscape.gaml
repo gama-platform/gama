@@ -134,7 +134,7 @@ species animal {
 	}
 }
 
-experiment sugarscape type: gui{
+experiment sugarscape mode: gui{
 	float minimum_cycle_duration<-0.1;
 	parameter 'Growth rate of sugar:' var: sugarGrowthRate category: 'Environment' unit: "/cycle";
 	parameter 'Minimum age of death:' var: minDeathAge <- 60 category: 'Agents' unit: "cycles";
@@ -148,7 +148,7 @@ experiment sugarscape type: gui{
 	parameter "Show vision ranges" var: show_vision category: "Appearance";
 	
 	output {
-		display grille type: 2d background: backdrop {
+		display grille renderer: 2d background: backdrop {
 			grid sugar_cell;
 			species animal;
 			overlay coordinates: #screen position: {12, 12} size: {320, 142} background: backdrop rounded: true {
@@ -165,14 +165,14 @@ experiment sugarscape type: gui{
 					color: lettering font: font("Helvetica", 11);
 			}
 		}
-		display chart refresh: every(5#cycles) type: 3d background: backdrop {
+		display chart refresh: every(5#cycles) renderer: 3d background: backdrop {
 			chart "Sugar reserve / population share" kind: pie background: backdrop color: lettering
 				style: ring label_background_color: backdrop label_text_color: lettering {
 				data "Reserve > 8" value: (animal as list) count (each.sugar > 8) color: strong_color;
 				data "Reserve <= 8" value: (animal as list) count (each.sugar < 9) color: weak_color;
 			}
 		}
-		display chart2 refresh: every(5#cycles) type: 3d background: backdrop {
+		display chart2 refresh: every(5#cycles) renderer: 3d background: backdrop {
 			chart "Sugar reserve / agent counts" kind: histogram background: backdrop color: lettering axes: lettering
 				label_background_color: backdrop label_text_color: lettering gap: 0.2 y_label: "Agents" {
 				data "Reserve > 8" value: (animal as list) count (each.sugar > 8) color: strong_color;

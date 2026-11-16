@@ -15,7 +15,7 @@ species moving_agent skills: [moving] {
 	float speed <- 5.0;
 }
 
-experiment MovingSkillTest type: test autorun: true {
+experiment MovingSkillTest mode: test autorun: true {
 	test "Goto Movement" {
 		ask simulation {
 			create moving_agent number: 1 returns: created_agents;

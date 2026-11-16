@@ -55,4 +55,4 @@ species advanced_bdi_agent control: simple_bdi {
 	}
 }
 
-experiment BDIAdvancedTest type: test autorun: true ;
+experiment BDIAdvancedTest mode: test autorun: true ;

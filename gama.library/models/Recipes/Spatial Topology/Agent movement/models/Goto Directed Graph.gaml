@@ -74,7 +74,7 @@ species people skills: [moving] {
 	}
 }
 
-experiment simplemodel type: gui {
+experiment simplemodel mode: gui {
 	float minimum_cycle_duration <- 0.01;
 	output {
 		display map map_order: true {

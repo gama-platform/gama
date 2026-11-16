@@ -61,7 +61,7 @@ species road {
 	}
 }
 
-experiment clean_network type: gui {
+experiment clean_network mode: gui {
 	
 	parameter "Clean data" var:clean_data;
 	parameter "Tolerance" var:tolerance;
@@ -75,7 +75,7 @@ experiment clean_network type: gui {
 	}
 	output {
 		layout #split;
-		display network type: 3d map_order: true {
+		display network renderer: 3d map_order: true {
 	
 			 // Text intentionally extends beyond this small screen frame.
 			 overlay coordinates: #screen position: {10, 10} size: {10, 10} background: # white transparency: 0.1  rounded: true

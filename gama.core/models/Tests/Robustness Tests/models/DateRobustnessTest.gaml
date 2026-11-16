@@ -6,7 +6,7 @@
 * Tags: robustness, date, test
 */
 
-experiment DateRobustnessTest type: test autorun: true {
+experiment DateRobustnessTest mode: test autorun: true {
 
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");

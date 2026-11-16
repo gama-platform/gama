@@ -66,11 +66,11 @@ species LVEuler {
 
 }
 
-experiment examples type: gui {
+experiment examples mode: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	output {
 		layout #split tabs: true;
-		display LV_series title: "Time series" toolbar: false  type: 2d {
+		display LV_series title: "Time series" toolbar: false  renderer: 2d {
 			chart 'Comparison Euler - RK4 (RK4 is more accurate)' kind: series 
 			x_serie: first(LVRK4).t[] y_label: "pop" background: rgb(47,47,47) color: #white x_tick_line_visible: false {
 				data "x (rk4)" value: first(LVRK4).x[] color: rgb(52,152,219) marker: false thickness: 2;
@@ -80,7 +80,7 @@ experiment examples type: gui {
 			}
 
 		}
-		display LV_phase_portrait title: "Phase portrait" toolbar: false  type: 2d {
+		display LV_phase_portrait title: "Phase portrait" toolbar: false  renderer: 2d {
 			chart 'Comparison Euler - RK4 (RK4 is more accurate)' kind: xy 
 			background: rgb(47,47,47) color: #white x_label: "x" y_label: "y" x_tick_line_visible: false y_tick_line_visible: false{
 				data "y(x(t)) rk4" value: rows_list(matrix(first(LVRK4).x[],first(LVRK4).y[])) color: rgb(52,152,219) marker: false thickness: 2;

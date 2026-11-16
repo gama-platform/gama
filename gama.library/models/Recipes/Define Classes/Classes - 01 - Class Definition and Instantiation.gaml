@@ -223,7 +223,7 @@ global {
  * Minimal GUI experiment — the model produces only console output.
  * Run it and observe the output in the Console view.
  */
-experiment "Class Definition and Instantiation" type: gui {
+experiment "Class Definition and Instantiation" mode: gui {
 	output {
 		// No display needed; all output goes to the console via write
 	}

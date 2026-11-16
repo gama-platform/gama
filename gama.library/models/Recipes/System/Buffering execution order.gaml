@@ -42,6 +42,6 @@ global {
 	
 }
 
-experiment a type:batch until:cycle=10 autorun:true{
+experiment a mode:batch until:cycle=10 autorun:true{
 
 }

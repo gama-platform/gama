@@ -47,5 +47,5 @@ global {
 	}
 }
 
-experiment RandomNumberGenerators type: gui {
+experiment RandomNumberGenerators mode: gui {
 }

@@ -161,4 +161,4 @@ species wall skills: [static_body] {
 	geometry shape <- box(10, 10, 1);
 }
 
-experiment PhysicsAdvancedTest type: test autorun: true {}
+experiment PhysicsAdvancedTest mode: test autorun: true {}

@@ -38,7 +38,7 @@ species eyes {
 
 experiment Run {
 	output {
-		display Eyes type: 3d axes: false {
+		display Eyes renderer: 3d axes: false {
 			camera 'default' location: {50.0,50.0025,145.8607} target: {50.0,50.0,0.0};
 			graphics face {
 				draw circle(60) color: #gamaorange;

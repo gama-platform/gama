@@ -7,7 +7,7 @@
 
 model FileReadWriteTest
 
-experiment FileReadWriteTest type: test autorun: true {
+experiment FileReadWriteTest mode: test autorun: true {
 	
 	test "Save and Read Text File" {
 		string text_content <- "Line1\nLine2\nLine3";

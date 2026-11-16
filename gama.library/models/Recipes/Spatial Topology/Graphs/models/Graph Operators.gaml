@@ -54,7 +54,7 @@ species people {
 	}
 }
 
-experiment graphoperators type: gui {
+experiment graphoperators mode: gui {
 	output {
 		display map background:#lightgray map_order: true{
 			graphics "edges" {

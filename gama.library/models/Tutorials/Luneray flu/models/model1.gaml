@@ -45,7 +45,7 @@ species people skills:[moving]{
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	parameter "Nb people infected at init" var: nb_infected_init min: 1 max: 2147;
 
 	output {

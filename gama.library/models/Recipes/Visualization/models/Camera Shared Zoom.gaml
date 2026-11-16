@@ -23,7 +23,7 @@ global {
 	}
 }
 
-experiment "Shared Zoom Example" type: gui {
+experiment "Shared Zoom Example" mode: gui {
 	float factor <- 1.0;
 	int target1 <- 50;
 	int target2 <- 20;
@@ -32,7 +32,7 @@ experiment "Shared Zoom Example" type: gui {
 	float distance -> 500 / factor;
 	
 	output {
-		display base type: 3d light: true virtual: true toolbar: false {
+		display base renderer: 3d light: true virtual: true toolbar: false {
 			species building aspect: base refresh: false;
 			species road aspect: base refresh: false;
 			species people refresh: true;

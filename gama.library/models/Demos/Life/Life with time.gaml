@@ -125,7 +125,7 @@ class cell {
 	}
 }
 
-experiment "Game of Life" type: gui record: true {
+experiment "Game of Life" mode: gui record: true {
 	parameter 'Width:' var: environment_width category: 'Board';
 	parameter 'Height:' var: environment_height category: 'Board';
 	parameter 'Initial density of live cells:' var: density category: 'Cells' unit: "%";
@@ -135,7 +135,7 @@ experiment "Game of Life" type: gui record: true {
 	parameter 'Color of live cells:' var: livingcolor category: 'Colors';
 	parameter 'Color of dead cells:' var: deadcolor category: 'Colors';
 	output synchronized:true {
-		display Life type: 3d axes:false antialias:false background:#grey{
+		display Life renderer: 3d axes:false antialias:false background:#grey{
 		camera 'default' location: {38.4894,86.0603,21.9639} target: {25.3061,38.523,0.0};			
 		graphics  {
 				draw world.shape color:#black wireframe:true;

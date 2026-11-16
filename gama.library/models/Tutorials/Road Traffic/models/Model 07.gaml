@@ -122,7 +122,7 @@ species people skills:[moving] {
 	}
 }
 
-experiment road_traffic type: gui {
+experiment road_traffic mode: gui {
 	parameter "Shapefile for the buildings:" var: shape_file_buildings category: "GIS" ;
 	parameter "Shapefile for the roads:" var: shape_file_roads category: "GIS" ;
 	parameter "Shapefile for the bounds:" var: shape_file_bounds category: "GIS" ;
@@ -137,12 +137,12 @@ experiment road_traffic type: gui {
 	parameter "Number of hours between two road repairs" var: repair_time category: "Road" unit: "h";
 	
 	output {
-		display city_display type:3d map_order: true {
+		display city_display renderer:3d map_order: true {
 			species building aspect: base ;
 			species road aspect: base ;
 			species people aspect: base ;
 		}
-		display chart_display refresh: every(10#cycles)  type: 3d { 
+		display chart_display refresh: every(10#cycles)  renderer: 3d { 
 			chart "Road Status" coordinates: #screen kind: series size: {#display_width, 0.5} position: {0, 0} {
 				data "Mean road destruction" value: mean (road collect each.destruction_coeff) style: line color: #green ;
 				data "Max road destruction" value: road max_of each.destruction_coeff style: line color: #red ;

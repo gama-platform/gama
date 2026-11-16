@@ -54,7 +54,7 @@ species PING_PONG skills: [network] {
 
 }
 
-experiment start type: gui {
+experiment start mode: gui {
 	float minimum_cycle_duration <- 0.5 #s;
 	
 	output {

@@ -186,9 +186,9 @@ global {
 	
 	
 }
-experiment QueryTests type: test;
+experiment QueryTests mode: test;
 
-experiment with_visualization type: gui {
+experiment with_visualization mode: gui {
 	output {
 		display map {
 			species cell;

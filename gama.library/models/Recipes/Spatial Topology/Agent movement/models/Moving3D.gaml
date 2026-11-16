@@ -140,41 +140,41 @@ experiment base virtual:true{
 	float minimum_cycle_duration <- 0.05#s;
 }
 
-experiment Moving  type: gui parent:base{
+experiment Moving  mode: gui parent:base{
 	parameter "Movement" var:movingType <- "move";
 	output {	
-		display MovingAgent type:3d  background:rgb(10,40,55) {
+		display MovingAgent renderer:3d  background:rgb(10,40,55) {
 			camera 'default' location: {55.5312,184.9648,188.2995} target: {55.5312,18.3657,0.0};
 			species movingAgent trace:trace;
 		}
 	}
 }
 
-experiment Wandering  type: gui parent:base{
+experiment Wandering  mode: gui parent:base{
 	parameter "Movement" var:movingType <- "wander";
 	output {	
-		display WanderingAgent type:3d  background:rgb(10,40,55) {
+		display WanderingAgent renderer:3d  background:rgb(10,40,55) {
 			camera 'default' location: {55.5312,184.9648,188.2995} target: {55.5312,18.3657,0.0};
 			species wanderAgent trace:trace;
 		}
 	}
 }
 
-experiment Goto  type: gui parent:base{
+experiment Goto  mode: gui parent:base{
 	parameter "Movement" var:movingType <- "goto";
 	output {	
-		display GotoAgent type:3d  background:rgb(10,40,55) {
+		display GotoAgent renderer:3d  background:rgb(10,40,55) {
 			camera 'default' location: {55.5312,184.9648,188.2995} target: {55.5312,18.3657,0.0};
 			species gotoAgent trace:trace;
 		}
 	}
 }
 
-experiment GotoOnNetwork  type: gui parent:base{
+experiment GotoOnNetwork  mode: gui parent:base{
 	parameter "Movement" var:movingType <- "gotoOnNetwork";
 	output {
 			
-		display GotoOnNetworkAgent type:3d background:rgb(10,40,55) {
+		display GotoOnNetworkAgent renderer:3d background:rgb(10,40,55) {
 			camera 'default' location: {-149.2264,96.1645,136.3544} target: {115.5586,27.6864,0.0};
 			species gotoAgentOnNetwork trace:trace;
 			species cell aspect:myPoint;
@@ -183,11 +183,11 @@ experiment GotoOnNetwork  type: gui parent:base{
 	}
 }
 
-experiment Complete  type: gui parent:base{
+experiment Complete  mode: gui parent:base{
 	parameter "Movement" var:movingType <- "complete";
 	output {
 			
-		display GotoOnNetworkAgent type:3d background:rgb(10,40,55) {
+		display GotoOnNetworkAgent renderer:3d background:rgb(10,40,55) {
 			camera 'default' location: {-51.3023,242.3741,147.6937} target: {153.2868,19.1041,0.0};
 			species movingAgent coordinates: #world position:{0,0,0} trace:trace;
 			species wanderAgent coordinates: #world position:{envSize,0,0} trace:trace;

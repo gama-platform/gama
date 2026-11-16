@@ -14,7 +14,7 @@ model CreateSimuGraph2
 import "Base Model.gaml"
 
 
-experiment "1. Save Simulation" type: gui parent: Base {
+experiment "1. Save Simulation" mode: gui parent: Base {
 	
 	
 	string file_path <- "../includes/saved_simulation.simulation";
@@ -29,7 +29,7 @@ experiment "1. Save Simulation" type: gui parent: Base {
 
 }
 
-experiment "2. Reload Simulation" type: gui parent: Base{
+experiment "2. Reload Simulation" mode: gui parent: Base{
 	
 	simulation_file input <- file("../includes/saved_simulation.simulation");
 	
@@ -43,7 +43,7 @@ experiment "2. Reload Simulation" type: gui parent: Base{
 
 }
 
-experiment "3. Restore Simulation" type: gui parent: Base{
+experiment "3. Restore Simulation" mode: gui parent: Base{
 	
 	simulation_file input <- file("../includes/saved_simulation.simulation");
 	

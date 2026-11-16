@@ -39,4 +39,4 @@ global {
 }
 
 species bdi_agent control: simple_bdi;
-experiment testBDI type: test autorun: true;
+experiment testBDI mode: test autorun: true;

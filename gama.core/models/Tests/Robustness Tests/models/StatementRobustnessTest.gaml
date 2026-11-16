@@ -217,4 +217,4 @@ species recursive_agent {
 	}
 }
 
-experiment StatementRobustnessTest type: test autorun: true;
+experiment StatementRobustnessTest mode: test autorun: true;

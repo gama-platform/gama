@@ -104,7 +104,7 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 
 	public static ActionBodyContext standalone(final DisplayDraft draft, final IParser parser) {
 		return new ActionBodyContext(URI.createURI("synthetic:/display-wizard/.display-wizard.gaml"),
-				"model display_wizard\nexperiment e type: gui { output {\n" + DisplaySource.renderDisplay(draft, parser)
+				"model display_wizard\nexperiment e mode: gui { output {\n" + DisplaySource.renderDisplay(draft, parser)
 						+ "\n} }\n", "");
 	}
 
@@ -417,7 +417,7 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 	/** Compatibility hook for embedded GAML hosts; unsupported rows are not edited through this control. */
 	protected Control createRawEditor(final Composite parent, final String initial, final Consumer<String> modified) {
 		var context = new ActionBodyContext(URI.createURI("synthetic:/display-wizard/.layer-wizard.gaml"),
-				"model display_wizard\nexperiment e type: gui { output { display d {\n", "\n} } }\n");
+				"model display_wizard\nexperiment e mode: gui { output { display d {\n", "\n} } }\n");
 		var embedded = createEmbeddedEditor(parent, context, initial);
 		if (embedded != null) {
 			embedded.control().addListener(SWT.Modify, e -> modified.accept(embedded.text()));

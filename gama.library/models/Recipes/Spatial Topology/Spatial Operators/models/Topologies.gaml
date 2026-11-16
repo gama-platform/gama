@@ -169,7 +169,7 @@ species dummy {
 		draw id size: 6 color: #black;
 	}
 }
-experiment topology_test type: gui {
+experiment topology_test mode: gui {
 	/** Insert here the definition of the input and output of the model */
 	parameter "Operator" var: parameter_operator;
 	output {

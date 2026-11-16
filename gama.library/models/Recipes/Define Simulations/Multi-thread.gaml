@@ -40,9 +40,9 @@ grid cell width: 5 height: 5 parallel: true {
 		color <- rgb(int((1.0 - val)*255),int((1.0 - val)*255),int((1.0 - val)*255));
 	}
 }
-experiment multithread type: gui {
+experiment multithread mode: gui {
 	output {
-		display map type:2d antialias:false{
+		display map renderer:2d antialias:false{
 			grid cell border: #black;
 		}
 	}

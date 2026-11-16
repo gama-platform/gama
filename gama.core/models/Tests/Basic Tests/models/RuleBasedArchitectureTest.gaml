@@ -118,4 +118,4 @@ species mixed_agent control: rules {
 	}
 }
 
-experiment RuleBasedArchitectureTest type: test autorun: true;
+experiment RuleBasedArchitectureTest mode: test autorun: true;

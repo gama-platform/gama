@@ -56,7 +56,7 @@ species people skills: [moving] control: fsm {
 	
 }
 
-experiment FirstModel type: gui {
+experiment FirstModel mode: gui {
 
 	parameter "Recovery time " var: recovery_time min: 10 max: 100 unit: "cycles";
 	parameter "Number of people" var: number_of_people min: 10 max: 2000;
@@ -65,12 +65,12 @@ experiment FirstModel type: gui {
 	
 	output {
 		map<string, rgb> colors <- ["S"::#green,"I"::#red,"R"::#blue];
-		display "My Display" type:2d{
+		display "My Display" renderer:2d{
 			species people {
 				draw circle(1) color: (state = "I")? #red : ((state="R") ? #blue : #green);
 			}
 		}
-		display "Chart" type:3d {
+		display "Chart" renderer:3d {
 			chart "Infected people" {
 				loop s over: ["S","I","R"] {
 					data s value: people count (each.state = s) color: colors[s];

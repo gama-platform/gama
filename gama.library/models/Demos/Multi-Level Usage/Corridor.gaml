@@ -127,7 +127,7 @@ species corridor {
 	}
 }
 
-experiment "Corridor" type: gui autorun: true {
+experiment "Corridor" mode: gui autorun: true {
 	point button_location;
 	bool button_hover;
 	
@@ -136,7 +136,7 @@ experiment "Corridor" type: gui autorun: true {
 			simulation.environment_height - simulation.corridor_wall_height / 2};
 	}
 	output {
-		display defaut_display type: 3d background: backdrop axes: false map_order: true {
+		display defaut_display renderer: 3d background: backdrop axes: false map_order: true {
 			camera 'default' location: {4000.0,1500.1331,7628.0284} target: {4000.0,1500.0,0.0};
 			graphics back {
 				draw corridor_wall_0_display color: floor_color border: rgb(68, 87, 109);

@@ -80,7 +80,7 @@ species center skills: [moving] schedules: [] {
 	}
 }
 
-experiment voronoi type: gui autorun: true {
+experiment voronoi mode: gui autorun: true {
 	parameter "Number of seeds" var: num_points category: "Mosaic" {
 		if (num_points > length(center)) {
 			create center number: num_points - length(center);
@@ -111,7 +111,7 @@ experiment voronoi type: gui autorun: true {
 	float minimum_cycle_duration <- 0.05#s;
 	output {
 		layout #split navigator: false tray: false consoles: false editors: false;
-		display "Voronoi - glass islands" background: backdrop type: 3d axes: false {
+		display "Voronoi - glass islands" background: backdrop renderer: 3d axes: false {
 			//camera 'default' location: {120.848,142.658,66.9886} target: {51.4698,55.4377,0.0};
 			light #ambient intensity: 165;
 			species center aspect: glass;

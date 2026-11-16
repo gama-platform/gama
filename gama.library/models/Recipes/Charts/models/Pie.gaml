@@ -15,13 +15,13 @@ global
 {
 }
 
-experiment "Different Pies" type: gui
+experiment "Different Pies" mode: gui
 {
 	output synchronized: true
 	{
 		layout #split parameters: false navigator: false editors: false consoles: false ;	
 		
-		display "data_pie_chart" type: 3d
+		display "data_pie_chart" renderer: 3d
 		{
 			chart "Nice Ring Pie Chart" kind: pie style: ring background: # darkblue color: # lightgreen label_text_color: #red label_background_color: #lightgray axes: #red  title_font: font( 'Serif', 32.0, #italic)
 			tick_font: font('Monospaced' , 14, #bold) label_font: font('Arial', 32 #bold) x_label: 'Nice Xlabel' y_label:
@@ -34,7 +34,7 @@ experiment "Different Pies" type: gui
 
 		}
 
-		display "data_3Dpie_chart" type: 3d
+		display "data_3Dpie_chart" renderer: 3d
 		{
 			chart "data_3Dpie_chart" kind: pie style: 3d
 			{
@@ -45,7 +45,7 @@ experiment "Different Pies" type: gui
 
 		}
 
-		display "datalist_pie_chart" type: 3d
+		display "datalist_pie_chart" renderer: 3d
 		{
 			chart "datalist_pie_chart" kind: pie style: exploded  series_label_position: "none" 
 			{

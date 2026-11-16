@@ -26,7 +26,7 @@ experiment Show {
 	
 	output {
 		layout #split;
-		display im type: 3d {
+		display im renderer: 3d {
 			picture im;
 		}
 		
@@ -34,7 +34,7 @@ experiment Show {
 			picture mat;
 		}
 		
-		display field type: 3d {
+		display field renderer: 3d {
 			mesh f scale: 0.05 triangulation: true;
 		}
 	}

@@ -79,7 +79,7 @@ grid ant_grid width: width_and_height_of_grid height: width_and_height_of_grid n
 	rgb color <- #black;
 }
 
-experiment "Color sort" type: gui {
+experiment "Color sort" mode: gui {
 	parameter "Number of colors:" var: number_of_different_colors category: "Environment";
 	parameter "Density of colors:" var: density_percent category: "Environment" unit: "%";
 	parameter "Number of similar colors in memory necessary to put down:" var: number_of_objects_in_history category: "Agents";
@@ -87,7 +87,7 @@ experiment "Color sort" type: gui {
 	parameter "Width and height of the grid:" var: width_and_height_of_grid category: "Environment";
 	parameter "Number of agents:" var: ants category: "Agents";
 	output synchronized: false {
-		display view type: opengl4 antialias: false map_order: true fullscreen: true{
+		display view renderer: opengl4 antialias: false map_order: true fullscreen: true{
 			grid ant_grid;
 			species ant transparency: 0.05;
 		}

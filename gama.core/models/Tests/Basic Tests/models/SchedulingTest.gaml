@@ -84,7 +84,7 @@ species parent_agent {
 
 species child_agent { }
 
-experiment SchedulingTest type: test autorun: true {
+experiment SchedulingTest mode: test autorun: true {
 
 	test "A freshly created agent has not run yet" {
 		list<default_agent> created_agents;

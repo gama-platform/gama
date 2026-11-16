@@ -5,7 +5,7 @@
 * Tags: gml, extension, test
 */
 
-experiment GMLTest type: test autorun: true {
+experiment GMLTest mode: test autorun: true {
 
 	test "is_gml recognises the gml extension" {
 		assert is_gml("anything.gml") = true;

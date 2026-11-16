@@ -336,7 +336,7 @@ species my_SIR_maths {
 
 
 
-experiment mysimulation type: gui {
+experiment mysimulation mode: gui {
 	parameter 'Number of Susceptible' type: int var: initial_S <- 495 category: "Initial population"; 
 	parameter 'Number of Infected'    type: int var: initial_I <- 5   category: "Initial population";
 	parameter 'Number of Removed'     type: int var: initial_R <- 0   category: "Initial population";
@@ -353,12 +353,12 @@ experiment mysimulation type: gui {
 	
 	output {
 		layout #split;
-		display 'sir display'  type:2d antialias:false {
+		display 'sir display'  renderer:2d antialias:false {
 			grid sir_grid border: #lightgray;
 			species Host aspect: basic;
 		}
 	
-		display 'Switch model' type: 3d {
+		display 'Switch model' renderer: 3d {
 			chart 'Susceptible' kind: series background: #white style: exploded {
 				data 'susceptible' value: current_model.S color: rgb(46,204,113);
 				data 'infected' value: current_model.I color: rgb(231,76,60);
@@ -367,7 +367,7 @@ experiment mysimulation type: gui {
 
 		}
 
-		display SI_maths type: 3d {
+		display SI_maths renderer: 3d {
 			chart "SI" kind: series background: #white {
 				data 'S' value: first((my_SIR_maths)).S color: rgb(46,204,113);
 				data 'I' value: first((my_SIR_maths)).I color: rgb(231,76,60);

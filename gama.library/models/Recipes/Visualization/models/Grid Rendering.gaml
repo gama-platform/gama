@@ -13,10 +13,10 @@ grid lane width: 200 height: 10 {
 	rgb color <- #dodgerblue;
 }
 
-experiment "Grid Rendering" type: gui {
+experiment "Grid Rendering" mode: gui {
 	output {
 		layout #horizontal;
-		display "OpenGL" type: opengl map_order: true {
+		display "OpenGL" renderer: opengl map_order: true {
 			grid lane border: #black;
 		}
 	}

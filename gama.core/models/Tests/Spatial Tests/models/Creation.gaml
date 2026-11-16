@@ -31,7 +31,7 @@ global {
 }
 
 
-experiment Visualisation type: gui {
+experiment Visualisation mode: gui {
 	output {
 		display "Geometries" {
 			graphics my_geoms {
@@ -54,7 +54,7 @@ experiment Visualisation type: gui {
 				draw curve({0,0},{0,10},{10,10}) color:#black;
 			}
 		}
-		display "3D" type:3d {
+		display "3D" renderer:3d {
 			graphics cylinder {
 				draw cylinder(10,10) at:{25,25} color:#deepskyblue;
 				draw sphere(10) at:{25,50} color:#darkturquoise;
@@ -64,7 +64,7 @@ experiment Visualisation type: gui {
 	}
 }
 
-experiment "Creation Test" type: test autorun: true {	
+experiment "Creation Test" mode: test autorun: true {	
 		
 	test "Circle tests with tolerance" {
 		ask simulation {

@@ -56,10 +56,10 @@ experiment Emojis {
 	
 	output {
 		layout #split consoles: false toolbars: false tabs: false background: #black controls: true;
-		display "Show vector emojis" type: 3d axes: false{
+		display "Show vector emojis" renderer: 3d axes: false{
 			species emoji aspect: shape_aspect;
 		}
-		display "Show icon emojis" type: 3d axes: false {
+		display "Show icon emojis" renderer: 3d axes: false {
 			species emoji aspect: icon_aspect;
 		}
 	}

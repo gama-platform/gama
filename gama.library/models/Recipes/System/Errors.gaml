@@ -166,7 +166,7 @@ experiment "9 - Deliberately ignore a failure" {
 	}
 }
 
-experiment "Error handling regression checks" type: test {
+experiment "Error handling regression checks" mode: test {
 	test "Nil action calls are catchable" {
 		error_probe absent <- nil;
 		bool caught <- false;

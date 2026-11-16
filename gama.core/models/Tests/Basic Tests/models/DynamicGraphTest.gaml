@@ -56,4 +56,4 @@ global {
 
 species node_agent {}
 
-experiment DynamicGraphTest type: test autorun: true;
+experiment DynamicGraphTest mode: test autorun: true;

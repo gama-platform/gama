@@ -109,14 +109,14 @@ import gama.api.kernel.simulation.IExploration;
  *
  * <pre>{@code
  * // Valid batch experiment
- * experiment my_batch type: batch {
+ * experiment my_batch mode: batch {
  *     method morris sample_size: 100 nb_levels: 4;
  *     parameter "param1" var: p1 min: 0 max: 10;
  *     until: cycle > 1000;
  * }
  *
  * // Invalid - will trigger error
- * experiment bad_gui type: gui {
+ * experiment bad_gui mode: gui {
  *     method morris;  // Error: gui experiments cannot define exploration methods
  * }
  * }</pre>
@@ -157,10 +157,10 @@ public class BatchValidator implements IDescriptionValidator {
 	 */
 	@Override
 	public void validate(final IDescription desc) {
-		final String type = desc.getLitteral(TYPE);
+		final String type = desc.getLitteral(MODE);
 
 		if (!IExperimentDescription.getExperimentTypes().contains(type)) {
-			desc.error("The type of the experiment must belong to " + IExperimentDescription.getExperimentTypes());
+			desc.error("The mode of the experiment must belong to " + IExperimentDescription.getExperimentTypes());
 			return;
 		}
 

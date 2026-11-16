@@ -480,7 +480,9 @@ public class GamlSyntacticConverter {
 	 */
 	private void processExperiment(final ISyntacticElement elt) {
 		// We do it also for experiments, and change their name
-		if (!elt.hasFacet(TYPE)) { elt.setFacet(TYPE, GAML.getExpressionDescriptionFactory().createConstant(GUI_)); }
+		if (!elt.hasFacet(IKeyword.MODE)) {
+			elt.setFacet(IKeyword.MODE, GAML.getExpressionDescriptionFactory().createConstant(GUI_));
+		}
 		// We modify the names of experiments so as not to confuse them with species
 		final String name = elt.getName();
 		if (!elt.hasFacet(TITLE)) { elt.setFacet(TITLE, convertToLabel(null, "Experiment " + name)); }
@@ -905,8 +907,8 @@ public class GamlSyntacticConverter {
 	}
 
 	/**
-	 * Applies a list of facets to the given syntactic element, converting each facet's expression and honouring the
-	 * {@code isLabel} contract of the artefact descriptor.
+	 * Applies facets, migrating legacy selector {@code type:} facets before consulting the artefact's label contract.
+	 * Genuine typing facets are left unchanged. Only the syntactic element is rewritten, not the source EMF tree.
 	 *
 	 * <p>
 	 * This is the single shared implementation used by both
@@ -927,6 +929,34 @@ public class GamlSyntacticConverter {
 		String keyword = elt.getKeyword();
 		facets.forEach((fname, f) -> {
 			fname = replaceAssignments(keyword, fname);
+			if (TYPE.equals(fname)) {
+				if (IKeyword.INSPECT.equals(keyword) || IKeyword.BROWSE.equals(keyword)) {
+					final IExpressionDescription value = convExpr(f, true);
+					if (value == null || !value.equalsString(IKeyword.AGENT) && !value.equalsString(IKeyword.TABLE)) {
+						emitError(elt, "The deprecated 'type:' facet of '" + keyword
+								+ "' only accepts 'agent' or 'table'. Use 'inspect' or 'browse' instead.");
+					} else {
+						final String replacement =
+								value.equalsString(IKeyword.TABLE) ? IKeyword.BROWSE : IKeyword.INSPECT;
+						elt.setKeyword(replacement);
+						emitWarning(elt, "The 'type:' facet of '" + keyword + "' is deprecated. Use '" + replacement
+								+ "' without 'type:' instead.");
+					}
+					return;
+				}
+				final String replacement = switch (keyword) {
+					case EXPERIMENT -> IKeyword.MODE;
+					case IKeyword.EVENT -> IKeyword.DEVICE;
+					case DISPLAY -> IKeyword.RENDERER;
+					case "light", IKeyword.CHART -> IKeyword.KIND;
+					default -> null;
+				};
+				if (replacement != null) {
+					emitWarning(elt, "The 'type:' facet of '" + keyword + "' is deprecated. Use '" + replacement
+							+ ":' instead.");
+					fname = replacement;
+				}
+			}
 			final boolean label = artefact != null && artefact.isLabel(fname);
 			final IExpressionDescription fexpr = convExpr(f, label);
 			addFacet(elt, fname, fexpr);
@@ -990,6 +1020,7 @@ public class GamlSyntacticConverter {
 		final IExpressionDescription ed = findExpr(stm);
 		addFacet(elt, NAME, ed);
 		addFacet(elt, TITLE, ed);
+		processExperiment(elt);
 	}
 
 	/**

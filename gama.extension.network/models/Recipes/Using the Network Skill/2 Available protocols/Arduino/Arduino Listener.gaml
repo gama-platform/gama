@@ -30,7 +30,7 @@ species NetworkingAgent skills:[network] {
 	}
 }
 
-experiment test_Arduino type: gui {
+experiment test_Arduino mode: gui {
 	output {
 		display d {
 			species NetworkingAgent;	

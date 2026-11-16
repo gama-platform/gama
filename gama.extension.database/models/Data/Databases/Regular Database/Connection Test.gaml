@@ -67,4 +67,4 @@ species AgentDB_POSTGRESQL parent: AgentDB {
 	}
 }
 
-experiment default_expr type: gui { }  
+experiment default_expr mode: gui { }  

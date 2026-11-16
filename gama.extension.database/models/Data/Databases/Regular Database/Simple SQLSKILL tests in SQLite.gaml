@@ -75,4 +75,4 @@ species DB_Accessor skills: [sql] {
 	}
 }
 
-experiment simple_SQL_exp type: gui {}     
+experiment simple_SQL_exp mode: gui {}     

@@ -56,11 +56,11 @@ species arm_link skills: [dynamic_body] {
 	}
 }
 
-experiment "Box2D Articulated Arm" type: gui {
+experiment "Box2D Articulated Arm" mode: gui {
 	float minimum_cycle_duration <- 30#ms;
 
 	output {
-		display Arm type: 2d axes: false background: rgb(248, 246, 240) {
+		display Arm renderer: 2d axes: false background: rgb(248, 246, 240) {
 			graphics grid {
 				loop x from: 0 to: 200 step: 20 {
 					draw line([{x, 0}, {x, 100}]) color: rgb(224, 219, 210) width: 1;

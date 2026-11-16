@@ -180,7 +180,7 @@ species pedestrian skills: [dynamic_body] {
 	}
 }
 
-experiment "Crossing pedestrian flows" type: gui {
+experiment "Crossing pedestrian flows" mode: gui {
 	parameter "Minimum preferred speed" var: min_pedestrian_speed min: 1.0 max: 8.0;
 	parameter "Maximum preferred speed" var: max_pedestrian_speed min: 1.0 max: 10.0;
 	parameter "Pedestrian avoidance distance" var: pedestrian_avoidance_distance min: 1.0 max: 15.0;
@@ -190,7 +190,7 @@ experiment "Crossing pedestrian flows" type: gui {
 	parameter "Velocity arrow scale" var: velocity_arrow_scale min: 0.5 max: 4.0;
 
 	output {
-		display "Box2D pedestrian flows" type: 2d axes: false background: rgb(248, 246, 240) {
+		display "Box2D pedestrian flows" renderer: 2d axes: false background: rgb(248, 246, 240) {
 			graphics "Crossing routes" {
 				draw line([{0, size / 2}, {size, size / 2}]) color: rgb(224, 219, 210) width: 1;
 				draw line([{size / 2, 0}, {size / 2, size}]) color: rgb(224, 219, 210) width: 1;

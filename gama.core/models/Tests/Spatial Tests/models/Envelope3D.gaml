@@ -46,4 +46,4 @@ species walker skills: [moving3D] {
 	}
 }
 
-experiment "Envelope3D Test" type: test autorun: true;
+experiment "Envelope3D Test" mode: test autorun: true;

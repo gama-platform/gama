@@ -6,7 +6,7 @@
 * Tags: property, date, random, test
 */
 
-experiment DatePropertiesTest type: test autorun: true {
+experiment DatePropertiesTest mode: test autorun: true {
 
 	int cases <- 200;
 

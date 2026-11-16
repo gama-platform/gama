@@ -58,7 +58,7 @@ species test_species {
 }
 
 
-experiment new type: test until: cycle=10{
+experiment new mode: test until: cycle=10{
 	// Tests can also be placed directly into the experiment
 	test in_experiment {
 		assert 1+2 = 3;

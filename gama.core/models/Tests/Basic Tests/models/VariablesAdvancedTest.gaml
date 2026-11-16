@@ -12,7 +12,7 @@ species var_agent {
 	int dynamic_val <- 0 update: dynamic_val + 1;
 }
 
-experiment VariablesAdvancedTest type: test autorun: true {
+experiment VariablesAdvancedTest mode: test autorun: true {
 	
 	test "Variable Bounds" {
 		ask simulation {

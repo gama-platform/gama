@@ -12,7 +12,7 @@ model FileInputRobustnessTestModel
 
 species feature { }
 
-experiment FileInputRobustnessTest type: test autorun: true {
+experiment FileInputRobustnessTest mode: test autorun: true {
 
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");

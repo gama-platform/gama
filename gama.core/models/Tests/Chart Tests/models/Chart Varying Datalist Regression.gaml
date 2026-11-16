@@ -16,19 +16,19 @@ global {
 	list<rgb> colors -> list_with(length(values), #green);
 }
 
-experiment "Varying datalist" type: gui {
+experiment "Varying datalist" mode: gui {
 	output {
-		display "Histogram" type: 2d {
+		display "Histogram" renderer: 2d {
 			chart "Histogram: all bars must be green" kind: histogram {
 				datalist value: values legend:labels  color: colors;
 			}
 		}
-		display "Radar" type: 2d {
+		display "Radar" renderer: 2d {
 			chart "Radar: all series must be green" kind: radar {
 				datalist value: values legend: labels color: colors; 
 			}
 		}
-		display "Second axis" type: 2d {
+		display "Second axis" renderer: 2d {
 			chart "Y2 tick values hidden, Y tick values visible" kind: series y2_tick_values_visible: false {
 				data "main" value: cycle color: #blue;
 				data "second" value: cycle * cycle color: #red use_second_y_axis: true;

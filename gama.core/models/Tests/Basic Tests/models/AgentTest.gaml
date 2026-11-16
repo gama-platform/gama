@@ -86,4 +86,4 @@ species basic_agent {
 	}
 }
 
-experiment AgentTest type: test autorun: true;
+experiment AgentTest mode: test autorun: true;

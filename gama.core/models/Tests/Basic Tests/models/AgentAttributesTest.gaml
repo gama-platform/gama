@@ -33,4 +33,4 @@ species test_agent {
 	
 }
 
-experiment AgentAttributesTest type: test autorun: true;
+experiment AgentAttributesTest mode: test autorun: true;

@@ -15,7 +15,7 @@ species dummy_chart_agent {
 	}
 }
 
-experiment SyntaxCompilationTest type: test autorun: true {
+experiment SyntaxCompilationTest mode: test autorun: true {
 	int action_calls <- 0;
 
 	action my_action () {

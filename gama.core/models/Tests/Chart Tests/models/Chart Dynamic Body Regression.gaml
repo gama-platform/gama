@@ -14,9 +14,9 @@ global {
 	int nb -> 1 + (cycle div 5) mod 5;
 }
 
-experiment "Dynamic body" type: gui {
+experiment "Dynamic body" mode: gui {
 	output {
-		display "Conditional series" type: 2d {
+		display "Conditional series" renderer: 2d {
 			chart "Conditional series" kind: series {
 				data "Always" value: cycle color: #black;
 				if (cycle > 1) {
@@ -27,12 +27,12 @@ experiment "Dynamic body" type: gui {
 				}
 			}
 		}
-		display "Dynamic legend" type: 2d {
+		display "Dynamic legend" renderer: 2d {
 			chart "Dynamic legend" kind: series {
 				data "period " + (cycle div 10) value: cycle mod 10;
 			}
 		}
-		display "Pie" type: 2d {
+		display "Pie" renderer: 2d {
 			chart "Pie" kind: pie {
 				data "small" value: 10 color: #green;
 				if (cycle mod 20 >= 10) {
@@ -40,7 +40,7 @@ experiment "Dynamic body" type: gui {
 				}
 			}
 		}
-		display "Histogram" type: 2d {
+		display "Histogram" renderer: 2d {
 			chart "Histogram: 1 to 5 bars, changing every 5 cycles" kind: histogram {
 				loop i from: 1 to: nb {
 					data "bar " + i value: i * 10;

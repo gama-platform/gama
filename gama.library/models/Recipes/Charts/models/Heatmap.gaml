@@ -58,7 +58,7 @@ global
 
 }
 
-experiment "Different heatmaps" type: gui
+experiment "Different heatmaps" mode: gui
 {
 	output synchronized: true
 	{
@@ -72,7 +72,7 @@ experiment "Different heatmaps" type: gui
 		tabs: false
 		;	
 		
-		display "Nice Heatmap" type: 3d
+		display "Nice Heatmap" renderer: 3d
 		{
 			chart "Nice Heatmap" kind: heatmap background: # darkblue color: # lightgreen axes: # lightgreen title_font: font('Serif', 32, #italic) tick_font:
 			font('Monospaced', 14, #bold) label_font: font('Serif', 18, #plain) legend_font: font('SanSerif', 18, #bold) x_label: 'Nice Xlabel' y_label: 'Nice Ylabel'
@@ -81,7 +81,7 @@ experiment "Different heatmaps" type: gui
 			}
 		}
 
-		display "listOflist_heatmap" type: 3d
+		display "listOflist_heatmap" renderer: 3d
 		{
 			chart "Heatmap of list of lists" kind: heatmap
 			{
@@ -90,7 +90,7 @@ experiment "Different heatmaps" type: gui
 			}
 		}
 
-		display "list_heatmap" type: 3d antialias:false
+		display "list_heatmap" renderer: 3d antialias:false
 		{
 			chart "Heatmap of list" kind: heatmap 
 			{
@@ -99,7 +99,7 @@ experiment "Different heatmaps" type: gui
 
 		}
 
-		display "simple_heatmap2" type: 3d
+		display "simple_heatmap2" renderer: 3d
 		{
 			chart "Simple static heatmap" kind: heatmap
 			{
@@ -112,11 +112,11 @@ experiment "Different heatmaps" type: gui
 
 }
 
-experiment Heatmap type: gui
+experiment Heatmap mode: gui
 {
 	output synchronized: true
 	{
-		display "list_heatmap" type: 3d antialias:false
+		display "list_heatmap" renderer: 3d antialias:false
 		{
 			chart "list_heatmap" kind: heatmap
 			{

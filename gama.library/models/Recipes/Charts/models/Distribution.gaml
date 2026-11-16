@@ -94,52 +94,52 @@ global {
 	}
 }
 
-experiment "Example of Distribution" type: gui autorun:true {
+experiment "Example of Distribution" mode: gui autorun:true {
 	output {
 		layout #split;
-		display "Gauss Distribution"  type: 3d {
+		display "Gauss Distribution"  renderer: 3d {
 			chart "Gauss Distribution" kind: histogram {
 				datalist legend: (gauss_distrib at "legend") value: (gauss_distrib at "values");
 			}
 		}
-		display "Gamma Distribution"  type: 3d {
+		display "Gamma Distribution"  renderer: 3d {
 			chart "Gamma Distribution" kind: histogram {
 				datalist legend: (gamma_distrib at "legend") value: (gamma_distrib at "values");
 			}
 		}
-		display "LogNormal Distribution"  type: 3d {
+		display "LogNormal Distribution"  renderer: 3d {
 			chart "LogNormal Distribution" kind: histogram {
 				datalist legend: (lognormal_distrib at "legend") value: (lognormal_distrib at "values");
 			}
 		}
-		display "Weibull Distribution"  type: 3d {
+		display "Weibull Distribution"  renderer: 3d {
 			chart "Weibull Distribution" kind: histogram {
 				datalist legend: (weibull_distrib at "legend") value: (weibull_distrib at "values");
 			}
 		}	
 		
 		
-		display "Truncated Gauss Distribution"  type: 3d {
+		display "Truncated Gauss Distribution"  renderer: 3d {
 			chart "Truncated Gauss Distribution truncated_gauss(10,10)" kind: histogram {
 				datalist legend: (gauss_trunc_distrib at "legend") value: (gauss_trunc_distrib at "values");
 			}
 		}
-		display "Truncated Gamma Distribution"  type: 3d {
+		display "Truncated Gamma Distribution"  renderer: 3d {
 			chart "Truncated Gamma Distribution gamma_trunc_rnd(10,0.5,6,true)" kind: histogram {
 				datalist legend: (gamma_trunc_distrib at "legend") value: (gamma_trunc_distrib at "values");
 			}
 		}
-		display "Truncated LogNormal Distribution"  type: 3d {
+		display "Truncated LogNormal Distribution"  renderer: 3d {
 			chart "Truncated LogNormal Distribution lognormal_trunc_rnd(10,0.5,17000,false)" kind: histogram {
 				datalist legend: (lognormal_trunc_distrib at "legend") value: (lognormal_trunc_distrib at "values");
 			}
 		}
-		display "Truncated Weibull Distribution"  type: 3d {
+		display "Truncated Weibull Distribution"  renderer: 3d {
 			chart "Truncated Weibull Distribution weibull_trunc_rnd(10,10,7,12)" kind: histogram {
 				datalist legend: (weibull_trunc_distrib at "legend") value: (weibull_trunc_distrib at "values");
 			}
 		}	
-		display "Exponential Distribution"  type: 3d {
+		display "Exponential Distribution"  renderer: 3d {
 			chart "Exponential Distribution exp_rnd(10)" kind: histogram {
 				datalist legend: (exp_distrib at "legend") value: (exp_distrib at "values");
 			}

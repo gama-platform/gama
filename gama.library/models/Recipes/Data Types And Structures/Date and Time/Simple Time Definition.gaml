@@ -41,4 +41,4 @@ global {
 	}
 }
 
-experiment SimpleTimedefinition type: gui ;
+experiment SimpleTimedefinition mode: gui ;

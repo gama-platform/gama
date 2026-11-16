@@ -53,7 +53,7 @@ species buildings {
 	}	
 }	
 
-experiment DB2agentMySQL type: gui {
+experiment DB2agentMySQL mode: gui {
 	output {
 		display fullView {
 			species buildings aspect: default;

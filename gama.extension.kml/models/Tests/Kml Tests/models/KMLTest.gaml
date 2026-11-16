@@ -11,7 +11,7 @@ global {
 	kml kml_export;
 }
 
-experiment KMLTest type: test autorun: true {
+experiment KMLTest mode: test autorun: true {
 
 	test "A declared kml variable gets a usable default value" {
 		assert simulation.kml_export != nil;

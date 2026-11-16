@@ -126,7 +126,7 @@ species philosopher {
 experiment query{
 	
 	output{
-		display main type:3d axes:false{
+		display main renderer:3d axes:false{
 			camera 'default' location: {11.0046,474.4617,340.9168} target: {351.4035,61.5247,0.0};
 			species philosopher;
 		}

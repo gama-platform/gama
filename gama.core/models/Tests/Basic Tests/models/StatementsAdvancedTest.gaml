@@ -212,4 +212,4 @@ species container_agent {
 	}
 }
 
-experiment StatementsAdvancedTest type: test autorun: true;
+experiment StatementsAdvancedTest mode: test autorun: true;

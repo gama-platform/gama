@@ -276,4 +276,4 @@ species dummy {
 			
 }
 	
-experiment Lists type:test;
+experiment Lists mode:test;

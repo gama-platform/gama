@@ -55,9 +55,9 @@ species triangle_ag {
 }
 
 
-experiment contour_lines_import type: gui {
+experiment contour_lines_import mode: gui {
 	output {
-		display map type: 3d map_order: true {
+		display map renderer: 3d map_order: true {
 			camera 'default' location: {4341.8834,20215.2668,9585.3894} target: {5500.0,5500.0,0.0};
 			species triangle_ag refresh: false;
 			species contour_line refresh: false;

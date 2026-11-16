@@ -93,7 +93,7 @@ experiment KNearestNeighbors {
 	parameter "Generate points automatically" var: automatic category: "Interaction";
 	parameter "Show neighbors of last clicked point" var: show_neighbors category: "Appearance";
 	output {
-		display main type:2d background:backdrop {
+		display main renderer:2d background:backdrop {
 			graphics classification {
 				if (show_neighbors and last_query != nil) {
 					loop neighbor over: neighbors {

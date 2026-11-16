@@ -56,7 +56,7 @@ species NetworkingAgent skills:[network]{
 	}
 }
 
-experiment Network_sender type: gui {
+experiment Network_sender mode: gui {
 	output {
 	}
 }

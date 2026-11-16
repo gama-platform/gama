@@ -29,7 +29,7 @@ global {
 	}
 }
 
-experiment CommandContextTest type: test autorun: true {
+experiment CommandContextTest mode: test autorun: true {
 
 	test "A new context is empty and starts in the model directory" {
 		context c <- context();

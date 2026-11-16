@@ -5,7 +5,7 @@
 * Tags: maths, random, advanced, test
 */
 
-experiment MathsAdvancedTest type: test autorun: true {
+experiment MathsAdvancedTest mode: test autorun: true {
 	
 	test "Inverse and matrix product" {
 		matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]);

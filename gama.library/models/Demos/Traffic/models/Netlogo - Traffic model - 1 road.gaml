@@ -108,7 +108,7 @@ species car skills: [moving] {
 	}	
 }
 
-experiment NetlogoTrafficmodel type: gui {
+experiment NetlogoTrafficmodel mode: gui {
 	
 		
 	parameter "Number of cars" var:nb_cars;
@@ -120,13 +120,13 @@ experiment NetlogoTrafficmodel type: gui {
 	output {
 		layout #vertical;
 		
-		display road type: 2d antialias:false{
+		display road renderer: 2d antialias:false{
 			grid pavement;
 			species car aspect: icon;
 			
 		}
 		
-		display sp  type: 3d {
+		display sp  renderer: 3d {
 			chart "speed" kind: series {
 				data "red car" value: sample_car.speed * max_speed color: #red;
 				data "min speed" value: car min_of(each.speed) * max_speed color: #blue;

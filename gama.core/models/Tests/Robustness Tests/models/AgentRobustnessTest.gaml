@@ -228,4 +228,4 @@ species walker skills: [moving] {
 
 grid cell width: 3 height: 3 { }
 
-experiment AgentRobustnessTest type: test autorun: true;
+experiment AgentRobustnessTest mode: test autorun: true;

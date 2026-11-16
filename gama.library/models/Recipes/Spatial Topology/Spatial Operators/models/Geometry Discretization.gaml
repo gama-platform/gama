@@ -19,10 +19,10 @@ global
 	geometry init_line <- line([{10,50}, {50, 20}, {70, 80}]);
 }
 
-experiment to_squares type: gui {
+experiment to_squares mode: gui {
 	output {
 		//Display that will show a circle converted in squares
-		display decretization_squares type: 2d{
+		display decretization_squares renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				//Convert the initial circle into squares of 5.0 
@@ -32,7 +32,7 @@ experiment to_squares type: gui {
 			} 
 		}
 		//Display that will show a circle converted in squares overlapping the shape
-		display squares_overlapping type: 2d{
+		display squares_overlapping renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "squares" transparency: 0.5{
 				//Convert the initial circle into rectangles of 5.0 and keep the squares going out of the borders of the circle but still overlapping it
@@ -42,7 +42,7 @@ experiment to_squares type: gui {
 			} 
 		}
 		//Display that will show a circle converted in squares inside the shape
-		display squares_inside type: 2d{
+		display squares_inside renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "squares" transparency: 0.5{
 				//Convert the initial circle into squares of 5.0 and remove the squares going out of the borders of the circle
@@ -54,10 +54,10 @@ experiment to_squares type: gui {
 	}
 }
 	
-experiment to_rectangles type: gui {
+experiment to_rectangles mode: gui {
 	output {
 		//Display that will show a circle converted in rectangles with a size of 10.0 and 5.0
-		display decretization_rectangles type: 2d{
+		display decretization_rectangles renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				loop g over: to_rectangles(init_geom, {10.0,5.0}) {
@@ -66,7 +66,7 @@ experiment to_rectangles type: gui {
 			} 
 		}
 		//Display that will show a circle converted in rectangles forming a grid of 15 cols and 20 rows
-		display decretization_rectangles_grid type: 2d{
+		display decretization_rectangles_grid renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				loop g over: to_rectangles(init_geom, 15,20) {
@@ -75,7 +75,7 @@ experiment to_rectangles type: gui {
 			} 
 		}
 		//Display that will show a circle converted in rectangles overlapping the shape
-		display rectangles_overlapping type: 2d{
+		display rectangles_overlapping renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "rectangles" transparency: 0.5{
 				//Convert the initial circle into rectangles of 5.0 and keep the rectangles going out of the borders of the circle but still overlapping it
@@ -85,7 +85,7 @@ experiment to_rectangles type: gui {
 			} 
 		}
 		//Display that will show a circle converted in rectangles inside the shape
-		display rectangles_inside type: 2d{
+		display rectangles_inside renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "rectangles" transparency: 0.5{
 				//Convert the initial circle into rectangles of 5.0 and remove the rectanges going out of the borders of the circle
@@ -98,10 +98,10 @@ experiment to_rectangles type: gui {
 }
 
 
-experiment point_on_contours type: gui {
+experiment point_on_contours mode: gui {
 	output{
 		//Display that will show a circle with points on its perimeter every 10.0
-		display points_on_contours type: 2d{
+		display points_on_contours renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				loop g over: points_on(init_geom,10.0) {
@@ -111,10 +111,10 @@ experiment point_on_contours type: gui {
 		}
 	}	
 }
-experiment triangles_voronoi type: gui {
+experiment triangles_voronoi mode: gui {
 	output{
 		//Display that will show a circle triangulated
-		display triangles type: 2d{
+		display triangles renderer: 2d{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "triangles" transparency: 0.5{
 				loop g over: triangulate(init_geom, 0.01) {
@@ -123,7 +123,7 @@ experiment triangles_voronoi type: gui {
 			} 
 		}
 		
-		display voronoi type: 2d{
+		display voronoi renderer: 2d{
 			//Creates a voronoi diagram from the points given and display them
 			graphics "geoms" transparency: 0.5{
 				loop g over: voronoi([{10,10},{10,10},{80,80},{80,10},{10,80}, {40,40}]) {
@@ -140,9 +140,9 @@ experiment triangles_voronoi type: gui {
 		
 	}	
 }	
-experiment to_sub_geometries type: gui {
+experiment to_sub_geometries mode: gui {
 	output{
-		display to_sub_geometries_polygon type: 3d map_order: true{
+		display to_sub_geometries_polygon renderer: 3d map_order: true{
 			graphics "init_geom" {draw init_geom color: #black;}
 			graphics "geoms" transparency: 0.5{
 				//Convert the initial circle into 3 sub-geometries representing respectively 30%, 50% and 20% of the init geom using square of 0.5meters size
@@ -151,7 +151,7 @@ experiment to_sub_geometries type: gui {
 				} 
 			} 
 		}
-		display to_sub_geometries_lines type: 3d map_order: true{
+		display to_sub_geometries_lines renderer: 3d map_order: true{
 			graphics "geoms" transparency: 0.5{
 				//Convert the initial line into 3 sub-geometries representing respectively 30%, 50% and 20% of the line
 				loop g over: to_sub_geometries(init_line,[0.3, 0.5, 0.2]) {

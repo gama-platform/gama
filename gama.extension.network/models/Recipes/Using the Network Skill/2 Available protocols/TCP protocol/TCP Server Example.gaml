@@ -40,7 +40,7 @@ species Server skills: [network] parallel: true {
 
 }
 
-experiment "TCP Server Test" type: gui {
+experiment "TCP Server Test" mode: gui {
 	float minimum_cycle_duration <- 0.25;
 	output {
 	}

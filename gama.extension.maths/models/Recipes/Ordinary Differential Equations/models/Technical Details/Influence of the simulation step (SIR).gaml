@@ -47,7 +47,7 @@ species userSIR {
 }
 
 
-experiment examples type: gui {
+experiment examples mode: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	
 	action _init_() {
@@ -57,7 +57,7 @@ experiment examples type: gui {
 	
 	output {
 		layout #split tabs: true;	
-		display SIR toolbar: false  type: 2d {
+		display SIR toolbar: false  renderer: 2d {
 			chart 'Time Teries ('+step_string+' per cycle)' kind: series 
 			background: rgb(47,47,47) color: #white y_label: "pop" x_tick_line_visible: false{
 				data "S" value: first(userSIR).S[] color: rgb(46,204,113) marker: false thickness: 2;
@@ -65,7 +65,7 @@ experiment examples type: gui {
 				data "R" value: first(userSIR).R[] color: rgb(52,152,219) marker: false thickness: 2;
 			}			
 		}
-		display "Phase Portrait" toolbar: false  type: 2d  {
+		display "Phase Portrait" toolbar: false  renderer: 2d  {
 		chart 'Phase Portrait ('+step_string+' per cycle)' kind: xy 
 		background: rgb(47,47,47) color: #white y_label: "y" x_label: "x"
 			x_range: {0,500} y_range: {0,450}{

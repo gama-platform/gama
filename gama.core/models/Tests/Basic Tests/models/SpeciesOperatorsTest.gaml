@@ -51,4 +51,4 @@ species parent_species { }
 species child_species parent: parent_species { }
 species other_species { }
 
-experiment SpeciesOperatorsTest type: test autorun: true;
+experiment SpeciesOperatorsTest mode: test autorun: true;

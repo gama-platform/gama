@@ -33,4 +33,4 @@ species bdi_species control: simple_bdi {
 	}
 }
 
-experiment HelloWorldBDI type: gui ;
+experiment HelloWorldBDI mode: gui ;

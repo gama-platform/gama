@@ -75,7 +75,7 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	public ExperimentDescription(final String keyword, final ISpeciesDescription enclosing,
 			final Iterable<IDescription> cp, final EObject source, final Facets facets) {
 		super(keyword, null, enclosing, null, cp, source, facets);
-		String type = getLitteral(IKeyword.TYPE);
+		String type = getLitteral(IKeyword.MODE);
 		setIf(Flag.isBatch, IKeyword.BATCH.equals(type));
 		setIf(Flag.isTest, IKeyword.TEST.equals(type));
 		setIf(Flag.isMemorize, facets.containsKey(IKeyword.RECORD));
@@ -299,7 +299,7 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 
 	@Override
 	public Class<? extends IExperimentAgent> getJavaBase() {
-		String type = getLitteral(IKeyword.TYPE);
+		String type = getLitteral(IKeyword.MODE);
 		return IExperimentDescription.getJavaBaseFor(type);
 		// return IKeyword.BATCH.equals(type) ? BatchAgent.class : ExperimentAgent.class;
 	}

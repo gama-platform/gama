@@ -38,4 +38,4 @@ global {
 	}
 }
 
-experiment "Run" type: gui;
+experiment "Run" mode: gui;

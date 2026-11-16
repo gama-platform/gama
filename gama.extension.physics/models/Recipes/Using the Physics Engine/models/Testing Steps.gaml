@@ -98,7 +98,7 @@ species ball skills: [dynamic_body] {
 	}
 }
 
-experiment "Test it !" type: gui {
+experiment "Test it !" mode: gui {
 	image_file bang <- image_file("../images/bang.png");
 	image_file bam <- image_file("../images/bam.png");
 	float minimum_cycle_duration <- 1.0 / 120;
@@ -129,7 +129,7 @@ experiment "Test it !" type: gui {
 
 	output of: simulation {
 		layout #split;
-		display "Restitution" type: 2d axes: false background: rgb(248, 246, 240) {
+		display "Restitution" renderer: 2d axes: false background: rgb(248, 246, 240) {
 			graphics "Grid" refresh: false {
 				loop x from: 0 to: 100 step: 10 {
 					draw line([{x, 0}, {x, 100}]) color: rgb(224, 219, 210) width: 1;

@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -44,23 +43,72 @@ import gaml.compiler.resource.GamlFileInfo;
 /** Background-maintained index of workspace resource names and GAML tags for navigator searches. */
 final class NavigatorSearchIndex implements IResourceChangeListener {
 
+	/**
+	 * The Record Results.
+	 *
+	 * @param visiblePaths
+	 *            the visible paths
+	 * @param matchingContainers
+	 *            the matching containers
+	 */
 	record Results(Set<IPath> visiblePaths, Set<IPath> matchingContainers) {}
 
+	/**
+	 * The Record Entry.
+	 *
+	 * @param path
+	 *            the path
+	 * @param name
+	 *            the name
+	 * @param tags
+	 *            the tags
+	 * @param model
+	 *            the model
+	 * @param container
+	 *            the container
+	 */
 	private record Entry(IPath path, String name, List<String> tags, boolean model, boolean container) {}
 
+	/**
+	 * The Record Change.
+	 *
+	 * @param path
+	 *            the path
+	 * @param resource
+	 *            the resource
+	 * @param removed
+	 *            the removed
+	 */
 	private record Change(IPath path, IResource resource, boolean removed) {}
 
+	/** The Constant NGRAM_SIZE. */
 	private static final int NGRAM_SIZE = 3;
+
+	/** The Constant INSTANCE. */
 	private static final NavigatorSearchIndex INSTANCE = new NavigatorSearchIndex();
 
+	/** The lock. */
 	private final Object lock = new Object();
+
+	/** The initialized. */
 	private final CountDownLatch initialized = new CountDownLatch(1);
+
+	/** The entries. */
 	private final Map<IPath, Entry> entries = new HashMap<>();
+
+	/** The postings. */
 	private final Map<String, Set<IPath>> postings = new HashMap<>();
+
+	/** The pending changes. */
 	private final List<Change> pendingChanges = new ArrayList<>();
+
+	/** The initialization finished. */
 	private boolean initializationFinished;
+
+	/** The change job scheduled. */
 	private boolean changeJobScheduled;
 
+	/** The initialization job. */
 	private final Job initializationJob = new Job("Index navigator search resources") {
 		@Override
 		protected IStatus run(final IProgressMonitor monitor) {
@@ -93,6 +141,7 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	};
 
+	/** The change job. */
 	private final Job changeJob = new Job("Update navigator search index") {
 		@Override
 		protected IStatus run(final IProgressMonitor monitor) {
@@ -120,11 +169,16 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 					}
 				}
 			}
-			synchronized (lock) { changeJobScheduled = false; }
+			synchronized (lock) {
+				changeJobScheduled = false;
+			}
 			return Status.CANCEL_STATUS;
 		}
 	};
 
+	/**
+	 * Instantiates a new navigator search index.
+	 */
 	private NavigatorSearchIndex() {
 		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(this, POST_CHANGE);
 		initializationJob.setSystem(true);
@@ -132,6 +186,11 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		initializationJob.schedule();
 	}
 
+	/**
+	 * Gets the single instance of NavigatorSearchIndex.
+	 *
+	 * @return single instance of NavigatorSearchIndex
+	 */
 	static NavigatorSearchIndex getInstance() { return INSTANCE; }
 
 	@Override
@@ -158,6 +217,12 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Enqueue.
+	 *
+	 * @param change
+	 *            the change
+	 */
 	private void enqueue(final Change change) {
 		synchronized (lock) {
 			pendingChanges.add(change);
@@ -165,12 +230,26 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Schedule change job.
+	 */
 	private void scheduleChangeJob() {
 		if (changeJobScheduled) return;
 		changeJobScheduled = true;
 		changeJob.schedule();
 	}
 
+	/**
+	 * Search.
+	 *
+	 * @param query
+	 *            the query
+	 * @param modelsOnly
+	 *            the models only
+	 * @param monitor
+	 *            the monitor
+	 * @return the results
+	 */
 	Results search(final String query, final boolean modelsOnly, final IProgressMonitor monitor) {
 		try {
 			while (!initialized.await(100, TimeUnit.MILLISECONDS)) {
@@ -187,14 +266,14 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 			final Set<IPath> matchingContainers = new HashSet<>();
 			for (final IPath path : candidates) {
 				final Entry entry = entries.get(path);
-				if (entry == null || modelsOnly && !entry.model()) continue;
+				if (entry == null || modelsOnly && !entry.model()) { continue; }
 				final boolean nameMatches = entry.name().contains(query);
 				final boolean tagMatches = entry.model() && entry.tags().stream().anyMatch(tag -> tag.contains(query));
-				if (!nameMatches && !tagMatches) continue;
+				if (!nameMatches && !tagMatches) { continue; }
 				visiblePaths.add(path);
 				if (entry.container()) { matchingContainers.add(path); }
-				for (IPath parent = path.removeLastSegments(1); parent.segmentCount() > 0;
-						parent = parent.removeLastSegments(1)) {
+				for (IPath parent = path.removeLastSegments(1); parent.segmentCount() > 0; parent =
+						parent.removeLastSegments(1)) {
 					visiblePaths.add(parent);
 				}
 			}
@@ -202,8 +281,15 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Candidates.
+	 *
+	 * @param query
+	 *            the query
+	 * @return the sets the
+	 */
 	private Set<IPath> candidates(final String query) {
-		if (query.length() < NGRAM_SIZE) { return new HashSet<>(entries.keySet()); }
+		if (query.length() < NGRAM_SIZE) return new HashSet<>(entries.keySet());
 		Set<IPath> result = null;
 		for (int i = 0; i <= query.length() - NGRAM_SIZE; i++) {
 			final Set<IPath> paths = postings.get(query.substring(i, i + NGRAM_SIZE));
@@ -218,6 +304,13 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		return result == null ? Set.of() : result;
 	}
 
+	/**
+	 * Creates the entry.
+	 *
+	 * @param resource
+	 *            the resource
+	 * @return the entry
+	 */
 	private static Entry createEntry(final IResource resource) {
 		if (!resource.isAccessible()) return null;
 		final int type = resource.getType();
@@ -225,10 +318,9 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		final boolean model = type == IResource.FILE && GamlFileExtension.isAny(resource.getName());
 		final List<String> tags;
 		if (model) {
-			final var metadata = GAMA.getMetadataProvider().getMetaData((IFile) resource, false, false);
+			final var metadata = GAMA.getMetadataProvider().getMetaData(resource, false, false);
 			tags = metadata instanceof GamlFileInfo info
-					? info.getTags().stream().map(tag -> tag.toLowerCase(Locale.ROOT)).toList()
-					: List.of();
+					? info.getTags().stream().map(tag -> tag.toLowerCase(Locale.ROOT)).toList() : List.of();
 		} else {
 			tags = List.of();
 		}
@@ -236,6 +328,12 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 				type == IResource.PROJECT || type == IResource.FOLDER);
 	}
 
+	/**
+	 * Put entry.
+	 *
+	 * @param entry
+	 *            the entry
+	 */
 	private void putEntry(final Entry entry) {
 		synchronized (lock) {
 			removeEntry(entries.remove(entry.path()));
@@ -243,6 +341,12 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Removes the path.
+	 *
+	 * @param path
+	 *            the path
+	 */
 	private void removePath(final IPath path) {
 		synchronized (lock) {
 			final List<IPath> removed = entries.keySet().stream().filter(path::isPrefixOf).toList();
@@ -250,6 +354,12 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Adds the entry.
+	 *
+	 * @param entry
+	 *            the entry
+	 */
 	private void addEntry(final Entry entry) {
 		entries.put(entry.path(), entry);
 		for (final String value : indexedValues(entry)) {
@@ -264,6 +374,12 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Removes the entry.
+	 *
+	 * @param entry
+	 *            the entry
+	 */
 	private void removeEntry(final Entry entry) {
 		if (entry == null) return;
 		for (final String value : indexedValues(entry)) {
@@ -277,6 +393,13 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		}
 	}
 
+	/**
+	 * Indexed values.
+	 *
+	 * @param entry
+	 *            the entry
+	 * @return the list
+	 */
 	private static List<String> indexedValues(final Entry entry) {
 		final List<String> values = new ArrayList<>(entry.tags().size() + 1);
 		values.add(entry.name());
@@ -284,11 +407,16 @@ final class NavigatorSearchIndex implements IResourceChangeListener {
 		return values;
 	}
 
+	/**
+	 * Grams.
+	 *
+	 * @param value
+	 *            the value
+	 * @return the sets the
+	 */
 	private static Set<String> grams(final String value) {
 		final Set<String> result = new HashSet<>();
-		for (int i = 0; i <= value.length() - NGRAM_SIZE; i++) {
-			result.add(value.substring(i, i + NGRAM_SIZE));
-		}
+		for (int i = 0; i <= value.length() - NGRAM_SIZE; i++) { result.add(value.substring(i, i + NGRAM_SIZE)); }
 		return result;
 	}
 }

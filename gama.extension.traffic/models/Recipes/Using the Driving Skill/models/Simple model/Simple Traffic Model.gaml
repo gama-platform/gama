@@ -70,9 +70,9 @@ species vehicle skills: [driving] {
 	}
 }
 
-experiment city type: gui {
+experiment city mode: gui {
 	output synchronized: true {
-		display map type: 2d background: #gray {
+		display map renderer: 2d background: #gray {
 			species road aspect: base;
 			species vehicle aspect: base;		}
 	}

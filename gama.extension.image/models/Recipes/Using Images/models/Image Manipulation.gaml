@@ -77,7 +77,7 @@ species support {
 
 }
 
-experiment ImageManipulation type: gui {
+experiment ImageManipulation mode: gui {
 
 	action _init_() {
 		image im <- copy_from_clipboard(image);
@@ -89,7 +89,7 @@ experiment ImageManipulation type: gui {
 	}
  
 	output {
-		display Agents type: 3d axes: false fullscreen: true background: #black {
+		display Agents renderer: 3d axes: false fullscreen: true background: #black {
 			camera 'default' location: {shape.width/2, shape.height/2, max(shape.width, shape.height)*1.5} target: {shape.width/2, shape.height/2, 0};
 			species support aspect: default;
 		}

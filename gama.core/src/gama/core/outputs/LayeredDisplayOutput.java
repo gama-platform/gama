@@ -103,10 +103,10 @@ import gama.dev.DEBUG;
 						doc = @doc ("the title of the display, which will be shown in the UI. If not specified, the identifier of the display will be used")),
 				// WARNING VALIDER EN VERIFIANT LE TYPE DU DISPLAY
 				@facet (
-						name = IKeyword.TYPE,
+						name = IKeyword.RENDERER,
 						type = IType.ID,
 						optional = true,
-						doc = @doc ("Allows to use either Java2D (for planar models) or OpenGL (for 3D models) as the rendering subsystem")),
+						doc = @doc ("Selects the rendering subsystem, e.g. Java2D for planar models or OpenGL for 3D models. Defaults to the renderer configured in preferences. Legacy `type:` is accepted with a deprecation warning.")),
 				@facet (
 						name = "antialias",
 						type = IType.BOOL,
@@ -225,7 +225,7 @@ import gama.dev.DEBUG;
 				@usage (
 						value = "Each display can include different layers (like in a GIS).",
 						examples = { @example (
-								value = "display gridWithElevationTriangulated type: opengl {",
+								value = "display gridWithElevationTriangulated renderer: opengl {",
 								isExecutable = false),
 								@example (
 										value = "	grid cell elevation: true triangulation: true;",
@@ -278,8 +278,8 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		public void collectMetaInformationInFacetValue(final IDescription desc, final String key,
 				final GamlProperties plugins) {
 			ISymbolSerializer.super.collectMetaInformationInFacetValue(desc, key, plugins);
-			if (TYPE.equals(key)) {
-				final IExpressionDescription exp = desc.getFacet(TYPE);
+			if (RENDERER.equals(key)) {
+				final IExpressionDescription exp = desc.getFacet(RENDERER);
 				if (exp.getExpression() != null) {
 					final String type = exp.getExpression().literalValue();
 					final IDisplayCreator dd = gama.api.GAMA.getGui().getDisplayDescriptionFor(type);
@@ -315,12 +315,12 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 						IGamlIssue.GENERAL, auto.getTarget(), AUTOSAVE);
 			}
 			// Are we in OpenGL world ?
-			IExpressionDescription type = d.getFacet(TYPE);
+			IExpressionDescription type = d.getFacet(RENDERER);
 			final boolean isOpenGLDefault = !GamaPreferences.Displays.CORE_DISPLAY.getValue();
 			if (type == null) {
 				type = GAML.getExpressionDescriptionFactory()
 						.createConstant(isOpenGLDefault ? IKeyword._3D : IKeyword._2D);
-				d.setFacetExprDescription(TYPE, type);
+				d.setFacetExprDescription(RENDERER, type);
 			}
 			String cand = "";
 			// Addresses and fixes Issue 833.
@@ -333,9 +333,9 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 						s + " is not a valid display type. Valid types are:"
 								+ GamaAdditionRegistry.getDisplays().keySet()
 								+ ". Gama will fallback to first valid type (" + cand + ")",
-						IGamlIssue.UNKNOWN_KEYWORD, TYPE);
+						IGamlIssue.UNKNOWN_KEYWORD, RENDERER);
 
-				d.setFacet(TYPE, GAML.getExpressionFactory().createConst(cand, Types.STRING));
+				d.setFacet(RENDERER, GAML.getExpressionFactory().createConst(cand, Types.STRING));
 			}
 
 		}
@@ -407,7 +407,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 */
 	public LayeredDisplayOutput(final IDescription desc) {
 		super(desc);
-		if (hasFacet(IKeyword.TYPE)) { getData().setDisplayType(getLiteral(IKeyword.TYPE)); }
+		if (hasFacet(IKeyword.RENDERER)) { getData().setDisplayType(getLiteral(IKeyword.RENDERER)); }
 		layers = new CopyOnWriteArrayList<>();
 		cameras = new ArrayList<>();
 		lights = new ArrayList<>();

@@ -51,4 +51,4 @@ global {
 
 species net_agent skills: [network] { }
 
-experiment NetworkAdvancedTest type: test autorun: true;
+experiment NetworkAdvancedTest mode: test autorun: true;

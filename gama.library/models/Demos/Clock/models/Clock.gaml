@@ -71,7 +71,7 @@ species  clock {
  
 }
 
-experiment Display type: gui autorun:true{
+experiment Display mode: gui autorun:true{
 	float minimum_cycle_duration <- 0.001#s;
 	parameter 'Zoom: ' var: zoom category: 'Init' ;
 	parameter 'Milliseconds/cycle' var: stepDuration category: 'Init';
@@ -81,7 +81,7 @@ experiment Display type: gui autorun:true{
 	parameter 'alarm Minutes' var: alarm_minutes unit: "min";
 	parameter 'alarm Seconds' var: alarm_seconds unit: "s";
 	output {
-		display ClockView type: 3d axes:false{ 
+		display ClockView renderer: 3d axes:false{ 
 			species clock ;
 		}
 	}

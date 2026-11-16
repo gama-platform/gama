@@ -78,7 +78,7 @@ public record GamlEditorState(boolean hasInternalErrors, boolean hasImportedErro
 				final String name = ep.getName();
 				names.add(name);
 				final IExperimentDescription r = (IExperimentDescription) ep;
-				experimentTypes.add(IKeyword.BATCH.equals(r.getLitteral(IKeyword.TYPE)) ? IKeyword.BATCH
+				experimentTypes.add(IKeyword.BATCH.equals(r.getLitteral(IKeyword.MODE)) ? IKeyword.BATCH
 						: r.isMemorize() ? IKeyword.RECORD : IKeyword.GUI_);
 			}
 		}

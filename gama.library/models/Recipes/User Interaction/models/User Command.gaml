@@ -63,7 +63,7 @@ species cell {
 }
 
 
-experiment Displays type: gui {
+experiment Displays mode: gui {
 	output {
 		display map { 
 			species cell;

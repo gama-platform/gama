@@ -25,7 +25,7 @@ experiment Strings {
 
 	output synchronized: true of: experiment{
 		layout #split;
-		display "Strings" type: 3d  axes: false {
+		display "Strings" renderer: 3d  axes: false {
 			graphics Strings {
 				int y <- 4;
 				float precision <- 0.01;

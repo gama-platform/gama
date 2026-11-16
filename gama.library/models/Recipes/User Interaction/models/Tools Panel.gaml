@@ -81,17 +81,17 @@ grid button width:2 height:2
 }
 
 
-experiment ToolsPanel type: gui {
+experiment ToolsPanel mode: gui {
 	output {
 			layout horizontal([0.0::7285,1::2715]) tabs:true;
-		display map type:2d antialias:false{
+		display map renderer:2d antialias:false{
 			grid cell border: #white;
 			species cell;
 			event #mouse_down {do cell_management();}
 			
 		}
 		//display the action buttons
-		display action_button background:#black title:"Tools panel"  type:2d antialias:false locked:true{
+		display action_button background:#black title:"Tools panel"  renderer:2d antialias:false locked:true{
 			species button aspect:normal ;
 			event #mouse_down {do activate_act();}
 		}

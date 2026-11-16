@@ -80,9 +80,9 @@ grid space parent: base width: dimensions height: dimensions neighbors: 8  {
 }
 
 
-experiment schelling type: gui parent:base_exp{
+experiment schelling mode: gui parent:base_exp{
 	output {
-		display Segregation type: 2d background: backdrop antialias: false {
+		display Segregation renderer: 2d background: backdrop antialias: false {
 			grid space;
 			species space aspect: happiness visible: show_unhappy;
 			overlay coordinates: #screen position: {12, 12} size: {300, 116} background: backdrop rounded: true {
@@ -95,7 +95,7 @@ experiment schelling type: gui parent:base_exp{
 			}
 		}
 
-		display Charts type: 3d background: backdrop {
+		display Charts renderer: 3d background: backdrop {
 			chart "Resident satisfaction" coordinates: #screen kind: pie background: backdrop color: lettering
 				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {#display_width,0.5} {
 				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;

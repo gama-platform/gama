@@ -74,9 +74,9 @@ grid cells height: size width: size {
 } 
 
 
-experiment diffusion type: gui {
+experiment diffusion mode: gui {
 	output {
-		display a type: 3d antialias:false{
+		display a renderer: 3d antialias:false{
 			camera 'default' location: {54.9788,112.1365,32.8371} target: {32.0,32.0,0.0};
 			// Display the grid with elevation
 			grid cells elevation: (phero1+phero2+phero3)*10 triangulation: true;

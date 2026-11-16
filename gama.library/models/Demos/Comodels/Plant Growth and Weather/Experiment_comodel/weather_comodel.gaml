@@ -5,5 +5,5 @@
 * Tags: comodel, experiment
 */
 
-experiment weathercomodel model:'../SubModel/Weather.gaml' type:gui {
+experiment weathercomodel model:'../SubModel/Weather.gaml' mode:gui {
 }

@@ -107,7 +107,7 @@ use_neighbors_cache: false parallel: parallel{
 }
 
 
-experiment "Game of Life" type: gui {
+experiment "Game of Life" mode: gui {
 	parameter "Run in parallel " var: parallel category: 'Board';
 	parameter 'Width:' var: environment_width category: 'Board';
 	parameter 'Height:' var: environment_height category: 'Board';
@@ -120,7 +120,7 @@ experiment "Game of Life" type: gui {
 	parameter 'Color of emerging cells:' var: emergingcolor category: 'Colors';
 	parameter 'Color of dead cells:' var: deadcolor category: 'Colors';
 	output {
-		display Life type: 3d axes:false antialias:false{
+		display Life renderer: 3d axes:false antialias:false{
 			grid life_cell;
 		}
 

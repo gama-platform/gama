@@ -315,7 +315,7 @@ species wall {
 }
 
 
-experiment corridor_xp type: gui {
+experiment corridor_xp mode: gui {
 	
 	parameter var:display_field_vision;
 	parameter "desired speed mean" var:P_v0_mean unit: #km/#h;
@@ -328,7 +328,7 @@ experiment corridor_xp type: gui {
 	
 	float minimum_cycle_duration <- 0.02;
 	output {
-		display map type: 3d axes: false map_order: true{
+		display map renderer: 3d axes: false map_order: true{
 			graphics "east area" {
 				draw east color: #blue;
 			}
@@ -340,11 +340,11 @@ experiment corridor_xp type: gui {
 			species pedestrian;
 		}
 		
-		display local_speed type:2d antialias:false{
+		display local_speed renderer:2d antialias:false{
 			species local_indicator aspect: speed_val;
 		}
 		
-		display local_compression type:2d antialias:false{
+		display local_compression renderer:2d antialias:false{
 			species local_indicator aspect: compression_val;			
 		}
 	}

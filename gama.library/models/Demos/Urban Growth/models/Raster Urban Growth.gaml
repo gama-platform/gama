@@ -165,14 +165,14 @@ grid plot file: asc_grid use_individual_shapes: false use_regular_agents: false 
 	}			
 }
 
-experiment raster type: gui {
+experiment raster mode: gui {
  	parameter "Weight of the density criteria" var: weight_density;
  	parameter "Weight of the distance to roads criteria" var: weight_road_dist;
  	parameter "Weight of the distance to city center criteria" var: weight_cc_dist;
 	parameter "Show road network" var: show_roads category: "Appearance";
 	parameter "Show city centers" var: show_centers category: "Appearance";
 	output synchronized: true {
-		display map type: 2d background: backdrop axes: false antialias: false {
+		display map renderer: 2d background: backdrop axes: false antialias: false {
 			grid plot;
 			species roads visible: show_roads;
 			species city_center visible: show_centers;

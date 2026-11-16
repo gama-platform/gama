@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment movecomodel model:'../../../Evacuation/models/Continuous Move.gaml' type:gui actions_context: simulation {
+experiment movecomodel model:'../../../Evacuation/models/Continuous Move.gaml' mode:gui actions_context: simulation {
 	point centroid <- { 200, 580 };
 	list<building> get_building()
 	{

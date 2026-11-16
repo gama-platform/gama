@@ -274,4 +274,4 @@ species tuned_vehicle skills: [driving] {
 	float min_safety_distance <- 2.0;
 }
 
-experiment TrafficAdvancedTest type: test autorun: true {}
+experiment TrafficAdvancedTest mode: test autorun: true {}

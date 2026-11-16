@@ -44,4 +44,4 @@ species dynamic_agent {
 	// 'is_const' isn't a GAML operator, but we can verify it doesn't change
 }
 
-experiment ConstantsAndDynamicTest type: test autorun: true;
+experiment ConstantsAndDynamicTest mode: test autorun: true;

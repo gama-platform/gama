@@ -68,7 +68,7 @@ species user control:user_only {
 }
 
 
-experiment Displays type: gui {
+experiment Displays mode: gui {
 	parameter "advanced user control" var: advanced_user_control <- false;
 	output { 
 		display map { 

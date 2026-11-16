@@ -58,7 +58,7 @@ species task_agent control: weighted_tasks {
 	}
 }
 
-experiment TaskArchitectureTest type: test autorun: true;
+experiment TaskArchitectureTest mode: test autorun: true;
 
 species prob_task_agent control: probabilistic_tasks {
 	int run_count <- 0;

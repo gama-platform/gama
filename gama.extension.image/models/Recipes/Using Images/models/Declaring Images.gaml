@@ -52,10 +52,10 @@ global {
 
 
 
-experiment name type: gui {
+experiment name mode: gui {
 
 	output {
-		display Images type:2d{
+		display Images renderer:2d{
 			picture from_terrain;
 		}
 	}

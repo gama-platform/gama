@@ -12,27 +12,27 @@ global {
 	list<string> cats <- ["a", "b", "a"];
 }
 
-experiment "Duplicate names" type: gui {
+experiment "Duplicate names" mode: gui {
 	output {
-		display "Series" type: 2d {
+		display "Series" renderer: 2d {
 			chart "Series: two lines named data1" kind: series {
 				data "data1" value: cycle color: #red;
 				data "data1" value: 2 * cycle color: #blue;
 			}
 		}
-		display "Histogram" type: 2d {
+		display "Histogram" renderer: 2d {
 			chart "Histogram: two series data1, three bars per series (a, b, a)" kind: histogram x_serie_labels: cats {
 				data "data1" value: [1, 2, 3] color: #red;
 				data "data1" value: [3, 2, 1] color: #blue;
 			}
 		}
-		display "Pie" type: 2d {
+		display "Pie" renderer: 2d {
 			chart "Pie: two sections data1 (red and blue)" kind: pie {
 				data "data1" value: 10 color: #red;
 				data "data1" value: 20 color: #blue;
 			}
 		}
-		display "Radar" type: 2d {
+		display "Radar" renderer: 2d {
 			chart "Radar: two series data1, three axes (a, b, a)" kind: radar x_serie_labels: cats {
 				data "data1" value: [1, 2, 3] color: #red;
 				data "data1" value: [3, 2, 1] color: #blue;

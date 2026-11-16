@@ -160,7 +160,7 @@ species section {
 }
 
 
-experiment TraficGroup type: gui {
+experiment TraficGroup mode: gui {
 
 	// Users can chose the number of sections and the time step.
 
@@ -175,7 +175,7 @@ experiment TraficGroup type: gui {
 		 layout vertical([0::3472,horizontal([1::5000,2::5000])::6528]) tabs:true editors: false;
 		
 		// A display shows the road. Section width depend on their concentration.
-		display TheRoad type:3d axes:false{
+		display TheRoad renderer:3d axes:false{
 			camera 'default' location: {5044.1782,104.4563,2208.909} target: {5044.1782,104.4178,0.0};			
 			species section aspect: shape_section ;
 		}
@@ -183,7 +183,7 @@ experiment TraficGroup type: gui {
 		// The greeen time series correspond to the middle section (on which concentration and maximum speed are lower).
 		// The red time series correspond to the section just before the middle one.
 				
-		display Concentrations  type: 3d {
+		display Concentrations  renderer: 3d {
 			chart "Concentrations" kind: series  {
 				loop i from: 0 to: length(section) -1 {
 					data 'Section '+i value: section[i].current_concentration color: section[i].color marker: false ;		
@@ -192,7 +192,7 @@ experiment TraficGroup type: gui {
 			}
 		}
 			
-			display Flows  type: 3d {
+			display Flows  renderer: 3d {
 			    chart "Flows" kind: series  {
 			    	loop i from: 0 to: length(section) -1 {
 						data 'Section '+i value: section[i].current_flow color: section[i].color marker: false ;		

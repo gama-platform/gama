@@ -42,4 +42,4 @@ species people {
 
 // The experiment facet benchmark: true enables separate, experiment-wide profiling.
 // It exports a CSV summary of statement durations and execution counts when the experiment closes.
-experiment Benchmarking type: gui benchmark: true { }
+experiment Benchmarking mode: gui benchmark: true { }

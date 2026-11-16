@@ -202,6 +202,6 @@ species dot { }
 
 species zone { }
 
-experiment AgentQueriesTest type: test autorun: true {
+experiment AgentQueriesTest mode: test autorun: true {
 
 }

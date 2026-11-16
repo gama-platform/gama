@@ -58,7 +58,7 @@ species info_player2 mirrors: player_stupidTeam {
 	}
 }
 
-experiment intelligentTeam_vs_stupidTeam type: gui {
+experiment intelligentTeam_vs_stupidTeam mode: gui {
 	init {
 		ask simulation {
 			// instantialization of the game (contains global information about the game)
@@ -97,7 +97,7 @@ experiment intelligentTeam_vs_stupidTeam type: gui {
 	parameter "show player info" var: show_info;
 
 	output {
-		display "soccer_field" type: 2d {
+		display "soccer_field" renderer: 2d {
 			// display the field.
 			picture "../images/soccer_field2.png";
 			// display the species with their correct aspect
@@ -112,7 +112,7 @@ experiment intelligentTeam_vs_stupidTeam type: gui {
 	}
 }
 
-experiment intelligentTeam_vs_intelligentTeam type: gui {
+experiment intelligentTeam_vs_intelligentTeam mode: gui {
 	rgb back_color_team <- #blue;
 	rgb front_color_team <- #red;
 
@@ -155,7 +155,7 @@ experiment intelligentTeam_vs_intelligentTeam type: gui {
 	parameter "show player info" var: show_info;
 
 	output {
-		display "soccer_field" type: 2d {
+		display "soccer_field" renderer: 2d {
 			// display the field.
 			picture "../images/soccer_field2.png";
 			// display the species with their correct aspect

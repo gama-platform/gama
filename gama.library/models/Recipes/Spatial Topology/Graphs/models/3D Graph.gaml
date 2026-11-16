@@ -79,7 +79,7 @@ species node_agent skills: [moving3D] {
 
 }
 
-experiment Display type: gui {
+experiment Display mode: gui {
 	float minimum_cycle_duration <- 0.01;
 	 
 	parameter 'Number of Agents' var:number_of_agents category: 'Initialization';
@@ -87,7 +87,7 @@ experiment Display type: gui {
 	parameter 'distance ' var:distance unit: "m";
 	
 	output {
-		display WanderingSphere type: 3d { 
+		display WanderingSphere renderer: 3d { 
 			camera 'default' location: {-528.0266,911.2309,549.1574} target: {572.0892,-62.0693,0.0};			
 			species node_agent aspect: dynamic;
 			graphics "edges" {

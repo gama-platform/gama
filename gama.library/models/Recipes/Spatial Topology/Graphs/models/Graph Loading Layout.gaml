@@ -64,7 +64,7 @@ species node_agent {
 	}
 }
 
-experiment loadgraph type: gui {
+experiment loadgraph mode: gui {
 	float minimum_cycle_duration <- 0.5;
 	parameter "Max number of iterations" var:layout_time;
 	parameter "Force coefficient" category: "Force"var:coeff_force;
@@ -74,7 +74,7 @@ experiment loadgraph type: gui {
 	parameter "Theta" category:"Force_FR_indexed" var:theta; 
 	parameter "Layout type" var: layout_type among:["Force FR","Force FR Indexed" , "Force", "Circular", "Grid"] init:"Force FR";
 	output {
-		display map type: 3d map_order: true{
+		display map renderer: 3d map_order: true{
 			species edge_agent ;
 			species node_agent ;
 		}

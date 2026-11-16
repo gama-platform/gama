@@ -437,7 +437,7 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 
 
 
-experiment Simulation type: gui autorun: true  {
+experiment Simulation mode: gui autorun: true  {
 	// limit the speed of the simulation
 	float minimum_cycle_duration <- 0.1;
 	
@@ -469,7 +469,7 @@ experiment Simulation type: gui autorun: true  {
 		layout value: horizontal([0::50,vertical([1::50,2::50])::50]) tabs:false;
 		
 		// left display: interaction matrix
-		display action_button title:"Species interactions" toolbar: false type:3d axes: false{
+		display action_button title:"Species interactions" toolbar: false renderer:3d axes: false{
 			camera 'default' location: {500.0,500.0231,1273.0} target: {500.0,500.0,0.0} locked: true;
 			light #default intensity: 120;
 			species button aspect: modern;
@@ -485,7 +485,7 @@ experiment Simulation type: gui autorun: true  {
 		}
 		
 		// top-right display: charts
-		display "Charts" title: "Charts" refresh: every(1#cycle) type: 3d toolbar: false axes: false{
+		display "Charts" title: "Charts" refresh: every(1#cycle) renderer: 3d toolbar: false axes: false{
 			camera  "myCamera" locked: true;
 			
 			// chart definition: cumulated population
@@ -519,7 +519,7 @@ experiment Simulation type: gui autorun: true  {
 		}
 		
 		// bottom-right display: interaction graph
-		display "Interaction graph" toolbar: false type:3d axes: false {
+		display "Interaction graph" toolbar: false renderer:3d axes: false {
 			camera #default locked: true;
 			graphics "edges" {
 				interactionGraphPixelValue <- #px;

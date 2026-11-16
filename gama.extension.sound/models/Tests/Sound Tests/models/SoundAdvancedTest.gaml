@@ -49,4 +49,4 @@ species player {
 	}
 }
 
-experiment SoundAdvancedTest type: test autorun: true;
+experiment SoundAdvancedTest mode: test autorun: true;

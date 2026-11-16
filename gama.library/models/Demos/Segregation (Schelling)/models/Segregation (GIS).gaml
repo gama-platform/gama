@@ -118,13 +118,13 @@ species space {
 }
 
 
-experiment schelling type: gui parent:base_exp{	
+experiment schelling mode: gui parent:base_exp{	
 	
 	parameter "Shapefile to load:" var:shape_file_name category: "GIS specific";
 	parameter "Occupancy of people:" var:square_meters_per_people category: "GIS specific" unit: "m²";
 	
 	output {
-		display Town_display type: 2d background: backdrop {
+		display Town_display renderer: 2d background: backdrop {
 			species space aspect: gis;
 			species people  aspect: simple;
 			overlay coordinates: #screen position: {12, 12} size: {310, 116} background: backdrop rounded: true {
@@ -136,7 +136,7 @@ experiment schelling type: gui parent:base_exp{
 					at: {12#px, 97#px} color: happy_color font: font("Helvetica", 11);
 			}
 		}
-		display Charts type: 3d background: backdrop {
+		display Charts renderer: 3d background: backdrop {
 			chart "Resident satisfaction" coordinates: #screen kind: histogram background: backdrop color: lettering axes: lettering
 				gap: 0.2 position: {0,0} size: {#display_width,0.5} y_label: "Residents" {
 				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;

@@ -54,10 +54,10 @@ species particle skills: [moving] {
 	}
 }
 
-experiment "Control interactions" type: gui {
+experiment "Control interactions" mode: gui {
 	float minimum_cycle_duration <- 0.05;
 	output {
-		display "Interaction playground" type: java2D background: #white {
+		display "Interaction playground" renderer: java2D background: #white {
 			species particle;
 			overlay position: {16, 16} size: {360, 450}
 				background: #white with_alpha 0.92 border: #lightgray rounded: true {

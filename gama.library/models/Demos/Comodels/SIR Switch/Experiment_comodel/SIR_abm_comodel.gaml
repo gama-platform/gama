@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment ABMcomodel model:'../Legacy_models/SIR_ABM.gaml' type:gui actions_context: simulation {
+experiment ABMcomodel model:'../Legacy_models/SIR_ABM.gaml' mode:gui actions_context: simulation {
 	int get_num_S()
 	{
 		return length(Host where (each.state = 0));

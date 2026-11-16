@@ -40,7 +40,7 @@ species edge_agent {
 		draw shape color:#black end_arrow: 1.0;
 	}
 }
-experiment main type: gui {
+experiment main mode: gui {
 	output {
 		display map map_order: true {
 			species node_agent;

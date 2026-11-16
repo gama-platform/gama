@@ -8,7 +8,7 @@
 
 @no_warning
 
-experiment FontAndColorRobustnessTest type: test  {
+experiment FontAndColorRobustnessTest mode: test  {
 	
 
 	/** True if there was no error, or if the error is a proper GAML one rather than a leaked Java exception */

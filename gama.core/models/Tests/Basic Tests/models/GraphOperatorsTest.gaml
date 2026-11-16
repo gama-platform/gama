@@ -11,7 +11,7 @@ species node_agent { }
 
 species edge_agent { }
 
-experiment GraphOperatorsTest type: test autorun: true {
+experiment GraphOperatorsTest mode: test autorun: true {
 
 	/**
 	 * A triangle a - b - c with a tail c - d. A graph of plain values is undirected until stated otherwise

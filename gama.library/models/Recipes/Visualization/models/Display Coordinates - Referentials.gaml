@@ -20,11 +20,11 @@ global {
     }
 }
 
-experiment "1 - Placement versus referential" type: gui {
+experiment "1 - Placement versus referential" mode: gui {
     text "Purpose: separate where a layer is placed (coordinates:) from how its contents are interpreted (referential:). The world is 200 by 100 units; the two lower frames are both 240 by 160 pixels.<br/>Expected: the green graphics frame stretches world contents along X and Y, making the white circle elliptical. The purple overlay preserves the circle and leaves 40 pixels of unused space below." category: "What this demonstrates";
     text "Try: run to animate the blue marker, then resize, zoom and pan each display. Both lower frames stay fixed.<br/>The upper panel uses pixel contents. Red 6#px markers illustrate that one scalar pixel conversion cannot cancel unequal X/Y scales: only the uniform overlay keeps both radii at six pixels." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             graphics "World" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
                 draw circle(10) at: moving_point color: #blue;
@@ -58,14 +58,14 @@ experiment "1 - Placement versus referential" type: gui {
                 draw "overlay: proportional fit, unused space below" at: {16, 354} color: #purple;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
+        display "OpenGL" parent: "Java2D" renderer: opengl map_order: true {}
     }
 }
 
-experiment "2 - A spatial overlay" type: gui {
+experiment "2 - A spatial overlay" mode: gui {
     text "Purpose: demonstrate that an overlay can explicitly use world placement instead of its usual screen default.<br/>Try: zoom and pan each display; no simulation steps are needed.<br/>Expected: the purple overlay follows the world camera. Its frame is 100 by 50 model units, not pixels. Only the explanatory caption remains fixed on screen." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             graphics "World" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
             }
@@ -82,6 +82,6 @@ experiment "2 - A spatial overlay" type: gui {
                     at: {16, 54} color: #purple;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
+        display "OpenGL" parent: "Java2D" renderer: opengl map_order: true {}
     }
 }

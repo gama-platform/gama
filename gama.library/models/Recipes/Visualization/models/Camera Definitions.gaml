@@ -30,7 +30,7 @@ species objects skills: [moving] {
 
 }
 
-experiment Display type: gui autorun: true {
+experiment Display mode: gui autorun: true {
 	point p -> first(simulation.objects).location;
 	float factor <- 1.0;
 	//parameter "Shared zoom" of: experiment var: factor min: 0.01 max: 10.0;
@@ -40,7 +40,7 @@ experiment Display type: gui autorun: true {
 		float h <- shape.height;
 
 		layout #split parameters: false consoles: false;
-		display shared type: 3d virtual: true {
+		display shared renderer: 3d virtual: true {
 			overlay background: #transparent{
 				ui_slider "Zoom" var: experiment.factor min: 0.01 max: 10.0 continuous: true;
 			}
@@ -58,7 +58,7 @@ experiment Display type: gui autorun: true {
 		display "Follow object" parent: shared {
 			camera #default target: experiment.p distance: 150 / experiment.factor location: #from_above dynamic: true;
 		}
-		display "First person" type: opengl{
+		display "First person" renderer: opengl{
 			picture "../includes/wood.jpg";
 			camera #default dynamic: true location: {int(first(objects).location.x), int(first(objects).location.y), 5/experiment.factor} target:
 			{cos(first(objects).heading) * first(objects).speed + int(first(objects).location.x), sin(first(objects).heading) * first(objects).speed + int(first(objects).location.y), 5/experiment.factor};

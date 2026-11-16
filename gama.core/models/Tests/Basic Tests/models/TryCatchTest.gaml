@@ -5,7 +5,7 @@
 * Tags: exception, try, catch, test
 */
 
-experiment TryCatchTest type: test autorun: true {
+experiment TryCatchTest mode: test autorun: true {
 	
 	test "Basic Try Catch" {
 		bool caught <- false;

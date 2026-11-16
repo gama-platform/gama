@@ -37,7 +37,7 @@ species Mosquito skills: [moving]
 
 }
 
-experiment Generic type: gui
+experiment Generic mode: gui
 { 
 	output
 	{

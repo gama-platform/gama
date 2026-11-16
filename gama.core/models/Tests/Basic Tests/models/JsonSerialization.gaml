@@ -7,7 +7,7 @@
 
 model Serialization
 
-experiment SerializationTest type:test {
+experiment SerializationTest mode:test {
 	
 	test from_json_empty {
 		bool exception <- false;

@@ -49,4 +49,4 @@ species reflex_agent {
 	}
 }
 
-experiment ReflexTest type: test autorun: true;
+experiment ReflexTest mode: test autorun: true;

@@ -26,7 +26,7 @@ global {
 species walker {
 }
 
-experiment ReproducibilityTest type: test autorun: true {
+experiment ReproducibilityTest mode: test autorun: true {
 
 	/** Draws one value with each random operator */
 	list<float> draw_all() {

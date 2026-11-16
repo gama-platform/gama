@@ -46,11 +46,11 @@ species people {}
 // Recording (record: true) is required for step_back. die closes the experiment, not GAMA.
 // experiment.status is "PAUSED", "RUNNING" or "NONE", matching the server status query.
 // synchronize/desynchronize control a platform-wide display-rendering flag, not agent scheduling.
-experiment basic_exp type: gui { }
+experiment basic_exp mode: gui { }
 
 // The GUI experiment can be configured to add a behavior at the initialization of the experiment and before each step.
 // Note that a simulation is always created by default, and the execution of the simulation is managed by its own behaviors.
-experiment exp_with_init_reflex type: gui {
+experiment exp_with_init_reflex mode: gui {
 
 	init {
 		write "====== Init of " + self color: #green;
@@ -74,7 +74,7 @@ experiment exp_with_init_reflex type: gui {
 // The experiment can access to all the simulations.
 //
 // Note: the experiment and all the simulations have the same seed by default. To avoid that, the seed should be set at hand.
-experiment exp_4_simulations type: gui schedules: shuffle(simulations) parallel: true  {
+experiment exp_4_simulations mode: gui schedules: shuffle(simulations) parallel: true  {
 
 	init {
 		write "====== Init of " + self color: #green;
@@ -106,7 +106,7 @@ experiment exp_4_simulations type: gui schedules: shuffle(simulations) parallel:
 // When they are redefined, the default behaviors are disabled :
 // - _init_ : no simulation created and init statement is not called, 
 // - _step_ : the behavior of exepriment and simulations is not called.
-experiment exp_no_simulation type: gui {
+experiment exp_no_simulation mode: gui {
 
 	action _init_() {
 		write "_init_ of " + self color: #green;
@@ -149,7 +149,7 @@ experiment basic_exp_init_step {
 // - init is executed as the initialization of the experiment design and thus before the creation of any simulation 
 // - reflex is executed after each replications (i.e. after the execution of the N simulations corresponding to a replication,
 // N is specified in the repeat: statement.
-experiment batch_4_simu type: batch autorun: true repeat: 4 until: (cycle > 2) parallel: true keep_simulations: true {
+experiment batch_4_simu mode: batch autorun: true repeat: 4 until: (cycle > 2) parallel: true keep_simulations: true {
 
 	parameter "nb_people" var: nb_people among: [0,5,10];
 

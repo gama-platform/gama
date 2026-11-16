@@ -44,8 +44,8 @@ import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.IExperimentController.ExperimentCommandTypes;
-import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
@@ -730,12 +730,33 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		return controller;
 	}
 
+	/**
+	 * Check control request.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param accepted
+	 *            the accepted
+	 * @param command
+	 *            the command
+	 */
 	private void checkControlRequest(final IScope scope, final boolean accepted, final String command) {
-		if (!accepted) throw GamaRuntimeException.error(
-				"Unable to " + command + " the experiment: its controller refused the request or its command queue is full",
-				scope);
+		if (!accepted)
+			throw GamaRuntimeException.error(
+					"Unable to " + command
+							+ " the experiment: its controller refused the request or its command queue is full",
+					scope);
 	}
 
+	/**
+	 * Request control.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param command
+	 *            the command
+	 * @return the object
+	 */
 	private Object requestControl(final IScope scope, final ExperimentCommandTypes command) {
 		final IExperimentController controller = interactiveController(scope);
 		// Submit destructive or stepping commands only after the requesting experiment cycle has finished.
@@ -784,6 +805,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		return this;
 	}
 
+	/**
+	 * Step once.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
 	@action (
 			name = "step_once",
 			doc = @doc (
@@ -798,6 +826,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		return requestControl(scope, ExperimentCommandTypes._STEP);
 	}
 
+	/**
+	 * Step back.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
 	@action (
 			name = "step_back",
 			doc = @doc (
@@ -814,6 +849,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		return requestControl(scope, ExperimentCommandTypes._BACK);
 	}
 
+	/**
+	 * Reload.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
 	@action (
 			name = "reload",
 			doc = @doc (
@@ -828,6 +870,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		return requestControl(scope, ExperimentCommandTypes._RELOAD);
 	}
 
+	/**
+	 * Synchronize.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
 	@action (
 			name = "synchronize",
 			doc = @doc (
@@ -843,6 +892,13 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		return this;
 	}
 
+	/**
+	 * Desynchronize.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
 	@action (
 			name = "desynchronize",
 			doc = @doc (
@@ -1119,8 +1175,8 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 						restored[0] = true;
 						if (!((ExperimentSpecies) this.getSpecies()).keepsSeed()) {
 							final double seed = random.next();
-							sim.runInOwnThread(() -> sim.setRandomGenerator(
-									new RandomUtils(seed, sim.getRandomGenerator().getRngName())));
+							sim.runInOwnThread(() -> sim
+									.setRandomGenerator(new RandomUtils(seed, sim.getRandomGenerator().getRngName())));
 						}
 					}
 

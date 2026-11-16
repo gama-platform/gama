@@ -76,7 +76,7 @@ species people skills: [moving] {
 	}
 }
 
-experiment goto_grid type: gui {
+experiment goto_grid mode: gui {
 	
 	
 	parameter var:algorithm among: ["A*", "Dijkstra"];
@@ -84,7 +84,7 @@ experiment goto_grid type: gui {
 	float minimum_cycle_duration <- 0.1;
 	
 	output {
-		display objects_display type:2d antialias:false{
+		display objects_display renderer:2d antialias:false{
 			grid cell border: #black;
 			species goal aspect: default ;
 			species people aspect: default ;

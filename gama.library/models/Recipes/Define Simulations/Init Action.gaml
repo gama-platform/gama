@@ -38,7 +38,7 @@ species my_agents {
 	
 }
 
-experiment InitAction type: gui {
+experiment InitAction mode: gui {
 	
 	action _init_ (){
 		map<string, unknown> params <- user_input_dialog([enter("Number of agents",100), enter("Color",#red), enter("2D",true)]);
@@ -46,7 +46,7 @@ experiment InitAction type: gui {
 	}
 	
 	output {
-		display Simple type:3d{
+		display Simple renderer:3d{
 			species my_agents aspect:default;			 
 		}
 	}

@@ -24,7 +24,7 @@ species snapshot_agent {
 
 species other_snapshot_agent {}
 
-experiment "RDS Tests" type: test autorun: true {
+experiment "RDS Tests" mode: test autorun: true {
 
 	test "Native R version-2 matrix and version-3 rejection" {
 		matrix m <- matrix(rds_file("../includes/test_matrix__xdr__version_2.rds"));

@@ -19,27 +19,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalNotification;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.texture.Texture;
-
-import gama.api.utils.geometry.ICoordinates.VertexVisitor;
-import gama.ui.display.opengl.ITesselator;
-import gama.ui.display.opengl.IOpenGL;
-import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
-import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
 
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -50,6 +45,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
@@ -59,22 +55,26 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
+import gama.ui.display.opengl.IOpenGL;
+import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.caches.PolygonTessellationCache;
+import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
+import gama.ui.display.opengl.scene.AbstractObject;
+import gama.ui.display.opengl.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.mesh.MeshObject;
+import gama.ui.display.opengl.scene.resources.ResourceDrawer;
 import gama.ui.display.opengl4.renderer.caches.GeometryCache;
 import gama.ui.display.opengl4.renderer.caches.GeometryCache.BuiltInGeometry;
 import gama.ui.display.opengl4.renderer.caches.TextureCache2;
 import gama.ui.display.opengl4.renderer.helpers.AbstractRendererHelper;
 import gama.ui.display.opengl4.renderer.shaders.BasicShader;
 import gama.ui.display.opengl4.renderer.shaders.MatrixStack;
-import gama.ui.display.opengl.scene.AbstractObject;
-import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl4.scene.geometry.GeometryDrawer;
 import gama.ui.display.opengl4.scene.mesh.MeshDrawer;
-import gama.ui.display.opengl.scene.mesh.MeshObject;
-import gama.ui.display.opengl.scene.resources.ResourceDrawer;
 import gama.ui.display.opengl4.scene.text.TextDrawer;
 import gama.ui.shared.utils.DPIHelper;
+import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
 
 /**
  * A class that represents an intermediate state between the rendering and the opengl state. Implements
@@ -100,9 +100,17 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The drawers. */
 	final Map<DrawerType, ObjectDrawer<?, ?>> drawers = new HashMap<>();
 
+	/**
+	 * The Record MeshKey.
+	 *
+	 * @param object
+	 *            the object
+	 */
 	private record MeshKey(MeshObject object) {
 		@Override
-		public int hashCode() { return System.identityHashCode(object.getObject()); }
+		public int hashCode() {
+			return System.identityHashCode(object.getObject());
+		}
 
 		@Override
 		public boolean equals(final Object other) {
@@ -110,9 +118,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/** The mesh drawers. */
 	private final Cache<MeshKey, MeshDrawer> meshDrawers = CacheBuilder.newBuilder().maximumSize(8)
-			.removalListener((RemovalNotification<MeshKey, MeshDrawer> notification) ->
-					notification.getValue().dispose()).build();
+			.removalListener(
+					(final RemovalNotification<MeshKey, MeshDrawer> notification) -> notification.getValue().dispose())
+			.build();
 
 	/** The viewport. */
 	// Matrices of the display
@@ -131,15 +141,24 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The basic shader. */
 	private BasicShader basicShader;
 
+	/** The current picking id. */
 	private int currentPickingId = -1;
 
+	/**
+	 * Load picking.
+	 *
+	 * @param shader
+	 *            the shader
+	 * @param alpha
+	 *            the alpha
+	 */
 	public void loadPicking(final BasicShader shader, final float alpha) {
 		shader.loadPicking(renderer.getPickingHelper().isBeginningPicking(), currentPickingId, alpha);
 	}
 
 	/**
-	 * Gets the basic shader. Used by {@link gama.ui.display.opengl4.renderer.helpers.LightHelper} to push
-	 * per-frame light uniforms.
+	 * Gets the basic shader. Used by {@link gama.ui.display.opengl4.renderer.helpers.LightHelper} to push per-frame
+	 * light uniforms.
 	 *
 	 * @return the BasicShader program, or {@code null} if not yet initialised
 	 */
@@ -248,8 +267,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The previous object line width. */
 	float currentObjectLineWidth = 1f,
 			previousObjectLineWidth = GamaPreferences.Displays.CORE_LINE_WIDTH.getValue().floatValue();
+
+	/** The native line width. */
 	private float nativeLineWidth = 1f;
+
+	/** The line width range. */
 	private final float[] lineWidthRange = new float[2];
+
+	/** The unsupported line width reported. */
 	private boolean lineWidthLimitsKnown, unsupportedLineWidthReported;
 
 	/** The previous display lighting. */
@@ -273,8 +298,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 
 	/**
 	 * The GLU tessellator object used to triangulate concave polygons and polygons with holes. Wired to the
-	 * {@link ITesselator} callbacks implemented by this class so that tessellated vertices are written directly into the
-	 * VBO float buffers rather than via deprecated {@code glVertex} calls.
+	 * {@link ITesselator} callbacks implemented by this class so that tessellated vertices are written directly into
+	 * the VBO float buffers rather than via deprecated {@code glVertex} calls.
 	 */
 	final GLUtessellatorImpl tobj = (GLUtessellatorImpl) GLU.gluNewTess();
 
@@ -336,6 +361,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The last texture minification filter. */
 	private int lastTextureMinFilter = GL.GL_NEAREST;
 
+	/** The current texture smooth. */
 	private boolean currentTextureSmooth;
 
 	/** The gl drawer. */
@@ -348,6 +374,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the type
 	 * @return the drawer for
 	 */
+	@Override
 	public ObjectDrawer<? extends AbstractObject<?, ?>, ?> getDrawerFor(final AbstractObject<?, ?> object) {
 		// Only create signature and checking mesh drawers if the object is indeed a mesh.
 		if (object instanceof MeshObject mo) {
@@ -372,6 +399,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Dispose.
 	 */
+	@Override
 	public void dispose() {
 		if (reusableMapBatch != null) { reusableMapBatch.dispose(); }
 		if (instanceBuffer != 0) {
@@ -414,7 +442,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public GLProfile getProfile() { return PROFILE; }
 
 	@Override
-	public void setGL(final GL context) { setGL4(context.getGL4()); }
+	public void setGL(final GL context) {
+		setGL4(context.getGL4());
+	}
 
 	@Override
 	public void reshape(final GL context, final int width, final int height) {
@@ -426,26 +456,25 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 
 	@Override
 	public void lookAt(final IPoint position, final IPoint target, final IPoint up) {
-		getCurrentMatrixStack().multMatrix(new org.joml.Matrix4f().lookAt(
-				(float) position.getX(), (float) position.getY(), (float) position.getZ(),
-				(float) target.getX(), (float) target.getY(), (float) target.getZ(),
-				(float) up.getX(), (float) up.getY(), (float) up.getZ()));
+		getCurrentMatrixStack().multMatrix(new org.joml.Matrix4f().lookAt((float) position.getX(),
+				(float) position.getY(), (float) position.getZ(), (float) target.getX(), (float) target.getY(),
+				(float) target.getZ(), (float) up.getX(), (float) up.getY(), (float) up.getZ()));
 	}
 
+	/** The unproject result. */
 	private final org.joml.Vector3f unprojectResult = new org.joml.Vector3f();
 
 	@Override
 	public synchronized void unproject(final double x, final double y, final double depth, final double[] result) {
-		final var modelView = new org.joml.Matrix4f(
-				(float) mvmatrix[0], (float) mvmatrix[1], (float) mvmatrix[2], (float) mvmatrix[3],
-				(float) mvmatrix[4], (float) mvmatrix[5], (float) mvmatrix[6], (float) mvmatrix[7],
+		final var modelView = new org.joml.Matrix4f((float) mvmatrix[0], (float) mvmatrix[1], (float) mvmatrix[2],
+				(float) mvmatrix[3], (float) mvmatrix[4], (float) mvmatrix[5], (float) mvmatrix[6], (float) mvmatrix[7],
 				(float) mvmatrix[8], (float) mvmatrix[9], (float) mvmatrix[10], (float) mvmatrix[11],
 				(float) mvmatrix[12], (float) mvmatrix[13], (float) mvmatrix[14], (float) mvmatrix[15]);
-		final var projection = new org.joml.Matrix4f(
-				(float) projmatrix[0], (float) projmatrix[1], (float) projmatrix[2], (float) projmatrix[3],
-				(float) projmatrix[4], (float) projmatrix[5], (float) projmatrix[6], (float) projmatrix[7],
-				(float) projmatrix[8], (float) projmatrix[9], (float) projmatrix[10], (float) projmatrix[11],
-				(float) projmatrix[12], (float) projmatrix[13], (float) projmatrix[14], (float) projmatrix[15]);
+		final var projection = new org.joml.Matrix4f((float) projmatrix[0], (float) projmatrix[1],
+				(float) projmatrix[2], (float) projmatrix[3], (float) projmatrix[4], (float) projmatrix[5],
+				(float) projmatrix[6], (float) projmatrix[7], (float) projmatrix[8], (float) projmatrix[9],
+				(float) projmatrix[10], (float) projmatrix[11], (float) projmatrix[12], (float) projmatrix[13],
+				(float) projmatrix[14], (float) projmatrix[15]);
 		projection.mul(modelView).unproject((float) x, (float) y, (float) depth, viewport, unprojectResult);
 		result[0] = unprojectResult.x;
 		result[1] = unprojectResult.y;
@@ -453,8 +482,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	@Override
-	public void ortho(final double left, final double right, final double bottom, final double top,
-			final double near, final double far) {
+	public void ortho(final double left, final double right, final double bottom, final double top, final double near,
+			final double far) {
 		getCurrentMatrixStack().ortho(left, right, bottom, top, near, far);
 	}
 
@@ -566,8 +595,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final double height = getViewHeight();
 		final double aspect = getViewWidth() / (height == 0d ? 1d : height);
 		final double maxDim = getMaxEnvDim();
-		final double resizeScaleFactor =
-				renderer.getSurface().getResizeScaleFactor(getViewWidth(), getViewHeight());
+		final double resizeScaleFactor = renderer.getSurface().getResizeScaleFactor(getViewWidth(), getViewHeight());
 		double zNear = getZNear();
 		if (zNear < 0.0) {
 			zNear = maxDim / 100d;
@@ -602,9 +630,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		} else if (aspect >= 1.0) {
 			// Match the normal depth direction of the perspective projection and the legacy backend.
-			getCurrentMatrixStack().ortho(-maxDim * aspect * resizeScaleFactor,
-					maxDim * aspect * resizeScaleFactor, -maxDim * resizeScaleFactor, maxDim * resizeScaleFactor,
-					-maxDim * 10, maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim * aspect * resizeScaleFactor, maxDim * aspect * resizeScaleFactor,
+					-maxDim * resizeScaleFactor, maxDim * resizeScaleFactor, -maxDim * 10, maxDim * 10);
 		} else {
 			getCurrentMatrixStack().ortho(-maxDim * resizeScaleFactor, maxDim * resizeScaleFactor,
 					-maxDim / aspect * resizeScaleFactor, maxDim / aspect * resizeScaleFactor, -maxDim * 10,
@@ -637,6 +664,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the pixel width and height of world
 	 */
+	@Override
 	public synchronized double[] getPixelWidthAndHeightOfWorld() {
 		final double[] coord = new double[4];
 		glu.gluProject(getWorldWidth(), 0, 0, mvmatrix, 0, projmatrix, 0, viewport, 0, coord, 0);
@@ -648,6 +676,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the view width
 	 */
+	@Override
 	public int getViewWidth() { return viewWidth; }
 
 	/**
@@ -655,6 +684,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the view height
 	 */
+	@Override
 	public int getViewHeight() { return viewHeight; }
 
 	/**
@@ -663,6 +693,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param z
 	 *            the new z increment
 	 */
+	@Override
 	public void setZIncrement(final double z) {
 		currentZTranslation = 0;
 		currentZIncrement = z;
@@ -671,6 +702,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Suspend Z translation.
 	 */
+	@Override
 	public void suspendZTranslation() {
 		savedZTranslation = currentZTranslation;
 		currentZTranslation = 0;
@@ -679,6 +711,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Resume Z translation.
 	 */
+	@Override
 	public void resumeZTranslation() {
 		currentZTranslation = savedZTranslation;
 	}
@@ -688,6 +721,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the current Z translation
 	 */
+	@Override
 	public double getCurrentZTranslation() { return currentZTranslation; }
 
 	@Override
@@ -698,6 +732,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the current Z increment
 	 */
+	@Override
 	public double getCurrentZIncrement() { return currentZIncrement; }
 
 	/**
@@ -723,6 +758,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the lighted
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean setDisplayLighting(final boolean lighted) {
 		boolean previous = displayIsLighted;
 		if (lighted != previous) {
@@ -761,6 +797,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Push matrix.
 	 */
+	@Override
 	public void pushMatrix() {
 		if (objectCapture != null) { recordObjectCommand(this::pushMatrix); }
 		getCurrentMatrixStack().pushMatrix();
@@ -769,6 +806,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Pop matrix.
 	 */
+	@Override
 	public void popMatrix() {
 		if (objectCapture != null) { recordObjectCommand(this::popMatrix); }
 		getCurrentMatrixStack().popMatrix();
@@ -791,6 +829,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param mode
 	 *            the mode
 	 */
+	@Override
 	public void pushIdentity(final int mode) {
 		matrixMode(mode);
 		pushMatrix();
@@ -803,6 +842,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param mode
 	 *            the mode
 	 */
+	@Override
 	public void pop(final int mode) {
 		matrixMode(mode);
 		popMatrix();
@@ -814,6 +854,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param mode
 	 *            the mode
 	 */
+	@Override
 	public void push(final int mode) {
 		matrixMode(mode);
 		pushMatrix();
@@ -860,8 +901,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The current vertex count. */
 	private int currentVertexCount = 0;
 
+	/** The current draw has transparency. */
 	private boolean currentDrawHasTransparency;
+
+	/** The current draw uses color buffer. */
 	private boolean currentDrawUsesColorBuffer;
+
+	/** The draw alpha. */
 	private float drawRed, drawGreen, drawBlue, drawAlpha;
 
 	/** The vao id. */
@@ -870,36 +916,94 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/** The vbo ids. Index 0 = positions, 1 = colours, 2 = tex-coords, 3 = normals. */
 	private final int[] vboIds = new int[4];
 
+	/** The polygon tessellations. */
 	private final PolygonTessellationCache polygonTessellations = new PolygonTessellationCache();
+
+	/**
+	 * The Record PolygonDrawingKey.
+	 *
+	 * @param mesh
+	 *            the mesh
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @param z
+	 *            the z
+	 * @param textureMapping
+	 *            the texture mapping
+	 */
 	private record PolygonDrawingKey(PolygonTessellationCache.Tessellation mesh, double x, double y, double z,
 			CoordinateDrawingKey textureMapping) {}
-	private final Cache<PolygonDrawingKey, List<StoredDrawing>> polygonDrawings = CacheBuilder.newBuilder()
-			.maximumWeight(32 * 1024 * 1024)
-			.weigher((PolygonDrawingKey key, List<StoredDrawing> value) -> key.mesh().weight() * 4)
-			.removalListener((RemovalNotification<PolygonDrawingKey, List<StoredDrawing>> notification) ->
-					notification.getValue().forEach(StoredDrawing::dispose)).build();
+
+	/** The polygon drawings. */
+	private final Cache<PolygonDrawingKey, List<StoredDrawing>> polygonDrawings =
+			CacheBuilder.newBuilder().maximumWeight(32 * 1024 * 1024)
+					.weigher((final PolygonDrawingKey key, final List<StoredDrawing> value) -> key.mesh().weight() * 4)
+					.removalListener(
+							(final RemovalNotification<PolygonDrawingKey, List<StoredDrawing>> notification) -> notification
+									.getValue().forEach(StoredDrawing::dispose))
+					.build();
+
+	/** The identity view matrix. */
 	private final org.joml.Matrix4f identityViewMatrix = new org.joml.Matrix4f();
+
+	/** The drawing capture. */
 	private List<VertexData> drawingCapture;
+
+	/** The coordinate streaming. */
 	private boolean coordinateStreaming;
+
+	/** The suppress dynamic geometry retention. */
 	private boolean suppressDynamicGeometryRetention;
+
+	/** The map batch. */
 	private MapBatch mapBatch;
+
+	/** The reusable map batch. */
 	private MapBatch reusableMapBatch;
 
+	/**
+	 * The Class CoordinateDrawingKey.
+	 */
 	private static final class CoordinateDrawingKey {
+
+		/** The style. */
 		final int style;
+
+		/** The values. */
 		final double[] values;
+
+		/** The hash. */
 		final int hash;
 
+		/**
+		 * Instantiates a new coordinate drawing key.
+		 *
+		 * @param style
+		 *            the style
+		 * @param values
+		 *            the values
+		 */
 		CoordinateDrawingKey(final int style, final double[] values) {
 			this.style = style;
 			this.values = values;
 			hash = 31 * style + Arrays.hashCode(values);
 		}
 
-		int weight() { return 128 + values.length * Double.BYTES; }
+		/**
+		 * Weight.
+		 *
+		 * @return the int
+		 */
+		int weight() {
+			return 128 + values.length * Double.BYTES;
+		}
 
 		@Override
-		public int hashCode() { return hash; }
+		public int hashCode() {
+			return hash;
+		}
 
 		@Override
 		public boolean equals(final Object other) {
@@ -907,20 +1011,45 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/** The coordinate drawings. */
 	private final Cache<CoordinateDrawingKey, List<StoredDrawing>> coordinateDrawings = CacheBuilder.newBuilder()
 			.maximumWeight(32 * 1024 * 1024)
-			.weigher((CoordinateDrawingKey key, List<StoredDrawing> value) -> key.weight() * 4)
-			.removalListener((RemovalNotification<CoordinateDrawingKey, List<StoredDrawing>> notification) ->
-					notification.getValue().forEach(StoredDrawing::dispose)).build();
-	private final Cache<CoordinateDrawingKey, Boolean> coordinateCandidates = CacheBuilder.newBuilder()
-			.maximumWeight(4 * 1024 * 1024)
-			.weigher((CoordinateDrawingKey key, Boolean value) -> key.weight()).build();
+			.weigher((final CoordinateDrawingKey key, final List<StoredDrawing> value) -> key.weight() * 4)
+			.removalListener(
+					(final RemovalNotification<CoordinateDrawingKey, List<StoredDrawing>> notification) -> notification
+							.getValue().forEach(StoredDrawing::dispose))
+			.build();
 
+	/** The coordinate candidates. */
+	private final Cache<CoordinateDrawingKey, Boolean> coordinateCandidates = CacheBuilder.newBuilder()
+			.maximumWeight(4 * 1024 * 1024).weigher((final CoordinateDrawingKey key, final Boolean value) -> key.weight()).build();
+
+	/**
+	 * The Class VertexData.
+	 */
 	private static final class VertexData {
+
+		/** The style. */
 		final int style;
+
+		/** The texture coordinates. */
 		final float[] positions, normals, textureCoordinates;
+
+		/** The hash. */
 		final int hash;
 
+		/**
+		 * Instantiates a new vertex data.
+		 *
+		 * @param style
+		 *            the style
+		 * @param positions
+		 *            the positions
+		 * @param normals
+		 *            the normals
+		 * @param textureCoordinates
+		 *            the texture coordinates
+		 */
 		VertexData(final int style, final FloatBuffer positions, final FloatBuffer normals,
 				final FloatBuffer textureCoordinates) {
 			this.style = style;
@@ -931,6 +1060,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 					+ Arrays.hashCode(this.textureCoordinates);
 		}
 
+		/**
+		 * Snapshot.
+		 *
+		 * @param source
+		 *            the source
+		 * @return the float[]
+		 */
 		private static float[] snapshot(final FloatBuffer source) {
 			final FloatBuffer data = source.duplicate();
 			data.flip();
@@ -939,56 +1075,111 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			return values;
 		}
 
-		int weight() { return 128 + Float.BYTES * (positions.length + normals.length + textureCoordinates.length); }
+		/**
+		 * Weight.
+		 *
+		 * @return the int
+		 */
+		int weight() {
+			return 128 + Float.BYTES * (positions.length + normals.length + textureCoordinates.length);
+		}
 
 		@Override
-		public int hashCode() { return hash; }
+		public int hashCode() {
+			return hash;
+		}
 
 		@Override
 		public boolean equals(final Object other) {
-			return other instanceof VertexData data && style == data.style
-					&& Arrays.equals(positions, data.positions) && Arrays.equals(normals, data.normals)
+			return other instanceof VertexData data && style == data.style && Arrays.equals(positions, data.positions)
+					&& Arrays.equals(normals, data.normals)
 					&& Arrays.equals(textureCoordinates, data.textureCoordinates);
 		}
 	}
 
+	/** The Constant RETAINED_DRAWING_BYTES. */
 	private static final int RETAINED_DRAWING_BYTES = 32 * 1024 * 1024;
 
+	/** The retained drawings. */
 	// Eviction and disposal run on the owning GL thread.
 	private final Cache<VertexData, StoredDrawing> retainedDrawings = CacheBuilder.newBuilder()
-			.maximumWeight(RETAINED_DRAWING_BYTES)
-			.weigher((VertexData key, StoredDrawing value) -> key.weight() * 2)
-			.removalListener((RemovalNotification<VertexData, StoredDrawing> notification) ->
-					notification.getValue().dispose()).build();
+			.maximumWeight(RETAINED_DRAWING_BYTES).weigher((final VertexData key, final StoredDrawing value) -> key.weight() * 2)
+			.removalListener(
+					(final RemovalNotification<VertexData, StoredDrawing> notification) -> notification.getValue().dispose())
+			.build();
+
+	/** The drawing candidates. */
 	private final Cache<VertexData, Boolean> drawingCandidates = CacheBuilder.newBuilder()
-			.maximumWeight(8 * 1024 * 1024)
-			.weigher((VertexData key, Boolean value) -> key.weight()).build();
+			.maximumWeight(8 * 1024 * 1024).weigher((final VertexData key, final Boolean value) -> key.weight()).build();
 
 	/** Immutable vertex data with per-instance drawing state, owned by this GL context. */
 	public final class StoredDrawing {
+
+		/** The references. */
 		private int references = 1;
+
+		/** The weight. */
 		private final int weight;
+
+		/** The line normals. */
 		private final float[] linePositions, lineNormals;
+
+		/** The captured indices. */
 		private final int[] capturedIndices;
+
+		/** The vao. */
 		private final int[] vao = new int[1];
+
+		/** The buffers. */
 		private final int[] buffers;
+
+		/** The count. */
 		private final int count;
+
+		/** The style. */
 		private final int style;
+
+		/** The has texture coordinates. */
 		private final boolean hasTextureCoordinates;
+
+		/** The indexed. */
 		private final boolean indexed;
+
+		/** The uniform normal. */
 		private final boolean uniformNormal;
+
+		/** The face normal Z. */
 		private final float faceNormalX, faceNormalY, faceNormalZ;
+
+		/** The normal Z. */
 		private final double normalX, normalY, normalZ;
 
+		/**
+		 * Instantiates a new stored drawing.
+		 */
 		private StoredDrawing() {
 			this(currentDrawStyle, currentVertices, currentNormals, currentTexCoords, null);
 		}
 
+		/**
+		 * Instantiates a new stored drawing.
+		 *
+		 * @param drawStyle
+		 *            the draw style
+		 * @param positions
+		 *            the positions
+		 * @param normals
+		 *            the normals
+		 * @param textureCoordinates
+		 *            the texture coordinates
+		 * @param indices
+		 *            the indices
+		 */
 		private StoredDrawing(final int drawStyle, final FloatBuffer positions, final FloatBuffer normals,
 				final FloatBuffer textureCoordinates, final IntBuffer indices) {
 			indexed = indices != null;
-			weight = Math.toIntExact(128L + (long) Float.BYTES
-					* (positions.position() + normals.position() + textureCoordinates.position())
+			weight = Math.toIntExact(128L
+					+ (long) Float.BYTES * (positions.position() + normals.position() + textureCoordinates.position())
 					+ (indices == null ? 0L : (long) Integer.BYTES * indices.position())
 					+ (isLineStyle(drawStyle) || roadCapture != null
 							? (long) Float.BYTES * (positions.position() + normals.position()) : 0L)
@@ -1038,6 +1229,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			gl.glBindVertexArray(0);
 		}
 
+		/**
+		 * Checks for uniform normal.
+		 *
+		 * @param normals
+		 *            the normals
+		 * @return true, if successful
+		 */
 		private boolean hasUniformNormal(final FloatBuffer normals) {
 			if (normals.position() < 3 || normals.position() % 3 != 0) return false;
 			final float x = normals.get(0), y = normals.get(1), z = normals.get(2);
@@ -1047,7 +1245,20 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			return true;
 		}
 
-		private void upload(final int bufferIndex, final int attribute, final int components, final FloatBuffer source) {
+		/**
+		 * Upload.
+		 *
+		 * @param bufferIndex
+		 *            the buffer index
+		 * @param attribute
+		 *            the attribute
+		 * @param components
+		 *            the components
+		 * @param source
+		 *            the source
+		 */
+		private void upload(final int bufferIndex, final int attribute, final int components,
+				final FloatBuffer source) {
 			final FloatBuffer data = source.duplicate();
 			data.flip();
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[bufferIndex]);
@@ -1057,6 +1268,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			gl.glEnableVertexAttribArray(attribute);
 		}
 
+		/**
+		 * Draw.
+		 */
 		public void draw() {
 			if (count == 0 || basicShader == null) return;
 			if (mapBatch != null) { mapBatch.flush(); }
@@ -1078,8 +1292,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			if (uniformNormal) { gl.glVertexAttrib3f(3, faceNormalX, faceNormalY, faceNormalZ); }
 			gl.glDisableVertexAttribArray(1);
 			final float alpha = (float) (currentColor.alpha() / 255.0 * currentObjectAlpha);
-			gl.glVertexAttrib4f(1, currentColor.red() / 255f, currentColor.green() / 255f,
-					currentColor.blue() / 255f, alpha);
+			gl.glVertexAttrib4f(1, currentColor.red() / 255f, currentColor.green() / 255f, currentColor.blue() / 255f,
+					alpha);
 			basicShader.loadModelMatrix(modelViewMatrix.getCurrentMatrix());
 			basicShader.loadViewMatrix(identityViewMatrix);
 			basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
@@ -1111,6 +1325,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 
+		/**
+		 * Dispose.
+		 */
 		public void dispose() {
 			if (--references > 0) return;
 			if (references < 0) throw new IllegalStateException("Retained drawing released twice");
@@ -1120,7 +1337,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	}
 
 	/** Retain the vertices accumulated since the last beginDrawing call. */
-	public StoredDrawing storeDrawing() { return new StoredDrawing(); }
+	public StoredDrawing storeDrawing() {
+		return new StoredDrawing();
+	}
 
 	/** Capture constant-color geometry only; matrices and other GL state must be applied by the caller. */
 	public List<StoredDrawing> captureDrawing(final Runnable producer) {
@@ -1130,12 +1349,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		drawingCapture = data;
 		try {
 			producer.run();
-			if (!data.isEmpty() && data.stream().allMatch(part -> (part.style == GL.GL_TRIANGLE_STRIP
-					|| part.style == GL.GL_TRIANGLE_FAN || part.style == GL.GL_TRIANGLES)
-					&& part.normals.length == part.positions.length
-					&& (part.textureCoordinates.length == 0
-							|| part.textureCoordinates.length == part.positions.length / 3 * 2)
-					&& (part.textureCoordinates.length > 0) == (data.getFirst().textureCoordinates.length > 0))) {
+			if (!data.isEmpty() && data.stream()
+					.allMatch(part -> (part.style == GL.GL_TRIANGLE_STRIP || part.style == GL.GL_TRIANGLE_FAN
+							|| part.style == GL.GL_TRIANGLES)
+							&& part.normals.length == part.positions.length
+							&& (part.textureCoordinates.length == 0
+									|| part.textureCoordinates.length == part.positions.length / 3 * 2)
+							&& part.textureCoordinates.length > 0 == data.getFirst().textureCoordinates.length > 0)) {
 				result.add(storeTriangles(data));
 			} else {
 				for (final VertexData part : data) { result.add(storeVertices(part)); }
@@ -1149,6 +1369,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * Store vertices.
+	 *
+	 * @param data
+	 *            the data
+	 * @return the stored drawing
+	 */
 	private StoredDrawing storeVertices(final VertexData data) {
 		final FloatBuffer positions = Buffers.newDirectFloatBuffer(data.positions.length);
 		final FloatBuffer normals = Buffers.newDirectFloatBuffer(data.normals.length);
@@ -1159,15 +1386,21 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		return new StoredDrawing(data.style, positions, normals, tex, null);
 	}
 
+	/**
+	 * Store triangles.
+	 *
+	 * @param strips
+	 *            the strips
+	 * @return the stored drawing
+	 */
 	private StoredDrawing storeTriangles(final List<VertexData> strips) {
 		final int vertices = Math.toIntExact(strips.stream().mapToLong(part -> part.positions.length / 3).sum());
-		final int indices = Math.toIntExact(strips.stream()
-				.mapToLong(part -> part.style == GL.GL_TRIANGLES ? part.positions.length / 9 * 3L
-						: Math.max(0, part.positions.length / 3 - 2) * 3L).sum());
+		final int indices = Math.toIntExact(strips.stream().mapToLong(part -> part.style == GL.GL_TRIANGLES
+				? part.positions.length / 9 * 3L : Math.max(0, part.positions.length / 3 - 2) * 3L).sum());
 		final FloatBuffer positions = Buffers.newDirectFloatBuffer(Math.multiplyExact(vertices, 3));
 		final FloatBuffer normals = Buffers.newDirectFloatBuffer(Math.multiplyExact(vertices, 3));
-		final FloatBuffer tex = Buffers.newDirectFloatBuffer(strips.getFirst().textureCoordinates.length == 0
-				? 0 : Math.multiplyExact(vertices, 2));
+		final FloatBuffer tex = Buffers.newDirectFloatBuffer(
+				strips.getFirst().textureCoordinates.length == 0 ? 0 : Math.multiplyExact(vertices, 2));
 		final IntBuffer elements = Buffers.newDirectIntBuffer(indices);
 		int base = 0;
 		for (final VertexData strip : strips) {
@@ -1200,8 +1433,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	private FloatBuffer ensureCapacity(final FloatBuffer buffer, final int elementsToAdd) {
 		if (buffer.remaining() >= elementsToAdd) return buffer;
 		final int required = Math.addExact(buffer.position(), elementsToAdd);
-		final int capacity = (int) Math.min(Integer.MAX_VALUE,
-				Math.max((long) required, (long) buffer.capacity() * 2));
+		final int capacity = (int) Math.min(Integer.MAX_VALUE, Math.max(required, (long) buffer.capacity() * 2));
 		final FloatBuffer expanded = Buffers.newDirectFloatBuffer(capacity);
 		buffer.flip();
 		expanded.put(buffer);
@@ -1214,6 +1446,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param style
 	 *            the style
 	 */
+	@Override
 	public void beginDrawing(final int style) {
 		currentDrawStyle = style;
 		currentVertices.clear();
@@ -1236,6 +1469,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * Checks for uniform color.
+	 *
+	 * @return true, if successful
+	 */
 	private boolean hasUniformColor() {
 		final float red = (float) (currentColor.red() / 255.0), green = (float) (currentColor.green() / 255.0),
 				blue = (float) (currentColor.blue() / 255.0);
@@ -1247,6 +1485,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * End drawing.
 	 */
+	@Override
 	public void endDrawing() {
 		if (currentVertices.position() == 0 || basicShader == null || vaoId < 0) return;
 		if (drawingCapture != null) {
@@ -1256,7 +1495,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		final boolean uniformColor = hasUniformColor();
 		if (mapBatch != null) {
 			if (uniformColor && currentTexCoords.position() == 0
-					&& mapBatch.add(currentDrawStyle, currentVertices, currentNormals)) return;
+					&& mapBatch.add(currentDrawStyle, currentVertices, currentNormals))
+				return;
 			mapBatch.flush();
 		}
 		if (roadCapture != null && !uniformColor) { roadCapture.supported = false; }
@@ -1273,8 +1513,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 			objectCapture.supported = false;
 		}
-		if (mapBatch == null && !coordinateStreaming && uniformColor && (currentTexCoords.position() == 0
-				|| currentTexCoords.position() == currentVertexCount * 2)) {
+		if (mapBatch == null && !coordinateStreaming && uniformColor
+				&& (currentTexCoords.position() == 0 || currentTexCoords.position() == currentVertexCount * 2)) {
 			final VertexData key = new VertexData(currentDrawStyle, currentVertices, currentNormals, currentTexCoords);
 			if (key.weight() <= RETAINED_DRAWING_BYTES / 2) {
 				StoredDrawing drawing = retainedDrawings.getIfPresent(key);
@@ -1311,8 +1551,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (uniformColor) {
 			gl.glDisableVertexAttribArray(1);
 			gl.glVertexAttrib4f(1, (float) (currentColor.red() / 255.0), (float) (currentColor.green() / 255.0),
-					(float) (currentColor.blue() / 255.0),
-					(float) (currentColor.alpha() / 255.0 * currentObjectAlpha));
+					(float) (currentColor.blue() / 255.0), (float) (currentColor.alpha() / 255.0 * currentObjectAlpha));
 		} else {
 			if (!currentDrawUsesColorBuffer) { materializeDrawColors(currentVertexCount); }
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
@@ -1341,8 +1580,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (hasNormals) {
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
 			currentNormals.flip();
-			gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) currentNormals.limit() * 4, currentNormals,
-					GL.GL_DYNAMIC_DRAW);
+			gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) currentNormals.limit() * 4, currentNormals, GL.GL_DYNAMIC_DRAW);
 			gl.glVertexAttribPointer(3, 3, GL.GL_FLOAT, false, 0, 0);
 			gl.glEnableVertexAttribArray(3);
 		} else {
@@ -1377,9 +1615,10 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 		try {
 			gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
-			renderer.getDiagnostics().genericDraw((long) Float.BYTES * (currentVertices.limit()
-					+ (uniformColor ? 0 : currentColors.limit())
-					+ (hasTex ? currentTexCoords.limit() : 0) + (hasNormals ? currentNormals.limit() : 0)));
+			renderer.getDiagnostics()
+					.genericDraw((long) Float.BYTES * (currentVertices.limit()
+							+ (uniformColor ? 0 : currentColors.limit()) + (hasTex ? currentTexCoords.limit() : 0)
+							+ (hasNormals ? currentNormals.limit() : 0)));
 		} finally {
 			if (currentDrawHasTransparency && !pickingPass) { gl.glDepthMask(previousDepthMask[0] != 0); }
 			if (hasTex) { gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); }
@@ -1395,6 +1634,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param p
 	 *            the p
 	 */
+	@Override
 	public void translateByYNegated(final IPoint p) {
 		translateBy(p.getX(), -p.getY(), p.getZ());
 	}
@@ -1409,6 +1649,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param z
 	 *            the z
 	 */
+	@Override
 	public void translateBy(final double x, final double y, final double z) {
 		if (objectCapture != null) { recordObjectCommand(() -> translateBy(x, y, z)); }
 		getCurrentMatrixStack().translate(x, y, z);
@@ -1441,6 +1682,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param p
 	 *            the p
 	 */
+	@Override
 	public void translateBy(final IPoint p) {
 		translateBy(p.getX(), p.getY(), p.getZ());
 	}
@@ -1457,6 +1699,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param z
 	 *            the z
 	 */
+	@Override
 	public void rotateBy(final double angle, final double x, final double y, final double z) {
 		if (objectCapture != null) { recordObjectCommand(() -> rotateBy(angle, x, y, z)); }
 		if (x == 0d && y == 0d && z == 0d) {
@@ -1472,6 +1715,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param rotation
 	 *            the rotation
 	 */
+	@Override
 	public void rotateBy(final Rotation3D rotation) {
 		final IPoint axis = rotation.getAxis();
 		final double angle = rotation.getAngle() * Maths.toDeg;
@@ -1488,6 +1732,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param z
 	 *            the z
 	 */
+	@Override
 	public void scaleBy(final double x, final double y, final double z) {
 		if (objectCapture != null) { recordObjectCommand(() -> scaleBy(x, y, z)); }
 		// currentScale.setLocation(x, y, z);
@@ -1500,6 +1745,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param scaling
 	 *            the scaling
 	 */
+	@Override
 	public void scaleBy(final Scaling3D scaling) {
 		scaleBy(scaling.getX(), scaling.getY(), scaling.getZ());
 	}
@@ -1577,8 +1823,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		} else {
 			mapping = null;
 		}
-		final PolygonDrawingKey key = new PolygonDrawingKey(mesh, currentNormal.getX(), currentNormal.getY(),
-				currentNormal.getZ(), mapping);
+		final PolygonDrawingKey key =
+				new PolygonDrawingKey(mesh, currentNormal.getX(), currentNormal.getY(), currentNormal.getZ(), mapping);
 		List<StoredDrawing> drawings = polygonDrawings.getIfPresent(key);
 		if (drawings == null) {
 			drawings = captureDrawing(() -> mesh.draw(this));
@@ -1637,6 +1883,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param y
 	 * @param z
 	 */
+	@Override
 	public void outputVertex(final double x, final double y, final double z) {
 		if (objectCapture != null && !objectCapture.normalDefined) { objectCapture.inheritedNormal = true; }
 		currentVertices = ensureCapacity(currentVertices, 3);
@@ -1671,11 +1918,15 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		currentVertexCount++;
 	}
 
+	/**
+	 * Materialize draw colors.
+	 *
+	 * @param count
+	 *            the count
+	 */
 	private void materializeDrawColors(final int count) {
 		currentColors = ensureCapacity(currentColors, Math.multiplyExact(count, 4));
-		for (int i = 0; i < count; i++) {
-			currentColors.put(drawRed).put(drawGreen).put(drawBlue).put(drawAlpha);
-		}
+		for (int i = 0; i < count; i++) { currentColors.put(drawRed).put(drawGreen).put(drawBlue).put(drawAlpha); }
 	}
 
 	/**
@@ -1702,6 +1953,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param z
 	 *            the z
 	 */
+	@Override
 	public void outputNormal(final double x, final double y, final double z) {
 		if (objectCapture != null) { objectCapture.normalDefined = true; }
 		// Store the current face normal; it is replicated into currentNormals for every
@@ -1737,6 +1989,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param z
 	 *            the z
 	 */
+	@Override
 	public void drawVertex(final int i, final double x, final double y, final double z) {
 		if (isTextured()) {
 			textureCoords.setLocation(x, y, z);
@@ -1767,8 +2020,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	public void drawVertices(final int style, final ICoordinates yNegatedVertices, final int number,
 			final boolean clockwise) {
 		final int count = number < 0 ? yNegatedVertices.size() : Math.min(number, yNegatedVertices.size());
-		if (mapBatch == null && !suppressDynamicGeometryRetention && drawingCapture == null
-				&& count > 0 && count <= 65536) {
+		if (mapBatch == null && !suppressDynamicGeometryRetention && drawingCapture == null && count > 0
+				&& count <= 65536) {
 			final CoordinateDrawingKey key = coordinateDrawingKey(style, yNegatedVertices, number, clockwise, count);
 			List<StoredDrawing> drawings = coordinateDrawings.getIfPresent(key);
 			if (drawings == null && coordinateCandidates.getIfPresent(key) != null) {
@@ -1793,8 +2046,23 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
-	private CoordinateDrawingKey coordinateDrawingKey(final int style, final ICoordinates coordinates,
-			final int number, final boolean clockwise, final int count) {
+	/**
+	 * Coordinate drawing key.
+	 *
+	 * @param style
+	 *            the style
+	 * @param coordinates
+	 *            the coordinates
+	 * @param number
+	 *            the number
+	 * @param clockwise
+	 *            the clockwise
+	 * @param count
+	 *            the count
+	 * @return the coordinate drawing key
+	 */
+	private CoordinateDrawingKey coordinateDrawingKey(final int style, final ICoordinates coordinates, final int number,
+			final boolean clockwise, final int count) {
 		final boolean textured = isTextured();
 		final double[] values = new double[count * 3 + (textured ? 13 : 3)];
 		// Preserve visitor order, which differs between bounded and unbounded reversed rings.
@@ -1812,6 +2080,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		return new CoordinateDrawingKey(style, values);
 	}
 
+	/**
+	 * Snapshot texture mapping.
+	 *
+	 * @param values
+	 *            the values
+	 * @param offset
+	 *            the offset
+	 */
 	private void snapshotTextureMapping(final double[] values, int offset) {
 		values[offset++] = textureEnvelope.getMinX();
 		values[offset++] = textureEnvelope.getMinY();
@@ -1886,10 +2162,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param alpha
 	 *            the alpha
 	 */
+	@Override
 	public void setCurrentColor(final IColor c, final double alpha) {
 		if (c == null) return;
 		// When an explicit alpha is supplied (e.g. from a layer's setAlpha call) store the
-		// product of the colour's own alpha and the caller-supplied alpha directly.  The
+		// product of the colour's own alpha and the caller-supplied alpha directly. The
 		// resulting stored alpha is then further multiplied by currentObjectAlpha in
 		// outputVertex, so currentObjectAlpha is always applied exactly once.
 		currentColor = GamaColorFactory.getWithDoubles(c.red() / 255d, c.green() / 255d, c.blue() / 255d,
@@ -1904,12 +2181,13 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param c
 	 *            the new current color
 	 */
+	@Override
 	public void setCurrentColor(final IColor c) {
 		// Store the colour's own alpha as-is; currentObjectAlpha is applied later in
 		// outputVertex so it is never applied more than once.
 		if (c == null) return;
-		currentColor = GamaColorFactory.getWithDoubles(c.red() / 255d, c.green() / 255d, c.blue() / 255d,
-				c.alpha() / 255d);
+		currentColor =
+				GamaColorFactory.getWithDoubles(c.red() / 255d, c.green() / 255d, c.blue() / 255d, c.alpha() / 255d);
 		final IColor color = currentColor;
 		if (objectCapture != null) { recordObjectCommand(() -> setCurrentColor(color)); }
 	}
@@ -1926,6 +2204,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param alpha
 	 *            the alpha
 	 */
+	@Override
 	public void setCurrentColor(final double red, final double green, final double blue, final double alpha) {
 		// Store the colour as-is. currentObjectAlpha is applied at the point of use
 		// (outputVertex) so that it is never applied more than once regardless of which
@@ -1951,23 +2230,22 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the new line width
 	 */
 	public float setLineWidth(final float width) {
-		if (!Float.isFinite(width) || width <= 0f) {
+		if (!Float.isFinite(width) || width <= 0f)
 			throw new IllegalArgumentException("OpenGL4 line width must be finite and positive: " + width);
-		}
 		if (objectCapture != null) { recordObjectCommand(() -> setLineWidth(width)); }
 		float previous = currentObjectLineWidth;
 		if (width != currentObjectLineWidth) {
 			currentObjectLineWidth = width;
 			if (!lineWidthLimitsKnown) {
-				gl.glGetFloatv(gl.glIsEnabled(GL.GL_LINE_SMOOTH) ? GL2GL3.GL_SMOOTH_LINE_WIDTH_RANGE
+				gl.glGetFloatv(gl.glIsEnabled(GL.GL_LINE_SMOOTH) ? GL.GL_SMOOTH_LINE_WIDTH_RANGE
 						: GL.GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange, 0);
 				lineWidthLimitsKnown = true;
 			}
 			final float supportedWidth = Math.max(lineWidthRange[0], Math.min(width, lineWidthRange[1]));
 			if (supportedWidth != width && mapBatch == null && !unsupportedLineWidthReported) {
 				unsupportedLineWidthReported = true;
-				DEBUG.ERR("OpenGL4 driver supports native line widths " + lineWidthRange[0] + ".."
-						+ lineWidthRange[1] + "; requested " + width + " is rendered as " + supportedWidth);
+				DEBUG.ERR("OpenGL4 driver supports native line widths " + lineWidthRange[0] + ".." + lineWidthRange[1]
+						+ "; requested " + width + " is rendered as " + supportedWidth);
 			}
 			if (supportedWidth != nativeLineWidth) {
 				gl.glLineWidth(supportedWidth);
@@ -1983,6 +2261,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @param alpha
 	 */
+	@Override
 	public final void setCurrentObjectAlpha(final double alpha) { currentObjectAlpha = alpha; }
 
 	/**
@@ -1990,8 +2269,10 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the current object alpha
 	 */
+	@Override
 	public double getCurrentObjectAlpha() { return currentObjectAlpha; }
 
+	/** The neutral texture. */
 	// TEXTURES
 	private int neutralTexture;
 
@@ -2024,8 +2305,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
 		if (currentTextureSmooth) { textureCache.ensureMipmaps(texture); }
 		final boolean isAntiAlias = getData().isAntialias() || currentTextureSmooth;
-		final int minFilter = currentTextureSmooth ? GL.GL_LINEAR_MIPMAP_LINEAR
-				: isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST;
+		final int minFilter =
+				currentTextureSmooth ? GL.GL_LINEAR_MIPMAP_LINEAR : isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST;
 		if (texture == lastBoundTexture && minFilter == lastTextureMinFilter) return;
 
 		lastBoundTexture = texture;
@@ -2086,6 +2367,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Delete volatile textures.
 	 */
+	@Override
 	public void deleteVolatileTextures() {
 		lastBoundTexture = NO_TEXTURE;
 		textureCache.deleteVolatileTextures();
@@ -2097,6 +2379,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param file
 	 *            the file
 	 */
+	@Override
 	public void cacheTexture(final IImageProvider file) {
 		if (file == null) return;
 		textureCache.processs(file);
@@ -2111,6 +2394,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the use cache
 	 * @return the texture id
 	 */
+	@Override
 	public int getTextureId(final IImageProvider file, final boolean useCache) {
 		final Texture r = textureCache.getTexture(file, file.isAnimated(), useCache);
 		if (r == null) return NO_TEXTURE;
@@ -2124,6 +2408,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the img
 	 * @return the texture id
 	 */
+	@Override
 	public int getTextureId(final BufferedImage img) {
 		final Texture r = textureCache.getTexture(img, currentTextureSmooth);
 		if (r == null) return NO_TEXTURE;
@@ -2153,6 +2438,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param object
 	 *            the object
 	 */
+	@Override
 	public void cacheGeometry(final GamaGeometryFile object) {
 		geometryCache.process(object);
 	}
@@ -2174,6 +2460,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the obj
 	 * @return the envelope for
 	 */
+	@Override
 	public IEnvelope getEnvelopeFor(final Object obj) {
 		if (obj instanceof GamaGeometryFile) return geometryCache.getEnvelope((GamaGeometryFile) obj);
 		if (obj instanceof Geometry) return GamaEnvelopeFactory.of((Geometry) obj);
@@ -2212,6 +2499,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the world width
 	 */
+	@Override
 	public double getWorldWidth() { return getData().getEnvWidth(); }
 
 	/**
@@ -2219,6 +2507,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the world height
 	 */
+	@Override
 	public double getWorldHeight() { return getData().getEnvHeight(); }
 
 	/**
@@ -2242,6 +2531,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param wireframe
 	 *            the new object wireframe
 	 */
+	@Override
 	public boolean setObjectWireframe(final boolean wireframe) {
 		if (objectCapture != null) { recordObjectCommand(() -> setObjectWireframe(wireframe)); }
 		boolean old = objectIsWireframe;
@@ -2281,6 +2571,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param r
 	 *            the r
 	 */
+	@Override
 	public void runWithNames(final Runnable r) {
 		// gl.glInitNames();
 		// gl.glPushName(0);
@@ -2295,35 +2586,69 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the drawing attributes index
 	 */
 	public void registerForSelection(final int index) {
-		currentPickingId = ((gama.ui.display.opengl4.renderer.helpers.PickingHelper) renderer.getPickingHelper())
-				.idFor(index);
+		currentPickingId =
+				((gama.ui.display.opengl4.renderer.helpers.PickingHelper) renderer.getPickingHelper()).idFor(index);
 	}
 
 	// LISTS
 
+	/** The active list. */
 	private Integer activeList;
+
+	/** The object capture. */
 	private ObjectCommands objectCapture;
+
+	/** The road capture. */
 	private RoadCapture roadCapture;
+
+	/** The instance batch. */
 	private InstanceBatch instanceBatch;
+
+	/** The instance buffer. */
 	private int instanceBuffer;
+
+	/** The instance data. */
 	private FloatBuffer instanceData;
+
+	/** The suppress object retention. */
 	private boolean suppressObjectRetention;
+
+	/** The Constant MAX_RETAINED_LAYER_OBJECTS. */
 	private static final int MAX_RETAINED_LAYER_OBJECTS = 4096;
+
+	/** The Constant MAX_RETAINED_DYNAMIC_LAYER_OBJECTS. */
 	private static final int MAX_RETAINED_DYNAMIC_LAYER_OBJECTS = 256;
+
+	/** The Constant ROAD_CACHE_BYTES. */
 	private static final int ROAD_CACHE_BYTES = 64 * 1024 * 1024;
 
 	/**
-	 * Consecutive instances share one primitive and one lighting state. Matrices are captured after all
-	 * object and layer transforms have been applied, so neither the model nor traversal order changes.
+	 * Consecutive instances share one primitive and one lighting state. Matrices are captured after all object and
+	 * layer transforms have been applied, so neither the model nor traversal order changes.
 	 */
 	private final class InstanceBatch {
+
+		/** The Constant MAX_INSTANCES. */
 		private static final int MAX_INSTANCES = 4096;
+
+		/** The Constant FLOATS_PER_INSTANCE. */
 		private static final int FLOATS_PER_INSTANCE = 20;
+
+		/** The data. */
 		private final FloatBuffer data;
+
+		/** The mesh. */
 		private StoredDrawing mesh;
+
+		/** The lighting. */
 		private boolean lighting;
+
+		/** The count. */
 		private int count;
 
+		/**
+		 * Instantiates a new instance batch.
+		 */
 		InstanceBatch() {
 			if (instanceData == null) {
 				instanceData = Buffers.newDirectFloatBuffer(MAX_INSTANCES * FLOATS_PER_INSTANCE);
@@ -2332,11 +2657,19 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			data.clear();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param drawing
+		 *            the drawing
+		 * @return true, if successful
+		 */
 		boolean add(final StoredDrawing drawing) {
 			final float determinant = getModelViewMatrix().determinant();
-			if (drawing.hasTextureCoordinates || drawing.style != GL.GL_TRIANGLES
-					|| isWireframe() || isTextured() || currentObjectAlpha != 1d || currentColor.alpha() != 255
-					|| !Float.isFinite(determinant) || Math.abs(determinant) < 1e-12f) return false;
+			if (drawing.hasTextureCoordinates || drawing.style != GL.GL_TRIANGLES || isWireframe() || isTextured()
+					|| currentObjectAlpha != 1d || currentColor.alpha() != 255 || !Float.isFinite(determinant)
+					|| Math.abs(determinant) < 1e-12f)
+				return false;
 			final boolean lit = getLighting();
 			if (mesh != null && (mesh != drawing || lighting != lit || count == MAX_INSTANCES)) { flush(); }
 			if (mesh == null) {
@@ -2346,12 +2679,15 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			lighting = lit;
 			getModelViewMatrix().get(data.position(), data);
 			data.position(data.position() + 16);
-			data.put(currentColor.red() / 255f).put(currentColor.green() / 255f)
-					.put(currentColor.blue() / 255f).put(1f);
+			data.put(currentColor.red() / 255f).put(currentColor.green() / 255f).put(currentColor.blue() / 255f)
+					.put(1f);
 			count++;
 			return true;
 		}
 
+		/**
+		 * Flush.
+		 */
 		void flush() {
 			if (count == 0) return;
 			final StoredDrawing pending = mesh;
@@ -2379,7 +2715,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 				vaoBound = true;
 				gl.glBindBuffer(GL.GL_ARRAY_BUFFER, instanceBuffer);
 				final long bytes = (long) data.remaining() * Float.BYTES;
-				gl.glBufferData(GL.GL_ARRAY_BUFFER, bytes, data, GL2GL3.GL_STREAM_DRAW);
+				gl.glBufferData(GL.GL_ARRAY_BUFFER, bytes, data, GL2ES2.GL_STREAM_DRAW);
 				for (int column = 0; column < 4; column++) {
 					final int location = 4 + column;
 					gl.glVertexAttribPointer(location, 4, GL.GL_FLOAT, false, FLOATS_PER_INSTANCE * Float.BYTES,
@@ -2425,9 +2761,17 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * Can instance layer.
+	 *
+	 * @param objects
+	 *            the objects
+	 * @return true, if successful
+	 */
 	private boolean canInstanceLayer(final AbstractObject<?, ?>[] objects) {
 		if (objects.length < 2 || basicShader == null || instanceBatch != null || isWireframe()
-				|| currentObjectAlpha != 1d || renderer.getPickingHelper().isPicking()) return false;
+				|| currentObjectAlpha != 1d || renderer.getPickingHelper().isPicking())
+			return false;
 		for (final var object : objects) {
 			final var attributes = object.getAttributes();
 			if (object.type != DrawerType.GEOMETRY || object.isTextured() || attributes.isEmpty()
@@ -2438,35 +2782,75 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 		return true;
 	}
-	private final Cache<Integer, RoadDrawing> roadDrawings = CacheBuilder.newBuilder()
-			.maximumWeight(ROAD_CACHE_BYTES)
-			.weigher((Integer key, RoadDrawing drawing) -> drawing.weight)
-			.removalListener((RemovalNotification<Integer, RoadDrawing> notification) ->
-					notification.getValue().dispose()).build();
 
+	/** The road drawings. */
+	private final Cache<Integer, RoadDrawing> roadDrawings = CacheBuilder.newBuilder().maximumWeight(ROAD_CACHE_BYTES)
+			.weigher((final Integer key, final RoadDrawing drawing) -> drawing.weight)
+			.removalListener(
+					(final RemovalNotification<Integer, RoadDrawing> notification) -> notification.getValue().dispose())
+			.build();
+
+	/**
+	 * Checks if is line style.
+	 *
+	 * @param style
+	 *            the style
+	 * @return true, if is line style
+	 */
 	private static boolean isLineStyle(final int style) {
 		return style == GL.GL_LINES || style == GL.GL_LINE_STRIP || style == GL.GL_LINE_LOOP;
 	}
 
 	/** Bounded, renderer-owned streaming buffers; unlike retained maps, refreshed maps rebuild their vertices. */
 	private final class MapBatch {
+
+		/** The Constant FLOATS_PER_VERTEX. */
 		private static final int MAX_VERTICES = 12288, MAX_DRAWINGS = 1024, FLOATS_PER_VERTEX = 15;
+
+		/** The Constant RIBBON_CORNERS. */
 		private static final int[] RIBBON_CORNERS = { 0, 2, 1, 0, 3, 2 };
+
+		/** The data. */
 		private final FloatBuffer data = Buffers.newDirectFloatBuffer(MAX_VERTICES * FLOATS_PER_VERTEX);
+
+		/** The first. */
 		private final IntBuffer first = Buffers.newDirectIntBuffer(MAX_DRAWINGS);
+
+		/** The counts. */
 		private final IntBuffer counts = Buffers.newDirectIntBuffer(MAX_DRAWINGS);
+
+		/** The buffer. */
 		private final int[] vao = new int[1], buffer = new int[1];
+
+		/** The polygon mode. */
 		private final int[] framebuffer = new int[4], polygonMode = new int[2];
+
+		/** The projection. */
 		private final org.joml.Matrix4f matrix = new org.joml.Matrix4f(), inverse = new org.joml.Matrix4f(),
 				relative = new org.joml.Matrix4f(), projection = new org.joml.Matrix4f();
+
+		/** The normal matrix. */
 		private final org.joml.Matrix3f normalMatrix = new org.joml.Matrix3f();
+
+		/** The end. */
 		private final org.joml.Vector3f point = new org.joml.Vector3f(), normal = new org.joml.Vector3f(),
 				end = new org.joml.Vector3f();
+
+		/** The clip. */
 		private final org.joml.Vector4f clip = new org.joml.Vector4f();
+
+		/** The style. */
 		private int style;
+
+		/** The ribbons. */
 		private boolean ribbons;
+
+		/** The line width. */
 		private float lineWidth;
 
+		/**
+		 * Begin.
+		 */
 		void begin() {
 			matrix.set(getModelViewMatrix());
 			projection.set(getProjectionMatrix());
@@ -2477,15 +2861,28 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			counts.clear();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param drawStyle
+		 *            the draw style
+		 * @param positions
+		 *            the positions
+		 * @param normals
+		 *            the normals
+		 * @return true, if successful
+		 */
 		boolean add(final int drawStyle, final FloatBuffer positions, final FloatBuffer normals) {
 			final int vertices = positions.position() / 3;
-			if (normals.position() != positions.position() || currentObjectAlpha != 1d
-					|| currentColor.alpha() != 255 || isTextured()) return false;
+			if (normals.position() != positions.position() || currentObjectAlpha != 1d || currentColor.alpha() != 255
+					|| isTextured())
+				return false;
 			final boolean lines = isLineStyle(drawStyle);
 			if (!lines && drawStyle != GL.GL_TRIANGLES && drawStyle != GL.GL_TRIANGLE_STRIP
-					&& drawStyle != GL.GL_TRIANGLE_FAN) return false;
-			if (drawStyle == GL.GL_LINES && vertices % 2 != 0
-					|| drawStyle == GL.GL_TRIANGLES && vertices % 3 != 0) return false;
+					&& drawStyle != GL.GL_TRIANGLE_FAN)
+				return false;
+			if (drawStyle == GL.GL_LINES && vertices % 2 != 0 || drawStyle == GL.GL_TRIANGLES && vertices % 3 != 0)
+				return false;
 			inverse.mul(getModelViewMatrix(), relative);
 			final float determinant = relative.determinant();
 			if (!Float.isFinite(determinant) || Math.abs(determinant) < 1e-12f) return false;
@@ -2509,7 +2906,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 			final int mode = lines && !wide ? GL.GL_LINES : GL.GL_TRIANGLES;
 			if (data.position() > 0 && (style != mode || ribbons != wide
-					|| mode == GL.GL_LINES && lineWidth != currentObjectLineWidth)) { flush(); }
+					|| mode == GL.GL_LINES && lineWidth != currentObjectLineWidth)) {
+				flush();
+			}
 			style = mode;
 			ribbons = wide;
 			lineWidth = currentObjectLineWidth;
@@ -2541,10 +2940,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 						putVertex(positions, normals, primitive * 3 + corner, 0, 0f, lit);
 					}
 				} else {
-					putVertex(positions, normals, drawStyle == GL.GL_TRIANGLE_FAN ? 0
-							: primitive + (primitive & 1), 0, 0f, lit);
-					putVertex(positions, normals, drawStyle == GL.GL_TRIANGLE_FAN ? primitive + 1
-							: primitive + 1 - (primitive & 1), 0, 0f, lit);
+					putVertex(positions, normals, drawStyle == GL.GL_TRIANGLE_FAN ? 0 : primitive + (primitive & 1), 0,
+							0f, lit);
+					putVertex(positions, normals,
+							drawStyle == GL.GL_TRIANGLE_FAN ? primitive + 1 : primitive + 1 - (primitive & 1), 0, 0f,
+							lit);
 					putVertex(positions, normals, primitive + 2, 0, 0f, lit);
 				}
 			}
@@ -2552,6 +2952,12 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			return true;
 		}
 
+		/**
+		 * Finish drawing.
+		 *
+		 * @param start
+		 *            the start
+		 */
 		private void finishDrawing(final int start) {
 			final int count = data.position() / FLOATS_PER_VERTEX - start;
 			if (count > 0) {
@@ -2560,6 +2966,22 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 
+		/**
+		 * Put vertex.
+		 *
+		 * @param positions
+		 *            the positions
+		 * @param normals
+		 *            the normals
+		 * @param vertex
+		 *            the vertex
+		 * @param endpoint
+		 *            the endpoint
+		 * @param width
+		 *            the width
+		 * @param lit
+		 *            the lit
+		 */
 		private void putVertex(final FloatBuffer positions, final FloatBuffer normals, final int vertex,
 				final int endpoint, final float width, final boolean lit) {
 			final int offset = vertex * 3;
@@ -2575,12 +2997,15 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 				end.set(point);
 			}
 			data.put(point.x).put(point.y).put(point.z);
-			data.put(currentColor.red() / 255f).put(currentColor.green() / 255f)
-					.put(currentColor.blue() / 255f).put(1f);
+			data.put(currentColor.red() / 255f).put(currentColor.green() / 255f).put(currentColor.blue() / 255f)
+					.put(1f);
 			data.put(normal.x).put(normal.y).put(normal.z);
 			data.put(end.x).put(end.y).put(end.z).put(width).put(lit ? 1f : 0f);
 		}
 
+		/**
+		 * Flush.
+		 */
 		void flush() {
 			if (data.position() == 0) return;
 			final boolean culling = gl.glIsEnabled(GL.GL_CULL_FACE);
@@ -2628,7 +3053,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 				first.flip();
 				counts.flip();
 				final long bytes = (long) data.remaining() * Float.BYTES;
-				gl.glBufferData(GL.GL_ARRAY_BUFFER, bytes, data, GL2GL3.GL_STREAM_DRAW);
+				gl.glBufferData(GL.GL_ARRAY_BUFFER, bytes, data, GL2ES2.GL_STREAM_DRAW);
 				gl.glMultiDrawArrays(style, first, counts, counts.remaining());
 				renderer.getDiagnostics().genericDraw(bytes);
 				renderer.getDiagnostics().mapBatch(counts.remaining());
@@ -2648,6 +3073,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 
+		/**
+		 * Dispose.
+		 */
 		void dispose() {
 			gl.glDeleteBuffers(1, buffer, 0);
 			gl.glDeleteVertexArrays(1, vao, 0);
@@ -2655,13 +3083,41 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * The Record RoadAppearance.
+	 *
+	 * @param object
+	 *            the object
+	 * @param color
+	 *            the color
+	 * @param lineWidth
+	 *            the line width
+	 * @param empty
+	 *            the empty
+	 * @param lighting
+	 *            the lighting
+	 */
 	private record RoadAppearance(AbstractObject<?, ?> object, IColor color, float lineWidth, boolean empty,
 			boolean lighting) {
+
+		/**
+		 * Instantiates a new road appearance.
+		 *
+		 * @param object
+		 *            the object
+		 */
 		RoadAppearance(final AbstractObject<?, ?> object) {
 			this(object, object.getAttributes().getColor(), object.getAttributes().getLineWidth().floatValue(),
 					object.getAttributes().isEmpty(), object.getAttributes().isLighting());
 		}
 
+		/**
+		 * Matches.
+		 *
+		 * @param other
+		 *            the other
+		 * @return true, if successful
+		 */
 		boolean matches(final AbstractObject<?, ?> other) {
 			final var attributes = other.getAttributes();
 			return object == other && color.equals(attributes.getColor())
@@ -2670,15 +3126,42 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * The Class RoadRun.
+	 */
 	private static final class RoadRun {
+
+		/** The style. */
 		final int style;
+
+		/** The line width. */
 		final float lineWidth;
+
+		/** The lighting. */
 		final boolean lighting;
+
+		/** The vertices. */
 		final List<float[]> vertices = new ArrayList<>();
+
+		/** The normals. */
 		final List<float[]> normals = new ArrayList<>();
+
+		/** The colors. */
 		final List<IColor> colors = new ArrayList<>();
+
+		/** The vertex count. */
 		int vertexCount;
 
+		/**
+		 * Instantiates a new road run.
+		 *
+		 * @param style
+		 *            the style
+		 * @param lineWidth
+		 *            the line width
+		 * @param lighting
+		 *            the lighting
+		 */
 		RoadRun(final int style, final float lineWidth, final boolean lighting) {
 			this.style = style;
 			this.lineWidth = lineWidth;
@@ -2686,20 +3169,42 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * The Class RoadCapture.
+	 */
 	private final class RoadCapture {
+
+		/** The inverse. */
 		final org.joml.Matrix4f inverse = new org.joml.Matrix4f(getModelViewMatrix()).invert();
+
+		/** The relative. */
 		final org.joml.Matrix4f relative = new org.joml.Matrix4f();
+
+		/** The normal matrix. */
 		final org.joml.Matrix3f normalMatrix = new org.joml.Matrix3f();
+
+		/** The point. */
 		final org.joml.Vector3f point = new org.joml.Vector3f();
+
+		/** The runs. */
 		final List<RoadRun> runs = new ArrayList<>();
+
+		/** The bytes. */
 		long bytes;
+
+		/** The supported. */
 		boolean supported = true;
 
+		/**
+		 * Adds the.
+		 *
+		 * @param drawing
+		 *            the drawing
+		 */
 		void add(final StoredDrawing drawing) {
 			if (!supported) return;
 			if (drawing.linePositions == null || drawing.indexed && drawing.capturedIndices == null
-					|| drawing.hasTextureCoordinates
-					|| currentColor.alpha() != 255 || currentObjectAlpha != 1d) {
+					|| drawing.hasTextureCoordinates || currentColor.alpha() != 255 || currentObjectAlpha != 1d) {
 				supported = false;
 				return;
 			}
@@ -2723,11 +3228,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 			final int count = elements == null ? vertexCount : elements.length;
 			bytes += (long) count * 10 * Float.BYTES + 128;
-			if (bytes > ROAD_CACHE_BYTES) {
-				supported = false;
-				return;
-			}
-			if (drawing.lineNormals.length != drawing.linePositions.length) {
+			if ((bytes > ROAD_CACHE_BYTES) || (drawing.lineNormals.length != drawing.linePositions.length)) {
 				supported = false;
 				return;
 			}
@@ -2764,8 +3265,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			RoadRun run = runs.isEmpty() ? null : runs.getLast();
 			final int style = isLineStyle(drawing.style) ? drawing.style : GL.GL_TRIANGLES;
 			if (run == null || run.style != style || run.lineWidth != currentObjectLineWidth
-					|| run.lighting != getLighting()
-					|| run.vertices.size() == 1024) {
+					|| run.lighting != getLighting() || run.vertices.size() == 1024) {
 				if (runs.size() == 128) {
 					supported = false;
 					return;
@@ -2780,13 +3280,32 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
+	/**
+	 * The Class RoadBuffer.
+	 */
 	private final class RoadBuffer {
+
+		/** The buffers. */
 		final int[] vao = new int[1], buffers = new int[3];
+
+		/** The style. */
 		final int style;
+
+		/** The line width. */
 		final float lineWidth;
+
+		/** The lighting. */
 		final boolean lighting;
+
+		/** The count. */
 		final IntBuffer first, count;
 
+		/**
+		 * Instantiates a new road buffer.
+		 *
+		 * @param run
+		 *            the run
+		 */
 		RoadBuffer(final RoadRun run) {
 			style = run.style;
 			lineWidth = run.lineWidth;
@@ -2835,6 +3354,9 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 
+		/**
+		 * Draw.
+		 */
 		void draw() {
 			setLineWidth(lineWidth);
 			basicShader.loadUseLighting(lighting);
@@ -2844,41 +3366,82 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			renderer.getDiagnostics().mapBatch(first.remaining());
 		}
 
+		/**
+		 * Dispose.
+		 */
 		void dispose() {
 			gl.glDeleteBuffers(3, buffers, 0);
 			gl.glDeleteVertexArrays(1, vao, 0);
 		}
 	}
 
+	/**
+	 * The Class RoadDrawing.
+	 */
 	private final class RoadDrawing {
+
+		/** The buffers. */
 		final List<RoadBuffer> buffers = new ArrayList<>();
+
+		/** The appearances. */
 		final RoadAppearance[] appearances;
+
+		/** The increment. */
 		final double startZ = getCurrentZTranslation(), increment = getCurrentZIncrement();
+
+		/** The max env. */
 		final double width = getWorldWidth(), height = getWorldHeight(), maxEnv = getMaxEnvDim();
+
+		/** The initial normal Z. */
 		final double initialNormalX = currentNormal.getX(), initialNormalY = currentNormal.getY(),
 				initialNormalZ = currentNormal.getZ();
+
+		/** The lighted. */
 		final boolean lighted = displayIsLighted;
+
+		/** The weight. */
 		int weight;
+
+		/** The normal Z. */
 		double finalZ, normalX, normalY, normalZ;
+
+		/** The final color. */
 		IColor finalColor;
 
+		/**
+		 * Instantiates a new road drawing.
+		 *
+		 * @param objects
+		 *            the objects
+		 * @param capture
+		 *            the capture
+		 */
 		RoadDrawing(final AbstractObject<?, ?>[] objects, final RoadCapture capture) {
 			appearances = Arrays.stream(objects).map(RoadAppearance::new).toArray(RoadAppearance[]::new);
 			weight = Math.toIntExact(capture.bytes + (long) objects.length * 64);
 		}
 
+		/**
+		 * Matches.
+		 *
+		 * @param objects
+		 *            the objects
+		 * @return true, if successful
+		 */
 		boolean matches(final AbstractObject<?, ?>[] objects) {
 			if (objects.length != appearances.length || startZ != getCurrentZTranslation()
 					|| increment != getCurrentZIncrement() || width != getWorldWidth() || height != getWorldHeight()
 					|| maxEnv != getMaxEnvDim() || lighted != displayIsLighted || currentObjectAlpha != 1d
 					|| initialNormalX != currentNormal.getX() || initialNormalY != currentNormal.getY()
-					|| initialNormalZ != currentNormal.getZ()) return false;
-			for (int i = 0; i < objects.length; i++) {
-				if (!appearances[i].matches(objects[i])) return false;
-			}
+					|| initialNormalZ != currentNormal.getZ())
+				return false;
+			for (int i = 0; i < objects.length; i++) { if (!appearances[i].matches(objects[i])) return false; }
 			return true;
 		}
 
+		/**
+		 * Draw.
+		 */
 		void draw() {
 			basicShader.start();
 			final float previousWidth = currentObjectLineWidth;
@@ -2903,7 +3466,12 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 
-		void dispose() { buffers.forEach(RoadBuffer::dispose); }
+		/**
+		 * Dispose.
+		 */
+		void dispose() {
+			buffers.forEach(RoadBuffer::dispose);
+		}
 	}
 
 	@Override
@@ -2955,8 +3523,22 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		}
 	}
 
-	public boolean canRetainDynamicGeometry() { return mapBatch == null && !suppressDynamicGeometryRetention; }
+	/**
+	 * Can retain dynamic geometry.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean canRetainDynamicGeometry() {
+		return mapBatch == null && !suppressDynamicGeometryRetention;
+	}
 
+	/**
+	 * Checks for wide map lines.
+	 *
+	 * @param objects
+	 *            the objects
+	 * @return true, if successful
+	 */
 	private static boolean hasWideMapLines(final AbstractObject<?, ?>[] objects) {
 		for (final var object : objects) {
 			final var attributes = object.getAttributes();
@@ -2969,17 +3551,26 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		return false;
 	}
 
+	/**
+	 * Can batch map layer.
+	 *
+	 * @param objects
+	 *            the objects
+	 * @return true, if successful
+	 */
 	private boolean canBatchMapLayer(final AbstractObject<?, ?>[] objects) {
 		if (objects.length < 2 || roadCapture != null || mapBatch != null || instanceBatch != null
 				|| basicShader == null || isWireframe() || renderer.getPickingHelper().isPicking()
-				|| currentObjectAlpha != 1d || viewport[2] <= 0 || viewport[3] <= 0) return false;
+				|| currentObjectAlpha != 1d || viewport[2] <= 0 || viewport[3] <= 0)
+			return false;
 		final float determinant = getModelViewMatrix().determinant();
 		if (!Float.isFinite(determinant) || Math.abs(determinant) < 1e-12f) return false;
 		for (final var object : objects) {
 			final var attributes = object.getAttributes();
 			if (object.type != DrawerType.GEOMETRY || object.isTextured() || attributes.getColor() == null
 					|| attributes.getColor().alpha() != 255 || attributes.getType() == null
-					|| attributes.getBorder() != null) return false;
+					|| attributes.getBorder() != null)
+				return false;
 			final boolean line = switch (attributes.getType()) {
 				case LINESTRING, LINEARRING, PLAN, POLYPLAN -> true;
 				default -> false;
@@ -2989,12 +3580,19 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 						&& !isWireframe();
 				default -> false;
 			};
-			if (!line && !polygon
-					|| attributes.getDepth() != null && attributes.getDepth() != 0d) return false;
+			if (!line && !polygon || attributes.getDepth() != null && attributes.getDepth() != 0d) return false;
 		}
 		return true;
 	}
 
+	/**
+	 * Draw layer objects internal.
+	 *
+	 * @param objects
+	 *            the objects
+	 * @param drawing
+	 *            the drawing
+	 */
 	private void drawLayerObjectsInternal(final AbstractObject<?, ?>[] objects, final Runnable drawing) {
 		if (activeList == null || !canBatchMapLayer(objects)) {
 			drawing.run();
@@ -3043,32 +3641,77 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 	}
+
+	/** The replay offsets. */
 	private final java.util.Deque<gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper.Pass> replayOffsets =
 			new java.util.ArrayDeque<>();
 
+	/** The object drawings. */
 	private final Cache<AbstractObject<?, ?>, ObjectCommands> objectDrawings = CacheBuilder.newBuilder().weakKeys()
-			.maximumWeight(32 * 1024 * 1024)
-			.weigher((AbstractObject<?, ?> key, ObjectCommands value) -> value.weight())
-			.removalListener((RemovalNotification<AbstractObject<?, ?>, ObjectCommands> notification) ->
-					notification.getValue().dispose()).build();
+			.maximumWeight(32 * 1024 * 1024).weigher((final AbstractObject<?, ?> key, final ObjectCommands value) -> value.weight())
+			.removalListener((final RemovalNotification<AbstractObject<?, ?>, ObjectCommands> notification) -> notification
+					.getValue().dispose())
+			.build();
 
+	/**
+	 * The Class ObjectCommands.
+	 */
 	private final class ObjectCommands {
+
+		/** The list. */
 		final int list;
+
+		/** The has texture. */
 		final boolean wireframe = isWireframe(), hasTexture = isTextured();
+
+		/** The object lighting. */
 		final boolean objectWireframe = objectIsWireframe, objectLighting = objectIsLighted;
+
+		/** The line width. */
 		final float lineWidth = currentObjectLineWidth;
+
+		/** The color. */
 		final IColor color = currentColor;
+
+		/** The normal Z. */
 		final double normalX = currentNormal.getX(), normalY = currentNormal.getY(), normalZ = currentNormal.getZ();
+
+		/** The texture orientation. */
 		final boolean textureOrientation = GamaPreferences.Displays.OPENGL_TEXTURE_ORIENTATION.getValue();
+
+		/** The max env. */
 		final double envWidth = getWorldWidth(), envHeight = getWorldHeight(), maxEnv = getMaxEnvDim();
+
+		/** The commands. */
 		final List<Runnable> commands = new ArrayList<>();
+
+		/** The drawings. */
 		final List<StoredDrawing> drawings = new ArrayList<>();
+
+		/** The bytes. */
 		long bytes;
+
+		/** The supported. */
 		boolean supported = true;
+
+		/** The inherited normal. */
 		boolean normalDefined, inheritedNormal;
 
-		ObjectCommands(final int list) { this.list = list; }
+		/**
+		 * Instantiates a new object commands.
+		 *
+		 * @param list
+		 *            the list
+		 */
+		ObjectCommands(final int list) {
+			this.list = list;
+		}
 
+		/**
+		 * Matches.
+		 *
+		 * @return true, if successful
+		 */
 		boolean matches() {
 			return list == activeList && wireframe == isWireframe() && hasTexture == isTextured()
 					&& objectWireframe == objectIsWireframe && objectLighting == objectIsLighted
@@ -3079,6 +3722,12 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 					&& envWidth == getWorldWidth() && envHeight == getWorldHeight() && maxEnv == getMaxEnvDim();
 		}
 
+		/**
+		 * Retain.
+		 *
+		 * @param drawing
+		 *            the drawing
+		 */
 		void retain(final StoredDrawing drawing) {
 			if (bytes + drawing.weight > 8 * 1024 * 1024) {
 				supported = false;
@@ -3089,8 +3738,18 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			bytes += drawing.weight;
 		}
 
-		int weight() { return Math.toIntExact(256L + bytes + commands.size() * 64L); }
+		/**
+		 * Weight.
+		 *
+		 * @return the int
+		 */
+		int weight() {
+			return Math.toIntExact(256L + bytes + commands.size() * 64L);
+		}
 
+		/**
+		 * Draw.
+		 */
 		void draw() {
 			try {
 				for (final Runnable command : commands) { command.run(); }
@@ -3099,9 +3758,20 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 			}
 		}
 
-		void dispose() { drawings.forEach(StoredDrawing::dispose); }
+		/**
+		 * Dispose.
+		 */
+		void dispose() {
+			drawings.forEach(StoredDrawing::dispose);
+		}
 	}
 
+	/**
+	 * Record object command.
+	 *
+	 * @param command
+	 *            the command
+	 */
 	private void recordObjectCommand(final Runnable command) {
 		if (objectCapture == null || !objectCapture.supported) return;
 		if (objectCapture.commands.size() == 65536) {
@@ -3114,9 +3784,8 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	@Override
 	public boolean canRetainObjectGeometry(final AbstractObject<?, ?> object) {
 		return mapBatch == null && instanceBatch == null && activeList != null
-				&& (!suppressObjectRetention || roadCapture != null)
-				&& object.type == DrawerType.GEOMETRY && objectCapture == null
-				&& !renderer.getPickingHelper().isBeginningPicking();
+				&& (!suppressObjectRetention || roadCapture != null) && object.type == DrawerType.GEOMETRY
+				&& objectCapture == null && !renderer.getPickingHelper().isBeginningPicking();
 	}
 
 	@Override
@@ -3175,6 +3844,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *            the geometry-producing runnable
 	 * @return the list index
 	 */
+	@Override
 	public int compileAsList(final Runnable r) {
 		final int index = nextListId++;
 		listCache.put(index, r);
@@ -3187,6 +3857,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param i
 	 *            the list index returned by {@link #compileAsList(Runnable)}
 	 */
+	@Override
 	public void drawList(final int i) {
 		final Runnable r = listCache.get(i);
 		if (r == null) return;
@@ -3207,6 +3878,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param index
 	 *            the list index to remove
 	 */
+	@Override
 	public void deleteList(final Integer index) {
 		if (index != null) {
 			roadDrawings.invalidate(index);
@@ -3223,6 +3895,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param border
 	 *            the border
 	 */
+	@Override
 	public void drawCachedGeometry(final GamaGeometryFile file, final IColor border) {
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
@@ -3235,6 +3908,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		drawCachedFile(geometryCache.get(key), border);
 	}
 
+	/**
+	 * Draw cached file.
+	 *
+	 * @param index
+	 *            the index
+	 * @param border
+	 *            the border
+	 */
 	private void drawCachedFile(final Integer index, final IColor border) {
 		if (index != null) {
 			try (var offset = PolygonOffset.forOutline(this, border != null && !isWireframe())) {
@@ -3262,6 +3943,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param border
 	 *            the border
 	 */
+	@Override
 	public void drawCachedGeometry(final IShape.Type id, /* final boolean solid, */ final IColor border) {
 		if (geometryCache == null || id == null) return;
 		final BuiltInGeometry object = geometryCache.get(id);
@@ -3298,6 +3980,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return true, if is textured
 	 */
+	@Override
 	public boolean isTextured() { return textured && !isWireframe(); }
 
 	/**
@@ -3306,15 +3989,14 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param object
 	 *            the object
 	 */
+	@Override
 	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		if (basicShader != null && object.type != DrawerType.GEOMETRY && object.type != DrawerType.RESOURCE) {
 			basicShader.suspendGeometrySequence();
 		}
 		IDrawingAttributes att = object.getAttributes();
 		currentTextureSmooth = att.isSmoothTexture();
-		if (isPicking && renderer.getPickingHelper().isBeginningPicking()) {
-			registerForSelection(att.getIndex());
-		}
+		if (isPicking && renderer.getPickingHelper().isBeginningPicking()) { registerForSelection(att.getIndex()); }
 		boolean empty = att.isEmpty();
 		previousObjectWireframe = setObjectWireframe(empty);
 		previousObjectLighting = setObjectLighting(att.isLighting());
@@ -3334,6 +4016,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param object
 	 *            the object
 	 */
+	@Override
 	public void endObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		if (basicShader != null && (object.type == DrawerType.GEOMETRY || object.type == DrawerType.RESOURCE)) {
 			basicShader.endGeometrySequence();
@@ -3350,6 +4033,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 		if (isPicking) { renderer.getPickingHelper().tryPick(object.getAttributes()); }
 	}
 
+	/** The diagnostic frames. */
 	private int diagnosticFrames;
 
 	/**
@@ -3357,10 +4041,11 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the pass
 	 */
+	@Override
 	public Pass beginScene() {
 		if (TextDrawer.DIAGNOSTICS && diagnosticFrames++ < 3) {
-			DEBUG.ERR("[GL4-TEXT] frame=" + diagnosticFrames + " driver=" + gl.glGetString(GL.GL_VERSION)
-					+ " renderer=" + gl.glGetString(GL.GL_RENDERER));
+			DEBUG.ERR("[GL4-TEXT] frame=" + diagnosticFrames + " driver=" + gl.glGetString(GL.GL_VERSION) + " renderer="
+					+ gl.glGetString(GL.GL_RENDERER));
 			TextDrawer.traceState(gl, "scene entry");
 		}
 		previousDisplayWireframe = setDisplayWireframe(getData().isWireframe());
@@ -3413,6 +4098,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	/**
 	 * Rotate model.
 	 */
+	@Override
 	public void rotateModel() {
 		if (getData().hasRotation()) {
 			IPoint c = getData().getRotationCenter();
@@ -3436,6 +4122,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @param bg
 	 *            the bg
 	 */
+	@Override
 	public void initializeGLStates(final IColor bg) {
 		final float[] lineWidth = new float[1];
 		gl.glGetFloatv(GL.GL_LINE_WIDTH, lineWidth, 0);
@@ -3491,6 +4178,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the ratios
 	 */
+	@Override
 	public IPoint getRatios() { return ratios; }
 
 	/**
@@ -3499,6 +4187,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 */
 
+	@Override
 	public void setRotationMode(final boolean b) { rotationMode = b; }
 
 	/**
@@ -3506,6 +4195,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return true, if is in rotation mode
 	 */
+	@Override
 	public boolean isInRotationMode() { return rotationMode; }
 
 	/**
@@ -3565,6 +4255,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 *
 	 * @return the double
 	 */
+	@Override
 	public double sizeOfRotationElements() {
 		return Math.min(getMaxEnvDim() / 4d, getData().getCameraPos().minus(getData().getCameraTarget()).norm() / 6d);
 	}

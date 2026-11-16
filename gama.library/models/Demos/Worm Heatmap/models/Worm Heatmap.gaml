@@ -35,18 +35,18 @@ species worm skills: [moving] {
 	
 
 
-experiment "Show heatmap" type: gui {
+experiment "Show heatmap" mode: gui {
 
 	
 	output {
 		layout #split;
 		
-		display Heatmap type: 3d background: #black {
+		display Heatmap renderer: 3d background: #black {
 			// The display is 2D only, and defining a fixed palette makes the color slowly slide as the values increase
 			mesh heatmap scale: 0 color: palette([#white, #orange, #red, #red]);
 		}
 		
-		display Other type: 3d background: #black camera: #from_up_front{
+		display Other renderer: 3d background: #black camera: #from_up_front{
 			// Bumps appear due to the values increasing
 			mesh heatmap scale: 0.1 color: brewer_colors("Reds") triangulation: true;
 		}

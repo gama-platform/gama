@@ -99,4 +99,4 @@ global {
 
 species walker skills: [moving] { }
 
-experiment MovingOnGraphsTest type: test autorun: true;
+experiment MovingOnGraphsTest mode: test autorun: true;
