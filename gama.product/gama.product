@@ -106,6 +106,7 @@
       <feature id="gama.feature.shared.models" installMode="root"/>
       <feature id="gama.feature.ui.editor" installMode="root"/>
       <feature id="gama.feature.export" installMode="root"/>
+      <feature id="gama.feature.ui.export" installMode="root"/>
       <feature id="gama.feature.extensions" installMode="root"/>
       <feature id="gama.feature.dependencies" installMode="root"/>
       <feature id="gama.feature.ui.experiment" installMode="root"/>

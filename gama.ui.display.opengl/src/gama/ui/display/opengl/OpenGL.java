@@ -1160,6 +1160,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 */
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
+		if (currentTextureSmooth) { textureCache.ensureMipmaps(texture); }
 		final boolean isAntiAlias = getData().isAntialias() || currentTextureSmooth;
 		final int minFilter = currentTextureSmooth ? GL.GL_LINEAR_MIPMAP_LINEAR
 				: isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST;
@@ -1247,7 +1248,7 @@ public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselat
 	 * @return the texture id
 	 */
 	public int getTextureId(final BufferedImage img) {
-		final Texture r = textureCache.getTexture(img);
+		final Texture r = textureCache.getTexture(img, currentTextureSmooth);
 		if (r == null) return NO_TEXTURE;
 		return r.getTextureObject();
 	}

@@ -92,6 +92,7 @@ import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -403,6 +404,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	public void dispose() {
+		validationRevision.incrementAndGet();
+		GamlAutoValidation.invalidate(fileURI);
 		if (validationJob != null) { validationJob.cancel(); }
 		if (getDocument() != null) { getDocument().removeDocumentListener(validationDocumentListener); }
 		GamaPreferences.Modeling.EDITOR_DRAG_RESOURCES.removeChangeListener(dndChangedListener);
@@ -554,6 +557,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	public boolean isEditable() { return FLAGS.IS_READ_ONLY ? false : super.isEditable(); }
+
+	@Override
+	protected void doSetInput(final IEditorInput input) throws CoreException {
+		super.doSetInput(input);
+		if (getDocumentProvider() != null
+				&& getDocumentProvider().getDocument(input) instanceof XtextDocument document) {
+			var xtextValidationJob = document.getValidationJob();
+			if (xtextValidationJob != null) {
+				xtextValidationJob.cancel();
+				document.setValidationJob(null);
+			}
+		}
+	}
 
 	@Override
 	protected void initializeDirtyStateSupport() {
@@ -874,6 +890,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	public void doSave(final IProgressMonitor progressMonitor) {
+		if (!isDirty()) return;
 		this.beforeSave();
 		super.doSave(progressMonitor);
 	}
@@ -1269,7 +1286,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	/** Saves the model (following the launch save policy) and runs the given test declaration alone. */
 	public void runTest(final URI test) {
-		doSave(null);
+		if (isDirty()) { doSave(null); }
 		if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()) {
 			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
 		}

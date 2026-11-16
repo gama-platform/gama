@@ -65,7 +65,7 @@ public class OpenExperimentSelectionListener implements Selector {
 	public void launch(final String name) {
 		// final IGui gui = GAMA.getRegularGui();
 		// We refuse to run if there is no XtextGui available.
-		editor.doSave(null);
+		if (editor.isDirty()) { editor.doSave(null); }
 		if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()) {
 			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
 		}

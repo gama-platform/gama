@@ -25,6 +25,12 @@ Run `gama-headless.bat -help` on Windows or `./gama-headless.sh -help` on Linux/
 
 There is no WebSocket `help` command: a connected client cannot query a server for its launch options. The client protocol operates after startup and is documented below, including the `load` options, experiment commands, status subscriptions and server-log control. Plug-ins may contribute additional commands, so the command set can vary by installation.
 
+The `.gamx` (playable model) and `.gamp` (project archive) commands are listed in the same help:
+`-package <source> <output.gamx|output.gamp>` generates an archive, `-validate-package <archive>` checks it,
+and `-run-package <archive> [-experiment <name>] [-model <Project/model.gaml>] [-until-cycle <N>] [-output <dir>]`
+runs one of its experiments, until cycle N or until it stops. Plugins carried by the archive, or given with
+`-plugin <file.jar>`, are only installed for the duration of the command.
+
 For legacy `-xml <experiment> <model.gaml> <parameters.xml>` generation and
 `-gaml <experiment> <model.gaml> <output-directory>` execution, experiment names are case-sensitive.
 An unknown name produces an error identifying the requested experiment and model, lists the available

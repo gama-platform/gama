@@ -139,6 +139,15 @@ graphs to use geometry types.
 See the [migration example](MIGRATION_GUIDE_2026.md#explicit-container-types-for-built-in-action-arguments)
 for the declaration change.
 
+### Headless commands for playable models and project archives
+
+`gama-headless` can now generate, validate and run `.gamx` playable models and `.gamp` project archives, with the
+same exporters and checks as the GUI. `-package <source> <output.gamx|output.gamp>` writes an archive from a project
+directory or a model; `-validate-package <archive>` checks its layout, manifest, plugins, host compatibility and models;
+`-run-package <archive>` runs one experiment until cycle N (`-until-cycle N`), or until its `until:` condition is true. Archive
+plugins and `-plugin <file.jar>` plugins are installed for the duration of the command only. A run exits with a
+nonzero status when the simulation raises a runtime error. The CI checks these commands on Linux and macOS.
+
 ### Simulation concurrency defaults
 
 The global preference for parallel simulation scheduling has been removed. Experiments without a `parallel:` facet
@@ -2263,7 +2272,7 @@ wheel-car, cone-twist-tentacle and pedestrian-flow/evacuation examples
   alongside dataframe, physics and matrix-computation examples
   ([`b06758d31`](https://github.com/gama-platform/gama/commit/b06758d31),
   [`951060883`](https://github.com/gama-platform/gama/commit/951060883)).
-- New **SIRAnalysis** tutorials cover Latin hypercube, Morris, Sobol, stochasticity and
+- New **SIR Analysis** tutorials cover Latin hypercube, Morris, Sobol, stochasticity and
   beta-distribution exploration; **Particle Life** demonstrates emergent particle interactions.
   Pedestrian-network examples improve free-space connectivity; traffic, grid paths, raster
   import, driving and color-brewer demonstrations are repaired. The broken satellite-image

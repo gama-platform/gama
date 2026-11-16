@@ -258,8 +258,8 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 		area.setRect(0, 0, sizeX, sizeY);
 		if (frontImage == null || frontImage.getWidth() != rasterWidth || frontImage.getHeight() != rasterHeight) {
-			frontImage = new BufferedImage(rasterWidth, rasterHeight, BufferedImage.TYPE_INT_ARGB_PRE);
-			backImage = new BufferedImage(rasterWidth, rasterHeight, BufferedImage.TYPE_INT_ARGB_PRE);
+			frontImage = new BufferedImage(rasterWidth, rasterHeight, BufferedImage.TYPE_INT_ARGB);
+			backImage = new BufferedImage(rasterWidth, rasterHeight, BufferedImage.TYPE_INT_ARGB);
 		}
 	}
 

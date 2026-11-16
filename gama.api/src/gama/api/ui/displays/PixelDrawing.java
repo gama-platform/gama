@@ -53,8 +53,17 @@ public final class PixelDrawing implements IImageProvider {
 	}
 
 	public static PixelDrawing fromImage(final BufferedImage image) {
-		return new PixelDrawing(image.getWidth(), image.getHeight(),
-				image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()), false);
+		final int w = image.getWidth(), h = image.getHeight(), size = Math.multiplyExact(w, h);
+		final var raster = image.getRaster();
+		if (image.getType() == BufferedImage.TYPE_INT_ARGB && !image.isAlphaPremultiplied()
+				&& raster.getDataBuffer() instanceof DataBufferInt data && data.getNumBanks() == 1
+				&& raster.getSampleModel() instanceof java.awt.image.SinglePixelPackedSampleModel sample
+				&& sample.getScanlineStride() == w && raster.getSampleModelTranslateX() == 0
+				&& raster.getSampleModelTranslateY() == 0) {
+			final int offset = data.getOffset();
+			return new PixelDrawing(w, h, Arrays.copyOfRange(data.getData(), offset, offset + size), false);
+		}
+		return new PixelDrawing(w, h, image.getRGB(0, 0, w, h, null, 0, w), false);
 	}
 
 	@Override
@@ -69,17 +78,13 @@ public final class PixelDrawing implements IImageProvider {
 	@Override
 	public synchronized BufferedImage getImage(final IScope scope, final boolean useCache) {
 		if (image == null) {
-			final int[] data;
+			image = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_ARGB);
+			final int[] dst = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 			if (pixels != null) {
-				data = pixels;
+				System.arraycopy(pixels, 0, dst, 0, dst.length);
 			} else {
-				data = new int[numericPixels.length];
-				for (int i = 0; i < data.length; i++) { data[i] = (int) numericPixels[i]; }
+				for (int i = 0; i < dst.length; i++) { dst[i] = (int) numericPixels[i]; }
 			}
-			final ColorModel colors = ColorModel.getRGBdefault();
-			final var raster = Raster.createWritableRaster(colors.createCompatibleSampleModel(cols, rows),
-					new DataBufferInt(data, data.length), null);
-			image = new BufferedImage(colors, raster, false, null);
 		}
 		return image;
 	}

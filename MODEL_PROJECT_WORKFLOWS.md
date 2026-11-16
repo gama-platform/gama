@@ -270,7 +270,11 @@ Argument parsing is only partly unified:
   agent/simulation formats, including `.gsim`, rather than treating `.gamr` as
   a general project archive.
 - Headless startup has its own XML/batch/`-gaml`/server argument processing. It
-  does not expose the GUI package-opening service as a headless `.gamx` runner.
+  does not use the GUI package-opening service, but has its own archive commands:
+  `-package` writes a `.gamx` or `.gamp` with the same exporters as the GUI,
+  `-validate-package` checks one, and `-run-package` runs one experiment of either format
+  until cycle N (`-until-cycle N`) or until it stops. Archive plugins (and `-plugin` JARs) are
+  installed in the running framework before GAMA initializes, and uninstalled at the end.
 
 Installation `dropins/` is yet another concept, **not drag-and-drop import**.
 The regular product includes the p2 drop-ins reconciler and plugin-install

@@ -110,14 +110,7 @@ public class TextureCache2 implements ITextureCache {
 	public void deleteVolatileTextures() {
 		volatileTextures.values().forEach(this::recycleTexture);
 		volatileTextures.clear();
-		imageTextures.values().forEach(variants -> variants.forEach((mipmap, texture) -> {
-			if (mipmap) {
-				mipmappedTextures.remove(texture.getTextureObject());
-				texture.destroy(gl.getGL());
-			} else {
-				recycleTexture(texture);
-			}
-		}));
+		imageTextures.values().forEach(variants -> variants.values().forEach(this::recycleTexture));
 		imageTextures.clear();
 	}
 
@@ -284,7 +277,7 @@ public class TextureCache2 implements ITextureCache {
 			// JOGL's automatic path only generates mipmaps in compatibility profiles, not GL4 core.
 			final TextureData data = createTextureData(gl.getGLProfile(), im, false);
 			try {
-				if (!mipmap) { texture = takeReusableTexture(im.getWidth(), im.getHeight()); }
+				texture = takeReusableTexture(im.getWidth(), im.getHeight());
 				if (texture == null) {
 					texture = new Texture(gl, data);
 				} else {

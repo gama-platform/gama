@@ -125,17 +125,17 @@ import gama.core.outputs.layers.properties.LightStatement.LightStatementValidato
 				which designates the ambient luminosity and color of the scene (with a default intensity of (180,180,180,255) or the value set in the Preferences) and #default, \
 				which designates the default directional light applied to a scene (with a default medium intensity of (180,180,180,255) or the value set in the Preferences in the direction given by (0.5,0.5,1)). Redefining a light named #ambient or #regular \
 				will then modify these default lights (for example changing their color or deactivating them). To be more precise, and given all the default values of the facets, the existence of these two lights is effectively equivalent to redefining:\
-				light #ambient intensity: gama.pref_display_light_intensity; light #default type: #direction intensity: gama.pref_display_light_intensity direction: {0.5,0.5,-1};""",
+				light #ambient intensity: gama.pref_display_light_intensity; light #default kind: #direction intensity: gama.pref_display_light_intensity direction: {0.5,0.5,-1};""",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
-						value = "light 1 type:point location:{20,20,20} color:255, linear_attenuation:0.01 quadratic_attenuation:0.0001 show:true dynamic:false;",
+						value = "light 1 kind: #point location:{20,20,20} intensity: 255 linear_attenuation:0.01 quadratic_attenuation:0.0001 show:true dynamic:false;",
 						isExecutable = false),
 						@example (
-								value = "light 'spot1' type: #spot location:{20,20,20} direction:{0,0,-1} color:255 angle:25 linear_attenuation:0.01 quadratic_attenuation:0.0001 draw:true dynamic: false;",
+								value = "light 'spot1' kind: #spot location:{20,20,20} direction:{0,0,-1} intensity: 255 angle:25 linear_attenuation:0.01 quadratic_attenuation:0.0001 show:true dynamic: false;",
 								isExecutable = false),
 						@example (
-								value = "light 'point2' type: #point direction:{1,1,-1} color:255 draw:true dynamic: false;",
+								value = "light 'point2' kind: #point location:{1,1,-1} intensity: 255 show:true dynamic: false;",
 								isExecutable = false) }) },
 		see = { IKeyword.DISPLAY })
 
