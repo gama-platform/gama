@@ -18,6 +18,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
+import gama.api.runtime.GeneralSynchronizer;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.IField;
@@ -74,6 +75,9 @@ public class ModelScene {
 	/** The rendered. */
 	private volatile boolean rendered = false;
 
+	/** The synchronizer to release once this scene has been rendered on the GL thread. */
+	private volatile GeneralSynchronizer synchronizer;
+
 	/**
 	 * Instantiates a new model scene.
 	 *
@@ -86,6 +90,21 @@ public class ModelScene {
 		this.renderer = renderer;
 		// maxZ = renderer.getMaxEnvDim() * GamaPreferences.Displays.OPENGL_Z_FACTOR.getValue() / 10d;
 		if (withWorld) { initWorld(); }
+	}
+
+	public void setSynchronizer(final GeneralSynchronizer synchronizer) {
+		if (synchronizer == null) return;
+		final GeneralSynchronizer previous = this.synchronizer;
+		if (previous != null && previous != synchronizer) { previous.release(); }
+		this.synchronizer = synchronizer;
+	}
+
+	public void releaseSynchronizer() {
+		final GeneralSynchronizer current = this.synchronizer;
+		if (current != null) {
+			this.synchronizer = null;
+			current.release();
+		}
 	}
 
 	/**
@@ -161,6 +180,7 @@ public class ModelScene {
 				}
 			}
 			rendered = true;
+			releaseSynchronizer();
 		} finally {
 			gl.setZIncrement(previousIncrement);
 			gl.setCurrentZTranslation(previousTranslation);
@@ -276,6 +296,7 @@ public class ModelScene {
 	 */
 	public void dispose() {
 		// DEBUG.OUT("ModelScene #" + myIndex + ": Layers keys before disposing = " + layers.keySet());
+		releaseSynchronizer();
 		layers.clear();
 		currentLayer = null;
 		recycledLayers.clear();
@@ -435,6 +456,7 @@ public class ModelScene {
 
 	public void reuseFrom(final ModelScene scene) {
 		rendered = false;
+		synchronizer = null;
 		if (scene == null) {
 			initWorld();
 		} else {

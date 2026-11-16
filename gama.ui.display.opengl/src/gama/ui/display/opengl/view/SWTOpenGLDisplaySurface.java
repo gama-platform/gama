@@ -278,13 +278,14 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
 		if (!alreadyUpdating.compareAndSet(false, true)) {
-			renderer.getSceneHelper().requestUpdate();
+			renderer.getSceneHelper().requestUpdate(synchronizer);
 			return;
 		}
 		try {
 			renderer.setSynchronizer(synchronizer);
 			layerManager.drawLayersOn(renderer);
 		} finally {
+			renderer.releaseUnclaimedSynchronizer(synchronizer);
 			alreadyUpdating.set(false);
 		}
 	}

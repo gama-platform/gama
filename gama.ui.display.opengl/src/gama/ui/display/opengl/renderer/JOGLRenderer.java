@@ -266,19 +266,11 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public boolean beginDrawingLayers() {
 		if (isNotReadyToUpdate()) {
-			sceneHelper.requestUpdate();
-			if (synchronizer != null) { synchronizer.release(); }
+			sceneHelper.requestUpdate(consumeCurrentSynchronizer());
 			return false;
 		}
-		// while (!inited) {
-		// try {
-		// Thread.sleep(10);
-		// } catch (final InterruptedException e) {
-		// return false;
-		// }
-		// }
 		if (sceneHelper.beginUpdatingScene()) return true;
-		if (synchronizer != null) { synchronizer.release(); }
+		sceneHelper.requestUpdate(consumeCurrentSynchronizer());
 		return false;
 
 	}
@@ -312,7 +304,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 	@Override
 	public void endDrawingLayers() {
-		sceneHelper.endUpdatingScene();
+		sceneHelper.endUpdatingScene(consumeCurrentSynchronizer());
 		getSurface().invalidateVisibleRegions();
 	}
 
@@ -333,7 +325,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			cameraHelper.update();
 			lightHelper.draw();
 			sceneHelper.draw();
-			if (synchronizer != null) { synchronizer.release(); }
 		} finally {
 			diagnostics.endFrame(getSurface().getOutput().getTitle(), openGL.getClass().getName());
 		}
@@ -372,12 +363,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		WorkbenchHelper.asyncRun(() -> {
 			sceneUpdateScheduled = false;
 			if (disposed || surface.isDisposed()) return;
-			sceneHelper.retryPendingUpdate(() -> surface.updateDisplay(true, synchronizer));
+			sceneHelper.retryPendingUpdate(() -> surface.updateDisplay(true));
 		});
 	}
 
-	/** The synchronizer. */
-	private GeneralSynchronizer synchronizer;
+	/** The synchronizer for the scene update currently in progress on the calling thread. */
+	private volatile GeneralSynchronizer synchronizer;
 
 	/** Native viewport dimensions, which can change with DPI even when the logical size stays the same. */
 	private int surfaceWidth, surfaceHeight;
@@ -414,7 +405,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 				|| !currentCanvas.getVisibleStatus() || openGL.getViewWidth() <= 0 || openGL.getViewHeight() <= 0)
 			return;
 		initialScenePending = false;
-		surface.updateDisplay(true, synchronizer);
+		surface.updateDisplay(true);
 	}
 
 	@Override
@@ -434,7 +425,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		if (initialScenePending && getCanvas().getVisibleStatus()) {
 			scheduleInitialScene();
 		}
-		surface.updateDisplay(true, synchronizer);
+		surface.updateDisplay(true);
 	}
 
 	@Override
@@ -842,15 +833,32 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	/**
-	 * Sets the synchronizer.
+	 * Sets the synchronizer for the current scene update.
 	 *
 	 * @param synchronizer
-	 *            the new synchronizer
+	 *            the synchronizer for the current update, or {@code null}
 	 */
 	public void setSynchronizer(final GeneralSynchronizer synchronizer) {
-		if (synchronizer == null) return;
 		this.synchronizer = synchronizer;
+	}
 
+	private GeneralSynchronizer consumeCurrentSynchronizer() {
+		final GeneralSynchronizer current = this.synchronizer;
+		this.synchronizer = null;
+		return current;
+	}
+
+	/**
+	 * Releases the synchronizer if the current update exited early without handing it off to {@link SceneHelper}.
+	 */
+	public void releaseUnclaimedSynchronizer(final GeneralSynchronizer expected) {
+		final GeneralSynchronizer current = consumeCurrentSynchronizer();
+		if (current != null) {
+			current.release();
+		} else if (expected != null && (disposed || getSurface().getScope() == null
+				|| getSurface().getScope().interrupted())) {
+			expected.release();
+		}
 	}
 
 }
