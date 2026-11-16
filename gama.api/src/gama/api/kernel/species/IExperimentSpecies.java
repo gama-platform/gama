@@ -128,6 +128,9 @@ public interface IExperimentSpecies extends ISpecies {
 	 */
 	void reload();
 
+	/** Reloads the experiment using the seed supplied by the caller. */
+	void reload(Double seed);
+
 	/**
 	 * Gets the current simulation.
 	 *

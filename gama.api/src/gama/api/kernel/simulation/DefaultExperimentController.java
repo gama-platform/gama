@@ -276,7 +276,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				lastRuntimeError = null;
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
-					return experiment.open(null).passed();
+					return experiment.open(command.seed()).passed();
 				} catch (final Throwable e) {
 					// Catch Throwable (not just Exception) to handle JVM Errors such as
 					// NoClassDefFoundError or LinkageError that may arise from bad dependencies
@@ -343,7 +343,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					currentScope.getGui().getStatus().resetStatus();
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON, () -> {
 						currentScope.getGui().showLaunchingOverlay(experiment.getName());
-						experiment.reload();
+						experiment.reload(command.seed());
 					});
 					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",

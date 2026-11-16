@@ -895,7 +895,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 				regionFor(node).feature(GamlPackage.Literals.IF__OP);
 		if (qm != null) { doc.surround(qm, it -> it.oneSpace()); }
 		final ISemanticRegion colon =
-				regionFor(node).keyword(ga.getIfAccess().getColonKeyword_1_3_0());
+				regionFor(node).keyword(ga.getIfAccess().getColonKeyword_1_2_0());
 		if (colon != null) { doc.surround(colon, it -> it.oneSpace()); }
 		doc.format(node.getLeft());
 		doc.format(node.getRight());

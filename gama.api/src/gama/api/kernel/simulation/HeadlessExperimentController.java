@@ -261,12 +261,22 @@ public class HeadlessExperimentController implements IExperimentController {
 	}
 
 	@Override
+	public boolean processOpen(final boolean andWait, final Double seed) {
+		return true;
+	}
+
+	@Override
 	public boolean processPause(final boolean andWait) {
 		return true;
 	}
 
 	@Override
 	public boolean processReload(final boolean andWait) {
+		return true;
+	}
+
+	@Override
+	public boolean processReload(final boolean andWait, final Double seed) {
 		return true;
 	}
 

@@ -322,7 +322,7 @@ MatchBlock returns Block:
 /*
  * Operator precedence parsing via cascading rule calls. 
  * Lower precedence operators wrap higher precedence operators. Pair has higher precedence than
- * Comparison (including '=') but lower precedence than Addition.
+ * Comparison (including '=') on its left, while allowing full expressions (If) on its right.
  */
 Expression:
 	If;
@@ -331,24 +331,25 @@ BinaryOperator returns Expression:
 	Or | And | Cast | Comparison | Pair | Addition | Multiplication | Power | Binary | Unit;
 
 Pair returns Expression:
-	Addition ({BinaryOperator.left=current} op='::' right=Addition)?;
+	Addition ({BinaryOperator.left=current} op='::' right=Pair)?;
 
 If returns Expression:
-	Or ({If.left=current} op='?' right=Or (':' ifFalse=Or))?;
+	Or (=>({If.left=current} op='?') right=Or (':' ifFalse=Or))?;
 
 Or returns Expression:
-	And ({BinaryOperator.left=current} op='or' right=And)*;
+	And (=>({BinaryOperator.left=current} op='or') right=And)*;
 
 And returns Expression:
-	Cast ({BinaryOperator.left=current} op='and' right=Cast)*;
+	Cast (=>({BinaryOperator.left=current} op='and') right=Cast)*;
 
 // Example: agent as species_A
 Cast returns Expression:
-	Comparison (({BinaryOperator.left=current} op='as') ((right=TypeRef) | ('(' right=TypeRef ')')))?;
+	Comparison (=>({BinaryOperator.left=current} op='as') ((right=TypeRef) | ('(' right=TypeRef ')')))?;
 
 // Example: a != b or a >= 5
 Comparison returns Expression:
-	Pair (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair)?;
+	Addition (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Pair |
+	{BinaryOperator.left=current} op='::' right=If)?;
 
 // Example: a + b
 Addition returns Expression:
