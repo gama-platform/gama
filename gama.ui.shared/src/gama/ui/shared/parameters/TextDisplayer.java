@@ -169,9 +169,10 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 		settings.setForeground(ThemeHelper.isDark() ? IGamaColors.TOOLTIP.color() : IGamaColors.DARK_ORANGE.color());
 		settings.setBackground(back);
 		settings.setHyperlinkUnderlineMode(HyperlinkSettings.UNDERLINE_HOVER);
-		settings.setHyperlinkCursor(new Cursor(WorkbenchHelper.getDisplay(), SWT.CURSOR_ARROW));
-		settings.setBusyCursor(new Cursor(WorkbenchHelper.getDisplay(), SWT.CURSOR_ARROW));
-		settings.setTextCursor(new Cursor(WorkbenchHelper.getDisplay(), SWT.CURSOR_ARROW));
+		final Cursor arrow = WorkbenchHelper.getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
+		settings.setHyperlinkCursor(arrow);
+		settings.setBusyCursor(arrow);
+		settings.setTextCursor(arrow);
 		return settings;
 	}
 

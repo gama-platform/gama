@@ -10,8 +10,13 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IFontProvider;
@@ -39,13 +44,29 @@ public class NavigatorLabelProvider extends CellLabelProvider
 		return null;
 	}
 
+	/** Images are owned by the label provider and shared per descriptor, then disposed with the provider. */
+	private final ResourceManager images = new LocalResourceManager(JFaceResources.getResources());
+
+	/** Descriptors whose image is already held by {@link #images}. */
+	private final Set<ImageDescriptor> created = new HashSet<>();
+
 	@Override
 	public Image getImage(final Object element) {
 		if (element instanceof VirtualContent vc) {
 			ImageDescriptor id = vc.getNavigatorImageDescriptor();
-			if (id != null) return id.createImage();
+			if (id != null) {
+				if (created.add(id)) return images.create(id);
+				return (Image) images.find(id);
+			}
 		}
 		return null;
+	}
+
+	@Override
+	public void dispose() {
+		images.dispose();
+		created.clear();
+		super.dispose();
 	}
 
 	@Override

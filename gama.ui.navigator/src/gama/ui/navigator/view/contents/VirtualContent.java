@@ -17,7 +17,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
@@ -275,16 +274,6 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	 * @return the status tooltipe
 	 */
 	public String getStatusTooltip() { return getStatusMessage(); }
-
-	/**
-	 * Gets the status image.
-	 *
-	 * @return the status image
-	 */
-	public Image getStatusImage() {
-		ImageDescriptor id = getNavigatorImageDescriptor();
-		return id == null ? null : id.createImage();
-	}
 
 	/**
 	 * Gets the status color.

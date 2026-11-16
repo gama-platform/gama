@@ -20,7 +20,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -36,7 +35,7 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.resources.GamaFonts;
 
 /**
  * The class EditorsDialog.
@@ -107,9 +106,7 @@ public class EditorsDialog extends Dialog {
 		text.setText(title);
 		var data = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
 		text.setLayoutData(data);
-		if (font != null) {
-			text.setFont(new Font(WorkbenchHelper.getDisplay(), font.getName(), font.getSize(), font.getStyle()));
-		}
+		if (font != null) { text.setFont(GamaFonts.getFont(font)); }
 		final var sep = new Label(composite, SWT.NONE);
 		data = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
 		data.heightHint = 20;
