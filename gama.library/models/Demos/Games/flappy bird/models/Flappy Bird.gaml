@@ -181,7 +181,9 @@ species texts {
 
 experiment main {
 	
-	float minimum_cycle_duration <- simulation.step;
+	init {
+		minimum_cycle_duration <- simulation.step;
+	}
 	
 
 	
