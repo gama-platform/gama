@@ -20,6 +20,9 @@ species user_agent control: user_first {
 	}
 	
 		
+}
+
+global {
 	test "User Architecture Blocks Compilation" {
 		create user_agent number: 1;
 		create user_agent2 number: 1;
