@@ -701,6 +701,10 @@ public class GAMA {
 	 * runtime error handler. Null-scope and some non-reporting-scope paths only print a stack trace and return;
 	 * delivery also depends on the experiment lifecycle and reporting settings.
 	 * </p>
+	 * <p>
+	 * In headless server mode, a stopping error pauses only the experiment owning the scope; a scope without a current
+	 * experiment does not pause other experiments.
+	 * </p>
 	 *
 	 * @param scope
 	 *            the current scope
@@ -736,7 +740,17 @@ public class GAMA {
 		final boolean shouldStop = !reportError(scope, g, shouldStopSimulation);
 		if (shouldStop) {
 			if (isInHeadLessMode() && !isInServerMode()) throw g;
-			pauseFrontmostExperiment(false);
+			if (isInHeadLessMode() && isInServerMode()) {
+				final IExperimentAgent agent = scope.getExperiment();
+				if (agent != null && agent.getSpecies().getAgent() == agent) {
+					final IExperimentController controller = agent.getSpecies().getController();
+					if (controller != null && !controller.processPause(false) && !controller.isDisposing()) {
+						DEBUG.ERR("Unable to pause the experiment after a runtime error: " + agent.getName());
+					}
+				}
+			} else {
+				pauseFrontmostExperiment(false);
+			}
 			throw g;
 		}
 	}
