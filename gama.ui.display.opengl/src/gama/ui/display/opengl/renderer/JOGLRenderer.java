@@ -359,10 +359,11 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	private void schedulePendingSceneUpdate() {
 		if (initialScenePending || !sceneHelper.hasPendingUpdate() || sceneUpdateScheduled) return;
+		if (!surface.getOutput().isPaused()) return;
 		sceneUpdateScheduled = true;
 		WorkbenchHelper.asyncRun(() -> {
 			sceneUpdateScheduled = false;
-			if (disposed || surface.isDisposed()) return;
+			if (disposed || surface.isDisposed() || !surface.getOutput().isPaused()) return;
 			sceneHelper.retryPendingUpdate(() -> surface.updateDisplay(true));
 		});
 	}

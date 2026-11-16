@@ -11,24 +11,32 @@
 package gama.ui.display.opengl.renderer.caches;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.nio.IntBuffer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GL2GL3;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureData;
-import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.extension.image.GamaImage;
 import gama.ui.display.opengl.OpenGL;
 
 /**
@@ -41,7 +49,35 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	}
 
 	/** The volatile textures. */
-	private Map<String, Texture> volatileTextures;
+	private final Map<String, Texture> volatileTextures = new ConcurrentHashMap<>();
+
+	/** The image textures. */
+	private final Map<BufferedImage, Map<Boolean, Texture>> imageTextures = new IdentityHashMap<>();
+
+	/** The mipmapped textures. */
+	private final Set<Integer> mipmappedTextures = new HashSet<>();
+
+	/** Generate missing levels for the texture currently bound to GL_TEXTURE_2D. */
+	public void ensureMipmaps(final int texture) {
+		if (mipmappedTextures.contains(texture)) return;
+		gl.getGL().glGenerateMipmap(GL.GL_TEXTURE_2D);
+		mipmappedTextures.add(texture);
+	}
+
+	/** The pixel buffer. */
+	private IntBuffer pixelBuffer;
+
+	/** The pixel array. */
+	private int[] pixelArray;
+
+	/** The reusable textures. */
+	private final Deque<Texture> reusableTextures = new ArrayDeque<>();
+
+	/** The reusable texture bytes. */
+	private long reusableTextureBytes;
+
+	/** The Constant MAX_REUSABLE_TEXTURE_BYTES. */
+	private static final long MAX_REUSABLE_TEXTURE_BYTES = 64L * 1024 * 1024;
 
 	/** The static textures. */
 	private final Cache<String, Texture> staticTextures =
@@ -53,9 +89,6 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	/** The gl. */
 	final OpenGL gl;
 
-	/** The is non power of 2 textures available. */
-	// Boolean isNonPowerOf2TexturesAvailable;
-
 	/**
 	 * Instantiates a new texture cache 2.
 	 *
@@ -64,7 +97,6 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	public TextureCache2(final OpenGL gl) {
 		this.gl = gl;
-		volatileTextures = new HashMap<>();
 	}
 
 	/*
@@ -73,15 +105,7 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 * @see gama.ui.display.opengl.renderer.caches.ITextureCache#initialize()
 	 */
 	@Override
-	public void initialize() {
-		// if (isNonPowerOf2TexturesAvailable == null) {
-		// isNonPowerOf2TexturesAvailable =
-		// !GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.getValue() && gl.getGL().isNPOTTextureAvailable();
-		// GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.onChange(this);
-		// TextureIO.setTexRectEnabled(Gama __PREFS__.Displays.DISPLAY_POWER_OF_TWO.getValue());
-		// DEBUG.OUT("Non power-of-two textures available: " + isNonPowerOf2TexturesAvailable);
-		// }
-	}
+	public void initialize() {}
 
 	/*
 	 * (non-Javadoc)
@@ -90,8 +114,10 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	@Override
 	public void deleteVolatileTextures() {
-		volatileTextures.forEach((s, t) -> t.destroy(gl.getGL()));
-		volatileTextures = new HashMap<>();
+		volatileTextures.values().forEach(this::recycleTexture);
+		volatileTextures.clear();
+		imageTextures.values().forEach(variants -> variants.values().forEach(this::recycleTexture));
+		imageTextures.clear();
 	}
 
 	/*
@@ -103,18 +129,18 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	public void dispose() {
 		DEBUG.OUT("TextureCache disposed");
 		deleteVolatileTextures();
+		reusableTextures.forEach(texture -> texture.destroy(gl.getGL()));
+		reusableTextures.clear();
+		reusableTextureBytes = 0;
+		mipmappedTextures.clear();
 		staticTextures.asMap().forEach((s, t) -> { t.destroy(gl.getGL()); });
 		staticTextures.invalidateAll();
 		staticTextures.cleanUp();
-		// GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.removeChangeListener(this);
+		texturesToProcess.clear();
+		pixelBuffer = null;
+		pixelArray = null;
 	}
 
-	/**
-	 * Processs.
-	 *
-	 * @param file
-	 *            the file
-	 */
 	/*
 	 * (non-Javadoc)
 	 *
@@ -122,9 +148,7 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	@Override
 	public void processs(final IImageProvider file) {
-
 		if (!texturesToProcess.containsKey(file.getId())) {
-			// DEBUG.OUT("Adding image to process " + file.getId());
 			texturesToProcess.put(file.getId(), file);
 		}
 	}
@@ -136,7 +160,8 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	@Override
 	public void processUnloaded() {
-		texturesToProcess.forEach((n, i) -> { getTexture(i, false, true); });
+		texturesToProcess
+				.forEach((n, i) -> { if (getTexture(i, false, true) != null) { texturesToProcess.remove(n, i); } });
 	}
 
 	/*
@@ -146,11 +171,16 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	@Override
 	public Texture getTexture(final BufferedImage img) {
-		String id = String.valueOf(img.hashCode());
-		Texture texture = volatileTextures.get(id);
+		return getTexture(img, false);
+	}
+
+	public Texture getTexture(final BufferedImage img, final boolean mipmap) {
+		if (img == null) return null;
+		final Map<Boolean, Texture> variants = imageTextures.computeIfAbsent(img, image -> new HashMap<>());
+		Texture texture = variants.get(mipmap);
 		if (texture == null) {
-			texture = this.buildTexture(gl.getGL(), img);
-			volatileTextures.put(id, texture);
+			texture = buildTexture(gl.getGL(), img, mipmap);
+			if (texture != null) { variants.put(mipmap, texture); }
 			gl.invalidateTextureCache();
 		}
 		return texture;
@@ -176,13 +206,11 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 			texture = volatileTextures.get(path);
 			if (texture == null) {
 				final BufferedImage image = file.getImage(null, useCache);
-				// DEBUG.LOG("Building a new volatile texture... " + file.getId());
 				texture = this.buildTexture(gl.getGL(), image);
 				volatileTextures.put(path, texture);
 			}
 		} else {
 			try {
-
 				texture = staticTextures.get(file.getId(), () -> buildTexture(gl.getGL(), file));
 			} catch (final ExecutionException e) {
 				e.printStackTrace();
@@ -214,28 +242,90 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 * @return the texture
 	 */
 	Texture buildTexture(final GL gl, final BufferedImage im) {
-		TextureData data = null;
-		try {
-			data = AWTTextureIO.newTextureData(gl.getGLProfile(), im, true);
-		} catch (final GLException e) {
-			BufferedImage copy = GamaImage.from(im, true);
-			data = AWTTextureIO.newTextureData(gl.getGLProfile(), copy, true);
-		}
-		if (data != null) {
-			final Texture texture = new Texture(gl, data);
-			data.flush();
-			return texture;
-		}
-		return null;
-
+		return buildTexture(gl, im, false);
 	}
 
-	// @Override
-	// public void afterValueChange(final Boolean newValue) {
-	//
-	// isNonPowerOf2TexturesAvailable = !newValue && gl.getGL().isNPOTTextureAvailable();
-	// TextureIO.setTexRectEnabled(newValue);
-	//
-	// }
+	private Texture buildTexture(final GL gl, final BufferedImage im, final boolean mipmap) {
+		if (im == null) return null;
+		Texture texture = null;
+		try {
+			final TextureData data = createTextureData(gl.getGLProfile(), im, false);
+			try {
+				texture = takeReusableTexture(im.getWidth(), im.getHeight());
+				if (texture == null) {
+					texture = new Texture(gl, data);
+				} else {
+					texture.updateSubImage(gl, data, 0, 0, 0);
+					this.gl.invalidateTextureCache();
+				}
+				if (mipmap) { ensureMipmaps(texture.getTextureObject()); }
+			} finally {
+				data.flush();
+			}
+			return texture;
+		} catch (final RuntimeException e) {
+			if (texture != null) {
+				mipmappedTextures.remove(texture.getTextureObject());
+				texture.destroy(gl);
+			}
+			DEBUG.ERR("TextureCache2.buildTexture failed", e);
+			return null;
+		}
+	}
+
+	private static long textureBytes(final Texture texture) {
+		return (long) texture.getWidth() * texture.getHeight() * Integer.BYTES;
+	}
+
+	private void recycleTexture(final Texture texture) {
+		mipmappedTextures.remove(texture.getTextureObject());
+		final long bytes = textureBytes(texture);
+		if (bytes > MAX_REUSABLE_TEXTURE_BYTES || texture.getTarget() != GL.GL_TEXTURE_2D) {
+			texture.destroy(gl.getGL());
+			return;
+		}
+		reusableTextures.addLast(texture);
+		reusableTextureBytes += bytes;
+		while (reusableTextures.size() > 16 || reusableTextureBytes > MAX_REUSABLE_TEXTURE_BYTES) {
+			final Texture evicted = reusableTextures.removeFirst();
+			reusableTextureBytes -= textureBytes(evicted);
+			evicted.destroy(gl.getGL());
+		}
+	}
+
+	private Texture takeReusableTexture(final int width, final int height) {
+		final var iterator = reusableTextures.iterator();
+		while (iterator.hasNext()) {
+			final Texture texture = iterator.next();
+			if (texture.getWidth() == width && texture.getHeight() == height && texture.getImageWidth() == width
+					&& texture.getImageHeight() == height) {
+				iterator.remove();
+				reusableTextureBytes -= textureBytes(texture);
+				return texture;
+			}
+		}
+		return null;
+	}
+
+	private TextureData createTextureData(final GLProfile profile, final BufferedImage image, final boolean mipmap) {
+		final int w = image.getWidth(), h = image.getHeight(), size = Math.multiplyExact(w, h);
+		if (pixelBuffer == null || pixelBuffer.capacity() < size) { pixelBuffer = Buffers.newDirectIntBuffer(size); }
+		pixelBuffer.clear();
+		final var raster = image.getRaster();
+		if (image.getType() == BufferedImage.TYPE_INT_ARGB && !image.isAlphaPremultiplied()
+				&& raster.getDataBuffer() instanceof DataBufferInt data && data.getNumBanks() == 1
+				&& raster.getSampleModel() instanceof SinglePixelPackedSampleModel sample
+				&& sample.getScanlineStride() == w && raster.getSampleModelTranslateX() == 0
+				&& raster.getSampleModelTranslateY() == 0) {
+			pixelBuffer.put(data.getData(), data.getOffset(), size);
+		} else {
+			if (pixelArray == null || pixelArray.length < size) { pixelArray = new int[size]; }
+			image.getRGB(0, 0, w, h, pixelArray, 0, w);
+			pixelBuffer.put(pixelArray, 0, size);
+		}
+		pixelBuffer.flip();
+		return new TextureData(profile, GL.GL_RGBA, w, h, 0, GL.GL_BGRA, GL2GL3.GL_UNSIGNED_INT_8_8_8_8_REV, mipmap,
+				false, true, pixelBuffer, null);
+	}
 
 }

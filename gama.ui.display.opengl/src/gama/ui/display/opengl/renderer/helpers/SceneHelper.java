@@ -47,7 +47,7 @@ import gama.ui.display.opengl.scene.layers.LayerObject;
 public class SceneHelper extends AbstractRendererHelper {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The back scene. */

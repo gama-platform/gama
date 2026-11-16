@@ -253,15 +253,15 @@ public abstract class GamaExecutorService {
 			final long cacheKey =
 					((long) System.identityHashCode(concurrency) << 32) | (caller.ordinal() & 0xFFFFFFFFL);
 			return PARALLELISM_IDENTITY_CACHE.computeIfAbsent(cacheKey,
-					k -> computeParallelism(scope, concurrency));
+					k -> computeParallelism(scope, concurrency, caller));
 		}
-		return computeParallelism(scope, concurrency);
+		return computeParallelism(scope, concurrency, caller);
 	}
 
 	/**
 	 * Computes the parallelism level based on the expression.
 	 */
-	private static int computeParallelism(final IScope scope, final IExpression concurrency) {
+	private static int computeParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
 		switch (GamaType.of(concurrency).id()) {
 			case IType.BOOL: {
 				Boolean c = (Boolean) concurrency.value(scope);
@@ -273,7 +273,7 @@ public abstract class GamaExecutorService {
 			default:
 				break;
 		}
-		return 0;
+		return caller == Caller.SIMULATION ? THREADS_NUMBER.getValue() : 0;
 	}
 
 	/**
