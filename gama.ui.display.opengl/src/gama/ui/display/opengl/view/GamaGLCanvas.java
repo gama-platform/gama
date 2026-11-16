@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Listener;
@@ -25,6 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.jogamp.common.util.locks.RecursiveLock;
 import com.jogamp.nativewindow.NativeSurface;
+import com.jogamp.nativewindow.swt.SWTAccessor;
 import com.jogamp.newt.Window;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.newt.swt.NewtCanvasSWT;
@@ -148,6 +150,13 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 				GamaGLCanvas.this.fixSurfaceScaleOnWindows();
 			}
 		});
+		addListener(SWT.ZoomChanged, e -> {
+			if (!isDisposed()) {
+				setMonitor(super.getMonitor());
+				if (parent != null && !parent.isDisposed()) { parent.layout(true, true); }
+				fixSurfaceScaleOnWindows();
+			}
+		});
 		this.name = name;
 		parent.setLayout(new FillLayout());
 		this.setLayout(new FillLayout());
@@ -224,13 +233,16 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		canvas = new NewtCanvasSWT(this, SWT.NO_BACKGROUND, visible ? drawable : null);
 		GamaColors.setBackground(getBackground(), canvas);
 		canvas.setVisible(visible);
+		applySurfaceScaleOnWindows();
 		final Listener nativePeerCreated = e -> {
 			if (nativePeerShell == null && drawable != null && drawable.isNativeValid()) {
 				nativePeerShell = canvas.getShell();
 			}
+			applySurfaceScaleOnWindows();
 		};
 		canvas.addListener(SWT.Resize, nativePeerCreated);
 		canvas.addListener(SWT.Paint, nativePeerCreated);
+		canvas.addListener(SWT.ZoomChanged, nativePeerCreated);
 		for (final GLEventListener listener : pendingGlListeners) {
 			drawable.addGLEventListener(listener);
 		}
@@ -269,14 +281,31 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 * causing the embedded NEWT window to be sized and positioned incorrectly. Calling setSurfaceScale() with the true
 	 * fractional scale overrides the wrong value and triggers the correct Win32 SetWindowPos.
 	 */
+	private void applySurfaceScaleOnWindows() {
+		if (!SystemInfo.isWindows() || isDisposed() || drawable == null || canvas == null || canvas.isDisposed())
+			return;
+		final Monitor current = super.getMonitor();
+		if (current != null) { setMonitor(current); }
+		float scaleX = monitor != null ? monitor.getZoom() / 100f : 1f;
+		float scaleY = scaleX;
+		final Rectangle clientArea = canvas.getClientArea();
+		final Rectangle pixelArea = SWTAccessor.getClientAreaInPixels(canvas);
+		if (clientArea.width > 0 && pixelArea.width > 0) {
+			scaleX = (float) pixelArea.width / (float) clientArea.width;
+		}
+		if (clientArea.height > 0 && pixelArea.height > 0) {
+			scaleY = (float) pixelArea.height / (float) clientArea.height;
+		}
+		final float[] currentScale = drawable.getCurrentSurfaceScale(new float[2]);
+		if (Math.abs(currentScale[0] - scaleX) > 1e-4f || Math.abs(currentScale[1] - scaleY) > 1e-4f) {
+			drawable.setSurfaceScale(new float[] { scaleX, scaleY });
+		}
+	}
+
 	private void fixSurfaceScaleOnWindows() {
-		if (!SystemInfo.isWindows() || monitor == null) return;
-		WorkbenchHelper.asyncRun(() -> {
-			if (drawable != null && drawable.isNativeValid()) {
-				final float scale = monitor.getZoom() / 100f;
-				drawable.setSurfaceScale(new float[] { scale, scale });
-			}
-		});
+		if (!SystemInfo.isWindows()) return;
+		if (WorkbenchHelper.isDisplayThread()) { applySurfaceScaleOnWindows(); }
+		WorkbenchHelper.asyncRun(this::applySurfaceScaleOnWindows);
 	}
 
 	@Override
