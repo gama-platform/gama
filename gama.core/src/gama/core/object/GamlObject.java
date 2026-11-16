@@ -50,7 +50,7 @@ public class GamlObject implements IObject {
 	 */
 	public GamlObject(final IScope scope, final IClass species, final Map<String, Object> attributes) {
 		this(species);
-		initializeAttributes(scope, attributes);
+		initializeAttributesWithOwner(scope, attributes);
 	}
 
 	/**

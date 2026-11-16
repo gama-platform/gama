@@ -340,7 +340,7 @@ public class GamlClass extends Symbol implements IClass {
 		if (object == null || object.getSpecies() != this)
 			throw GamaRuntimeException.error(
 					"Java constructor did not create an instance of " + getName(), scope);
-		object.initializeAttributes(scope, args);
+		object.initializeAttributesWithOwner(scope, args);
 		return object;
 	}
 

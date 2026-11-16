@@ -421,11 +421,11 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	@Override
 	public boolean init(final IScope scope) {
-		showParameters(scope);
 		GAMA.changeCurrentTopLevelAgent(this, true);
 		GAMA.desynchronizeFrontmostExperiment();
 		scope.getGui().clearErrors(scope);
 		super.init(scope);
+		showParameters(scope);
 		final IOutputManager outputs = getOutputManager();
 		if (outputs != null) { outputs.init(scope); }
 
@@ -444,8 +444,8 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	private void showParameters(final IScope scope) {
 		final ExperimentOutputManager manager = (ExperimentOutputManager) getOutputManager();
-		ISymbol layout = manager.getLayout() == null ? manager : manager.getLayout();
-		final Boolean showParameters = layout.getFacetValue(scope, "parameters", null);
+		final ISymbol layout = manager.getLayout() == null ? manager : manager.getLayout();
+		final Boolean showParameters = layout.getFacetValue(manager.getInitializationScope(scope), "parameters", null);
 		if (showParameters != null && !showParameters) {
 			scope.getGui().hideParameters();
 		} else {

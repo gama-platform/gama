@@ -287,6 +287,11 @@ accessible to the experiment. Creating an experiment from a directly imported
 comodel remains a separate supported operation; it does not make ordinary
 model-species populations experiment-owned.
 
+Class objects created in a simulation retain that simulation as the owner of
+their model globals, even when passed elsewhere. A class object created directly
+in an experiment has no simulation owner: create it in an explicit simulation
+context if its initializers or actions need model globals.
+
 ### Experiment actions in a simulation context
 
 For an adapter with many actions operating on the same simulation, opt in once

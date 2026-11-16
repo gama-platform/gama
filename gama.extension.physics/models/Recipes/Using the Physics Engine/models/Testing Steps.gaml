@@ -158,7 +158,7 @@ experiment "Test it !" type: gui {
 			}
 			event "mouse_down" {
 				point target <- #user_location;
-
+				ask experiment.simulations {
 					ask ball {
 						point direction <- target - location;
 						if norm(direction) > 0 {
@@ -167,7 +167,8 @@ experiment "Test it !" type: gui {
 						}
 						angular_velocity <- {rnd(10), rnd(10), rnd(10)};
 					}
-							}
+				}
+			}
 		}
 	}
 }

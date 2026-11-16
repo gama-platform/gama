@@ -19,6 +19,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gaml.compiler.descriptions.StatementRemoteWithChildrenDescription;
 
 /**
  * The Class MyselfExpression.
@@ -77,11 +78,11 @@ public class CurrentExperimentExpression extends VariableExpression {
 
 	/** Keeps the declaring experiment's type in simulation-facing outputs, parameters and inline callbacks. */
 	public static IExpression create(final IDescription context) {
-		if (context != null) {
-			if (context.getTypeContext() instanceof IExperimentDescription experiment)
+		for (IDescription current = context; current != null;) {
+			if (current instanceof IExperimentDescription experiment)
 				return new CurrentExperimentExpression(experiment);
-			if (context.getParentWithKeyword(IKeyword.EXPERIMENT) instanceof IExperimentDescription experiment)
-				return new CurrentExperimentExpression(experiment);
+			current = current instanceof StatementRemoteWithChildrenDescription remote
+					? remote.getLexicalEnclosingDescription() : current.getEnclosingDescription();
 		}
 		return create();
 	}

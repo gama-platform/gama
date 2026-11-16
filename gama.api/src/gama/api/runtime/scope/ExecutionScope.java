@@ -1200,7 +1200,12 @@ public class ExecutionScope implements IScope {
 		while (current != null) {
 			if (current.getSpecies().hasVar(name)) return current;
 			if (current instanceof ITopLevelAgent) return null;
-			current = current instanceof IAgent agent ? agent.getHost() : null;
+			if (current instanceof IAgent agent) {
+				current = agent.getHost();
+			} else {
+				final ISimulationAgent owner = current.getModelOwner();
+				current = owner == null || owner.dead() ? null : owner;
+			}
 		}
 		return null;
 	}
