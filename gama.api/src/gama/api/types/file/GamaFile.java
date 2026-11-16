@@ -279,7 +279,7 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 		}
 
 		localPath = tempPath;
-		if (forReading) { checkValidity(scope); }
+		if (forReading || !(this instanceof GamaFolderFile) || getFile(scope).exists()) { checkValidity(scope); }
 	}
 
 	/**
