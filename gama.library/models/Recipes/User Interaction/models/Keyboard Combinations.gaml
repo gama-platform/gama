@@ -79,7 +79,7 @@ experiment Keyboard_3D type: gui {
 			graphics { draw sphere(3) at: cursor color: #blue; }
 			// CTRL warnings apply on Windows; camera and display shortcuts remain active on every platform.
 			event #ctrl + "a" { ask simulation { do record("CTRL+A in OpenGL"); } }
-			event "ctrl+shift+a" { ask simulation { do record("CTRL+SHIFT+A in OpenGL"); } }
+			event #ctrl+#shift+"a" { ask simulation { do record("CTRL+SHIFT+A in OpenGL"); } }
 			event #alt + "+" + #arrow_up {
 				ask simulation {
 					cursor <- cursor + {0, -2};
