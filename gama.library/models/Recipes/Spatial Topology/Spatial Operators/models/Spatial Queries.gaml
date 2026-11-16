@@ -127,7 +127,7 @@ experiment Spatialqueries type: gui {
 			species polygon_agent;
 			species point_agent;
 			species polyline_agent;	
-			event #mouse_down  {experiment. change_agent();}
+			event #mouse_down { do change_agent(); }
 		}
 	}
 }
