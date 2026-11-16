@@ -13,15 +13,10 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
-import gama.annotations.test;
-import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IPopulation;
-import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
@@ -312,94 +307,6 @@ public class Fields {
 			}
 		}
 		return res;
-	}
-
-	/**
-	 * Matrix with.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param grid
-	 *            the grid
-	 * @param varName
-	 *            the var name
-	 * @return the i matrix
-	 */
-	@operator (
-			value = "matrix_with",
-			can_be_const = false,
-			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
-			concept = { IConcept.GRID, IConcept.MATRIX },
-			doc = { @doc (
-					value = "Extracts the value of a specific variable from all cells of a grid population into a matrix. Extremely fast compared to doing `grid collect each.var`.",
-					returns = "A float matrix containing the values.",
-					examples = { @example (
-							value = "matrix mat <- matrix_with(ant_grid, \"road\");",
-							isExecutable = false) }) })
-	@tests ({
-			@test ("matrix<int> ones <- {2, 2} matrix_with (1); ones[0, 0] = 1"),
-			@test ("matrix<int> ones2 <- {2, 2} matrix_with (1); ones2[1, 1] = 1")
-	})
-	public static IMatrix matrixWith(final IScope scope, final Object pop, final String varName) {
-		IPopulation.Grid grid = null;
-		if (pop instanceof IPopulation.Grid g) {
-			grid = g;
-		} else if (pop instanceof ISpecies species && species.isGrid()) {
-			grid = (IPopulation.Grid) scope.getSimulation().getPopulationFor(species);
-		}
-		if (grid == null)
-			throw GamaRuntimeException.error("The target must be a grid species or a grid population", scope);
-
-		IGrid g = grid.getGrid();
-		int cols = g.getCols(scope);
-		int rows = g.getRows(scope);
-		GamaFloatMatrix matrix = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cols, rows);
-		g.getValuesInto(scope, varName, matrix.getMatrix());
-		return matrix;
-	}
-
-	/**
-	 * Sets the values.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param grid
-	 *            the grid
-	 * @param varName
-	 *            the var name
-	 * @param matrix
-	 *            the matrix
-	 * @return the i population. grid
-	 */
-	@operator (
-			value = "set_values",
-			can_be_const = false,
-			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
-			concept = { IConcept.GRID, IConcept.MATRIX },
-			doc = { @doc (
-					value = "Sets the values of a specific variable in all cells of a grid population using the provided matrix. Bypasses standard `ask` loops for massive speedups.",
-					examples = { @example (
-							value = "ant_grid set_values (\"road\", new_road_matrix);",
-							isExecutable = false) }) })
-	public static IPopulation.Grid setValues(final IScope scope, final Object pop, final String varName,
-			final IMatrix matrix) {
-		IPopulation.Grid grid = null;
-		if (pop instanceof IPopulation.Grid g) {
-			grid = g;
-		} else if (pop instanceof ISpecies species && species.isGrid()) {
-			grid = (IPopulation.Grid) scope.getSimulation().getPopulationFor(species);
-		}
-		if (grid == null)
-			throw GamaRuntimeException.error("The target must be a grid species or a grid population", scope);
-		IGrid g = grid.getGrid();
-		int cols = g.getCols(scope);
-		int rows = g.getRows(scope);
-		GamaFloatMatrix mat = GamaFloatMatrix.from(scope, matrix);
-		double[] data = mat.getMatrix();
-
-		int size = Math.min(cols * rows, data.length);
-		for (int i = 0; i < size; i++) { g.setValueAtIndex(scope, i, varName, data[i]); }
-		return grid;
 	}
 
 }

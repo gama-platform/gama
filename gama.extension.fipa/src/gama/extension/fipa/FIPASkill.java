@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * FIPASkill.java, in gama.extension.fipa, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * FIPASkill.java, in gama.extension.fipa, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -45,6 +44,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.messaging.MessagingSkill;
@@ -132,7 +132,6 @@ import gama.core.util.messaging.MessagingSkill;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class FIPASkill extends MessagingSkill {
 
-
 	/**
 	 * @throws GamaRuntimeException
 	 *             Primitive sendMessage. Reads the input arguments, creates an instance of Message then sends it.
@@ -150,11 +149,13 @@ public class FIPASkill extends MessagingSkill {
 			args = { @arg (
 					name = IKeyword.TO,
 					type = IType.LIST,
+					of = IType.AGENT,
 					optional = false,
 					doc = @doc ("A list of receiver agents")),
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the message. A list of any GAML type")),
 					@arg (
@@ -180,7 +181,7 @@ public class FIPASkill extends MessagingSkill {
 
 		message.setSender(getCurrentAgent(scope));
 
-		final IList content = GamaListFactory.castToList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
+		final IList content = GamaListFactory.castToList(scope, scope.getArg(IMessage.CONTENTS, IType.LIST));
 		if (content != null) { message.setContents(content); }
 
 		final String performative = Cast.asString(scope, scope.getArg("performative", IType.STRING));
@@ -232,6 +233,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = true,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc (
@@ -282,9 +284,7 @@ public class FIPASkill extends MessagingSkill {
 			final IList<IAgent> receivers = GamaListFactory.create(Types.AGENT);
 			receivers.add(receiver);
 			final Conversation conv = original.getConversation();
-			FIPAMessage message;
-
-			message = new FIPAMessage(getCurrentAgent(scope), receivers, content, performative, conv);
+			FIPAMessage message = new FIPAMessage(getCurrentAgent(scope), receivers, content, performative, conv);
 			MessageBroker.getInstance(scope).scheduleForDelivery(scope, message);
 
 		}
@@ -299,7 +299,7 @@ public class FIPASkill extends MessagingSkill {
 	 * @return the content arg
 	 */
 	private IList getContentArg(final IScope scope) {
-		return GamaListFactory.castToList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
+		return GamaListFactory.castToList(scope, scope.getArg(IMessage.CONTENTS, IType.LIST));
 	}
 
 	/**
@@ -334,6 +334,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with an 'accept_proposal' performative message."))
@@ -365,6 +366,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with an 'agree' performative message. Protocol validity is checked before sending, including earlier replies still queued for delivery; a reply after refusal or completion is rejected immediately."))
@@ -396,6 +398,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with a 'cancel' peformative message."))
@@ -427,6 +430,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with a 'cfp' performative message."))
@@ -458,11 +462,13 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
-			doc = @doc ("Reply a message with an 'end_conversation' peprformative message. This message marks the end of a conversation. "
-					+ "In a 'no-protocol' conversation, it is the responsible of the modeler to explicitly send this message to mark the end of a conversation/interaction protocol. "
-					+ "Please note that if the contents of the messages of the conversation are not read, then this command has no effect (i.e. it  must be read by at least one of the agents in the conversation)"))
+			doc = @doc ("""
+					Reply a message with an 'end_conversation' peprformative message. This message marks the end of a conversation. \
+					In a 'no-protocol' conversation, it is the responsible of the modeler to explicitly send this message to mark the end of a conversation/interaction protocol. \
+					Please note that if the contents of the messages of the conversation are not read, then this command has no effect (i.e. it  must be read by at least one of the agents in the conversation)"""))
 	public Object primEndConversation(final IScope scope) throws GamaRuntimeException {
 		final IList originals = getMessageArg(scope);
 		if (originals == null || originals.size() == 0) throw GamaRuntimeException.error("No message to reply", scope);
@@ -490,6 +496,7 @@ public class FIPASkill extends MessagingSkill {
 					doc = @doc ("The message to be replied")),
 					@arg (
 							name = GamaMessage.CONTENTS,
+							of = IType.NONE,
 							type = IType.LIST,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
@@ -521,6 +528,7 @@ public class FIPASkill extends MessagingSkill {
 					doc = @doc ("The message to be replied")),
 					@arg (
 							name = GamaMessage.CONTENTS,
+							of = IType.NONE,
 							type = IType.LIST,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
@@ -552,6 +560,7 @@ public class FIPASkill extends MessagingSkill {
 					doc = @doc ("The message to be replied")),
 					@arg (
 							name = GamaMessage.CONTENTS,
+							of = IType.NONE,
 							type = IType.LIST,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
@@ -584,6 +593,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with a 'query' performative message."))
@@ -615,6 +625,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The contents of the replying message")) },
 			doc = @doc ("Replies a message with a 'refuse' performative message."))
@@ -646,6 +657,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with a 'reject_proposal' performative message."))
@@ -677,6 +689,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with a 'request' performative message."))
@@ -708,6 +721,7 @@ public class FIPASkill extends MessagingSkill {
 					@arg (
 							name = GamaMessage.CONTENTS,
 							type = IType.LIST,
+							of = IType.NONE,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
 			doc = @doc ("Replies a message with a 'subscribe' performative message."))

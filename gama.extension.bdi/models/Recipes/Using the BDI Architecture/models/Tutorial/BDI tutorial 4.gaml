@@ -216,7 +216,7 @@ experiment GoldBdi type: gui {
     }
 
 		display chart type: 2d {
-			chart "Money" type: series {
+			chart "Money" kind: series {
 				datalist legend: miner accumulate each.name value: miner accumulate each.gold_sold color: miner accumulate each.my_color;
 			}
 		}

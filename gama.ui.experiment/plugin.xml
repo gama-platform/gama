@@ -475,7 +475,7 @@
             </separator>
             <menu
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/open.view.svg"
-                  label="Show View...">
+                  label="Show...">
                <dynamic
                      class="gama.ui.shared.commands.ShowViewContributionItem"
                      id="gama.application.showView">
@@ -491,12 +491,6 @@
                   label="Hide/Show Toolbar"
                   style="push"
                   tooltip="Toggle the main toolbar on and off">
-            </command>
-            <command
-                  commandId="org.eclipse.ui.window.togglestatusbar"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/display/toolbar.fullscreen.svg"
-                  label="Hide/Show Status Bar"
-                  style="push">
             </command>
             <command
                   commandId="gama.ui.hideShowEditors"

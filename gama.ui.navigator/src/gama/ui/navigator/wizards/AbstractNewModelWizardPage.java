@@ -82,7 +82,10 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	public void setVisible(final boolean b) {
 		super.setVisible(b);
 		if (containerText.getText().isEmpty()) { WorkbenchHelper.asyncRun(this::handleContainerBrowse); }
-		if (b) { fileText.setFocus(); }
+		if (b) {
+			fileText.setFocus();
+			fileText.selectAll();
+		}
 	}
 
 	/** Gets the author of the new file */

@@ -66,7 +66,7 @@ experiment permanent_reload parent: regression_abstract type: batch repeat: 3 un
 	method exploration;
 	permanent {
 		display Cycles type: 2d {
-			chart "Cycles" type: series {
+			chart "Cycles" kind: series {
 				data "Max" value: max(simulations collect each.cycle) color: #red;
 			}
 		}
@@ -77,7 +77,7 @@ experiment permanent_reload parent: regression_abstract type: batch repeat: 3 un
 // forever. The check is only written if the batch reaches the end of its runs.
 experiment die_in_batch parent: regression_abstract type: batch repeat: 4 parallel: 3 keep_seed: true
 		until: world.stop_sim() {
-	parameter "dies" var: dies among: [true];
+	parameter "dies" var: dies <- true;
 	method exploration;
 	reflex end_of_runs {
 		write "die_in_batch | the batch reaches the end of a run (" + length(simulations) + " simulations kept): PASS";

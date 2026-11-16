@@ -164,7 +164,7 @@ experiment Simulation type: gui {
 	    }
 	        
 	    display chart background: paper refresh: every(10#cycles) type: 3d {
-			chart "Susceptible" type: series background: paper axes: rgb(57, 66, 61) style: exploded {
+			chart "Susceptible" kind: series background: paper axes: rgb(57, 66, 61) style: exploded {
 				data "susceptible" value: Host count (each.is_susceptible) color: susceptible_ink;
 				data "infected" value: Host count (each.is_infected) color: infected_ink;
 				data "immune" value: Host count (each.is_immune) color: immune_ink;

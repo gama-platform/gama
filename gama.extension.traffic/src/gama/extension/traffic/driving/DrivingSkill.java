@@ -51,7 +51,6 @@ import gama.api.types.graph.IGraph;
 import gama.api.types.graph.IPath;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.types.topology.ITopology;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
@@ -1619,6 +1618,8 @@ public class DrivingSkill extends MovingSkill {
 			args = { @arg (
 					name = "graph",
 					type = IType.GRAPH,
+					of = IType.GEOMETRY,
+					index = IType.GEOMETRY,
 					optional = false,
 					doc = @doc ("the graph representing the road network")),
 					@arg (
@@ -1634,6 +1635,7 @@ public class DrivingSkill extends MovingSkill {
 					@arg (
 							name = "nodes",
 							type = IType.LIST,
+							of = IType.GEOMETRY,
 							optional = true,
 							doc = @doc ("the nodes forming the resulting path")) },
 			doc = @doc (
@@ -1701,11 +1703,15 @@ public class DrivingSkill extends MovingSkill {
 			args = { @arg (
 					name = "graph",
 					type = IType.GRAPH,
+					of = IType.GEOMETRY,
+					index = IType.GEOMETRY,
 					optional = false,
 					doc = @doc ("a graph representing the road network")),
 					@arg (
 							name = "proba_roads",
 							type = IType.MAP,
+							of = IType.FLOAT,
+							index = IType.AGENT,
 							optional = true,
 							doc = @doc ("a map containing for each road (key), the probability to be selected as next road (value)")) },
 			doc = @doc (
@@ -2181,7 +2187,8 @@ public class DrivingSkill extends MovingSkill {
 					vehicle.setLocation(endPt);
 					final IPoint segStart = !violatingOneway ? GamaPointFactory.create(coords[currentSegment])
 							: GamaPointFactory.create(coords[currentSegment + 1]);
-					final Double segHeading = getTopology(vehicle).directionInDegreesTo(vehicle.getScope(), segStart, endPt);
+					final Double segHeading =
+							getTopology(vehicle).directionInDegreesTo(vehicle.getScope(), segStart, endPt);
 					if (segHeading != null) { setHeading(vehicle, segHeading); }
 				}
 				setDistanceToGoal(vehicle, 0.0);

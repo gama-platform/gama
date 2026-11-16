@@ -47,7 +47,7 @@ experiment DifferentialTest type: test autorun: true {
 				point b <- a + one_of([{10, 0}, {0, 10}, {10, 10}]);
 				segments <+ line([a, b]);
 			}
-			graph g <- as_edge_graph(segments);
+			graph<point, geometry> g <- as_edge_graph(segments);
 			point source <- first(g.vertices);
 			point target <- last(g.vertices);
 			list<float> lengths <- [];

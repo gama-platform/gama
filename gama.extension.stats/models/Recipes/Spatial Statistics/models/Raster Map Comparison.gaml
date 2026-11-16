@@ -46,11 +46,11 @@ global {
 			fuzzy_transitions[i,i] <- 1.0;	
 		}
 		list<float> similarity_per_agents ;
-		write "kappa(map observed, map simulation, categories): " + kappa( cell collect (each.cat_observed),cell collect (each.cat),categories);
-		write "kappa simulation(map init, map observed, map simulation,categories): " + kappa_sim( cell collect (each.cat_init), cell collect (each.cat_observed),cell collect (each.cat),categories);
+		write "kappa(map observed, map simulation, categories): " + kappa( list(cell collect (each.cat_observed)),list(cell collect (each.cat)),categories);
+		write "kappa simulation(map init, map observed, map simulation,categories): " + kappa_sim( list(cell collect (each.cat_init)), list(cell collect (each.cat_observed)),list(cell collect (each.cat)),categories);
 		using topology(cell) {
-			write "fuzzy kappa(map observed, map simulation,categories): " + fuzzy_kappa(list(cell), cell collect (each.cat_observed),cell collect (each.cat), similarity_per_agents,categories,fuzzy_categories, 10);
-			write "fuzzy kappa sim(map init, map observed, map simulation,categories): " + fuzzy_kappa_sim(list(cell), cell collect (each.cat_init), cell collect (each.cat_observed),cell collect (each.cat), similarity_per_agents,categories,fuzzy_transitions, 10);
+			write "fuzzy kappa(map observed, map simulation,categories): " + fuzzy_kappa(list(cell), list(cell collect (each.cat_observed)),list(cell collect (each.cat)), similarity_per_agents,categories,fuzzy_categories, 10);
+			write "fuzzy kappa sim(map init, map observed, map simulation,categories): " + fuzzy_kappa_sim(list(cell), list(cell collect (each.cat_init)), list(cell collect (each.cat_observed)),list(cell collect (each.cat)), similarity_per_agents,categories,fuzzy_transitions, 10);
 		}
 		loop i from: 0 to: length(cell) - 1 {
 			int val <- int(255 * similarity_per_agents[i]);

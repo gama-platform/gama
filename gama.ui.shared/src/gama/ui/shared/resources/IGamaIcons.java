@@ -215,6 +215,8 @@ public interface IGamaIcons {
 	/** The folder user. */
 	String FOLDER_USER = "navigator/folder.user";
 
+	String FOLDER_COMMUNITY = "navigator/folder.community";
+
 	/** The icon of the groups of projects. */
 	String FOLDER_GROUP = "navigator/folder.group";
 

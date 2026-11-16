@@ -13,8 +13,8 @@ model To_GAMA_CRS
 
 global {
 	
-	file building_file <- shape_file("../gis/init.shp");
-	file data_csv_file <- csv_file("../gis/data.csv", ",", float);
+	file building_file <- shape_file("../includes/gis/init.shp");
+	file data_csv_file <- csv_file("../includes/gis/data.csv", ",", float);
 	
 	geometry shape <- envelope(building_file); //set the GAMA coordinate reference system using the one of the building_file (Lambert zone II).
 	

@@ -184,7 +184,7 @@ experiment TraficGroup type: gui {
 		// The red time series correspond to the section just before the middle one.
 				
 		display Concentrations  type: 3d {
-			chart "Concentrations" type: series  {
+			chart "Concentrations" kind: series  {
 				loop i from: 0 to: length(section) -1 {
 					data 'Section '+i value: section[i].current_concentration color: section[i].color marker: false ;		
 				}
@@ -193,7 +193,7 @@ experiment TraficGroup type: gui {
 		}
 			
 			display Flows  type: 3d {
-			    chart "Flows" type: series  {
+			    chart "Flows" kind: series  {
 			    	loop i from: 0 to: length(section) -1 {
 						data 'Section '+i value: section[i].current_flow color: section[i].color marker: false ;		
 			   		}

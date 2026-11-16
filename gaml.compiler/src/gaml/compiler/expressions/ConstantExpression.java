@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.expressions;
 
+import java.util.Collection;
+
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.expressions.IExpression;
@@ -198,6 +200,12 @@ public class ConstantExpression extends AbstractExpression {
 	 */
 	@Override
 	public boolean isConst() { return true; }
+
+	@Override
+	public boolean isEmpty() {
+		return value instanceof Collection<?> collection && collection.isEmpty()
+				|| value instanceof java.util.Map<?, ?> map && map.isEmpty();
+	}
 
 	@Override
 	public String toString() {

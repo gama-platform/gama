@@ -683,9 +683,20 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EReference getStandaloneExperiment_Pragmas()
+  {
+    return (EReference)standaloneExperimentEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EAttribute getStandaloneExperiment_Name()
   {
-    return (EAttribute)standaloneExperimentEClass.getEStructuralFeatures().get(0);
+    return (EAttribute)standaloneExperimentEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -696,7 +707,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   @Override
   public EAttribute getStandaloneExperiment_ImportURI()
   {
-    return (EAttribute)standaloneExperimentEClass.getEStructuralFeatures().get(1);
+    return (EAttribute)standaloneExperimentEClass.getEStructuralFeatures().get(2);
   }
 
   /**
@@ -2103,6 +2114,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(standaloneExpressionEClass, STANDALONE_EXPRESSION__EXPR);
 
     standaloneExperimentEClass = createEClass(STANDALONE_EXPERIMENT);
+    createEReference(standaloneExperimentEClass, STANDALONE_EXPERIMENT__PRAGMAS);
     createEAttribute(standaloneExperimentEClass, STANDALONE_EXPERIMENT__NAME);
     createEAttribute(standaloneExperimentEClass, STANDALONE_EXPERIMENT__IMPORT_URI);
 
@@ -2406,6 +2418,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getStandaloneExpression_Expr(), this.getExpression(), null, "expr", null, 0, 1, StandaloneExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(standaloneExperimentEClass, StandaloneExperiment.class, "StandaloneExperiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getStandaloneExperiment_Pragmas(), this.getPragma(), null, "pragmas", null, 0, -1, StandaloneExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getStandaloneExperiment_Name(), ecorePackage.getEString(), "name", null, 0, 1, StandaloneExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getStandaloneExperiment_ImportURI(), ecorePackage.getEString(), "importURI", null, 0, 1, StandaloneExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 

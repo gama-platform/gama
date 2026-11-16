@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.constants.GamlFileExtension;
 import gama.api.exceptions.CommandException;
 import gama.api.gaml.types.Types;
@@ -23,7 +24,7 @@ import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 
 /** Options shared by the GUI and headless implementations of the WebSocket {@code load} command. */
-public record ServerLoadRequest(File model, String experiment, IList<?> parameters, String until,
+public record ServerLoadRequest(File model, String experiment, IList<?> parameters, Double seed, String until,
 		GamaServerExperimentConfiguration configuration) {
 
 	public static ServerLoadRequest parse(final WebSocket socket, final Map<String, Object> command) {
@@ -36,12 +37,27 @@ public record ServerLoadRequest(File model, String experiment, IList<?> paramete
 		if (!GamlFileExtension.isGaml(model.toString()))
 			throw invalid(MessageType.UnableToExecuteRequest, "'" + model + "' is not a gaml file", command);
 		final IList<?> params = parseParameters(command.get(ISocketCommand.PARAMETERS), command);
-		final String experiment = command.get("experiment").toString().trim();
+		final String experiment = command.get("experiment").toString();
 		final String until = command.get(ISocketCommand.UNTIL) == null ? ""
 				: command.get(ISocketCommand.UNTIL).toString();
-		return new ServerLoadRequest(model, experiment, params, until,
+		return new ServerLoadRequest(model, experiment, params, parseSeed(command), until,
 				new GamaServerExperimentConfiguration(socket, experiment, flag(command, "console", true),
 						flag(command, "status", false), flag(command, "dialog", false), flag(command, "runtime", true)));
+	}
+
+	/** An omitted seed uses GAML's zero seed to request a new draw from the engine. */
+	static double parseSeed(final Map<String, Object> command) {
+		final Object value = command.get(IKeyword.SEED);
+		if (value != null) {
+			try {
+				final double seed = Double.parseDouble(value.toString());
+				if (Double.isFinite(seed)) return seed;
+			} catch (NumberFormatException ignored) {
+				// Report malformed values through the same protocol as other request fields.
+			}
+			throw invalid(MessageType.MalformedRequest, "'seed' must be a finite number", command);
+		}
+		return 0d;
 	}
 
 	/** Accepts the legacy array representation and the compact name-to-value object representation. */

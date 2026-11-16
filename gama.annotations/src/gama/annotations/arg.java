@@ -24,18 +24,28 @@ public @interface arg {
 	 *
 	 * @return the name of the argument as it can be used in GAML
 	 */
-	String name()
-
-	default "";
+	String name() default "";
 
 	/**
 	 * Type.
 	 *
 	 * @return An array containing the textual representation of the types that can be taken by the argument (see IType)
 	 */
-	int type()
+	int type() default 0;
 
-	default 0;
+	/**
+	 * Of.
+	 *
+	 * @return The int representation of the content type of the argument (see IType#defaultContentType())
+	 */
+	int of() default 0;
+
+	/**
+	 * Index.
+	 *
+	 * @return The int representation of the index type of the argument (see IType#defaultKeyType())
+	 */
+	int index() default 0;
 
 	/**
 	 * Optional.
@@ -43,9 +53,7 @@ public @interface arg {
 	 * @return whether this argument is optional or not
 	 * @change AD 31/08/13 : the default is now true.
 	 */
-	boolean optional()
-
-	default true;
+	boolean optional() default true;
 
 	/**
 	 * Doc.

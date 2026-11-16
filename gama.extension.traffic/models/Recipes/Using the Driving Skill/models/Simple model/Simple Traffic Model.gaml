@@ -16,7 +16,7 @@ global {
 	shape_file roads_shape_file <- shape_file("../../includes/rouen/roads.shp");
 	
 	geometry shape <- envelope(roads_shape_file);
-	graph road_network;
+	graph<geometry, geometry> road_network;
 	init {
 		create intersection from: nodes_shape_file;
 		

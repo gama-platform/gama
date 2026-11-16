@@ -117,10 +117,10 @@ species accessing_matrix_elements {
 		write sample(m1 contains_any [1,23]);
 		// reverse on a matrix is a transpose
 		write sample(reverse(m2));
-		// collect transforms a matrix into a list
+		// collect preserves the matrix dimensions and infers the result's element type
 		write sample(m1 collect (each + 1));
-		// we thus need to transform again the result list to get a matrix
-		write sample(m1 collect (each + 1) as_matrix {2,4});
+		// Cast to list explicitly when a flat result is wanted
+		write sample(list(m1 collect (each + 1)));
 		write sample(m1 collect (norm({each, each, each})));
 		write sample(m1 where (each > 5));
 		write sample(m1 count (each > 5));
@@ -269,7 +269,23 @@ species modifying_matrices {
 	}
 }
 
+grid matrix_cells width: 3 height: 2 {
+	float amount <- grid_x + 10.0 * grid_y;
+}
+
 experiment Matrices type: gui {
+	user_command "Grid matrix access" {
+		// Grid attribute brackets return a typed snapshot at the cell coordinates.
+		matrix<float> values <- matrix_cells[amount];
+		// Float attribute snapshots are already fields internally; this cast makes no copy.
+		field spatial_values <- field(matrix_cells[amount]);
+		matrix<float> doubled <- matrix_cells collect (each.amount * 2.0);
+		matrix_cells[amount] <- doubled;
+		write sample(values);
+		write sample(doubled);
+		// Convert the source to a list when a flat result is required.
+		write sample(list(matrix_cells) collect each.amount);
+	}
 	user_command "Declaring matrices" {create declaring_matrix_attributes;}	
 	user_command "Accessing matrix elements " {create accessing_matrix_elements;}	
 	user_command "Combining Matrices " {create combining_matrices;}	

@@ -170,13 +170,22 @@ public interface GamlPackage extends EPackage
   int STANDALONE_EXPERIMENT__KEY = ENTRY_FEATURE_COUNT + 2;
 
   /**
+   * The feature id for the '<em><b>Pragmas</b></em>' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int STANDALONE_EXPERIMENT__PRAGMAS = ENTRY_FEATURE_COUNT + 3;
+
+  /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int STANDALONE_EXPERIMENT__NAME = ENTRY_FEATURE_COUNT + 3;
+  int STANDALONE_EXPERIMENT__NAME = ENTRY_FEATURE_COUNT + 4;
 
   /**
    * The feature id for the '<em><b>Import URI</b></em>' attribute.
@@ -185,7 +194,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STANDALONE_EXPERIMENT__IMPORT_URI = ENTRY_FEATURE_COUNT + 4;
+  int STANDALONE_EXPERIMENT__IMPORT_URI = ENTRY_FEATURE_COUNT + 5;
 
   /**
    * The number of structural features of the '<em>Standalone Experiment</em>' class.
@@ -194,7 +203,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STANDALONE_EXPERIMENT_FEATURE_COUNT = ENTRY_FEATURE_COUNT + 5;
+  int STANDALONE_EXPERIMENT_FEATURE_COUNT = ENTRY_FEATURE_COUNT + 6;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.ModelImpl <em>Model</em>}' class.
@@ -2977,6 +2986,17 @@ public interface GamlPackage extends EPackage
   EClass getStandaloneExperiment();
 
   /**
+   * Returns the meta object for the containment reference list '{@link gaml.compiler.gaml.StandaloneExperiment#getPragmas <em>Pragmas</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference list '<em>Pragmas</em>'.
+   * @see gaml.compiler.gaml.StandaloneExperiment#getPragmas()
+   * @see #getStandaloneExperiment()
+   * @generated
+   */
+  EReference getStandaloneExperiment_Pragmas();
+
+  /**
    * Returns the meta object for the attribute '{@link gaml.compiler.gaml.StandaloneExperiment#getName <em>Name</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4378,6 +4398,14 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass STANDALONE_EXPERIMENT = eINSTANCE.getStandaloneExperiment();
+
+    /**
+     * The meta object literal for the '<em><b>Pragmas</b></em>' containment reference list feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference STANDALONE_EXPERIMENT__PRAGMAS = eINSTANCE.getStandaloneExperiment_Pragmas();
 
     /**
      * The meta object literal for the '<em><b>Name</b></em>' attribute feature.

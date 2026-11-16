@@ -19,6 +19,24 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### BREAKING CHANGE: explicit container types for built-in action arguments
+
+Built-in actions now expose and check the content and key types declared by their Java
+`@arg` annotations (`of` and `index`). Models that previously passed an unparameterized
+`graph` to spatial movement, driving or pedestrian actions may now report an argument-type
+error. Declare these networks as `graph<geometry, geometry>`, not just `graph`; the two
+parameters describe vertices and edges, respectively. Road and intersection agents are
+compatible with geometry types.
+
+Update globals, attributes, local variables and action parameters through which these
+networks are passed. Assigning a spatial graph to a variable declared only as `graph`
+does not refine that variable's declared type. Other container arguments may similarly
+require explicit list element or map key/value types. This does not require non-spatial
+graphs to use geometry types.
+
+See the [migration example](MIGRATION_GUIDE_2026.md#explicit-container-types-for-built-in-action-arguments)
+for the declaration change.
+
 ### Headless commands for playable models and project archives
 
 `gama-headless` can now generate, validate and run `.gamx` playable models and `.gamp` project archives, with the
@@ -1406,8 +1424,21 @@ The codebase makes extensive use of new Java features like pattern matching, res
 
 GAML's matrix toolkit expands with element-wise matrix/scalar arithmetic, powers, convolution,
 scalar comparisons producing masks, `shift`, matrix-valued `ifelse`, and element-wise mathematical
-functions. `matrix_with(grid, "attribute")` reads a grid attribute as a matrix; `set_values`
-writes matrix values back to the grid. Vectorized matrix/field/diffusion paths use the Java Vector API,
+functions. `cell[attribute]` reads a complete grid species attribute as a typed spatial matrix,
+with optimized extraction. `cell[attribute] <- values;` writes a matrix back using a
+compile-time-checked attribute reference. Values retain their declared types and normal
+attribute setter behavior. Matrix dimensions are checked before writing.
+Float attribute snapshots are internally fields, so `field(cell[attribute])` reuses the
+snapshot without a conversion copy while bracket expressions remain typed as `matrix<float>`.
+The same brackets work on ordinary species: `animal[energy]` returns a typed list in population order,
+and `animal[energy] <- values;` assigns a compatible list with exactly one element per agent.
+Inherited attributes and typed species aliases are supported; list length is checked before writing.
+`cell collect expression` also preserves spatial structure and infers the result content type.
+**Migration:** the string-based grid operators `matrix_with(grid, "attribute")` and `set_values` are removed;
+the dimensions-based `{columns, rows} matrix_with expression` remains available.
+Grid `collect` now returns a matrix, so use `list(cell) collect each.attribute` where a flat
+list is required. Lists of cells and filtered grids still collect to lists.
+Vectorized matrix/field/diffusion paths use the Java Vector API,
 and bundled Life and Ant Foraging examples demonstrate matrix-based computation
 ([`025ac5462`](https://github.com/gama-platform/gama/commit/025ac5462),
 [`b16056b3d`](https://github.com/gama-platform/gama/commit/b16056b3d),

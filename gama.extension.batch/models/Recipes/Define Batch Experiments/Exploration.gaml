@@ -76,7 +76,7 @@ experiment exhaustive_exploration parent: batch_abstract type: batch keep_seed: 
 	//the permanent section allows to define a output section that will be kept during all the batch experiment
 	permanent {
 		display Comparison  type: 2d {
-			chart "Number of people infected" type: series {
+			chart "Number of people infected" kind: series {
 				//we can access to all the simulations of a run (here composed of 5 simulation -> repeat: 5) by the variable "simulations" of the experiment.
 				//here we display for the 5 simulations, the mean, min and max values of the nb_infected variable.
 				data "Mean" value: mean(simulations collect each.nb_preys ) style: spline color: #blue ;

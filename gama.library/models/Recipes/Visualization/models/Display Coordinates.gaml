@@ -44,7 +44,7 @@ experiment "Display Coordinates" type: gui {
                 draw circle(5) at: marker color: #blue;
                 draw "World mini-map" at: {50, 10} anchor: #center color: #black;
             }
-            chart "World marker X (0-100)" type: series coordinates: #screen
+            chart "World marker X (0-100)" kind: series coordinates: #screen
                 position: {16, -0.30} size: {0.48, 0.28} x_range: 200 y_range: {0, 100} {
                 data "X" value: marker.x color: #blue;
             }

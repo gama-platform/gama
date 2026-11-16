@@ -17,6 +17,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +36,7 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
 import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -41,12 +44,14 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 import com.google.inject.Singleton;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.compilation.descriptions.ISkillDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.gaml.GAML;
@@ -159,9 +164,9 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		 * @param stub
 		 *            the stub
 		 */
-		public void add(final QualifiedName name, final GamlDefinition stub) {
+		public void add(final QualifiedName name, final GamlDefinition stub, final String kind) {
 			resource.getContents().add(stub);
-			final IEObjectDescription desc = EObjectDescription.create(name, stub);
+			final IEObjectDescription desc = EObjectDescription.create(name, stub, Map.of(IKeyword.TYPE, kind));
 			elements.put(name, desc);
 			// Pre-populate URI cache
 			uriCache.put(EcoreUtil2.getPlatformResourceOrNormalizedURI(stub), desc);
@@ -176,6 +181,33 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 
 	/** The all names. */
 	private final Set<QualifiedName> allQualifiedNames = new HashSet<>();
+
+	/** The Constant MEMBER_TYPE. */
+	public static final String MEMBER_TYPE = "gamlType";
+
+	/** The Constant MEMBER_SIGNATURE. */
+	public static final String MEMBER_SIGNATURE = "signature";
+
+	/** The Constant MEMBER_ORIGIN. */
+	public static final String MEMBER_ORIGIN = "origin";
+
+	/** The species variables. */
+	private final Map<String, Map<String, IEObjectDescription>> speciesVariables = new HashMap<>();
+
+	/** The species actions. */
+	private final Map<String, Map<String, IEObjectDescription>> speciesActions = new HashMap<>();
+
+	/** The skill variables. */
+	private final Map<String, Map<String, IEObjectDescription>> skillVariables = new HashMap<>();
+
+	/** The skill actions. */
+	private final Map<String, Map<String, IEObjectDescription>> skillActions = new HashMap<>();
+
+	/** The expression variables. */
+	private final Set<String> expressionVariables = new LinkedHashSet<>();
+
+	/** The expression actions. */
+	private final Set<String> expressionActions = new LinkedHashSet<>();
 
 	/** The e equation. */
 	private final EClass eType, eVar, eSkill, eAction, eUnit, eEquation;
@@ -218,8 +250,8 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		scopes.put(eType, new EClassBasedScope("types.xmi"));
 		scopes.put(eVar, new EClassBasedScope("vars.xmi"));
 		scopes.put(eSkill, new EClassBasedScope("skills.xmi"));
-		scopes.put(eAction, new EClassBasedScope("units.xmi"));
-		scopes.put(eUnit, new EClassBasedScope("actions.xmi"));
+		scopes.put(eAction, new EClassBasedScope("actions.xmi"));
+		scopes.put(eUnit, new EClassBasedScope("units.xmi"));
 		scopes.put(eEquation, new EClassBasedScope("equations.xmi"));
 	}
 
@@ -248,59 +280,280 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		if (initialized) return;
 		initialized = true;
 		DEBUG.TIMER(BANNER_CATEGORY.GAML, "Language artifacts", "built in", () -> {
-			add(IExpressionFactory.TEMPORARY_ACTION_NAME, eAction);
-			Types.getTypeNames().forEach(t -> add(t, eType, eVar, eAction));
+			add(IExpressionFactory.TEMPORARY_ACTION_NAME, IKeyword.ACTION, eAction);
+			Types.getTypeNames().forEach(t -> add(t, IKeyword.TYPE, eType, eVar, eAction));
 
-			GAML.getConstants().forEach(t -> {
-				try {
-					add(t, eType, eVar);
-				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when building constant artefact " + t, ex);
-				}
-			});
+			// GAML.getConstants().forEach(t -> {
+			// try {
+			// DEBUG.LOG("---> adding " + t + " as constant (vars.xmi)");
+			// add(t, "constant", /* eType, */eVar);
+			// } catch (Exception ex) {
+			// GamaBundleLoader.ERROR("Error when building constant artefact " + t, ex);
+			// }
+			// });
 			GAML.getUnits().forEach((t, u) -> {
 				try {
-					add(t, eUnit);
+					DEBUG.LOG("---> adding " + t + " as unit (unit.xmi)");
+					add(t, "unit", eUnit);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building unit artefact " + t, ex);
 				}
 			});
 			GAML.getFields().forEach(a -> {
 				try {
-					add(a.getName(), eVar);
+					add(a.getName(), "field", eVar);
 				} catch (Exception e) {
 					GamaBundleLoader.ERROR("Error when building field artefact " + a, e);
 				}
 			});
 			getAllVars().forEach(t -> {
 				try {
-					add(t.getName(), eVar);
+					add(t.getName(), "variable", eVar);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building var artefact " + t.getName(), ex);
 				}
 			});
 			GamaSkillRegistry.INSTANCE.getAllSkillNames().forEach(t -> {
 				try {
-					add(t, eSkill, eVar);
+					add(t, IKeyword.SKILL, eSkill, eVar);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building skill artefact " + t, ex);
 				}
 			});
 			getAllActions().forEach(t -> {
 				try {
-					add(t.getName(), eAction, eVar);
+					add(t.getName(), IKeyword.ACTION, eAction, eVar);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building action artefact " + t.getName(), ex);
 				}
 			});
 			GAML.getOperatorsNames().forEach(a -> {
 				try {
-					add(a, eAction);
+					add(a, Types.get(a) != Types.NO_TYPE ? IKeyword.TYPE : "operator", eAction);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building action artefact " + a, ex);
 				}
 			});
+			indexMemberNames();
 		});
+	}
+
+	/**
+	 * Index member names.
+	 */
+	private void indexMemberNames() {
+		expressionVariables.addAll(GAML.getConstants());
+		addAll(expressionVariables, Types.getTypeNames());
+		expressionActions.addAll(GAML.getOperatorsNames());
+		addAll(expressionActions, Types.getTypeNames());
+		for (final ISkillDescription skill : GamaSkillRegistry.INSTANCE.getRegisteredSkills()) {
+			final Map<String, IDescription> variables = new LinkedHashMap<>();
+			final Map<String, IDescription> actions = new LinkedHashMap<>();
+			collectSkillMembers(skill, variables, actions, new HashSet<>());
+			skillVariables.put(skill.getName(), memberDescriptions(variables, false));
+			skillActions.put(skill.getName(), memberDescriptions(actions, true));
+		}
+		for (final ITypeDescription type : GamaMetaModel.getAllSpeciesDescriptions()) {
+			if (!(type instanceof ISpeciesDescription species)) { continue; }
+			final Map<String, IDescription> variables = new LinkedHashMap<>();
+			final Map<String, IDescription> actions = new LinkedHashMap<>();
+			collectSpeciesMembers(species, variables, actions, new HashSet<>(), new HashSet<>());
+			speciesVariables.put(species.getName(), memberDescriptions(variables, false));
+			speciesActions.put(species.getName(), memberDescriptions(actions, true));
+		}
+	}
+
+	/**
+	 * Collect species members.
+	 *
+	 * @param species
+	 *            the species
+	 * @param variables
+	 *            the variables
+	 * @param actions
+	 *            the actions
+	 * @param visitedSpecies
+	 *            the visited species
+	 * @param visitedSkills
+	 *            the visited skills
+	 */
+	private void collectSpeciesMembers(final ISpeciesDescription species, final Map<String, IDescription> variables,
+			final Map<String, IDescription> actions, final Set<ISpeciesDescription> visitedSpecies,
+			final Set<ISkillDescription> visitedSkills) {
+		if (!visitedSpecies.add(species)) return;
+		if (species.getParent() != null) {
+			collectSpeciesMembers(species.getParent(), variables, actions, visitedSpecies, visitedSkills);
+		}
+		for (final ISkillDescription skill : species.getSkills()) {
+			collectSkillMembers(skill, variables, actions, visitedSkills);
+		}
+		variables.putAll(species.getOwnAttributes());
+		actions.putAll(species.getOwnActions());
+	}
+
+	/**
+	 * Collect skill members.
+	 *
+	 * @param skill
+	 *            the skill
+	 * @param variables
+	 *            the variables
+	 * @param actions
+	 *            the actions
+	 * @param visitedSkills
+	 *            the visited skills
+	 */
+	private void collectSkillMembers(final ISkillDescription skill, final Map<String, IDescription> variables,
+			final Map<String, IDescription> actions, final Set<ISkillDescription> visitedSkills) {
+		if (!visitedSkills.add(skill)) return;
+		if (skill.getParent() instanceof ISkillDescription parent) {
+			collectSkillMembers(parent, variables, actions, visitedSkills);
+		}
+		GamaSkillRegistry.INSTANCE.getEffectiveVariablesForSkill(skill.getName())
+				.forEach(variable -> variables.put(variable.getName(), variable));
+		actions.putAll(skill.getOwnActions());
+	}
+
+	/**
+	 * Member descriptions.
+	 *
+	 * @param members
+	 *            the members
+	 * @param action
+	 *            the action
+	 * @return the map
+	 */
+	private Map<String, IEObjectDescription> memberDescriptions(final Map<String, IDescription> members,
+			final boolean action) {
+		final Map<String, IEObjectDescription> result = new LinkedHashMap<>();
+		members.forEach((name, description) -> result.put(name,
+				new EObjectDescription(QualifiedName.create(name),
+						EGaml.getInstance().createGamlDefinition(name, action ? eAction : eVar),
+						Map.of(IKeyword.TYPE, action ? IKeyword.ACTION : "variable")) {
+					@Override
+					public String getUserData(final String key) {
+						return switch (key) {
+							case MEMBER_TYPE -> description.getGamlType().toString();
+							case MEMBER_ORIGIN -> {
+								final String origin = description.getOriginName();
+								if (origin != null && !origin.isBlank()) { yield origin; }
+								final IDescription owner = description.getEnclosingDescription();
+								yield owner == null ? null : owner.getKeyword() + " " + owner.getName();
+							}
+							case "title" -> description.getTitle();
+							case "doc" -> {
+								final var documentation = description.getDocumentation();
+								yield documentation == null ? null : documentation.toString();
+							}
+							case MEMBER_SIGNATURE -> {
+								final StringBuilder signature = new StringBuilder(description.getGamlType().toString())
+										.append(' ').append(name);
+								if (description instanceof IActionDescription callable) {
+									final List<String> arguments = Lists.newArrayList();
+									callable.getFormalArgs()
+											.forEach(arg -> arguments.add(arg.getGamlType() + " " + arg.getName()));
+									signature.append('(').append(String.join(", ", arguments)).append(')');
+								}
+								yield signature.toString();
+							}
+							default -> super.getUserData(key);
+						};
+					}
+
+					@Override
+					public String[] getUserDataKeys() {
+						return new String[] { IKeyword.TYPE, MEMBER_TYPE, MEMBER_SIGNATURE, MEMBER_ORIGIN, "title",
+								"doc" };
+					}
+				}));
+		return Collections.unmodifiableMap(result);
+	}
+
+	/**
+	 * Gets the species members.
+	 *
+	 * @param speciesName
+	 *            the species name
+	 * @param actions
+	 *            the actions
+	 * @return the species members
+	 */
+	public Set<String> getSpeciesMembers(final String speciesName, final boolean actions) {
+		ensureInitialized();
+		final Map<String, Map<String, IEObjectDescription>> members = actions ? speciesActions : speciesVariables;
+		return members.getOrDefault(speciesName, Collections.emptyMap()).keySet();
+	}
+
+	/**
+	 * Gets the skill members.
+	 *
+	 * @param skillName
+	 *            the skill name
+	 * @param actions
+	 *            the actions
+	 * @return the skill members
+	 */
+	public Set<String> getSkillMembers(final String skillName, final boolean actions) {
+		ensureInitialized();
+		final Map<String, Map<String, IEObjectDescription>> members = actions ? skillActions : skillVariables;
+		return members.getOrDefault(skillName, Collections.emptyMap()).keySet();
+	}
+
+	/**
+	 * Gets the species member scope.
+	 *
+	 * @param name
+	 *            the name
+	 * @param actions
+	 *            the actions
+	 * @param parent
+	 *            the parent
+	 * @return the species member scope
+	 */
+	public IScope getSpeciesMemberScope(final String name, final boolean actions, final IScope parent) {
+		ensureInitialized();
+		return new SimpleScope(parent,
+				(actions ? speciesActions : speciesVariables).getOrDefault(name, Collections.emptyMap()).values());
+	}
+
+	/**
+	 * Gets the skill member scope.
+	 *
+	 * @param name
+	 *            the name
+	 * @param actions
+	 *            the actions
+	 * @param parent
+	 *            the parent
+	 * @return the skill member scope
+	 */
+	public IScope getSkillMemberScope(final String name, final boolean actions, final IScope parent) {
+		ensureInitialized();
+		return new SimpleScope(parent,
+				(actions ? skillActions : skillVariables).getOrDefault(name, Collections.emptyMap()).values());
+	}
+
+	/**
+	 * Gets the expression scope.
+	 *
+	 * @param actions
+	 *            the actions
+	 * @return the expression scope
+	 */
+	public IScope getExpressionScope(final boolean actions) {
+		ensureInitialized();
+		final EClassBasedScope scope = scopes.get(actions ? eAction : eVar);
+		final List<IEObjectDescription> descriptions = Lists.newArrayList();
+		for (final String name : actions ? expressionActions : expressionVariables) {
+			final IEObjectDescription description = scope.getSingleElement(QualifiedName.create(name));
+			if (description != null) {
+				final String kind =
+						Types.get(name) != Types.NO_TYPE ? IKeyword.TYPE : actions ? "operator" : "constant";
+				descriptions.add(EObjectDescription.create(description.getName(), description.getEObjectOrProxy(),
+						Map.of(IKeyword.TYPE, kind)));
+			}
+		}
+		return new SimpleScope(IScope.NULLSCOPE, descriptions);
 	}
 
 	/**
@@ -385,11 +638,13 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	 *
 	 * @return the last stub constructed
 	 */
-	void add(final String t, final EClass... classes) {
+	void add(final String t, final String kind, final EClass... classes) {
 		final QualifiedName qName = QualifiedName.create(t);
 		allQualifiedNames.add(qName);
 		final EGaml eGaml = EGaml.getInstance();
-		for (final EClass eClass : classes) { scopes.get(eClass).add(qName, eGaml.createGamlDefinition(t, eClass)); }
+		for (final EClass eClass : classes) {
+			scopes.get(eClass).add(qName, eGaml.createGamlDefinition(t, eClass), kind);
+		}
 	}
 
 	@Override

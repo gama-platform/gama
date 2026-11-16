@@ -19,7 +19,7 @@ global {
 	shape_file pedestrian_paths_shape_file <- shape_file("../includes/pedestrian paths.shp");
 
 	
-	graph network;
+	graph<geometry, geometry> network;
 	
 	geometry shape <- envelope(wall_shapefile);
 	

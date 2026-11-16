@@ -26,6 +26,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
@@ -1029,7 +1030,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 		if (elements.length == 0) return Types.NO_TYPE;
 		Set<IType<?>> types = new LinkedHashSet<>();
 		for (final IExpression e : elements) {
-			if (e == null) { continue; }
+			if (e == null || kind != TYPE && e == GAML.getExpressionFactory().getNil()) { continue; }
 			final IType<?> eType = e.getGamlType();
 			types.add(kind == TYPE ? eType : kind == CONTENT ? eType.getContentType() : eType.getKeyType());
 		}

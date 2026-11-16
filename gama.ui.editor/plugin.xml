@@ -485,7 +485,7 @@
           class="gama.ui.views.GamaMinimapView"
           icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.minimap.svg"
           id="gama.ui.application.view.minimap"
-          name="Navigation"
+          name="Minimap"
           restorable="true">
     </view>
  </extension>

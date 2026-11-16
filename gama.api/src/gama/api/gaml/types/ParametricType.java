@@ -452,6 +452,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	@Override
 	public IType<? super IContainer<?, ?>> computeFindCommonSupertypeWith(final IType<?> iType) {
 		// Use polymorphic internal methods to avoid recursion
+		if (iType == Types.NO_TYPE && getDefault() == null) return this;
 		if (iType instanceof ParametricType) {
 			final IType<?> pType = iType;
 			final IType<?> cType = type.computeFindCommonSupertypeWith(pType.getGamlType());

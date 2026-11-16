@@ -193,7 +193,7 @@ experiment Benchmark type: gui {
 			species particle aspect: solid;
 		}
 		display "Charts" type: 3d {
-			chart "Time series" type: series {
+			chart "Time series" kind: series {
 				datalist legend: series_names value: series_values;
 			}
 		}

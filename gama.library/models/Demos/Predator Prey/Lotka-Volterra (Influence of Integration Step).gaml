@@ -73,27 +73,27 @@ experiment maths type: gui {
 		
 	output {		
  		display TimeSeries  type: 3d  {	// creation of a display to show time series of the model, values are plotted at every step. Since there is more than one chart plotted in one display, every chart has a position and a size
-			chart "Lotka Volterra Time Series - Integration time step = 1 " coordinates: #screen type: series background: #white position: {0,0} size:{#display_width,0.33} x_range: 1000 { 		// one chart, of type 'serie', is named Lotka Volterra Time Series - Integration time step = 1, it shows quantities according to time, and the background is white
+			chart "Lotka Volterra Time Series - Integration time step = 1 " coordinates: #screen kind: series background: #white position: {0,0} size:{#display_width,0.33} x_range: 1000 { 		// one chart, of type 'serie', is named Lotka Volterra Time Series - Integration time step = 1, it shows quantities according to time, and the background is white
 				data 'Number of preys' value: first(LotkaVolterra_agent where (each.integration_time_step = 1.0)).nb_prey color: #green ;			// number of preys in the case where the integration time step is 1 is plotted in green		
 				data 'Number of predators' value: first(LotkaVolterra_agent where (each.integration_time_step = 1.0)).nb_predator color: #red ; 	// number of predators in the case where the integration time step is 1 is plotted in red	
 			}
-			chart "Lotka Volterra Time Series - Integration time step = 0.1 " coordinates: #screen type: series background: #white position: {0,0.33} size:{#display_width,0.33} x_range: 1000{
+			chart "Lotka Volterra Time Series - Integration time step = 0.1 " coordinates: #screen kind: series background: #white position: {0,0.33} size:{#display_width,0.33} x_range: 1000{
 				data 'Number of preys' value: first(LotkaVolterra_agent where (each.integration_time_step = 0.1)).nb_prey color: #green ;				
 				data 'Number of predators' value: first(LotkaVolterra_agent where (each.integration_time_step = 0.1)).nb_predator color: #red ;
 			}
-			chart "Lotka Volterra Time Series - Integration time step = 0.01 " coordinates: #screen type: series background: #white position: {0,0.66} size:{#display_width,0.33}x_range: 1000{
+			chart "Lotka Volterra Time Series - Integration time step = 0.01 " coordinates: #screen kind: series background: #white position: {0,0.66} size:{#display_width,0.33}x_range: 1000{
 				data 'Number of preys' value: first(LotkaVolterra_agent where (each.integration_time_step = 0.01)).nb_prey color: #green ;				
 				data 'Number of predators' value: first(LotkaVolterra_agent where (each.integration_time_step = 0.01)).nb_predator color: #red ;
 			}
 		}
 		display PhasePortrait  type: 3d {			
-			chart "Lotka Volterra Phase Portrait - Integration time step = 1" coordinates: #screen type: xy background: #white position: {0,0} size:{#display_width,0.33} {		// creation of a display to show phase portrait of the model, values are plotted at every step. Since there is more than one chart plotted in one display, every chart has a position and a size
+			chart "Lotka Volterra Phase Portrait - Integration time step = 1" coordinates: #screen kind: xy background: #white position: {0,0} size:{#display_width,0.33} {		// creation of a display to show phase portrait of the model, values are plotted at every step. Since there is more than one chart plotted in one display, every chart has a position and a size
 			data 'Number of preys according to number of predators' value:{LV_agents[0].nb_prey, LV_agents[0].nb_predator} color: #black ;	// number of predators are plotted in black according to the number of preys in the case where the integration time step is 1		
 			}
-			chart "Lotka Volterra Phase Portrait - Integration time step = 0.1" coordinates: #screen type: xy background: #white position: {0,0.33} size:{#display_width,0.33}{
+			chart "Lotka Volterra Phase Portrait - Integration time step = 0.1" coordinates: #screen kind: xy background: #white position: {0,0.33} size:{#display_width,0.33}{
 			data 'Number of preys according to number of predators' value:{LV_agents[1].nb_prey, LV_agents[1].nb_predator} color: #black ;				
 			}
-			chart "Lotka Volterra Phase Portrait - Integration time step = 0.01" coordinates: #screen type: xy background: #white position: {0,0.66} size:{#display_width,0.33} {
+			chart "Lotka Volterra Phase Portrait - Integration time step = 0.01" coordinates: #screen kind: xy background: #white position: {0,0.66} size:{#display_width,0.33} {
 			data 'Number of preys according to number of predators' value:{LV_agents[1].nb_prey, LV_agents[1].nb_predator} color: #black ;				
 			}
 		}

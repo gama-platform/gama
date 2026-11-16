@@ -135,6 +135,12 @@ import gama.api.runtime.scope.IScope;
  */
 public interface IVarExpression extends IExpression {
 
+	/** Whether this expression denotes an iterator binding rather than an ordinary variable with the same name. */
+	default boolean isEach() { return false; }
+
+	/** An assignment index binding an attribute to a statically known species. */
+	interface SpeciesAttribute extends IVarExpression {}
+
 	/**
 	 * Specialized interface for variable expressions that reference agent attributes. Agent variable expressions
 	 * provide access to attribute metadata and definition information.

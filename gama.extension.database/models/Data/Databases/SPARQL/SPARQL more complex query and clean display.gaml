@@ -78,8 +78,8 @@ ORDER BY ASC(MIN(?birthdate))';
 		// print the content
 		loop i from:0 to:length(result[headerNameCol])-1{
 			
-			string fullName <- result[headerNameCol][i];
-			string birthdate <- result[headerBirthdateCol][i];
+			string fullName <- string(result[headerNameCol][i]);
+			string birthdate <- string(result[headerBirthdateCol][i]);
 			
 			write "|" + centeredString(fullName, colNameWidth) +"|" + centeredString(birthdate, colBirthdateWidth) +"|";
 		}		

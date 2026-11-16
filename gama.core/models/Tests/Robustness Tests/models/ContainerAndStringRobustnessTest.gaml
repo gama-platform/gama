@@ -6,6 +6,8 @@
 * Tags: robustness, list, matrix, string, cast, test
 */
 
+@no_warning
+
 experiment ContainerAndStringRobustnessTest type: test autorun: true {
 
 	list<int> numbers <- [1, 2, 3];
@@ -88,12 +90,24 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		assert problem != nil or total = 0.0;
 	}
 
-	test "nil inside containers" {
-		assert numbers + nil = [1, 2, 3, nil];
+	test "nil is cast when added to a typed container" {
+		list<int> with_casted_nil <- numbers + nil;
+		assert with_casted_nil = [1, 2, 3, 0];
+		assert with_casted_nil[3] = 0;
+		assert not (with_casted_nil contains nil);
+		assert with_casted_nil index_of nil = -1;
 		assert numbers - nil = numbers;
 		assert not (numbers contains nil);
 		assert numbers index_of nil = -1;
+	}
 
+	test "nil can be added and removed from an untyped list" {
+		list values <- [1, 2];
+		list with_nil <- values + nil;
+		assert with_nil = [1, 2, nil];
+		assert with_nil contains nil;
+		assert with_nil index_of nil = 2;
+		assert with_nil - nil = [1, 2];
 	}
 
 	test "Searching lists for nil values" {

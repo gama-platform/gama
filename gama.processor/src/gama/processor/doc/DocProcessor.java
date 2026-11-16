@@ -1857,6 +1857,12 @@ public class DocProcessor extends ElementProcessor<doc> {
 			// : tc.getTypeString(eltArg.type()[i]));
 			// }
 			argElt.setAttribute(XMLElements.ATT_ARG_TYPE, tabType);
+			if (eltArg.of() != 0) {
+				argElt.setAttribute(XMLElements.ATT_ARG_CONTENT_TYPE, tc.getTypeString(eltArg.of()));
+			}
+			if (eltArg.index() != 0) {
+				argElt.setAttribute(XMLElements.ATT_ARG_KEY_TYPE, tc.getTypeString(eltArg.index()));
+			}
 			argElt.setAttribute(XMLElements.ATT_ARG_OPTIONAL, "" + eltArg.optional());
 			final org.w3c.dom.Element docEltArg = getDocElt(eltArg.doc(), doc, mes,
 					"Arg " + eltArg.name() + " from " + eltMethod.getSimpleName(), tc, null, argElt);

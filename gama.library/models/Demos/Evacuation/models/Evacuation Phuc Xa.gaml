@@ -35,7 +35,7 @@ global schedules: people_ordered{
 	float step <-0.5#s;
 	
 	geometry shape <- envelope(buildings_shape_file)  ;
-	graph road_network;
+	graph<geometry, geometry> road_network;
 	
 	float priority_min_road;
 
@@ -79,7 +79,7 @@ global schedules: people_ordered{
 			closest_evac <- evacuation_point[evacua];
 		}
 		ask road {	
-			linked_road <- linked = -1 ? nil : road[linked];
+			//linked_road <- linked = -1 ? nil : road[self.linked];
 			num_lanes <- lanes;
 			geom_display <- shape + (num_lanes * lane_width);
 			capacity <- round(num_lanes * shape.perimeter);
@@ -171,6 +171,8 @@ species building schedules:[]{
 	intersection closest_intersection;
 	int urban_block_id;
 	float distance;
+
+	
 	aspect default {
 		draw shape color: color border: #black depth: 10;
 	}
@@ -178,7 +180,7 @@ species building schedules:[]{
 
 species road skills: [road_skill] {
 	geometry geom_display;
-	int linked;
+	//int linked;
 	int use;
 	int lanes;
 	float vehicles <- 0.0 update: (all_agents sum_of (moving_agent(each).vehicle_length));

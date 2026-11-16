@@ -115,7 +115,7 @@ experiment SIR_gui type: gui {
             species person aspect: base;
         }
         display "SIR Chart" type: 3d {
-            chart "SIR dynamics" type: series {
+            chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
                 data "Recovered"   value: nb_recovered   color: #blue;
@@ -168,7 +168,7 @@ experiment SIR_Stochanalyse type: batch
     permanent {
 
         display "Stochastic spread" type: 3d {
-            chart "nb_recovered distribution across all runs" type: histogram
+            chart "nb_recovered distribution across all runs" kind: histogram
                   background: #white {
                 data "nb_recovered"
                     value: simulations collect each.nb_recovered

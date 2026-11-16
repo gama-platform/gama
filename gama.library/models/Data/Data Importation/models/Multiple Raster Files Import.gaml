@@ -32,7 +32,7 @@ global {
 		}
 		
 		//we define a color per land_use and use it to define the color of the cell
-		list<int> land_uses <- remove_duplicates(cell collect each.land_use);
+		list<int> land_uses <- remove_duplicates(list(cell) collect each.land_use);
 		colors <- land_uses as_map (each::rnd_color(255));
 		ask cell {
 			color <- colors[land_use];

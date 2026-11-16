@@ -2,7 +2,8 @@
 * Name: Life
 * Author: Gama Development Team
 * Description: A GAMA implementation of Conway's Game of Life, the most famous cellular automaton.
-* This model is a simplification of "Life Using Grid Agents.gaml". It does not allow to edit the death/birth configurations 
+* This model is a simplification of "Life Using Grid Agents.gaml". It does not allow to edit the death/birth configurations
+* Grid attribute brackets preserve cell coordinates and infer the matrix type for reads and assignments.
 * Uses bounded integer sampling for cell initialization; seeded patterns differ from legacy rnd.
 */
 model life
@@ -27,17 +28,15 @@ global torus: torus_environment {
 	reflex generation when: cycle > 1 // to avoid the first run 
 	{
 		// 1. Update matrix from current grid state
-		m_alive <- matrix<float>(matrix_with(life_cell, "grid_value"));
+		m_alive <- life_cell[grid_value];
 		
 		// 2. Apply convolution to count neighbors (single vectorized operation)
 		m_neighbors <- convolution(m_alive, kernel);
 		
-		// 3. Apply Game of Life rules in parallel
-		ask life_cell parallel: true {
-			previous <- grid_value;
-			float nn <- float(m_neighbors[grid_x, grid_y]);
-			grid_value <- grid_value > 0 ? (((nn = 2) or (nn = 3)) ? 1.0 : 0.0): ((nn = 3) ? 1.0 : 0.0);
-		}
+		// 3. Apply the rules element-wise, then write both snapshots back to the grid
+		matrix<float> next_alive <- (m_neighbors = 3.0) + ifelse(m_neighbors = 2.0, m_alive, 0.0);
+		life_cell[previous] <- m_alive;
+		life_cell[grid_value] <- next_alive;
 	}
 
 }

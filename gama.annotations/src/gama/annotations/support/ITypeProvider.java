@@ -179,6 +179,11 @@ public interface ITypeProvider {
 	 */
 	int INFERRED_TYPE = -36;
 	/**
+	 * A matrix for a statically known grid species, otherwise a list. Used by the generic collect iterator,
+	 * whose second internal argument is the source (the first is the iterator name).
+	 */
+	int SPECIES_COLLECT_TYPE = -37;
+	/**
 	 * The type should not (or cannot) be computed
 	 */
 	int NONE = -13;

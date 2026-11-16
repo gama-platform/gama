@@ -176,7 +176,13 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	}
 
 	@Override
-	public final ImageDescriptor getImageDescriptor() { return icon; }
+	public final ImageDescriptor getImageDescriptor() {
+		final String symbol = category == null
+				? icon == GamaIcon.named(FOLDER_COMMUNITY).descriptor() ? "community" : null
+				: category.name().toLowerCase(java.util.Locale.ROOT);
+		if (symbol == null) return icon;
+		return NavigatorIcons.descriptor(symbol, icon);
+	}
 
 	@Override
 	public String getStatusMessage() { return statusMessage; }

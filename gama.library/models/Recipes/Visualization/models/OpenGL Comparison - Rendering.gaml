@@ -106,7 +106,7 @@ experiment "3 - Lighting and textures" type: gui {
         display "OpenGL" type: opengl antialias: true {
             light #ambient intensity: 80;
             light #default intensity: 0;
-            light "Moving point" type: #point location: {50 + 35 * cos(cycle * 2), 50, 45}
+            light "Moving point" kind: #point location: {50 + 35 * cos(cycle * 2), 50, 45}
                 intensity: #white show: true dynamic: true;
             graphics "Lit objects" {
                 draw square(100) at: {50, 50, -1} color: #lightgray;
@@ -163,13 +163,13 @@ experiment "6 - Chart raster quality" type: gui {
     output {
         layout #horizontal;
         display "OpenGL" type: opengl antialias: true {
-            chart "Fixed pixel chart" type: series position: {16, 16} size: {420, 210}
+            chart "Fixed pixel chart" kind: series position: {16, 16} size: {420, 210}
                 x_range: 200 y_range: {0, 100} {
                 data "Signal" value: signal color: #blue;
                 data "Reference" value: 50 color: #red marker: false;
             }
 
-            chart "Viewport width, fixed height" type: series position: {16, 250} size: {0.9, 180}
+            chart "Viewport width, fixed height" kind: series position: {16, 250} size: {0.9, 180}
                 x_range: 200 y_range: {0, 100} {
                 data "Signal" value: signal color: #blue;
             }

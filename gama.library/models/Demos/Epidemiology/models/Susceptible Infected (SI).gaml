@@ -125,7 +125,7 @@ experiment Simulation type: gui {
 	    }
 	        
 	    display chart refresh: every(10#cycles)  type: 3d  {
-			chart "Susceptible" type: series background: #white style: exploded {
+			chart "Susceptible" kind: series background: #white style: exploded {
 				data "susceptible" value: Host count (each.is_susceptible) color: rgb(46,204,113);
 				data "infected" value: Host count (each.is_infected) color: rgb(231,76,60);
 			}

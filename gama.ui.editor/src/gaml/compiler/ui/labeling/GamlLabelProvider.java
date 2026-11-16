@@ -341,6 +341,14 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		return icon.substring(0, icon.length() - ".png".length()) + "+" + badge + ".png";
 	}
 
+	/** Uses the same type icons and action badge for platform members without a source declaration. */
+	public String memberImage(final String type, final boolean action) {
+		final String icon = typeImage(type);
+		if (!action) return icon;
+		return "void".equals(type) || "_missing.png".equals(icon) || "_action.png".equals(icon)
+				? "_action.png" : decorate(icon, "_badge_action");
+	}
+
 	/**
 	 * Parameter image.
 	 *

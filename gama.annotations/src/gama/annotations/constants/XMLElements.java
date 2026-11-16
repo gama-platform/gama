@@ -359,6 +359,12 @@ public interface XMLElements {
 	/** The Constant ATT_ARG_TYPE. */
 	public static final String ATT_ARG_TYPE = "type";
 	
+	/** The Constant ATT_ARG_CONTENT_TYPE. */
+	public static final String ATT_ARG_CONTENT_TYPE = "contentType";
+
+	/** The Constant ATT_ARG_KEY_TYPE. */
+	public static final String ATT_ARG_KEY_TYPE = "keyType";
+
 	/** The Constant ATT_ARG_OPTIONAL. */
 	public static final String ATT_ARG_OPTIONAL = "optional";
 

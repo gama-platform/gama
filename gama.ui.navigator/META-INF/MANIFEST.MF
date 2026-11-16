@@ -39,6 +39,7 @@ Export-Package: gama.ui.navigator.commands,
  gama.ui.navigator.view,
  gama.ui.navigator.view.actions,
  gama.ui.navigator.view.contents,
+ gama.ui.navigator.view.dependencies,
  gama.ui.navigator.view.properties,
  gama.ui.navigator.wizards
 Import-Package: com.github.jaiimageio.impl.plugins.tiff,

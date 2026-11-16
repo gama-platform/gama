@@ -117,7 +117,7 @@ experiment main type: gui {
 		}
 	
 		display chart_display type: 3d refresh: every(10 #cycles) {
-			chart "Disease spreading" type: series {
+			chart "Disease spreading" kind: series {
 				data "susceptible" value: nb_people_not_infected color: #green;
 				data "infected" value: nb_people_infected color: #red;
 			}

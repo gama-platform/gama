@@ -694,4 +694,12 @@ public class SpeciesWizard extends DeclarationWizard<SpeciesDraft> {
 	public ModelLocation getLocation() { return result == null ? null : locationResult; }
 
 	public Kind getKind() { return kind; }
+
+	/** Focuses the declaration name field and selects its text. */
+	public void focusName() {
+		if (header.get("name") instanceof Text name && !name.isDisposed()) {
+			name.setFocus();
+			name.selectAll();
+		}
+	}
 }

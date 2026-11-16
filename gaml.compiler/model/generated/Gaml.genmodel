@@ -14,6 +14,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//StandaloneExpression/expr"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//StandaloneExperiment">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//StandaloneExperiment/pragmas"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//StandaloneExperiment/name"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//StandaloneExperiment/importURI"/>
     </genClasses>

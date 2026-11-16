@@ -83,28 +83,28 @@ experiment mysimulation type: gui {
 	output {
 		layout 	#split tabs: true;
 		display display_charts  type: 2d  {
-			chart 'BTC price' type: series  
+			chart 'BTC price' kind: series  
 				x_range: min(elapsed_steps,time_window_size*nb_steps) background: #white 
 				x_tick_line_visible: false{
 				data "BTC" value: first(SDE_agent).X[] color: rgb(239,142,25) marker: false;
 			}
 		}
 		display display_charts2  type: 2d  {
-			chart 'SOL price' type: series 
+			chart 'SOL price' kind: series 
 				x_range: min(elapsed_steps,time_window_size*nb_steps)  background: #white 
 				x_tick_line_visible: false{
 				data "SOL" value: SDE_agent[1].X[] color: rgb(0,0,0) marker: false;
 			}
 		}
 		display display_charts3  type: 2d  {
-			chart 'ETH price' type: series 
+			chart 'ETH price' kind: series 
 				x_range: min(elapsed_steps,time_window_size*nb_steps) background: #white 
 				x_tick_line_visible: false{
 				data "ETH" value: SDE_agent[2].X[] color: rgb(33, 92,175) marker: false;
 			}
 		}
 		display display_charts4  type: 2d {
-			chart 'XRP price' type: series 
+			chart 'XRP price' kind: series 
 				x_range: min(elapsed_steps,time_window_size*nb_steps) background: #white 
 				x_tick_line_visible: false{
 				data "XRP" value: SDE_agent[3].X[] color: rgb(31,135,178) marker: false;

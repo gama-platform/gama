@@ -368,12 +368,9 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	 */
 	@Override
 	public String getBuiltInDoc() {
-		// if (builtInDoc != null) return builtInDoc;
-
-		final IVariableDescription builtIn = getBuiltInAncestor();
-		if (builtIn == null) return null;
+		// Registered skill additions have a definition class before acquiring an enclosing type.
+		if (definitionClass == null) return getBuiltInAncestor() == null ? null : PREF_DEFINITIONS.get(getName());
 		String builtInDoc = "";
-		if (definitionClass == null) return PREF_DEFINITIONS.get(getName());
 		final vars vars = definitionClass.getAnnotationsByType(vars.class)[0];
 		for (final gama.annotations.variable v : vars.value()) {
 			if (v.name().equals(name)) {

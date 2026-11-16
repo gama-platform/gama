@@ -53,13 +53,16 @@ import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationSet;
 import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.species.SpeciesAttributeValues;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
@@ -3250,22 +3253,34 @@ public class Containers {
 	 *            the scope
 	 * @param eachName
 	 *            the each name
-	 * @param c
-	 *            the c
+	 * @param source
+	 *            the container expression
 	 * @param filter
 	 *            the filter
 	 * @return the i list
 	 */
 	@operator (
 			value = { "collect" },
+			type = ITypeProvider.SPECIES_COLLECT_TYPE,
 			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
 			iterator = true,
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns a new list, in which each element is the evaluation of the right-hand operand.",
+			value = "Evaluates the right-hand expression for each element. Returns a list for ordinary containers and species, "
+					+ "and a spatial matrix for a statically known grid species.",
 			comment = "collect is similar to accumulate except that accumulate always produces flat lists if the right-hand operand returns a list."
-					+ "In addition, collect can be applied to any container.",
+					+ " The result content type is inferred from the expression, including container-valued expressions. "
+					+ "For a statically known ordinary species, species[attribute] is shorthand for species collect each.attribute, "
+					+ "and species[attribute] <- values; assigns a compatible list with one element per current agent in population order. "
+					+ "For a grid species, each is a cell agent, and result[col, row] corresponds to cell coordinates grid_x and grid_y. "
+					+ "Evaluation follows row-major order. Missing cells retain the content type's default value. "
+					+ "Direct accesses such as cell collect each.road use optimized attribute extraction. "
+					+ "Float attribute snapshots are internally fields: field(cell[road]) reuses the snapshot without copying. "
+					+ "The equivalent cell[road] syntax also supports writes: cell[road] <- values; attribute names and matrix content types are checked at compile time. "
+					+ "Other expressions are evaluated once per existing cell. The result is a snapshot, not a live view. "
+					+ "Use list(cell) collect each.road for a flat list, or list(cell collect each.road) to flatten the matrix. "
+					+ "Lists of cells, filtered grids and species without a statically known grid type still produce lists.",
 			usages = { @usage ("if the left-hand operand is nil, collect throws an error") },
 			examples = { @example (
 					value = "[1,2,4] collect (each *2)",
@@ -3285,6 +3300,61 @@ public class Containers {
 	@test ("[1,2,4] collect ([2,4]) = [[2,4],[2,4],[2,4]]")
 	@test ("[1,2,3] collect (i: i+1) = [2,3,4]")
 	@test ("[1,2] collect (i: ([1,2,3] collect (j: i+j))) = [[2,3,4],[3,4,5]]")
+	@validator (CollectValidator.class)
+	public static Object collectExpression(final IScope scope, final String eachName, final IExpression source,
+			final IExpression filter) {
+		final Object container = source.value(scope);
+		if (container == null) throw GamaRuntimeException.error("collect cannot collect a nil container", scope);
+		if (source.getGamlType().isGridSpecies()) {
+			if (!(container instanceof ISpecies species) || !(species.getPopulation(scope) instanceof IPopulation.Grid grid))
+				throw GamaRuntimeException.error("collect expects an initialized grid population", scope);
+			return collectGrid(scope, eachName, grid, filter);
+		}
+		if (!(container instanceof IContainer c))
+			throw GamaRuntimeException.error("collect expects a container", scope);
+		return collect(scope, eachName, c, filter);
+	}
+
+	public static class CollectValidator implements IOperatorValidator {
+		@Override
+		public boolean validate(final IDescription context, final EObject source, final IExpression... arguments) {
+			if (arguments[1].getGamlType().isContainer()) return true;
+			context.error("collect expects a container", IGamlIssue.WRONG_TYPE, source);
+			return false;
+		}
+	}
+
+	private static IMatrix collectGrid(final IScope scope, final String eachName, final IPopulation.Grid population,
+			final IExpression expression) {
+		final IGrid grid = population.getGrid();
+		final int cols = grid.getCols(scope);
+		final int rows = grid.getRows(scope);
+		final IVarExpression attribute = expression instanceof IVarExpression.Agent var
+				&& var.getOwner() instanceof IVarExpression owner
+				&& owner.isEach() && eachName.equals(owner.getName()) ? var : null;
+		if (attribute != null)
+			return SpeciesAttributeValues.read(scope, population, attribute.getVar().literalValue(), expression.getGamlType());
+		final IMatrix result = GamaMatrixFactory.create(cols, rows, expression.getGamlType());
+		final Object previousEach = scope.getEach(eachName);
+		try {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < cols; col++) {
+					final IShape shape = grid.get(scope, col, row);
+					final IAgent cell = shape == null ? null : shape.getAgent();
+					if (cell == null) {
+						result.set(scope, col, row, expression.getGamlType().createDefaultValue(scope));
+						continue;
+					}
+					scope.setEach(eachName, cell);
+					result.set(scope, col, row, expression.value(scope));
+				}
+			}
+		} finally {
+			scope.setEach(eachName, previousEach);
+		}
+		return result;
+	}
+
 	public static IList collect(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		return (IList) stream(scope, c).map(buildFunctionWithEach(scope, eachName, filter))

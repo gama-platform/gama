@@ -64,7 +64,7 @@ experiment "CoModel" type: gui {
 		}		
 		
 		display data  type: 3d  {
-			chart "rain" type: series {
+			chart "rain" kind: series {
 				data "rainfall" value: sum(weather_simu.plotWeather accumulate (each.rain));
 			}
 		}

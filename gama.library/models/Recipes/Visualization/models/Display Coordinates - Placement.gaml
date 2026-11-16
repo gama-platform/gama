@@ -100,7 +100,7 @@ experiment "3 - Full frames by default" type: gui {
         display "OpenGL full frames" parent: "Full world and screen frames" type: opengl map_order: true {}
         display "Full chart frame" type: 3d {
             // Charts also default to screen placement and a full viewport-sized frame.
-            chart "Cycle" type: series {
+            chart "Cycle" kind: series {
                 data "Cycle" value: cycle;
             }
         }

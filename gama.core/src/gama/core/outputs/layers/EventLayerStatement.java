@@ -72,7 +72,15 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 						name = IKeyword.TYPE,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("Type of device used to generate events. Defaults to 'default', which encompasses keyboard and mouse")),
+						doc = @doc (
+								deprecated = "use device: instead",
+								value = "Type of device used to generate events. Defaults to 'default', which encompasses keyboard and mouse")),
+				@facet (
+						name = "device",
+						type = IType.STRING,
+						optional = true,
+						doc = @doc (
+								value = "The device used to generate events. Defaults to 'default', which encompasses keyboard and mouse")),
 				@facet (
 						name = IKeyword.ACTION,
 						type = IType.ACTION,
@@ -257,8 +265,9 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 							IGamlIssue.GENERAL, TRIGGER);
 				}
 			}
-			if (SystemInfo.isWindows() && (IEventLayerDelegate.CONTROL_MODIFIER.equals(name)
-					|| combination != null && (combination.modifiers() & KeyCombination.CTRL) != 0)
+			if (SystemInfo.isWindows()
+					&& (IEventLayerDelegate.CONTROL_MODIFIER.equals(name)
+							|| combination != null && (combination.modifiers() & KeyCombination.CTRL) != 0)
 					&& OpenGLSpecificLayerValidator.isOpenGL(description.getEnclosingDescription())) {
 				description.warning(
 						"On Windows, CTRL-based keyboard events may conflict with camera interaction in OpenGL displays; built-in shortcuts remain active and may intercept the event",
@@ -338,7 +347,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 		}
 		trigger = description.getLitteral(TRIGGER);
 
-		type = getFacet(IKeyword.TYPE);
+		type = getFacet("device", IKeyword.TYPE);
 	}
 
 	/**

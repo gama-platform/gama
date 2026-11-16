@@ -3,6 +3,7 @@
  */
 package gaml.compiler.gaml;
 
+import org.eclipse.emf.common.util.EList;
 
 /**
  * <!-- begin-user-doc -->
@@ -13,6 +14,7 @@ package gaml.compiler.gaml;
  * The following features are supported:
  * </p>
  * <ul>
+ *   <li>{@link gaml.compiler.gaml.StandaloneExperiment#getPragmas <em>Pragmas</em>}</li>
  *   <li>{@link gaml.compiler.gaml.StandaloneExperiment#getName <em>Name</em>}</li>
  *   <li>{@link gaml.compiler.gaml.StandaloneExperiment#getImportURI <em>Import URI</em>}</li>
  * </ul>
@@ -23,6 +25,18 @@ package gaml.compiler.gaml;
  */
 public interface StandaloneExperiment extends Entry, FacetsAndBlock
 {
+  /**
+   * Returns the value of the '<em><b>Pragmas</b></em>' containment reference list.
+   * The list contents are of type {@link gaml.compiler.gaml.Pragma}.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Pragmas</em>' containment reference list.
+   * @see gaml.compiler.gaml.GamlPackage#getStandaloneExperiment_Pragmas()
+   * @model containment="true"
+   * @generated
+   */
+  EList<Pragma> getPragmas();
+
   /**
    * Returns the value of the '<em><b>Name</b></em>' attribute.
    * <!-- begin-user-doc -->

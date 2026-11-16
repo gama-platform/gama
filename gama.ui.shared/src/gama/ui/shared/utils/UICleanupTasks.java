@@ -61,6 +61,7 @@ import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.internal.dialogs.WizardCollectionElement;
 import org.eclipse.ui.internal.dialogs.WorkbenchWizardElement;
 import org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages;
 import org.eclipse.ui.internal.wizards.AbstractExtensionWizardRegistry;
@@ -540,27 +541,25 @@ public class UICleanupTasks {
 		 * Run.
 		 */
 		static void run(final IWorkbench workbench) {
-			final List<IWizardCategory> cats = new ArrayList<>();
-			AbstractExtensionWizardRegistry r = (AbstractExtensionWizardRegistry) workbench.getNewWizardRegistry();
-			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
-			r = (AbstractExtensionWizardRegistry) workbench.getImportWizardRegistry();
-			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
-			r = (AbstractExtensionWizardRegistry) workbench.getExportWizardRegistry();
-			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
-			for (final IWizardDescriptor wizard : getAllWizards(cats.toArray(new IWizardCategory[0]))) {
-				final String catId = wizard.getCategory().getId();
-				if (CATEGORIES_TO_REMOVE.contains(catId) || IDS_TO_REMOVE.contains(wizard.getId())) {
-					final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
-					r.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
-							new Object[] { element });
+			final var newRegistry = (AbstractExtensionWizardRegistry) workbench.getNewWizardRegistry();
+			final var importRegistry = (AbstractExtensionWizardRegistry) workbench.getImportWizardRegistry();
+			final var exportRegistry = (AbstractExtensionWizardRegistry) workbench.getExportWizardRegistry();
+			for (final var registry : List.of(newRegistry, importRegistry, exportRegistry)) {
+				for (final IWizardDescriptor wizard : getAllWizards(registry.getRootCategory().getCategories())) {
+					final String catId = wizard.getCategory().getId();
+					if (CATEGORIES_TO_REMOVE.contains(catId) || IDS_TO_REMOVE.contains(wizard.getId())
+							|| registry == newRegistry && "org.eclipse.ui.Basic".equals(catId)) {
+						final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
+						registry.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
+								new Object[] { element });
+					}
 				}
 			}
-			r = (AbstractExtensionWizardRegistry) workbench.getImportWizardRegistry();
-			cats.clear();
-			cats.addAll(Arrays.asList(r.getRootCategory().getCategories()));
-			for (final IWizardDescriptor wizard : getAllWizards(cats.toArray(new IWizardCategory[0]))) {
+			final var general = (WizardCollectionElement) newRegistry.findCategory("org.eclipse.ui.Basic");
+			if (general != null) { general.getParentCollection().remove(general); }
+			for (final IWizardDescriptor wizard : getAllWizards(importRegistry.getRootCategory().getCategories())) {
 				final WorkbenchWizardElement element = (WorkbenchWizardElement) wizard;
-				r.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
+				importRegistry.removeExtension(element.getConfigurationElement().getDeclaringExtension(),
 						new Object[] { element });
 			}
 		}

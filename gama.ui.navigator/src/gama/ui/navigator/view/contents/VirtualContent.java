@@ -243,6 +243,15 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	}
 
 	/**
+	 * Whether workspace menu actions (import, resource properties, editing and refactoring) apply to this node.
+	 * Inherited from the parent so an independent folder can opt out for its whole hierarchy. Refresh remains available.
+	 */
+	public boolean supportsWorkspaceActions() {
+		final P parent = getParent();
+		return parent == null || parent.supportsWorkspaceActions();
+	}
+
+	/**
 	 * Gets the project.
 	 *
 	 * @return the project
@@ -273,7 +282,7 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	 * @return the status image
 	 */
 	public Image getStatusImage() {
-		ImageDescriptor id = getImageDescriptor();
+		ImageDescriptor id = getNavigatorImageDescriptor();
 		return id == null ? null : id.createImage();
 	}
 
@@ -303,7 +312,12 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 
 	@Override
 	public ImageDescriptor getImageDescriptor(final Object object) {
-		return getImageDescriptor();
+		return getNavigatorImageDescriptor();
+	}
+
+	/** Applies the selected icon set to shared project/folder icons, including contributed virtual nodes. */
+	public final ImageDescriptor getNavigatorImageDescriptor() {
+		return NavigatorIcons.descriptor(this);
 	}
 
 	@Override

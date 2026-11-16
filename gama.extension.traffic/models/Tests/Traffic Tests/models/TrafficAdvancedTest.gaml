@@ -127,7 +127,7 @@ experiment TrafficAdvancedTest type: test autorun: true {
 
 	test "A path is computed along the roads" {
 		list<intersection> nodes <- build_network();
-		graph network <- as_driving_graph(road, intersection);
+		graph<geometry, geometry> network <- as_driving_graph(road, intersection);
 		road first_road <- road first_with (each.source_node = nodes[0]);
 		road second_road <- road first_with (each.source_node = nodes[1]);
 		create vehicle (location::nodes[0].location, max_speed::10.0, vehicle_length::2.0) returns: cars;
@@ -147,7 +147,7 @@ experiment TrafficAdvancedTest type: test autorun: true {
 
 	test "Driving moves the vehicle along its path, one road after the other" {
 		list<intersection> nodes <- build_network();
-		graph network <- as_driving_graph(road, intersection);
+		graph<geometry, geometry> network <- as_driving_graph(road, intersection);
 		road first_road <- road first_with (each.source_node = nodes[0]);
 		road second_road <- road first_with (each.source_node = nodes[1]);
 		create vehicle (location::nodes[0].location, max_speed::10.0, vehicle_length::2.0) returns: cars;
@@ -182,7 +182,7 @@ experiment TrafficAdvancedTest type: test autorun: true {
 
 	test "A vehicle stops when it reaches its target" {
 		list<intersection> nodes <- build_network();
-		graph network <- as_driving_graph(road, intersection);
+		graph<geometry, geometry> network <- as_driving_graph(road, intersection);
 		create vehicle(location::nodes[0].location, max_speed::10.0, vehicle_length::2.0) returns: cars;
 		vehicle car <- cars[0];
 		ask car { path route <- compute_path(graph: network, target: nodes[2]); }
@@ -213,7 +213,7 @@ experiment TrafficAdvancedTest type: test autorun: true {
 	test "The speed limit of the road caps the speed of the vehicle" {
 		list<intersection> nodes <- build_network();
 		ask road { maxspeed <- 2.0; }
-		graph network <- as_driving_graph(road, intersection);
+		graph<geometry, geometry> network <- as_driving_graph(road, intersection);
 		create vehicle (location::nodes[0].location, max_speed::10.0, vehicle_length::2.0) returns: cars;
 		vehicle car <- cars[0];
 		ask car { path route <- compute_path(graph: network, target: nodes[2]); }
@@ -236,7 +236,7 @@ experiment TrafficAdvancedTest type: test autorun: true {
 
 	test "A path to the starting point" {
 		list<intersection> nodes <- build_network();
-		graph network <- as_driving_graph(road, intersection);
+		graph<geometry, geometry> network <- as_driving_graph(road, intersection);
 		create vehicle (location::nodes[0].location, max_speed::10.0, vehicle_length::2.0) returns: cars;
 		string problem <- nil;
 		path route <- nil;
@@ -247,7 +247,7 @@ experiment TrafficAdvancedTest type: test autorun: true {
 
 	test "A vehicle behind another one keeps its distance" {
 		list<intersection> nodes <- build_network();
-		graph network <- as_driving_graph(road, intersection);
+		graph<geometry, geometry> network <- as_driving_graph(road, intersection);
 		create vehicle(location::nodes[0].location, max_speed::10.0, vehicle_length::2.0) returns: leaders;
 		vehicle leader <- leaders[0];
 		ask leader { path route <- compute_path(graph: network, target: nodes[2]); }

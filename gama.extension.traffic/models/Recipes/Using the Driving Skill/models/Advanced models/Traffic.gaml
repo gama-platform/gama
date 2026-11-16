@@ -105,7 +105,7 @@ species intersection skills: [intersection_skill] {
 
 species base_vehicle skills: [driving] {
 	rgb color <- rnd_color(255);
-	graph road_graph;
+	graph<geometry, geometry> road_graph;
 	
 	point compute_position() {
 		// Shifts the position of the vehicle perpendicularly to the road,

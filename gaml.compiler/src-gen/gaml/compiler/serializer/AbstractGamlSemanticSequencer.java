@@ -91,15 +91,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 						|| rule == grammarAccess.getPairRule()
 						|| action == grammarAccess.getPairAccess().getBinaryOperatorLeftAction_1_0()
 						|| rule == grammarAccess.getIfRule()
-						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0()
+						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0_0_0()
 						|| rule == grammarAccess.getOrRule()
-						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0()
+						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0_0_0()
 						|| rule == grammarAccess.getAndRule()
-						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0()
+						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0_0_0()
 						|| rule == grammarAccess.getCastRule()
-						|| action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0_0()
 						|| rule == grammarAccess.getComparisonRule()
-						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0_0()
+						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_1_0()
 						|| rule == grammarAccess.getAdditionRule()
 						|| action == grammarAccess.getAdditionAccess().getBinaryOperatorLeftAction_1_0_0()
 						|| rule == grammarAccess.getMultiplicationRule()
@@ -135,22 +136,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_Primary(context, (Array) semanticObject); 
 				return; 
 			case GamlPackage.BINARY_OPERATOR:
-				if (rule == grammarAccess.getExpressionRule()
-						|| rule == grammarAccess.getBinaryOperatorRule()
-						|| rule == grammarAccess.getPairRule()) {
+				if (rule == grammarAccess.getBinaryOperatorRule()) {
 					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
-				else if (action == grammarAccess.getPairAccess().getBinaryOperatorLeftAction_1_0()
+				else if (rule == grammarAccess.getExpressionRule()
 						|| rule == grammarAccess.getIfRule()
-						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0()
+						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0_0_0()
 						|| rule == grammarAccess.getOrRule()
-						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0()) {
+						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0_0_0()) {
 					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (rule == grammarAccess.getAndRule()
-						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0()) {
+						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0_0_0()) {
 					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
@@ -158,12 +157,18 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 					sequence_Addition_Binary_Cast_Comparison_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
-				else if (action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0()
+				else if (action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0_0()
 						|| rule == grammarAccess.getComparisonRule()) {
 					sequence_Addition_Binary_Comparison_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
-				else if (action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0()
+				else if (rule == grammarAccess.getPairRule()) {
+					sequence_Addition_Binary_Multiplication_Pair_Power(context, (BinaryOperator) semanticObject); 
+					return; 
+				}
+				else if (action == grammarAccess.getPairAccess().getBinaryOperatorLeftAction_1_0()
+						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0_0()
+						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_1_0()
 						|| rule == grammarAccess.getAdditionRule()
 						|| action == grammarAccess.getAdditionAccess().getBinaryOperatorLeftAction_1_0_0()) {
 					sequence_Addition_Binary_Multiplication_Power(context, (BinaryOperator) semanticObject); 
@@ -270,8 +275,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_TerminalExpression(context, (ReservedLiteral) semanticObject); 
 				return; 
 			case GamlPackage.SACTION:
-				sequence_ActionArguments_FacetsAndBlock_S_Action(context, (S_Action) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getStatementRule()
+						|| rule == grammarAccess.getS_CallableRule()
+						|| rule == grammarAccess.getGamlDefinitionRule()
+						|| rule == grammarAccess.getActionDefinitionRule()
+						|| rule == grammarAccess.getVarDefinitionRule()) {
+					sequence_ActionArguments_FacetsAndBlock_S_Action(context, (S_Action) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_ActionRule()) {
+					sequence_ActionArguments_S_Action(context, (S_Action) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.SASSIGNMENT:
 				if (rule == grammarAccess.getStatementRule()
 						|| rule == grammarAccess.getS_AssignmentRule()) {
@@ -319,8 +335,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Loop(context, (S_Loop) semanticObject); 
 				return; 
 			case GamlPackage.SMETHOD:
-				sequence_ActionArguments_FacetsAndBlock_S_Method(context, (S_Method) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getStatementRule()
+						|| rule == grammarAccess.getS_CallableRule()
+						|| rule == grammarAccess.getGamlDefinitionRule()
+						|| rule == grammarAccess.getActionDefinitionRule()
+						|| rule == grammarAccess.getVarDefinitionRule()) {
+					sequence_ActionArguments_FacetsAndBlock_S_Method(context, (S_Method) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_MethodRule()) {
+					sequence_ActionArguments_S_Method(context, (S_Method) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.SREFLEX:
 				sequence_FacetsAndBlock_S_Reflex(context, (S_Reflex) semanticObject); 
 				return; 
@@ -412,15 +439,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns Access
 	 *     Pair.BinaryOperator_1_0 returns Access
 	 *     If returns Access
-	 *     If.If_1_0 returns Access
+	 *     If.If_1_0_0_0 returns Access
 	 *     Or returns Access
-	 *     Or.BinaryOperator_1_0 returns Access
+	 *     Or.BinaryOperator_1_0_0_0 returns Access
 	 *     And returns Access
-	 *     And.BinaryOperator_1_0 returns Access
+	 *     And.BinaryOperator_1_0_0_0 returns Access
 	 *     Cast returns Access
-	 *     Cast.BinaryOperator_1_0_0 returns Access
+	 *     Cast.BinaryOperator_1_0_0_0 returns Access
 	 *     Comparison returns Access
-	 *     Comparison.BinaryOperator_1_0_0 returns Access
+	 *     Comparison.BinaryOperator_1_0_0_0 returns Access
+	 *     Comparison.BinaryOperator_1_1_0 returns Access
 	 *     Addition returns Access
 	 *     Addition.BinaryOperator_1_0_0 returns Access
 	 *     Multiplication returns Access
@@ -449,7 +477,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Action
 	 *     S_Callable returns S_Action
-	 *     S_Action returns S_Action
 	 *     GamlDefinition returns S_Action
 	 *     ActionDefinition returns S_Action
 	 *     VarDefinition returns S_Action
@@ -468,7 +495,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Method
 	 *     S_Callable returns S_Method
-	 *     S_Method returns S_Method
 	 *     GamlDefinition returns S_Method
 	 *     ActionDefinition returns S_Method
 	 *     VarDefinition returns S_Method
@@ -478,6 +504,34 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_ActionArguments_FacetsAndBlock_S_Method(ISerializationContext context, S_Method semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Action returns S_Action
+	 *
+	 * Constraint:
+	 *     (key='action' name=Valid_ID (args+=ArgumentDefinition args+=ArgumentDefinition*)?)
+	 * </pre>
+	 */
+	protected void sequence_ActionArguments_S_Action(ISerializationContext context, S_Action semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Method returns S_Method
+	 *
+	 * Constraint:
+	 *     (tkey=TypeRef name=Valid_ID (args+=ArgumentDefinition args+=ArgumentDefinition*)?)
+	 * </pre>
+	 */
+	protected void sequence_ActionArguments_S_Method(ISerializationContext context, S_Method semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -575,18 +629,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Expression returns BinaryOperator
 	 *     BinaryOperator returns BinaryOperator
-	 *     Pair returns BinaryOperator
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=If) | 
-	 *         (left=Or_BinaryOperator_1_0 op='or' right=And) | 
-	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
-	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Pair) | 
+	 *         (left=Or_BinaryOperator_1_0_0_0 op='or' right=And) | 
+	 *         (left=And_BinaryOperator_1_0_0_0 op='and' right=Cast) | 
+	 *         (left=Cast_BinaryOperator_1_0_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
-	 *             left=Comparison_BinaryOperator_1_0_0 
+	 *             left=Comparison_BinaryOperator_1_0_0_0 
 	 *             (
 	 *                 op='!=' | 
 	 *                 op='=' | 
@@ -595,8 +647,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *                 op='&lt;' | 
 	 *                 op='&gt;'
 	 *             ) 
-	 *             right=Addition
+	 *             right=Pair
 	 *         ) | 
+	 *         (left=Comparison_BinaryOperator_1_1_0 op='::' right=If) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
 	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
 	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
@@ -612,19 +665,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Pair.BinaryOperator_1_0 returns BinaryOperator
+	 *     Expression returns BinaryOperator
 	 *     If returns BinaryOperator
-	 *     If.If_1_0 returns BinaryOperator
+	 *     If.If_1_0_0_0 returns BinaryOperator
 	 *     Or returns BinaryOperator
-	 *     Or.BinaryOperator_1_0 returns BinaryOperator
+	 *     Or.BinaryOperator_1_0_0_0 returns BinaryOperator
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Or_BinaryOperator_1_0 op='or' right=And) | 
-	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
-	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
+	 *         (left=Or_BinaryOperator_1_0_0_0 op='or' right=And) | 
+	 *         (left=And_BinaryOperator_1_0_0_0 op='and' right=Cast) | 
+	 *         (left=Cast_BinaryOperator_1_0_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
-	 *             left=Comparison_BinaryOperator_1_0_0 
+	 *             left=Comparison_BinaryOperator_1_0_0_0 
 	 *             (
 	 *                 op='!=' | 
 	 *                 op='=' | 
@@ -633,8 +686,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *                 op='&lt;' | 
 	 *                 op='&gt;'
 	 *             ) 
-	 *             right=Addition
+	 *             right=Pair
 	 *         ) | 
+	 *         (left=Comparison_BinaryOperator_1_1_0 op='::' right=If) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
 	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
 	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
@@ -651,14 +705,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     And returns BinaryOperator
-	 *     And.BinaryOperator_1_0 returns BinaryOperator
+	 *     And.BinaryOperator_1_0_0_0 returns BinaryOperator
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
-	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
+	 *         (left=And_BinaryOperator_1_0_0_0 op='and' right=Cast) | 
+	 *         (left=Cast_BinaryOperator_1_0_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
-	 *             left=Comparison_BinaryOperator_1_0_0 
+	 *             left=Comparison_BinaryOperator_1_0_0_0 
 	 *             (
 	 *                 op='!=' | 
 	 *                 op='=' | 
@@ -667,8 +721,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *                 op='&lt;' | 
 	 *                 op='&gt;'
 	 *             ) 
-	 *             right=Addition
+	 *             right=Pair
 	 *         ) | 
+	 *         (left=Comparison_BinaryOperator_1_1_0 op='::' right=If) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
 	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
 	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
@@ -688,9 +743,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
+	 *         (left=Cast_BinaryOperator_1_0_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
-	 *             left=Comparison_BinaryOperator_1_0_0 
+	 *             left=Comparison_BinaryOperator_1_0_0_0 
 	 *             (
 	 *                 op='!=' | 
 	 *                 op='=' | 
@@ -699,8 +754,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *                 op='&lt;' | 
 	 *                 op='&gt;'
 	 *             ) 
-	 *             right=Addition
+	 *             right=Pair
 	 *         ) | 
+	 *         (left=Comparison_BinaryOperator_1_1_0 op='::' right=If) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
 	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
 	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
@@ -716,13 +772,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Cast.BinaryOperator_1_0_0 returns BinaryOperator
+	 *     Cast.BinaryOperator_1_0_0_0 returns BinaryOperator
 	 *     Comparison returns BinaryOperator
 	 *
 	 * Constraint:
 	 *     (
 	 *         (
-	 *             left=Comparison_BinaryOperator_1_0_0 
+	 *             left=Comparison_BinaryOperator_1_0_0_0 
 	 *             (
 	 *                 op='!=' | 
 	 *                 op='=' | 
@@ -731,8 +787,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *                 op='&lt;' | 
 	 *                 op='&gt;'
 	 *             ) 
-	 *             right=Addition
+	 *             right=Pair
 	 *         ) | 
+	 *         (left=Comparison_BinaryOperator_1_1_0 op='::' right=If) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
 	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
 	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
@@ -748,7 +805,29 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Comparison.BinaryOperator_1_0_0 returns BinaryOperator
+	 *     Pair returns BinaryOperator
+	 *
+	 * Constraint:
+	 *     (
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=Pair) | 
+	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
+	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
+	 *     )
+	 * </pre>
+	 */
+	protected void sequence_Addition_Binary_Multiplication_Pair_Power(ISerializationContext context, BinaryOperator semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Pair.BinaryOperator_1_0 returns BinaryOperator
+	 *     Comparison.BinaryOperator_1_0_0_0 returns BinaryOperator
+	 *     Comparison.BinaryOperator_1_1_0 returns BinaryOperator
 	 *     Addition returns BinaryOperator
 	 *     Addition.BinaryOperator_1_0_0 returns BinaryOperator
 	 *
@@ -960,15 +1039,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns ExpressionList
 	 *     Pair.BinaryOperator_1_0 returns ExpressionList
 	 *     If returns ExpressionList
-	 *     If.If_1_0 returns ExpressionList
+	 *     If.If_1_0_0_0 returns ExpressionList
 	 *     Or returns ExpressionList
-	 *     Or.BinaryOperator_1_0 returns ExpressionList
+	 *     Or.BinaryOperator_1_0_0_0 returns ExpressionList
 	 *     And returns ExpressionList
-	 *     And.BinaryOperator_1_0 returns ExpressionList
+	 *     And.BinaryOperator_1_0_0_0 returns ExpressionList
 	 *     Cast returns ExpressionList
-	 *     Cast.BinaryOperator_1_0_0 returns ExpressionList
+	 *     Cast.BinaryOperator_1_0_0_0 returns ExpressionList
 	 *     Comparison returns ExpressionList
-	 *     Comparison.BinaryOperator_1_0_0 returns ExpressionList
+	 *     Comparison.BinaryOperator_1_0_0_0 returns ExpressionList
+	 *     Comparison.BinaryOperator_1_1_0 returns ExpressionList
 	 *     Addition returns ExpressionList
 	 *     Addition.BinaryOperator_1_0_0 returns ExpressionList
 	 *     Multiplication returns ExpressionList
@@ -1102,7 +1182,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     StandaloneExperiment returns StandaloneExperiment
 	 *
 	 * Constraint:
-	 *     (key=K_Experiment (name=Valid_ID | name=STRING) importURI=STRING? facets+=Facet* block=Block?)
+	 *     (
+	 *         pragmas+=Pragma* 
+	 *         key=K_Experiment 
+	 *         (name=Valid_ID | name=STRING) 
+	 *         importURI=STRING? 
+	 *         facets+=Facet* 
+	 *         block=Block?
+	 *     )
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_StandaloneExperiment(ISerializationContext context, StandaloneExperiment semanticObject) {
@@ -1141,15 +1228,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns Function
 	 *     Pair.BinaryOperator_1_0 returns Function
 	 *     If returns Function
-	 *     If.If_1_0 returns Function
+	 *     If.If_1_0_0_0 returns Function
 	 *     Or returns Function
-	 *     Or.BinaryOperator_1_0 returns Function
+	 *     Or.BinaryOperator_1_0_0_0 returns Function
 	 *     And returns Function
-	 *     And.BinaryOperator_1_0 returns Function
+	 *     And.BinaryOperator_1_0_0_0 returns Function
 	 *     Cast returns Function
-	 *     Cast.BinaryOperator_1_0_0 returns Function
+	 *     Cast.BinaryOperator_1_0_0_0 returns Function
 	 *     Comparison returns Function
-	 *     Comparison.BinaryOperator_1_0_0 returns Function
+	 *     Comparison.BinaryOperator_1_0_0_0 returns Function
+	 *     Comparison.BinaryOperator_1_1_0 returns Function
 	 *     Addition returns Function
 	 *     Addition.BinaryOperator_1_0_0 returns Function
 	 *     Multiplication returns Function
@@ -1182,13 +1270,10 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns If
-	 *     BinaryOperator returns If
-	 *     Pair returns If
-	 *     Pair.BinaryOperator_1_0 returns If
 	 *     If returns If
 	 *
 	 * Constraint:
-	 *     (left=If_If_1_0 op='?' right=Or ifFalse=Or)
+	 *     (left=If_If_1_0_0_0 op='?' right=Or ifFalse=Or)
 	 * </pre>
 	 */
 	protected void sequence_If(ISerializationContext context, If semanticObject) {
@@ -1203,10 +1288,10 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.IF__IF_FALSE));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getIfAccess().getIfLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getIfAccess().getOpQuestionMarkKeyword_1_1_0(), semanticObject.getOp());
-		feeder.accept(grammarAccess.getIfAccess().getRightOrParserRuleCall_1_2_0(), semanticObject.getRight());
-		feeder.accept(grammarAccess.getIfAccess().getIfFalseOrParserRuleCall_1_3_1_0(), semanticObject.getIfFalse());
+		feeder.accept(grammarAccess.getIfAccess().getIfLeftAction_1_0_0_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getIfAccess().getOpQuestionMarkKeyword_1_0_0_1_0(), semanticObject.getOp());
+		feeder.accept(grammarAccess.getIfAccess().getRightOrParserRuleCall_1_1_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getIfAccess().getIfFalseOrParserRuleCall_1_2_1_0(), semanticObject.getIfFalse());
 		feeder.finish();
 	}
 	
@@ -1308,15 +1393,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns Array
 	 *     Pair.BinaryOperator_1_0 returns Array
 	 *     If returns Array
-	 *     If.If_1_0 returns Array
+	 *     If.If_1_0_0_0 returns Array
 	 *     Or returns Array
-	 *     Or.BinaryOperator_1_0 returns Array
+	 *     Or.BinaryOperator_1_0_0_0 returns Array
 	 *     And returns Array
-	 *     And.BinaryOperator_1_0 returns Array
+	 *     And.BinaryOperator_1_0_0_0 returns Array
 	 *     Cast returns Array
-	 *     Cast.BinaryOperator_1_0_0 returns Array
+	 *     Cast.BinaryOperator_1_0_0_0 returns Array
 	 *     Comparison returns Array
-	 *     Comparison.BinaryOperator_1_0_0 returns Array
+	 *     Comparison.BinaryOperator_1_0_0_0 returns Array
+	 *     Comparison.BinaryOperator_1_1_0 returns Array
 	 *     Addition returns Array
 	 *     Addition.BinaryOperator_1_0_0 returns Array
 	 *     Multiplication returns Array
@@ -1351,15 +1437,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns Point
 	 *     Pair.BinaryOperator_1_0 returns Point
 	 *     If returns Point
-	 *     If.If_1_0 returns Point
+	 *     If.If_1_0_0_0 returns Point
 	 *     Or returns Point
-	 *     Or.BinaryOperator_1_0 returns Point
+	 *     Or.BinaryOperator_1_0_0_0 returns Point
 	 *     And returns Point
-	 *     And.BinaryOperator_1_0 returns Point
+	 *     And.BinaryOperator_1_0_0_0 returns Point
 	 *     Cast returns Point
-	 *     Cast.BinaryOperator_1_0_0 returns Point
+	 *     Cast.BinaryOperator_1_0_0_0 returns Point
 	 *     Comparison returns Point
-	 *     Comparison.BinaryOperator_1_0_0 returns Point
+	 *     Comparison.BinaryOperator_1_0_0_0 returns Point
+	 *     Comparison.BinaryOperator_1_1_0 returns Point
 	 *     Addition returns Point
 	 *     Addition.BinaryOperator_1_0_0 returns Point
 	 *     Multiplication returns Point
@@ -1735,15 +1822,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns StringLiteral
 	 *     Pair.BinaryOperator_1_0 returns StringLiteral
 	 *     If returns StringLiteral
-	 *     If.If_1_0 returns StringLiteral
+	 *     If.If_1_0_0_0 returns StringLiteral
 	 *     Or returns StringLiteral
-	 *     Or.BinaryOperator_1_0 returns StringLiteral
+	 *     Or.BinaryOperator_1_0_0_0 returns StringLiteral
 	 *     And returns StringLiteral
-	 *     And.BinaryOperator_1_0 returns StringLiteral
+	 *     And.BinaryOperator_1_0_0_0 returns StringLiteral
 	 *     Cast returns StringLiteral
-	 *     Cast.BinaryOperator_1_0_0 returns StringLiteral
+	 *     Cast.BinaryOperator_1_0_0_0 returns StringLiteral
 	 *     Comparison returns StringLiteral
-	 *     Comparison.BinaryOperator_1_0_0 returns StringLiteral
+	 *     Comparison.BinaryOperator_1_0_0_0 returns StringLiteral
+	 *     Comparison.BinaryOperator_1_1_0 returns StringLiteral
 	 *     Addition returns StringLiteral
 	 *     Addition.BinaryOperator_1_0_0 returns StringLiteral
 	 *     Multiplication returns StringLiteral
@@ -1786,15 +1874,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns BooleanLiteral
 	 *     Pair.BinaryOperator_1_0 returns BooleanLiteral
 	 *     If returns BooleanLiteral
-	 *     If.If_1_0 returns BooleanLiteral
+	 *     If.If_1_0_0_0 returns BooleanLiteral
 	 *     Or returns BooleanLiteral
-	 *     Or.BinaryOperator_1_0 returns BooleanLiteral
+	 *     Or.BinaryOperator_1_0_0_0 returns BooleanLiteral
 	 *     And returns BooleanLiteral
-	 *     And.BinaryOperator_1_0 returns BooleanLiteral
+	 *     And.BinaryOperator_1_0_0_0 returns BooleanLiteral
 	 *     Cast returns BooleanLiteral
-	 *     Cast.BinaryOperator_1_0_0 returns BooleanLiteral
+	 *     Cast.BinaryOperator_1_0_0_0 returns BooleanLiteral
 	 *     Comparison returns BooleanLiteral
-	 *     Comparison.BinaryOperator_1_0_0 returns BooleanLiteral
+	 *     Comparison.BinaryOperator_1_0_0_0 returns BooleanLiteral
+	 *     Comparison.BinaryOperator_1_1_0 returns BooleanLiteral
 	 *     Addition returns BooleanLiteral
 	 *     Addition.BinaryOperator_1_0_0 returns BooleanLiteral
 	 *     Multiplication returns BooleanLiteral
@@ -1836,15 +1925,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns DoubleLiteral
 	 *     Pair.BinaryOperator_1_0 returns DoubleLiteral
 	 *     If returns DoubleLiteral
-	 *     If.If_1_0 returns DoubleLiteral
+	 *     If.If_1_0_0_0 returns DoubleLiteral
 	 *     Or returns DoubleLiteral
-	 *     Or.BinaryOperator_1_0 returns DoubleLiteral
+	 *     Or.BinaryOperator_1_0_0_0 returns DoubleLiteral
 	 *     And returns DoubleLiteral
-	 *     And.BinaryOperator_1_0 returns DoubleLiteral
+	 *     And.BinaryOperator_1_0_0_0 returns DoubleLiteral
 	 *     Cast returns DoubleLiteral
-	 *     Cast.BinaryOperator_1_0_0 returns DoubleLiteral
+	 *     Cast.BinaryOperator_1_0_0_0 returns DoubleLiteral
 	 *     Comparison returns DoubleLiteral
-	 *     Comparison.BinaryOperator_1_0_0 returns DoubleLiteral
+	 *     Comparison.BinaryOperator_1_0_0_0 returns DoubleLiteral
+	 *     Comparison.BinaryOperator_1_1_0 returns DoubleLiteral
 	 *     Addition returns DoubleLiteral
 	 *     Addition.BinaryOperator_1_0_0 returns DoubleLiteral
 	 *     Multiplication returns DoubleLiteral
@@ -1886,15 +1976,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns IntLiteral
 	 *     Pair.BinaryOperator_1_0 returns IntLiteral
 	 *     If returns IntLiteral
-	 *     If.If_1_0 returns IntLiteral
+	 *     If.If_1_0_0_0 returns IntLiteral
 	 *     Or returns IntLiteral
-	 *     Or.BinaryOperator_1_0 returns IntLiteral
+	 *     Or.BinaryOperator_1_0_0_0 returns IntLiteral
 	 *     And returns IntLiteral
-	 *     And.BinaryOperator_1_0 returns IntLiteral
+	 *     And.BinaryOperator_1_0_0_0 returns IntLiteral
 	 *     Cast returns IntLiteral
-	 *     Cast.BinaryOperator_1_0_0 returns IntLiteral
+	 *     Cast.BinaryOperator_1_0_0_0 returns IntLiteral
 	 *     Comparison returns IntLiteral
-	 *     Comparison.BinaryOperator_1_0_0 returns IntLiteral
+	 *     Comparison.BinaryOperator_1_0_0_0 returns IntLiteral
+	 *     Comparison.BinaryOperator_1_1_0 returns IntLiteral
 	 *     Addition returns IntLiteral
 	 *     Addition.BinaryOperator_1_0_0 returns IntLiteral
 	 *     Multiplication returns IntLiteral
@@ -1936,15 +2027,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns ReservedLiteral
 	 *     Pair.BinaryOperator_1_0 returns ReservedLiteral
 	 *     If returns ReservedLiteral
-	 *     If.If_1_0 returns ReservedLiteral
+	 *     If.If_1_0_0_0 returns ReservedLiteral
 	 *     Or returns ReservedLiteral
-	 *     Or.BinaryOperator_1_0 returns ReservedLiteral
+	 *     Or.BinaryOperator_1_0_0_0 returns ReservedLiteral
 	 *     And returns ReservedLiteral
-	 *     And.BinaryOperator_1_0 returns ReservedLiteral
+	 *     And.BinaryOperator_1_0_0_0 returns ReservedLiteral
 	 *     Cast returns ReservedLiteral
-	 *     Cast.BinaryOperator_1_0_0 returns ReservedLiteral
+	 *     Cast.BinaryOperator_1_0_0_0 returns ReservedLiteral
 	 *     Comparison returns ReservedLiteral
-	 *     Comparison.BinaryOperator_1_0_0 returns ReservedLiteral
+	 *     Comparison.BinaryOperator_1_0_0_0 returns ReservedLiteral
+	 *     Comparison.BinaryOperator_1_1_0 returns ReservedLiteral
 	 *     Addition returns ReservedLiteral
 	 *     Addition.BinaryOperator_1_0_0 returns ReservedLiteral
 	 *     Multiplication returns ReservedLiteral
@@ -2031,15 +2123,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns Unary
 	 *     Pair.BinaryOperator_1_0 returns Unary
 	 *     If returns Unary
-	 *     If.If_1_0 returns Unary
+	 *     If.If_1_0_0_0 returns Unary
 	 *     Or returns Unary
-	 *     Or.BinaryOperator_1_0 returns Unary
+	 *     Or.BinaryOperator_1_0_0_0 returns Unary
 	 *     And returns Unary
-	 *     And.BinaryOperator_1_0 returns Unary
+	 *     And.BinaryOperator_1_0_0_0 returns Unary
 	 *     Cast returns Unary
-	 *     Cast.BinaryOperator_1_0_0 returns Unary
+	 *     Cast.BinaryOperator_1_0_0_0 returns Unary
 	 *     Comparison returns Unary
-	 *     Comparison.BinaryOperator_1_0_0 returns Unary
+	 *     Comparison.BinaryOperator_1_0_0_0 returns Unary
+	 *     Comparison.BinaryOperator_1_1_0 returns Unary
 	 *     Addition returns Unary
 	 *     Addition.BinaryOperator_1_0_0 returns Unary
 	 *     Multiplication returns Unary
@@ -2110,15 +2203,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns Unit
 	 *     Pair.BinaryOperator_1_0 returns Unit
 	 *     If returns Unit
-	 *     If.If_1_0 returns Unit
+	 *     If.If_1_0_0_0 returns Unit
 	 *     Or returns Unit
-	 *     Or.BinaryOperator_1_0 returns Unit
+	 *     Or.BinaryOperator_1_0_0_0 returns Unit
 	 *     And returns Unit
-	 *     And.BinaryOperator_1_0 returns Unit
+	 *     And.BinaryOperator_1_0_0_0 returns Unit
 	 *     Cast returns Unit
-	 *     Cast.BinaryOperator_1_0_0 returns Unit
+	 *     Cast.BinaryOperator_1_0_0_0 returns Unit
 	 *     Comparison returns Unit
-	 *     Comparison.BinaryOperator_1_0_0 returns Unit
+	 *     Comparison.BinaryOperator_1_0_0_0 returns Unit
+	 *     Comparison.BinaryOperator_1_1_0 returns Unit
 	 *     Addition returns Unit
 	 *     Addition.BinaryOperator_1_0_0 returns Unit
 	 *     Multiplication returns Unit
@@ -2168,15 +2262,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Pair returns VariableRef
 	 *     Pair.BinaryOperator_1_0 returns VariableRef
 	 *     If returns VariableRef
-	 *     If.If_1_0 returns VariableRef
+	 *     If.If_1_0_0_0 returns VariableRef
 	 *     Or returns VariableRef
-	 *     Or.BinaryOperator_1_0 returns VariableRef
+	 *     Or.BinaryOperator_1_0_0_0 returns VariableRef
 	 *     And returns VariableRef
-	 *     And.BinaryOperator_1_0 returns VariableRef
+	 *     And.BinaryOperator_1_0_0_0 returns VariableRef
 	 *     Cast returns VariableRef
-	 *     Cast.BinaryOperator_1_0_0 returns VariableRef
+	 *     Cast.BinaryOperator_1_0_0_0 returns VariableRef
 	 *     Comparison returns VariableRef
-	 *     Comparison.BinaryOperator_1_0_0 returns VariableRef
+	 *     Comparison.BinaryOperator_1_0_0_0 returns VariableRef
+	 *     Comparison.BinaryOperator_1_1_0 returns VariableRef
 	 *     Addition returns VariableRef
 	 *     Addition.BinaryOperator_1_0_0 returns VariableRef
 	 *     Multiplication returns VariableRef

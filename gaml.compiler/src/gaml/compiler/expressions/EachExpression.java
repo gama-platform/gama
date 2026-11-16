@@ -63,6 +63,9 @@ public class EachExpression extends VariableExpression {
 	public boolean isConst() { return false; }
 
 	@Override
+	public boolean isEach() { return true; }
+
+	@Override
 	public IExpression resolveAgainst(final IScope scope) {
 		return this;
 	}

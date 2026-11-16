@@ -7,6 +7,7 @@ import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.FacetsAndBlock;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.StandaloneExperiment;
 
 import java.util.Collection;
@@ -35,6 +36,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *   <li>{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl#getFacets <em>Facets</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl#getBlock <em>Block</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl#getKey <em>Key</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl#getPragmas <em>Pragmas</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl#getName <em>Name</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl#getImportURI <em>Import URI</em>}</li>
  * </ul>
@@ -82,6 +84,16 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
    * @ordered
    */
   protected String key = KEY_EDEFAULT;
+
+  /**
+   * The cached value of the '{@link #getPragmas() <em>Pragmas</em>}' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getPragmas()
+   * @generated
+   * @ordered
+   */
+  protected EList<Pragma> pragmas;
 
   /**
    * The default value of the '{@link #getName() <em>Name</em>}' attribute.
@@ -240,6 +252,21 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
    * @generated
    */
   @Override
+  public EList<Pragma> getPragmas()
+  {
+    if (pragmas == null)
+    {
+      pragmas = new EObjectContainmentEList<Pragma>(Pragma.class, this, GamlPackage.STANDALONE_EXPERIMENT__PRAGMAS);
+    }
+    return pragmas;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public String getName()
   {
     return name;
@@ -298,6 +325,8 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
         return ((InternalEList<?>)getFacets()).basicRemove(otherEnd, msgs);
       case GamlPackage.STANDALONE_EXPERIMENT__BLOCK:
         return basicSetBlock(null, msgs);
+      case GamlPackage.STANDALONE_EXPERIMENT__PRAGMAS:
+        return ((InternalEList<?>)getPragmas()).basicRemove(otherEnd, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -318,6 +347,8 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
         return getBlock();
       case GamlPackage.STANDALONE_EXPERIMENT__KEY:
         return getKey();
+      case GamlPackage.STANDALONE_EXPERIMENT__PRAGMAS:
+        return getPragmas();
       case GamlPackage.STANDALONE_EXPERIMENT__NAME:
         return getName();
       case GamlPackage.STANDALONE_EXPERIMENT__IMPORT_URI:
@@ -346,6 +377,10 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
         return;
       case GamlPackage.STANDALONE_EXPERIMENT__KEY:
         setKey((String)newValue);
+        return;
+      case GamlPackage.STANDALONE_EXPERIMENT__PRAGMAS:
+        getPragmas().clear();
+        getPragmas().addAll((Collection<? extends Pragma>)newValue);
         return;
       case GamlPackage.STANDALONE_EXPERIMENT__NAME:
         setName((String)newValue);
@@ -376,6 +411,9 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
       case GamlPackage.STANDALONE_EXPERIMENT__KEY:
         setKey(KEY_EDEFAULT);
         return;
+      case GamlPackage.STANDALONE_EXPERIMENT__PRAGMAS:
+        getPragmas().clear();
+        return;
       case GamlPackage.STANDALONE_EXPERIMENT__NAME:
         setName(NAME_EDEFAULT);
         return;
@@ -402,6 +440,8 @@ public class StandaloneExperimentImpl extends EntryImpl implements StandaloneExp
         return block != null;
       case GamlPackage.STANDALONE_EXPERIMENT__KEY:
         return KEY_EDEFAULT == null ? key != null : !KEY_EDEFAULT.equals(key);
+      case GamlPackage.STANDALONE_EXPERIMENT__PRAGMAS:
+        return pragmas != null && !pragmas.isEmpty();
       case GamlPackage.STANDALONE_EXPERIMENT__NAME:
         return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
       case GamlPackage.STANDALONE_EXPERIMENT__IMPORT_URI:

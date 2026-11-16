@@ -26,7 +26,9 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
 import gama.api.types.list.IList;
@@ -84,7 +86,9 @@ import gama.gaml.statements.PutStatement.PutValidator;
 
 				- To put an element in a container at a given index, use `container[index] <- element;` (classic form: `put element in: container at: index;`) \
 
-				- To put an element in a container at all indices (i.e. replace all values by the element),  use `container[] <- element` (classic form: `put element in: container all: true;`)""",
+				- To put an element in a container at all indices (i.e. replace all values by the element),  use `container[] <- element` (classic form: `put element in: container all: true;`)\
+
+				- For a statically known species, `species[attribute] <- values;` assigns a typed list in population order, with exactly one value per agent. Grids instead use a matrix matching their dimensions. The bare attribute name is resolved against the species before caller variables. Normal setters, constraints and notifications are preserved.""",
 		usages = { @usage (
 				value = "The allowed  configurations are the following ones:",
 				examples = { @example (
@@ -155,9 +159,19 @@ public class PutStatement extends AddStatement {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
 			final IExpression at = cd.getFacetExpr(AT);
+			if (at instanceof IVarExpression.SpeciesAttribute) {
+				sb.append(at.serializeToGaml(includingBuiltIn)).append(" <- ")
+						.append(item.serializeToGaml(includingBuiltIn)).append(';');
+				return;
+			}
 			sb.append(list.serializeToGaml(includingBuiltIn));
 			sb.append('[');
-			if (at != null) { sb.append(at.serializeToGaml(includingBuiltIn)); }
+			if (at != null) {
+				final boolean callerIndex = list.getGamlType().id() == IType.SPECIES && at instanceof IVarExpression;
+				if (callerIndex) sb.append('(');
+				sb.append(at.serializeToGaml(includingBuiltIn));
+				if (callerIndex) sb.append(')');
+			}
 			sb.append(']');
 			sb.append(" <- ");
 			sb.append(item.serializeToGaml(includingBuiltIn)).append(';');
@@ -172,6 +186,25 @@ public class PutStatement extends AddStatement {
 		@Override
 		public void validate(final IDescription cd) {
 			final IExpression index = cd.getFacetExpr(AT, KEY);
+			if (index instanceof IVarExpression.SpeciesAttribute attribute) {
+				final IExpression value = cd.getFacetExpr(ITEM);
+				final IType containerType = attribute.getGamlType().id() == IType.MATRIX ? Types.MATRIX : Types.LIST;
+				if (attribute.isNotModifiable()) {
+					cd.error("Species attribute '" + attribute.getName() + "' is a constant or a function",
+							IGamlIssue.WRONG_TYPE, AT);
+				} else if (value != null && (!containerType.isAssignableFrom(value.getGamlType())
+						|| !value.getGamlType().getContentType()
+								.isTranslatableInto(attribute.getGamlType().getContentType()))) {
+					cd.error("Species attribute '" + attribute.getName() + "' expects a " + containerType + " of "
+							+ attribute.getGamlType().getContentType() + ", not " + value.getGamlType(),
+							IGamlIssue.WRONG_TYPE, ITEM);
+				}
+				if (cd.hasFacet(IN)) {
+					cd.setFacetExprDescription(TO, cd.getFacet(IN));
+					cd.removeFacets(IN);
+				}
+				return;
+			}
 			final IExpression whole = cd.getFacetExpr(ALL);
 			if (whole != null && whole.getGamlType().id() != IType.BOOL) {
 				cd.error("Put cannot be used to add several values", IGamlIssue.CONFLICTING_FACETS, ALL);
@@ -197,6 +230,16 @@ public class PutStatement extends AddStatement {
 	public PutStatement(final IDescription desc) {
 		super(desc);
 		setName("put in " + list.serializeToGaml(false));
+	}
+
+	@Override
+	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		if (index instanceof IVarExpression.SpeciesAttribute attribute) {
+			final Object value = item.value(scope);
+			attribute.setVal(scope, value, false);
+			return value;
+		}
+		return super.privateExecuteIn(scope);
 	}
 
 	@Override

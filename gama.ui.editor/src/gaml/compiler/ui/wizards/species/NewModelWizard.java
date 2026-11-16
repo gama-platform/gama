@@ -288,11 +288,28 @@ public class NewModelWizard extends Wizard implements INewWizard {
 			experimentTab.setControl(experimentPage.createControl(tabs));
 			tabs.addSelectionListener(new SelectionAdapter() {
 				@Override
-				public void widgetSelected(final SelectionEvent event) { refreshCompleteness(); }
+				public void widgetSelected(final SelectionEvent event) {
+					refreshCompleteness();
+					focusName();
+				}
 			});
 			tabs.setSelection(modelTab);
 			setControl(tabs);
 			refreshCompleteness();
+		}
+
+		@Override
+		public void setVisible(final boolean visible) {
+			super.setVisible(visible);
+			if (visible) focusName();
+		}
+
+		private void focusName() {
+			if (isExperimentSelected()) {
+				if (experimentPage != null) experimentPage.focusName();
+			} else if (form != null) {
+				form.focusName();
+			}
 		}
 
 		private boolean isExperimentSelected() {
@@ -449,5 +466,12 @@ public class NewModelWizard extends Wizard implements INewWizard {
 			private String author() { return authorText.getText().trim(); }
 			private String modelPath() { return modelText.getText().trim(); }
 			private String experimentType() { return type; }
+
+			private void focusName() {
+				if (fileText != null && !fileText.isDisposed()) {
+					fileText.setFocus();
+					fileText.selectAll();
+				}
+			}
 	}
 }

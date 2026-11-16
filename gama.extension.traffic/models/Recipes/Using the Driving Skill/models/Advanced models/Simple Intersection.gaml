@@ -28,7 +28,7 @@ global {
 	float proba_block_node_car <- 1.0; 
 	
 	//graph used for the shortest path computation
-	graph road_network;
+	graph<geometry, geometry> road_network;
 	
 	init {
 		create intersection(location: {10,size_environment/2});

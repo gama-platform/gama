@@ -119,6 +119,10 @@ global skills: [moving] control: fsm {
 		species0 agent0 <- species0[10];
 		write string(agent0);
 
+		// Bare attribute brackets read and write a typed list in population order.
+		list<float> speeds <- species0[speed];
+		species0[speed] <- speeds;
+
 		// ...  and agents as direct containers of their attributes (mimicking the internal attributes map). This "virtual map" will now contain, in addition to the attributes, 
 		// all the variables loaded from CSV, SQL or shape files (some stored in the agent itself, others in the shape).
 		agent0["departure"] <- { 0, 0 };

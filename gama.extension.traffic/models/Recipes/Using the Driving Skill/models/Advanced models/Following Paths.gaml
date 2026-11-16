@@ -22,7 +22,7 @@ global {
 
 	geometry shape <- envelope(shp_roads) + 50; 
 	
-	graph road_network;
+	graph<geometry, geometry> road_network;
 	
 	init {
 		create road(num_lanes:int(read("lanes"))) from: shp_roads  {

@@ -82,8 +82,8 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		create sql_agent number: 1 returns: dbs;
 		sql_agent ag <- dbs[0];
 		map<string, string> params <- new_database();
-		list<map<string, unknown>> everyone <- [];
-		list<map<string, unknown>> total <- [];
+		dataframe everyone <- [];
+		dataframe total <- [];
 		ask ag {
 			do executeUpdate (params: params, updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, score REAL)");
 			do insert (params: params,into: "people", data: [1, "Alice", 30, 1.5]);
@@ -93,12 +93,12 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		}
 		// each row is a map indexed by the names of the columns, in upper case
 		assert length(everyone) = 2;
-		assert everyone[0]["ID"] = 1;
-		assert everyone[0]["NAME"] = "Alice";
-		assert everyone[0]["AGE"] = 30;
-		assert everyone[0]["SCORE"] = 1.5;
-		assert everyone[1]["NAME"] = "Bob";
-		assert total[0]["N"] = 2;
+		assert cell(everyone,0,"ID") = 1;
+		assert cell(everyone,0,"NAME") = "Alice";
+		assert cell(everyone,0,"AGE") = 30;
+		assert cell(everyone,0,"SCORE") = 1.5;
+		assert cell(everyone,1,"NAME") = "Bob";
+		assert cell(total,0,"N")= 2;
 		assert delete_file(database_file);
 	}
 
@@ -106,7 +106,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		create sql_agent number: 1 returns: dbs;
 		sql_agent ag <- dbs[0];
 		map<string, string> params <- new_database();
-		list<map<string, unknown>> adults <- [];
+		dataframe adults <- [];
 		ask ag {
 			do executeUpdate (params: params, updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)");
 			do executeUpdate (params: params, updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)", values: [1, "Alice", 30]);
@@ -122,8 +122,8 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		create sql_agent number: 1 returns: dbs;
 		sql_agent ag <- dbs[0];
 		map<string, string> params <- new_database();
-		list<map<string, unknown>> after_update <- [];
-		list<map<string, unknown>> after_delete <- [];
+		dataframe after_update <- [];
+		dataframe after_delete <- [];
 		ask ag {
 			do executeUpdate (params: params, updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)");
 			do insert (params: params, into: "people", data: [1, "Alice", 30]);
@@ -133,7 +133,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 			do executeUpdate (params: params, updateComm: "DELETE FROM people WHERE id = 2");
 			after_delete <- select(params: params, select: "SELECT name FROM people");
 		}
-		assert after_update[0]["AGE"] = 31;
+		assert cell(after_update,0,"AGE") = 31;
 		assert after_delete collect each["NAME"] = ["Alice"];
 		assert delete_file(database_file);
 	}

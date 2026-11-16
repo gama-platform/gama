@@ -140,21 +140,21 @@ experiment Simulation_ABM_EBM type: gui {
 			species Host aspect: basic;	
 		}
 		display ABM  type: 3d  { 
-			chart 'Population' type: series background: #white style: exploded {
+			chart 'Population' kind: series background: #white style: exploded {
 				data 'susceptible' value: (Host as list) count (each.is_susceptible) color: rgb(46,204,113) marker_size: 0.5;
 				data 'infected' value: (Host as list) count (each.is_infected) color: rgb(231,76,60) marker_size: 0.5;
 				data 'immune' value: (Host as list) count (each.is_immune) color: rgb(52,152,219) marker_size: 0.5;
 			}
 		}
 		display EBM  type: 3d  { 
-			chart "Population" type: series background: #white {
+			chart "Population" kind: series background: #white {
 				data 'S' value: first(node_agent).S color: rgb(46,204,113) marker: false;
 				data 'I' value: first(node_agent).I color: rgb(231,76,60) marker: false;
 				data 'R' value: first(node_agent).R color: rgb(52,152,219) marker: false;
 			}
 		}
 		display ABM_EBM   type: 3d  { 
-			chart 'Population' type: series background: #white style: exploded {
+			chart 'Population' kind: series background: #white style: exploded {
 				data 'susceptible' value: (Host as list) count (each.is_susceptible) color: rgb(39,174,96) marker_size: 0.5;
 				data 'infected' value: (Host as list) count (each.is_infected) color: rgb(192,57,43) marker_size: 0.5;
 				data 'immune' value: (Host as list) count (each.is_immune) color: rgb(41,128,185) marker_size: 0.5;

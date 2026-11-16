@@ -17,6 +17,7 @@ import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.artefacts.IArtefact.Operator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.expressions.IExpression;
@@ -786,6 +787,12 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @see #isCompoundType()
 	 */
 	boolean isContainer();
+
+	/** Whether this type denotes a complete, statically known grid species, not a list of its cells. */
+	default boolean isGridSpecies() {
+		return id() == SPECIES && getContentType().getSpecies() instanceof ISpeciesDescription species
+				&& species.isGrid();
+	}
 
 	/**
 	 * Checks if this type has a fixed length (cannot use add/remove operations).

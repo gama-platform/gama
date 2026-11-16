@@ -70,7 +70,7 @@ experiment "1 - World HUD minimap and chart" type: gui {
                 draw circle(5) at: moving_point color: #blue;
                 draw "World mini-map" at: {50, 10} anchor: #center color: #black;
             }
-            chart "World marker X (0-100)" type: series position: {16, -0.30} size: {0.48, 0.28}
+            chart "World marker X (0-100)" kind: series position: {16, -0.30} size: {0.48, 0.28}
                 x_range: 200 y_range: {0, 100} {
                 data "X" value: moving_point.x color: #blue;
             }
@@ -196,7 +196,7 @@ experiment "5 - Image mesh and chart screen frames" type: gui {
             image "../images/Gama.jpg" coordinates: #screen position: {16, 60} size: {200, 140};
             mesh heights coordinates: #screen position: {240, 60} size: {200, 140}
                 scale: 0 color: palette([#blue, #cyan, #yellow, #red]);
-            chart "Cycle" type: series position: {16, 240} size: {0.9, 180} {
+            chart "Cycle" kind: series position: {16, 240} size: {0.9, 180} {
                 data "Cycle" value: cycle;
             }
             overlay {
@@ -287,7 +287,7 @@ experiment "8 - Default full chart frame" type: gui {
     output {
         layout #horizontal;
         display "OpenGL" type: opengl antialias: true {
-            chart "Cycle" type: series {
+            chart "Cycle" kind: series {
                 data "Cycle" value: cycle;
             }
         }

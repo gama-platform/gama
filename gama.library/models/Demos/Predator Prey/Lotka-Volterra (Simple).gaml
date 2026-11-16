@@ -62,13 +62,13 @@ experiment maths type: gui {
 
 	output {
  		display TimeSeries  type: 3d  {																	// creation of a display to show time series of the model, values are plotted at every step
-			chart "Lotka Volterra Time Series" type: series background: paper axes: ink {
+			chart "Lotka Volterra Time Series" kind: series background: paper axes: ink {
 				data 'Number of preys' value: first(LotkaVolterra_agent).nb_prey color: inks[0];
 				data 'Number of predators' value: first(LotkaVolterra_agent).nb_predator color: inks[1];
 			}
 		}
 		display PhasePortrait  type: 3d  {																// creation of a display to show the phase portait, values are plotted at every time step
-			chart "Lotka Volterra Phase Portrait" type: xy background: paper axes: ink {
+			chart "Lotka Volterra Phase Portrait" kind: xy background: paper axes: ink {
 			data ' ' value: {predator_death_rate / predation_efficiency, prey_birth_rate/predation_rate} color: inks[1]; // equilibrium point
 			data 'Number of preys according to number of predators' value:{first(LotkaVolterra_agent).nb_prey, first(LotkaVolterra_agent).nb_predator} color: inks[0];
 			}

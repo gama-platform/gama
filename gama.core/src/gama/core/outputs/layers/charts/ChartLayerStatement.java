@@ -70,14 +70,15 @@ import gama.core.outputs.layers.LayerData;
 				optional = true,
 				doc = @doc ("Raster scale for this chart only, between 0.1 and 2.0 inclusive: 1 is native device resolution, 2 supersamples, and values below 1 reduce resolution for speed. Evaluated at initialization. If omitted, uses the Chart raster scale preference. Applies to Java2D, OpenGL and OpenGL4; fonts and logical layout are unchanged. Raster memory limits still apply.")),
 				@facet (
-				name = LayerData.COORDINATES, type = IType.STRING,
-				optional = true,
-				doc = @doc (LayerData.COORDINATES_DOC)),
+						name = LayerData.COORDINATES,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc (LayerData.COORDINATES_DOC)),
 				@facet (
-				name = ChartLayerStatement.XRANGE,
-				type = { IType.FLOAT, IType.INT, IType.POINT, IType.LIST },
-				optional = true,
-				doc = @doc ("range of the x-axis. Can be a number (which will set the axis total range) or a point (which will set the min and max of the axis).")),
+						name = ChartLayerStatement.XRANGE,
+						type = { IType.FLOAT, IType.INT, IType.POINT, IType.LIST },
+						optional = true,
+						doc = @doc ("range of the x-axis. Can be a number (which will set the axis total range) or a point (which will set the min and max of the axis).")),
 				@facet (
 						name = ChartLayerStatement.YRANGE,
 						type = { IType.FLOAT, IType.INT, IType.POINT, IType.LIST },
@@ -204,7 +205,18 @@ import gama.core.outputs.layers.LayerData;
 						values = { IKeyword.XY, IKeyword.SCATTER, IKeyword.HISTOGRAM, IKeyword.SERIES, IKeyword.PIE,
 								IKeyword.RADAR, IKeyword.HEATMAP, IKeyword.BOX_WHISKER },
 						optional = true,
-						doc = @doc ("the type of chart. It could be histogram, series, xy, pie, radar, heatmap or box whisker. The difference between series and xy is that the former adds an implicit x-axis that refers to the numbers of cycles, while the latter considers the first declaration of data to be its x-axis.")),
+						doc = @doc (
+								deprecated = "use kind: instead",
+								value = "the type of chart. To choose among histogram, scatter, series, xy, pie, radar, heatmap or box_whisker. The difference between series and xy is that the former adds an implicit x-axis that refers to the numbers of cycles, while the latter considers the first declaration of data to be its x-axis.")),
+				@facet (
+						name = IKeyword.KIND,
+						type = IType.ID,
+						values = { IKeyword.XY, IKeyword.SCATTER, IKeyword.HISTOGRAM, IKeyword.SERIES, IKeyword.PIE,
+								IKeyword.RADAR, IKeyword.HEATMAP, IKeyword.BOX_WHISKER },
+						optional = true,
+						doc = @doc (
+								value = "the kind of chart. To choose among histogram, scatter, series, xy, pie, radar, heatmap or box_whisker. The difference between series and xy is that the former adds an implicit x-axis that refers to the numbers of cycles, while the latter considers the first declaration of data to be its x-axis.")),
+
 				@facet (
 						name = IKeyword.STYLE,
 						type = IType.ID,
@@ -384,6 +396,7 @@ import gama.core.outputs.layers.LayerData;
 @validator (AbstractLayerStatement.CoordinatesValidator.class)
 public class ChartLayerStatement extends AbstractLayerStatement {
 
+	/** The Constant QUALITY. */
 	public static final String QUALITY = "quality";
 
 	/** The Constant XRANGE. */
@@ -511,8 +524,14 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The chartoutput. */
 	private ChartOutput chartOutput = null;
 
+	/** The quality. */
 	private Double quality;
 
+	/**
+	 * Gets the quality.
+	 *
+	 * @return the quality
+	 */
 	public double getQuality() {
 		return quality == null ? GamaPreferences.Displays.CHART_QUALITY.getValue() : quality;
 	}
@@ -576,13 +595,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		quality = null;
 		if (qualityExpression != null) {
 			final double value = Cast.asFloat(scope, qualityExpression.value(scope));
-			if (!Double.isFinite(value) || value < 0.1 || value > 2.0) {
+			if (!Double.isFinite(value) || value < 0.1 || value > 2.0)
 				throw GamaRuntimeException.error("Chart quality must be finite and between 0.1 and 2.0", scope);
-			}
 			quality = value;
 		}
 
-		IExpression expression = getFacet(IKeyword.TYPE);
+		IExpression expression = getFacet(IKeyword.KIND, IKeyword.TYPE);
 
 		chartOutput = ChartOutputFactory.createChartOutput(scope, getName(), expression);
 		chartOutput.setHostDisplayOutput(getDisplayOutput());
@@ -596,7 +614,6 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (expression != null) { chartOutput.setX_LogScale(scope, Cast.asBool(scope, expression.value(scope))); }
 		expression = getFacet(ChartLayerStatement.Y_LOGSCALE);
 		if (expression != null) { chartOutput.setY_LogScale(scope, Cast.asBool(scope, expression.value(scope))); }
-
 		expression = getFacet(ChartLayerStatement.Y2_LOGSCALE);
 		if (expression != null) { chartOutput.setY2_LogScale(scope, Cast.asBool(scope, expression.value(scope))); }
 
@@ -662,6 +679,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		return true;
 	}
 
+	/**
+	 * Update legend properties.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
 	private void updateLegendProperties(final IScope scope) {
 		IExpression expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
 		if (expr != null) {
@@ -702,23 +725,65 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		final IExpression expr = getFacet(facetName);
 		if (expr == null) return;
 		final Object range = expr.value(scope);
-		if (range instanceof Number number) {
-			if (axisIndex == 0) chartOutput.setXRangeInterval(scope, number.doubleValue());
-			else if (axisIndex == 1) chartOutput.setYRangeInterval(scope, number.doubleValue());
-			else if (axisIndex == 2) chartOutput.setY2RangeInterval(scope, number.doubleValue());
-		} else if (range instanceof IPoint point) {
-			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, point.getX(), point.getY());
-			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, point.getX(), point.getY());
-			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, point.getX(), point.getY());
-		} else if (range instanceof IList<?> list) {
-			double min = Cast.asFloat(scope, list.get(0));
-			double max = Cast.asFloat(scope, list.get(1));
-			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, min, max);
-			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, min, max);
-			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, min, max);
+		switch (range) {
+			case Number number -> {
+				switch (axisIndex) {
+					case 0:
+						chartOutput.setXRangeInterval(scope, number.doubleValue());
+						break;
+					case 1:
+						chartOutput.setYRangeInterval(scope, number.doubleValue());
+						break;
+					case 2:
+						chartOutput.setY2RangeInterval(scope, number.doubleValue());
+						break;
+					default:
+						break;
+				}
+			}
+			case IPoint point -> {
+				switch (axisIndex) {
+					case 0:
+						chartOutput.setXRangeMinMax(scope, point.getX(), point.getY());
+						break;
+					case 1:
+						chartOutput.setYRangeMinMax(scope, point.getX(), point.getY());
+						break;
+					case 2:
+						chartOutput.setY2RangeMinMax(scope, point.getX(), point.getY());
+						break;
+					default:
+						break;
+				}
+			}
+			case IList<?> list -> {
+				double min = Cast.asFloat(scope, list.get(0));
+				double max = Cast.asFloat(scope, list.get(1));
+				switch (axisIndex) {
+					case 0:
+						chartOutput.setXRangeMinMax(scope, min, max);
+						break;
+					case 1:
+						chartOutput.setYRangeMinMax(scope, min, max);
+						break;
+					case 2:
+						chartOutput.setY2RangeMinMax(scope, min, max);
+						break;
+					default:
+						break;
+				}
+			}
+			case null, default -> {
+			}
 		}
 	}
 
+	/**
+	 * Update labels and ranges.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
 	private void updateLabelsAndRanges(final IScope scope) {
 		IExpression string1 = getFacet(ChartLayerStatement.XLABEL);
 		if (string1 != null) { chartOutput.setXLabel(scope, Cast.asString(scope, string1.value(scope))); }
@@ -741,6 +806,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (expr != null) { chartOutput.setYMax(scope, Cast.asFloat(scope, expr.value(scope))); }
 	}
 
+	/**
+	 * Update tick and line properties.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
 	private void updateTickAndLineProperties(final IScope scope) {
 		IExpression expr2 = getFacet(XTICKUNIT);
 		if (expr2 != null && expr2.value(scope) instanceof Number number) {
@@ -755,9 +826,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			chartOutput.setY2TickUnit(scope, number.doubleValue());
 		}
 		expr2 = getFacet(IKeyword.GAP);
-		if (expr2 != null) {
-			chartOutput.setGap(scope, Cast.asFloat(scope, expr2.value(scope)));
-		}
+		if (expr2 != null) { chartOutput.setGap(scope, Cast.asFloat(scope, expr2.value(scope))); }
 
 		IExpression string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setXTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
@@ -778,6 +847,16 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		updateLegendProperties(scope);
 	}
 
+	/**
+	 * Update font property.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param facetName
+	 *            the facet name
+	 * @param fontType
+	 *            the font type
+	 */
 	private void updateFontProperty(final IScope scope, final String facetName, final int fontType) {
 		IExpression face = getFacet(facetName);
 		if (face == null) return;
@@ -818,6 +897,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		}
 	}
 
+	/**
+	 * Update color and font properties.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
 	private void updateColorAndFontProperties(final IScope scope) {
 		IColor colorvalue = GamaColorFactory.BLACK;
 		IExpression color = getFacet(IKeyword.AXES);
@@ -856,6 +941,13 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		updateFontProperty(scope, TITLEFONTFACE, 3);
 	}
 
+	/**
+	 * Update values.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return true, if successful
+	 */
 	// what can be updated at each step
 	public boolean updateValues(final IScope scope) {
 		updateLabelsAndRanges(scope);

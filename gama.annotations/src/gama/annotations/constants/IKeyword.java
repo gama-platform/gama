@@ -542,6 +542,9 @@ public interface IKeyword {
 	/** The keystone. */
 	String KEYSTONE = "keystone";
 
+	/** The kind. */
+	String KIND = "kind";
+
 	/** The layout. */
 	String LAYOUT = "layout";
 

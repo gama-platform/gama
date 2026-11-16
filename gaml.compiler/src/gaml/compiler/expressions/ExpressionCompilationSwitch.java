@@ -1067,6 +1067,10 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		final boolean isMatrix = Types.MATRIX.isAssignableFrom(contType);
 		final IType keyType = contType.getKeyType();
 		final List<? extends Expression> list = EGAML.getExprsOf(object.getRight());
+		if (contType.id() == IType.SPECIES && list.size() == 1 && list.get(0) instanceof VariableRef reference) {
+			final IExpression attribute = speciesAttribute(container, reference, false);
+			if (attribute != null) return attribute;
+		}
 		try (final Collector.AsList<IExpression> result = Collector.getList()) {
 			final int size = list.size();
 
@@ -1115,6 +1119,19 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 
 			return FACTORY.createOperator("internal_at", context.getContext(), object, container, indices);
 		}
+	}
+
+	public IExpression speciesAttribute(final IExpression container, final VariableRef reference,
+			final boolean assignment) {
+		if (container.getGamlType().id() != IType.SPECIES) return null;
+		final String name = EGAML.getKeyOf(reference);
+		final ITypeDescription species = container.getGamlType().getContentType().getSpecies();
+		if (species == null || !species.hasAttribute(name)) return null;
+		final IExpression attribute = species.getVarExpr(name, true);
+		if (!(attribute instanceof IVarExpression variable)) return null;
+		context.getDocumentationContext().document(reference, attribute);
+		return assignment ? new SpeciesAttributeExpression.Assignment(container, variable)
+				: new SpeciesAttributeExpression(container, variable);
 	}
 
 	@Override

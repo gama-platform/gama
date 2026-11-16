@@ -269,8 +269,8 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 
 	/**
 	 * Optional fallback variable-description provider attached to this description. Used by synthetic descriptions such
-	 * as interactive-console temporary actions so expression compilation can resolve REPL variables without depending on
-	 * an enclosing species-side side effect.
+	 * as interactive-console temporary actions so expression compilation can resolve REPL variables without depending
+	 * on an enclosing species-side side effect.
 	 */
 	private IVarDescriptionProvider alternateVarProvider;
 
@@ -479,6 +479,11 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	@Override
 	public String getLitteral(final String string) {
 		return !hasFacets() ? null : facets.getLabel(string);
+	}
+
+	@Override
+	public String getLitteral(final String... strings) {
+		return !hasFacets() ? null : facets.getLabel(strings);
 	}
 
 	/**
@@ -1262,7 +1267,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 		final List<String> mandatory = artefact.getMandatoryFacets();
 		if (mandatory != null) {
 			for (final String facet : mandatory) {
-				if (!isBuiltIn && !artefact.getFacet(facet).appliesTo(getKeyword())) continue;
+				if (!isBuiltIn && !artefact.getFacet(facet).appliesTo(getKeyword())) { continue; }
 				if (!hasFacets() || !facets.containsKey(facet)) {
 					error("Missing facet " + facet, IGamlIssue.MISSING_FACET, getUnderlyingElement(), facet, "nil");
 					return false;
@@ -1284,7 +1289,8 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 				if (exp != null && !isBuiltIn && !fp.isNewTemp()) {
 					final IType<?> actualType = exp.getGamlType();
 					// Special case for init. Temporary solution before we can pass ITypeProvider.OWNER_TYPE to the init
-					// facet. Concerned types are point and date, which belong to "OrdinalAttributeDeclaration" and can accept nil,
+					// facet. Concerned types are point and date, which belong to "OrdinalAttributeDeclaration" and can
+					// accept nil,
 					// while int and float cannot
 					if (IKeyword.INIT.equals(fp.getName())) {
 						IType<?> requestedType = SymbolDescription.this.getGamlType();
@@ -1305,6 +1311,11 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 
 	}
 
+	/**
+	 * Validate facet constraints.
+	 *
+	 * @return true, if successful
+	 */
 	private boolean validateFacetConstraints() {
 		final Set<String> conflicts = new java.util.HashSet<>();
 		final boolean[] valid = { true };
@@ -1317,7 +1328,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 			}
 			for (final String other : facet.getExcludes()) {
 				final IArtefact.Facet peer = artefact.getFacet(other);
-				if (!hasFacet(other) || peer == null) continue;
+				if (!hasFacet(other) || peer == null) { continue; }
 				final String pair = name.compareTo(other) < 0 ? name + ":" + other : other + ":" + name;
 				if (conflicts.add(pair)) {
 					error("Facets '" + name + "' and '" + other + "' cannot be defined together",
@@ -1327,8 +1338,8 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 			}
 			for (final String required : facet.getRequires()) {
 				if (!hasFacet(required)) {
-					error("Facet '" + name + "' requires facet '" + required + "'", IGamlIssue.MISSING_FACET,
-							name, required, "nil");
+					error("Facet '" + name + "' requires facet '" + required + "'", IGamlIssue.MISSING_FACET, name,
+							required, "nil");
 					valid[0] = false;
 				}
 			}

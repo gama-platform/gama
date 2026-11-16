@@ -85,7 +85,9 @@ import gama.dev.COUNTER;
 						type = IType.ID,
 						values = { IKeyword.AGENT, IKeyword.TABLE },
 						optional = true,
-						doc = @doc ("the way to inspect agents: in a table, or a set of inspectors")) },
+						doc = @doc (
+								deprecated = "Use inspect or browse for respectively individual or collective inspections",
+								value = "the way to inspect agents: in a table, or a set of inspectors")) },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "`" + IKeyword.INSPECT + "` (and `" + IKeyword.BROWSE
@@ -110,7 +112,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	static final List<String> types = Arrays.asList(IKeyword.AGENT, IKeyword.DYNAMIC, IKeyword.SPECIES, IKeyword.TABLE);
 
 	/** The type. */
-	String type;
+	final boolean isTable;
 
 	/** The attributes. */
 	IExpression attributes;
@@ -133,21 +135,15 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 			value = getFacet(IKeyword.NAME);
 			expressionText = getValue() == null ? "" : getValue().serializeToGaml(false);
 		}
-		type = getLiteral(IKeyword.TYPE);
-		if (type == null) {
-			if (IKeyword.BROWSE.equals(getKeyword())) {
-				type = IKeyword.TABLE;
-			} else {
-				type = IKeyword.AGENT;
-			}
-		}
+		String type = getLiteral(IKeyword.TYPE);
+		isTable = type == null ? IKeyword.BROWSE.equals(getKeyword()) : type == IKeyword.TABLE;
 		attributes = getFacet(IKeyword.ATTRIBUTES);
 	}
 
 	@Override
 	public boolean init(final IScope scope) {
 		super.init(scope);
-		if (IKeyword.AGENT.equals(type) && getValue() != null) { lastValue = getValue().value(getScope()); }
+		if (IKeyword.INSPECT.equals(getKeyword()) && getValue() != null) { lastValue = getValue().value(getScope()); }
 		if (attributes != null) {
 			listOfAttributes = (Map<String, String>) Types.MAP.of(Types.STRING, Types.STRING).cast(getScope(),
 					attributes.value(getScope()), null, true);
@@ -165,8 +161,8 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	 */
 	public static InspectDisplayOutput inspect(final IAgent a, final IExpression attributes) {
 
-		IDescription desc = GAML.getDescriptionFactory().create(IKeyword.INSPECT, IKeyword.NAME,
-				StringUtils.toGamlString("Inspect: "), IKeyword.TYPE, types.get(INSPECT_AGENT)).validate();
+		IDescription desc = GAML.getDescriptionFactory()
+				.create(IKeyword.INSPECT, IKeyword.NAME, StringUtils.toGamlString("Inspect: ")).validate();
 		desc.setFacet(IKeyword.VALUE, GAML.getExpressionFactory().createConst(a, a.getGamlType()));
 		desc.validate();
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
@@ -185,8 +181,8 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	 */
 	public static InspectDisplayOutput inspect(final IExperimentAgent a, final IExpression attributes) {
 		// Opens directly an inspector
-		IDescription desc = GAML.getDescriptionFactory().create(IKeyword.INSPECT, IKeyword.NAME,
-				StringUtils.toGamlString("Inspect: "), IKeyword.TYPE, types.get(INSPECT_TABLE)).validate();
+		IDescription desc = GAML.getDescriptionFactory()
+				.create(IKeyword.BROWSE, IKeyword.NAME, StringUtils.toGamlString("Inspect: ")).validate();
 		final IPopulation sp = a.getSimulationPopulation();
 		desc.setFacet(IKeyword.VALUE, GAML.getExpressionFactory().createConst(sp, sp.getGamlType()));
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
@@ -208,9 +204,9 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 			final IExpression attributes) {
 		// Opens a table inspector on the agents of this species
 		IDescription desc = GAML.getDescriptionFactory()
-				.create(IKeyword.INSPECT, GAML.getExperimentContext(rootAgent), IKeyword.NAME,
+				.create(IKeyword.BROWSE, GAML.getExperimentContext(rootAgent), IKeyword.NAME,
 						StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")"), IKeyword.VALUE,
-						species == null ? "nil" : species.getName(), IKeyword.TYPE, types.get(INSPECT_TABLE))
+						species == null ? "nil" : species.getName())
 				.validate();
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
 		InspectDisplayOutput result = new InspectDisplayOutput(desc);
@@ -230,9 +226,9 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 			final IExpression attributes) {
 		// Opens a table inspector on the agents of this container
 		IDescription desc = GAML.getDescriptionFactory()
-				.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
+				.create(IKeyword.BROWSE, GAML.getExperimentContext(agent), IKeyword.NAME,
 						StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")"), IKeyword.VALUE,
-						StringUtils.toGaml(agents, false), IKeyword.TYPE, types.get(INSPECT_TABLE))
+						StringUtils.toGaml(agents, false))
 				.validate();
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
 		InspectDisplayOutput result = new InspectDisplayOutput(desc);
@@ -252,11 +248,8 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	static public InspectDisplayOutput browse(final IMacroAgent agent, final IExpression agents,
 			final IExpression attributes) {
 		// Opens a table inspector on the agents of this container
-		IDescription desc = GAML.getDescriptionFactory()
-				.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
-						StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")"), IKeyword.TYPE,
-						types.get(INSPECT_TABLE))
-				.validate();
+		IDescription desc = GAML.getDescriptionFactory().create(IKeyword.BROWSE, GAML.getExperimentContext(agent),
+				IKeyword.NAME, StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")")).validate();
 		desc.setFacet(IKeyword.VALUE, agents);
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
 		InspectDisplayOutput result = new InspectDisplayOutput(desc);
@@ -291,7 +284,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	@Override
 	public boolean step(final IScope scope) {
 		// ((AbstractScope) getScope()).traceAgents = true;
-		if (IKeyword.TABLE.equals(type)) {
+		if (isTable) {
 			if (rootAgent == null || rootAgent.dead()) return false;
 			if (getValue() == null) return true;
 			if (getScope().interrupted()) return false;
@@ -306,24 +299,20 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	}
 
 	@Override
-	public boolean isUnique() { return !IKeyword.TABLE.equals(type); }
+	public boolean isUnique() { return !isTable; }
 
 	@Override
 	public String getId() { return isUnique() ? getViewId() : getViewId() + getName(); }
 
 	@Override
-	public String getViewId() {
-		if (IKeyword.TABLE.equals(type)) return IGui.TABLE_VIEW_ID;
-		return IGui.AGENT_VIEW_ID;
-
-	}
+	public String getViewId() { return isTable ? IGui.TABLE_VIEW_ID : IGui.AGENT_VIEW_ID; }
 
 	/** The Constant EMPTY. */
 	final static IAgent[] EMPTY = {};
 
 	@Override
 	public IAgent[] getLastValue() {
-		if (IKeyword.TABLE.equals(type) && (rootAgent == null || rootAgent.dead())) return EMPTY;
+		if (isTable && (rootAgent == null || rootAgent.dead())) return EMPTY;
 		// DEBUG.LOG("Last value :" + lastValue);
 		if (lastValue instanceof IAgent a) return new IAgent[] { a };
 		if (lastValue instanceof ISpecies s && rootAgent != null) {
