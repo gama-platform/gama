@@ -172,7 +172,8 @@ public final class SimulationPackageLauncher {
 		return result;
 	}
 
-	static void validatePlugin(final Path file, final SimulationPackageManifest.BundleRequirement required)
+	/** Rejects platform bundles, fragments, native code and nested JARs, and checks the plugin identity. */
+	public static void validatePlugin(final Path file, final SimulationPackageManifest.BundleRequirement required)
 			throws IOException {
 		if (required.symbolicName().startsWith("org.eclipse.") || required.symbolicName().startsWith("org.osgi.")
 				|| required.symbolicName().startsWith("gaml.") || required.symbolicName().equals("gama.api")

@@ -84,7 +84,7 @@ set "tempWorkspace=false"
 IF "%userWorkspace%"=="" (
     set workDir=%workDir%
     if "!param!"=="" set "tempWorkspace=true"
-    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket -ssocket) do (
+    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket -ssocket -package) do (
         if not "!param!"=="!param:%%c=!" set "tempWorkspace=true"
     )
 ) ELSE (

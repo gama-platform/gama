@@ -124,9 +124,16 @@ public final class ProjectArchive {
 	}
 
 	public static Extracted extract(final Path archive, final BooleanSupplier canceled) throws IOException {
+		return extract(archive, null, canceled);
+	}
+
+	/** Extracts into a fresh directory created under {@code parent} (the system temporary directory if null). */
+	public static Extracted extract(final Path archive, final Path parent, final BooleanSupplier canceled)
+			throws IOException {
 		try (var zip = new ZipFile(archive.toFile())) {
 			final Index index = index(zip, isProjectArchive(archive));
-			final Path directory = Files.createTempDirectory("gama-project-import-");
+			final Path directory = parent == null ? Files.createTempDirectory("gama-project-import-")
+					: Files.createTempDirectory(Files.createDirectories(parent), "gama-project-import-");
 			try {
 				for (final String path : index.directories()) Files.createDirectories(directory.resolve(path));
 				long total = 0;

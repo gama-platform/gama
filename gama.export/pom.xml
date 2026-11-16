@@ -40,6 +40,18 @@
         </executions>
       </plugin>
       <plugin>
+        <!-- SWT/JFace/UI are optional at runtime (the headless product uses this bundle without them),
+             but the GUI entry points of this bundle still compile against them -->
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <dependency-resolution>
+            <optionalDependencies>require</optionalDependencies>
+          </dependency-resolution>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>

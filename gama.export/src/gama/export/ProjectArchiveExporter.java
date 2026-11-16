@@ -37,9 +37,18 @@ public final class ProjectArchiveExporter {
 	private ProjectArchiveExporter() {}
 
 	public static Plan plan(final IProject project, final IProgressMonitor monitor) throws CoreException, IOException {
+		return plan(project, Set.of(), monitor);
+	}
+
+	/**
+	 * Plans the export of a project. {@code requiredPlugins} names installed plugins the project requires in addition
+	 * to those its models declare (for instance plugins only used by models that do not compile yet).
+	 */
+	public static Plan plan(final IProject project, final Set<String> requiredPlugins, final IProgressMonitor monitor)
+			throws CoreException, IOException {
 		if (!project.isAccessible()) throw new IOException("Open the project before exporting it");
 		project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-		final Set<String> plugins = new HashSet<>();
+		final Set<String> plugins = new HashSet<>(requiredPlugins);
 		final var warnings = new ArrayList<String>();
 		discover(project, plugins, warnings, new HashSet<>(), monitor);
 		for (final var reference : project.getReferencedProjects())

@@ -88,6 +88,7 @@
       <feature id="gama.feature.extensions" installMode="root"/>
       <feature id="gama.feature.dependencies" installMode="root"/>
       <feature id="gama.feature.extension.image" installMode="root"/>
+      <feature id="gama.feature.export" installMode="root"/>
    </features>
 
    <configurations>
