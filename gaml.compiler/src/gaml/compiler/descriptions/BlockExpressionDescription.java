@@ -52,7 +52,8 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 				&& parameter.isExperimentParameter() && sd.isModel()
 				&& context.getEnclosingDescription() instanceof IExperimentDescription;
 		// Keep the declaring experiment available for explicitly qualified access in simulation callbacks.
-		final IDescription declaration = simulationParameter ? context.getEnclosingDescription() : sd;
+		final IDescription declaration = control ? context
+				: simulationParameter ? context.getEnclosingDescription() : sd;
 		final IStatementDescription action =
 				(IStatementDescription) GAML.getDescriptionFactory().create(element, declaration, null);
 		if (action != null) {
