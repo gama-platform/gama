@@ -73,7 +73,8 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	@SuppressWarnings ("unchecked")
 	public LightDefinition(final LightStatement lightStatement) {
 		super(lightStatement);
-		typeAttribute = create(IKeyword.TYPE, Types.STRING, ILightDefinition.direction);
+		typeAttribute = create(IKeyword.KIND, symbol.getFacet(IKeyword.KIND, IKeyword.TYPE), Types.STRING,
+				ILightDefinition.direction);
 		locationAttribute = create(IKeyword.LOCATION, Types.POINT, DEFAULT_LOCATION);
 		directionAttribute = create("direction", Types.POINT, DEFAULT_DIRECTION);
 		linearAttribute = create(IKeyword.LINEAR_ATTENUATION, Types.FLOAT, 0d);
