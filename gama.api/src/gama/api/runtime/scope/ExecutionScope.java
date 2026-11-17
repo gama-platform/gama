@@ -363,6 +363,15 @@ public class ExecutionScope implements IScope {
 	/** Reuses the last immutable agent frame without allocating a cache for short-lived scope copies. */
 	private AgentExecutionContext cachedAgentFrame;
 
+	/** Cached owner of agent-bound services for the current agent context. */
+	private AgentExecutionContext cachedServiceOwnerContext;
+
+	/** Owner of agent-bound services for the cached context. */
+	private ITopLevelAgent cachedServiceOwner;
+
+	/** Whether the service owner cache has been initialized, including when its value is null. */
+	private boolean serviceOwnerCached;
+
 	/** The additional context. */
 	protected final SpecialContext additionalContext = new SpecialContext();
 
@@ -526,6 +535,9 @@ public class ExecutionScope implements IScope {
 		setExecutionContext(null);
 		agentContext = null;
 		cachedAgentFrame = null;
+		cachedServiceOwnerContext = null;
+		cachedServiceOwner = null;
+		serviceOwnerCached = false;
 		additionalContext.clear();
 		// currentSymbol = null;
 		setFlowStatus(FlowStatus.DISPOSE);
@@ -1330,9 +1342,8 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public IClock getClock() {
-		final ITopLevelAgent root = getRoot();
-		if (root == null) return null;
-		return root.getClock();
+		final ITopLevelAgent owner = getCurrentServiceOwner();
+		return owner == null ? null : owner.getClock();
 	}
 
 	@Override
@@ -1419,10 +1430,33 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public IRandom getRandom() {
-		final ITopLevelAgent root = getRoot();
-		if (root != null) return root.getRandomGenerator();
+		final ITopLevelAgent owner = getCurrentServiceOwner();
+		if (owner != null) return owner.getRandomGenerator();
 		if (fallbackRandom == null) { fallbackRandom = new RandomUtils(); }
 		return fallbackRandom;
+	}
+
+	private ITopLevelAgent getCurrentServiceOwner() {
+		if (serviceOwnerCached && cachedServiceOwnerContext == agentContext) return cachedServiceOwner;
+
+		ITopLevelAgent owner = null;
+		for (AgentExecutionContext context = agentContext; context != null && owner == null;
+				context = context.getOuterContext()) {
+			final IObject current = context.getCurrentObjectOrAgent();
+			if (current instanceof ITopLevelAgent topLevelAgent) {
+				owner = topLevelAgent;
+			} else if (current instanceof IAgent agent) {
+				owner = agent.getTopLevelHost();
+			} else if (current != null) {
+				owner = current.getModelOwner();
+			}
+		}
+		if (owner == null) { owner = getRoot(); }
+
+		cachedServiceOwnerContext = agentContext;
+		cachedServiceOwner = owner;
+		serviceOwnerCached = true;
+		return owner;
 	}
 
 	/**
