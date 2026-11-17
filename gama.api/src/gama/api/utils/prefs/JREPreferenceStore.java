@@ -84,6 +84,7 @@ public class JREPreferenceStore extends GamaPreferenceStore<Preferences> {
 	 */
 	@Override
 	public <T> void putInStore(final String key, final T value) {
+		if (overriddenKeys.isEmpty()) { overriddenKeys = new LinkedHashSet<>(); }
 		overriddenKeys.add(key);
 		switch (value) {
 			case null -> store.put(key, "");
