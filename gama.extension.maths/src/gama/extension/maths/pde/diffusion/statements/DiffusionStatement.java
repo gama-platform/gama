@@ -94,7 +94,7 @@ import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.Diffusio
 						type = IType.LABEL,
 						values = { DiffusionStatement.DIFFUSION, DiffusionStatement.GRADIENT },
 						optional = true,
-						doc = @doc ("represents both the way the signal is propagated and the way to treat multiple propagation of the same signal occurring at once from different places. If propagation equals 'diffusion', the intensity of a signal is shared between its neighbors with respect to 'proportion', 'variation' and the number of neighbors of the environment places (4, 6 or 8). I.e., for a given signal S propagated from place P, the value transmitted to its N neighbors is : S' = (S / N / proportion) - variation. The intensity of S is then diminished by S `*` proportion on P. In a diffusion, the different signals of the same name see their intensities added to each other on each place. If propagation equals 'gradient', the original intensity is not modified, and each neighbors receives the intensity : S / proportion - variation. If multiple propagation occur at once, only the maximum intensity is kept on each place. If 'propagation' is not defined, it is assumed that it is equal to 'diffusion'.")),
+						doc = @doc ("represents both the way the signal is propagated and the way to treat multiple propagation of the same signal occurring at once from different places. If propagation equals 'diffusion', the intensity of a signal is shared between its neighbors with respect to 'proportion', 'variation' and the number of neighbors of the environment places (4, 6 or 8). I.e., for a given signal S propagated from place P, the value transmitted to its N neighbors is : S' = (S / N / proportion) - variation. The intensity of S is then diminished by S `*` proportion on P. In a diffusion, the different signals of the same name see their intensities added to each other on each place. If propagation equals 'gradient', the original intensity is not modified, and each neighbors receives the intensity : S / proportion - variation. If multiple propagation occur at once, only the maximum intensity is kept on each place. If 'propagation' is not defined, it is assumed that it is equal to 'diffusion'. 'propagation' can also be combined with 'matrix:': with 'gradient', the new value of each cell is the maximum, over the cells covered by the matrix (including itself), of their value multiplied by the corresponding coefficient of the matrix. This allows to define irregular (non-isotropic) gradients.")),
 				@facet (
 						name = DiffusionStatement.RADIUS,
 						type = IType.INT,
@@ -143,6 +143,14 @@ import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.Diffusio
 						examples = { @example (
 								value = "diffuse var: phero on: cells matrix: math_diff mask: mymask;",
 								isExecutable = false) }),
+				@usage (
+						value = "A custom matrix can also be used with a gradient propagation, for instance to build an irregular gradient:",
+						examples = { @example (
+								value = "matrix<float> mat_grad <- matrix([[2/4,3/4,3/4],[1/4,1,1],[2/4,3/4,3/4]]);",
+								isExecutable = false),
+								@example (
+										value = "diffuse var: phero on: cells matrix: mat_grad propagation: gradient;",
+										isExecutable = false) }),
 				@usage (
 						value = "A convenient way to have an uniform diffusion in a given radius is (which is equivalent to the above diffusion):",
 						examples = { @example (
@@ -210,16 +218,12 @@ public class DiffusionStatement extends AbstractStatement {
 
 			final IExpressionDescription mat_diffu = desc.getFacet(MATRIX);
 			final IExpressionDescription propor = desc.getFacet(PROPORTION);
-			final IExpressionDescription propagation = desc.getFacet(PROPAGATION);
 			final IExpressionDescription radius = desc.getFacet(RADIUS);
 			final IExpressionDescription variation = desc.getFacet(VARIATION);
 
 			// conflict diffusion matrix /vs/ parameters
 			if (propor != null && mat_diffu != null) {
 				desc.error("\"matrix:\" and \"proportion:\" can not be used at the same time", IGamlIssue.GENERAL);
-			}
-			if (propagation != null && mat_diffu != null) {
-				desc.error("\"matrix:\" and \"propagation:\" can not be used at the same time", IGamlIssue.GENERAL);
 			}
 			if (mat_diffu != null && radius != null) {
 				desc.error("\"matrix:\" and \"radius:\" can not be used at the same time", IGamlIssue.GENERAL);
