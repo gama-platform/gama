@@ -381,8 +381,14 @@ class SpecialContext {
 	 *            the value to assign to the iterator variable
 	 */
 	void setEach(final String key, final Object value) {
-		if (each == null) { each = new HashMap<>(); }
-		each.put(key, value);
+		if (value == null) {
+			if (each == null) return;
+			each.remove(key);
+			if (each.isEmpty()) { each = null; }
+		} else {
+			if (each == null) { each = new HashMap<>(); }
+			each.put(key, value);
+		}
 	}
 
 }

@@ -11,6 +11,7 @@ package gama.gaml.operators;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,8 +23,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.base.Predicate;
@@ -136,6 +135,8 @@ import one.util.streamex.StreamEx;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Containers {
+
+	private record SortValue(Object value, Object key) {}
 
 	// Source - https://stackoverflow.com/a/32648397 - Posted by Emmanuel Touzery
 
@@ -250,6 +251,31 @@ public class Containers {
 		} finally {
 			scope.setEach(eachName, previousEach);
 		}
+	}
+
+	private static <T> T withEach(final IScope scope, final String eachName, final Supplier<T> supplier) {
+		final Object previousEach = scope.getEach(eachName);
+		try {
+			return supplier.get();
+		} finally {
+			scope.setEach(eachName, previousEach);
+		}
+	}
+
+	private static Object evaluateEach(final IScope scope, final String eachName, final Object eachValue,
+			final IExpression expression) {
+		scope.setEach(eachName, eachValue);
+		return expression.value(scope);
+	}
+
+	private static Function<Object, Object> buildFunctionWithinEachScope(final IScope scope, final String eachName,
+			final IExpression expression) {
+		return each -> evaluateEach(scope, eachName, each, expression);
+	}
+
+	private static <T> Predicate<T> buildPredicateWithinEachScope(final IScope scope, final String eachName,
+			final IExpression expression) {
+		return each -> Cast.asBool(scope, evaluateEach(scope, eachName, each, expression));
 	}
 
 	/**
@@ -1883,7 +1909,19 @@ public class Containers {
 			@test ("line([{10,10},{20,20}]) inter line([{5,5},{15,15}]) = line([{10,10},{15,15}])"),
 			@test ("line([{10,5},{10,20}]) inter line([{5,15},{30,15}]) distance_to {10,15} < 0.1") })
 	public static IList inter(final IScope scope, final IContainer c, final IContainer c1) {
-		return (IList) stream(scope, c).filter(inContainer(scope, c1)).distinct().toCollection(listLike(c, c1));
+		final IContainer left = notNull(scope, c);
+		final IContainer right = notNull(scope, c1);
+		final Set<Object> rightValues = right instanceof IList ? new HashSet<>() : null;
+		if (rightValues != null) {
+			for (final Object value : right.iterable(scope)) { rightValues.add(value); }
+		}
+		final IList result = listLike(left, right).get();
+		final Set<Object> added = new LinkedHashSet<>();
+		for (final Object value : left.iterable(scope)) {
+			final boolean contained = rightValues == null ? right.contains(scope, value) : rightValues.contains(value);
+			if (contained && added.add(value)) { result.add(value); }
+		}
+		return result;
 	}
 
 	/**
@@ -2326,8 +2364,9 @@ public class Containers {
 			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; map<bool, list<int>> by_parity2 <- numbers2 group_by even(each); by_parity2[false] = [3, 1, 1, 5, 9]") })
 	public static IMap group_by(final IScope scope, final String eachName, final IContainer c, final IExpression e) {
 		final IType ct = notNull(scope, c).getGamlType().getContentType();
-		return (IMap) stream(scope, c).groupingTo(buildFunctionWithEach(scope, eachName, e),
-				asMapOf(e.getGamlType(), Types.LIST.of(ct)), listOf(ct));
+		return withEach(scope, eachName,
+				() -> (IMap) stream(scope, c).groupingTo(buildFunctionWithinEachScope(scope, eachName, e),
+						asMapOf(e.getGamlType(), Types.LIST.of(ct)), listOf(ct)));
 	}
 
 	/**
@@ -2380,8 +2419,9 @@ public class Containers {
 			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers last_with (each > 3) = 6") })
 	public static Object last_with(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter)).reduce((a, b) -> b)
-				.orElse(null);
+		return withEach(scope, eachName,
+				() -> stream(scope, c).filter(buildPredicateWithinEachScope(scope, eachName, filter))
+						.reduce((a, b) -> b).orElse(null));
 	}
 
 	/**
@@ -2437,7 +2477,12 @@ public class Containers {
 			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers2 first_with (each > 100) = nil") })
 	public static Object first_with(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).findFirst(buildPredicateWithEach(scope, eachName, filter)).orElse(null);
+		return withEach(scope, eachName, () -> {
+			for (final Object value : notNull(scope, c).iterable(scope)) {
+				if (Cast.asBool(scope, evaluateEach(scope, eachName, value, filter))) return value;
+			}
+			return null;
+		});
 	}
 
 	/**
@@ -2585,24 +2630,43 @@ public class Containers {
 			@test ("matrix<int> m1 <- matrix([[1, 2], [3, 4]]); int sum_elements <- m1 sum_of each; sum_elements = 10") })
 	public static Object sum_of(final IScope scope, final String eachName, final IContainer container,
 			final IExpression filter) {
-		Stream s = stream(scope, container);
-		IType t;
-		if (filter != null) {
-			s = s.map(buildFunctionWithEach(scope, eachName, filter));
-			t = filter.getGamlType();
-		} else {
-			t = container.getGamlType().getContentType();
+		final IContainer source = notNull(scope, container);
+		final IType type = filter == null ? source.getGamlType().getContentType() : filter.getGamlType();
+		if (filter == null) return sumOf(scope, source, type, eachName, null);
+		return withEach(scope, eachName, () -> sumOf(scope, source, type, eachName, filter));
+	}
+
+	private static Object sumOf(final IScope scope, final IContainer container, final IType type,
+			final String eachName, final IExpression filter) {
+		final int typeId = type.id();
+		if (typeId != IType.INT && typeId != IType.FLOAT && typeId != IType.POINT && typeId != IType.COLOR
+				&& typeId != IType.STRING) {
+			throw GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true), scope);
 		}
-		s = s.map(each -> t.cast(scope, each, null, false));
-		return switch (t.id()) {
-			case IType.INT -> ((Stream<Integer>) s).reduce(0, Integer::sum);
-			case IType.FLOAT -> ((Stream<Double>) s).reduce(0d, Double::sum);
-			case IType.POINT -> ((Stream<IPoint>) s).reduce(GamaPointFactory.create(), IPoint::plus);
-			case IType.COLOR -> ((Stream<IColor>) s).reduce(GamaColorFactory.createWithRGBA(0, 0, 0, 0),
-					GamaColorFactory::createByMerging);
-			case IType.STRING -> ((Stream<String>) s).reduce("", String::concat);
-			default -> throw GamaRuntimeException.error("No sum can be computed for " + container.serializeToGaml(true),
-					scope);
+		int intSum = 0;
+		double floatSum = 0d;
+		IPoint pointSum = typeId == IType.POINT ? GamaPointFactory.create() : null;
+		IColor colorSum = typeId == IType.COLOR ? GamaColorFactory.createWithRGBA(0, 0, 0, 0) : null;
+		final StringBuilder stringSum = typeId == IType.STRING ? new StringBuilder() : null;
+		for (final Object each : container.iterable(scope)) {
+			final Object value = type.cast(scope, filter == null ? each : evaluateEach(scope, eachName, each, filter),
+					null, false);
+			switch (typeId) {
+				case IType.INT -> intSum += (Integer) value;
+				case IType.FLOAT -> floatSum += (Double) value;
+				case IType.POINT -> pointSum = pointSum.plus((IPoint) value);
+				case IType.COLOR -> colorSum = GamaColorFactory.createByMerging(colorSum, (IColor) value);
+				case IType.STRING -> stringSum.append(Objects.requireNonNull((String) value));
+				default -> throw new IllegalStateException();
+			}
+		}
+		return switch (typeId) {
+			case IType.INT -> intSum;
+			case IType.FLOAT -> floatSum;
+			case IType.POINT -> pointSum;
+			case IType.COLOR -> colorSum;
+			case IType.STRING -> stringSum.toString();
+			default -> throw new IllegalStateException();
 		};
 	}
 
@@ -2736,8 +2800,17 @@ public class Containers {
 	@validator (ComparableValidator.class)
 	public static IList sort(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
 		try {
-			return (IList) stream(scope, c).sortedBy(buildFunctionWithEach(scope, eachName, filter))
-					.toCollection(listLike(c));
+			final IList values = (IList) stream(scope, c).toCollection(listLike(c));
+			return withEach(scope, eachName, () -> {
+				final List<SortValue> keyedValues = new ArrayList<>(values.size());
+				for (final Object value : values) {
+					keyedValues.add(new SortValue(value, evaluateEach(scope, eachName, value, filter)));
+				}
+				keyedValues.sort((left, right) -> ((Comparable) left.key()).compareTo(right.key()));
+				final IList result = listLike(c).get();
+				for (final SortValue keyedValue : keyedValues) { result.add(keyedValue.value()); }
+				return result;
+			});
 		} catch (IllegalArgumentException e) {
 			// AD added here to avoid reporting concurrent modifications to the container while sorting it (can happen
 			// when relaunching simulations, see #693, with this exception in java.util.TimSort). Instead we return the
@@ -2799,8 +2872,7 @@ public class Containers {
 			@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] "),
 			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; list<int> l2 <- m1 where (each > 2); l2 = [3, 4]") })
 	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
-		return (IList) stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter))
-				.toCollection(listLike(c));
+		return where(scope, notNull(scope, c).iterable(scope), c.getGamlType().getContentType(), eachName, filter);
 	}
 
 	/**
@@ -2927,7 +2999,7 @@ public class Containers {
 	@validator (ComparableValidator.class)
 	public static Object with_max_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).maxBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
+		return withEach(scope, eachName, () -> extremum(scope, eachName, notNull(scope, c), filter, true));
 	}
 
 	/**
@@ -2975,7 +3047,25 @@ public class Containers {
 	@validator (ComparableValidator.class)
 	public static Object with_min_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).minBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
+		return withEach(scope, eachName, () -> extremum(scope, eachName, notNull(scope, c), filter, false));
+	}
+
+	private static Object extremum(final IScope scope, final String eachName, final IContainer container,
+			final IExpression filter, final boolean maximum) {
+		final Iterator<?> iterator = container.iterable(scope).iterator();
+		if (!iterator.hasNext()) return null;
+		Object best = iterator.next();
+		Object bestKey = evaluateEach(scope, eachName, best, filter);
+		while (iterator.hasNext()) {
+			final Object candidate = iterator.next();
+			final Object candidateKey = evaluateEach(scope, eachName, candidate, filter);
+			final int comparison = ((Comparable) bestKey).compareTo(candidateKey);
+			if (maximum ? comparison < 0 : comparison > 0) {
+				best = candidate;
+				bestKey = candidateKey;
+			}
+		}
+		return best;
 	}
 
 	@operator (
@@ -3164,10 +3254,10 @@ public class Containers {
 			final IExpression filter) {
 		// WARNING TODO The resulting type is not computed
 		final IType type = filter.getGamlType();
-		IType resultingContentsType = type;
-		if (resultingContentsType.isContainer()) { resultingContentsType = resultingContentsType.getContentType(); }
-		return (IList) stream(scope, c).flatCollection(buildFunctionWithEach(scope, eachName, filter).andThen(toLists))
-				.toCollection(listOf(resultingContentsType));
+		final IType resultingContentsType = type.isContainer() ? type.getContentType() : type;
+		return withEach(scope, eachName, () -> (IList) stream(scope, c)
+				.flatCollection(buildFunctionWithinEachScope(scope, eachName, filter).andThen(toLists))
+				.toCollection(listOf(resultingContentsType)));
 
 	}
 
@@ -3357,8 +3447,13 @@ public class Containers {
 
 	public static IList collect(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return (IList) stream(scope, c).map(buildFunctionWithEach(scope, eachName, filter))
-				.toCollection(listOf(filter.getGamlType()));
+		final IList result = listOf(filter.getGamlType()).get();
+		return withEach(scope, eachName, () -> {
+			for (final Object value : notNull(scope, c).iterable(scope)) {
+				result.add(evaluateEach(scope, eachName, value, filter));
+			}
+			return result;
+		});
 	}
 
 	/**
@@ -3469,8 +3564,13 @@ public class Containers {
 			see = { "group_by" })
 	public static Integer count(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return (int) notNull(scope, original).stream(scope).filter(buildPredicateWithEach(scope, eachName, filter))
-				.count();
+		return withEach(scope, eachName, () -> {
+			int result = 0;
+			for (final Object value : notNull(scope, original).iterable(scope)) {
+				if (Cast.asBool(scope, evaluateEach(scope, eachName, value, filter))) { result++; }
+			}
+			return result;
+		});
 	}
 
 	/**
@@ -3507,7 +3607,12 @@ public class Containers {
 			@test ("list<int> nothing <- []; not (nothing one_matches (each > 0))") })
 	public static Boolean one_matches(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return notNull(scope, original).stream(scope).anyMatch(buildPredicateWithEach(scope, eachName, filter));
+		return withEach(scope, eachName, () -> {
+			for (final Object value : notNull(scope, original).iterable(scope)) {
+				if (Cast.asBool(scope, evaluateEach(scope, eachName, value, filter))) return true;
+			}
+			return false;
+		});
 	}
 
 	/**
@@ -3546,7 +3651,12 @@ public class Containers {
 			@test ("list<int> numbers4 <- [1, 2, 3, 4, 5]; bool none_neg <- numbers4 none_matches (each < 0); none_neg = true") })
 	public static Boolean none_matches(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return notNull(scope, original).stream(scope).noneMatch(buildPredicateWithEach(scope, eachName, filter));
+		return withEach(scope, eachName, () -> {
+			for (final Object value : notNull(scope, original).iterable(scope)) {
+				if (Cast.asBool(scope, evaluateEach(scope, eachName, value, filter))) return false;
+			}
+			return true;
+		});
 	}
 
 	/**
@@ -3587,7 +3697,12 @@ public class Containers {
 			@test ("list<int> numbers5 <- [1, 2, 3, 4, 5]; bool all_large <- numbers5 all_match (each > 3); all_large = false") })
 	public static Boolean all_match(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return notNull(scope, original).stream(scope).allMatch(buildPredicateWithEach(scope, eachName, filter));
+		return withEach(scope, eachName, () -> {
+			for (final Object value : notNull(scope, original).iterable(scope)) {
+				if (!Cast.asBool(scope, evaluateEach(scope, eachName, value, filter))) return false;
+			}
+			return true;
+		});
 	}
 
 	/**
@@ -3625,8 +3740,9 @@ public class Containers {
 
 		final StreamEx s = original.stream(scope);
 		final IType contentsType = original.getGamlType().getContentType();
-		return (IMap) s.collect(toIMap(buildFunctionWithEach(scope, eachName, keyProvider), Function.identity(),
-				keyProvider.getGamlType(), contentsType));
+		return withEach(scope, eachName, () -> (IMap) s.collect(toIMap(
+				buildFunctionWithinEachScope(scope, eachName, keyProvider), Function.identity(),
+				keyProvider.getGamlType(), contentsType)));
 	}
 
 	/**
@@ -3671,8 +3787,15 @@ public class Containers {
 		final IExpression key = pair.arg(0);
 		final IExpression value = pair.arg(1);
 
-		return (IMap) stream(scope, original).collect(toIMap(buildFunctionWithEach(scope, eachName, key),
-				buildFunctionWithEach(scope, eachName, value), key.getGamlType(), value.getGamlType()));
+		return withEach(scope, eachName, () -> {
+			final IMap result = GamaMapFactory.create(key.getGamlType(), value.getGamlType());
+			for (final Object each : notNull(scope, original).iterable(scope)) {
+				final Object k = evaluateEach(scope, eachName, each, key);
+				final Object v = evaluateEach(scope, eachName, each, value);
+				result.put(k, v);
+			}
+			return result;
+		});
 	}
 
 	/**

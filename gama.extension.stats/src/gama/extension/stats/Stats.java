@@ -3858,8 +3858,7 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMinOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.buildFunctionWithEach(scope, eachName, filter))
-				.minBy(Function.identity()).orElse(null);
+		return extremumOf(scope, eachName, c, filter, false);
 	}
 
 	/**
@@ -3910,8 +3909,31 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMaxOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.buildFunctionWithEach(scope, eachName, filter))
-				.maxBy(Function.identity()).orElse(null);
+		return extremumOf(scope, eachName, c, filter, true);
+	}
+
+	private static Object extremumOf(final IScope scope, final String eachName, final IContainer container,
+			final IExpression filter, final boolean maximum) {
+		final IContainer source = Containers.notNull(scope, container);
+		final Object previousEach = scope.getEach(eachName);
+		try {
+			boolean hasValue = false;
+			Object best = null;
+			for (final Object each : source.iterable(scope)) {
+				scope.setEach(eachName, each);
+				final Object candidate = filter.value(scope);
+				if (!hasValue) {
+					best = candidate;
+					hasValue = true;
+					continue;
+				}
+				final int comparison = ((Comparable) best).compareTo(candidate);
+				if (maximum ? comparison < 0 : comparison > 0) { best = candidate; }
+			}
+			return best;
+		} finally {
+			scope.setEach(eachName, previousEach);
+		}
 	}
 
 }

@@ -360,7 +360,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		final boolean isBounded = from != null && to != null;
 		@SuppressWarnings ("null") boolean isInt = isBounded && from.getGamlType() == Types.INT
 				&& to.getGamlType() == Types.INT && (step == null || step.getGamlType() == Types.INT);
-		varName = desc.getName();
+		final String name = desc.getName();
+		varName = (desc.hasFacet(IKeyword.TIMES) || desc.hasFacet(IKeyword.WHILE))
+				&& name.startsWith(IInternalFacets.INTERNAL)
+				? null : name;
 		executer = isWhile ? new While(cond) : isList ? new Over(over)
 				: isBounded ? isInt ? new IntBounded(from, to, step) : new FloatBounded(from, to, step)
 				: new Times(times);
