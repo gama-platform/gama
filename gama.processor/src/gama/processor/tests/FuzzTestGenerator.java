@@ -417,7 +417,7 @@ public class FuzzTestGenerator {
 		sb.append("*/").append(ln).append(ln);
 		if (hasDeprecatedOperators) { sb.append("@no_warning").append(ln).append(ln); }
 		sb.append("model ").append(group).append("FuzzTests").append(ln).append(ln);
-		sb.append("experiment ").append(toGamlString("Fuzz tests of " + group)).append(" type: test {").append(ln);
+		sb.append("experiment ").append(toGamlString("Fuzz tests of " + group)).append(" mode: test {").append(ln);
 		sb.append(ln).append(tab).append("// typed nil values, to pass nil to the operands of a given type");
 		for (final String attribute : NIL_ATTRIBUTES) { sb.append(ln).append(tab).append(attribute); }
 		sb.append(ln).append(ln).append(tab)
