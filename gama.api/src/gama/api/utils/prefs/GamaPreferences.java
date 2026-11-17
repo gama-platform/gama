@@ -867,7 +867,7 @@ public class GamaPreferences {
 		 * network socket. Activates the port, ping interval, and console output preferences.
 		 */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
-				create("pref_enable_server", "Enable GAMA server mode", true, IType.BOOL, true)
+				create("pref_enable_server", "Enable GAMA server mode", false, IType.BOOL, true)
 						.in(Network.NAME, Network.SERVER).activates("pref_server_port", "pref_server_ping",
 								"pref_server_console", "pref_server_log", "pref_server_log_directory");
 
