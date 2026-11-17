@@ -51,7 +51,29 @@ final class InstallExtension {
 			URI.create("https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/");
 	private static final AtomicBoolean INSTALLING = new AtomicBoolean();
 
-	record Extension(URI repository, String featureId, String label, Version version, List<String> categories) {}
+	record Extension(URI repository, String featureId, String label, Version version, String description,
+			List<String> categories) {
+
+		String tooltipText() {
+			final String text = description.isBlank() ? "No description provided by the update site." : description;
+			final StringBuilder result = new StringBuilder();
+			int lineLength = 0;
+			for (final String word : text.strip().split("\\s+")) {
+				if (lineLength > 0) {
+					if (lineLength + 1 + word.length() > 80) {
+						result.append('\n');
+						lineLength = 0;
+					} else {
+						result.append(' ');
+						lineLength++;
+					}
+				}
+				result.append(word.replace("&", "&&"));
+				lineLength += word.length();
+			}
+			return result.toString();
+		}
+	}
 
 	private InstallExtension() {}
 

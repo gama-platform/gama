@@ -44,6 +44,15 @@ change. External-link folders keep their cloud icon.
 File icons, validation overlays, user-group icons, and other independently contributed
 categories keep their existing icons. These are bundled sets, not external icon-folder loading.
 
+## Installing GAMA extensions
+
+**Support > Install GAMA extensions...** discovers categorized features from the
+GAMA, plugin, Shared Models and Copilot update sites. Shared Models is included
+in the product and is marked installed when present in the installation profile.
+Hovering over a plugin in the menu or the selection list shows the description
+published by its update site, or says when none is provided. Menu tooltips depend
+on the native platform; GTK4 does not support them, so use the selection list.
+
 ## Dependencies
 
 **Show dependencies** on a model or standalone experiment file opens the

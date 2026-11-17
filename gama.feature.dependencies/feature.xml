@@ -7,7 +7,7 @@
       plugin="gama.dependencies">
 
    <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+      Libraries and Eclipse runtime components required by GAMA and its extensions.
    </description>
 
    <copyright url="http://www.example.com/copyright">

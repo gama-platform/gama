@@ -32,6 +32,7 @@ import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -186,6 +187,7 @@ final class InstallExtensionsWizard extends Wizard {
 			addColumn("Plugin", 430, 0);
 			addColumn("Status", 110, 1);
 			addColumn("Available version", 170, 2);
+			ColumnViewerToolTipSupport.enableFor(tree);
 			tree.setCheckStateProvider(new ICheckStateProvider() {
 				@Override
 				public boolean isChecked(final Object element) {
@@ -254,6 +256,11 @@ final class InstallExtensionsWizard extends Wizard {
 				public Color getForeground(final Object element) {
 					return element instanceof Plugin plugin && current(plugin.extension())
 							? tree.getControl().getDisplay().getSystemColor(SWT.COLOR_GRAY) : null;
+				}
+
+				@Override
+				public String getToolTipText(final Object element) {
+					return element instanceof Plugin plugin ? plugin.extension().tooltipText() : null;
 				}
 			});
 		}

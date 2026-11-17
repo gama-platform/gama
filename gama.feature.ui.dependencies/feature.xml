@@ -7,7 +7,7 @@
       plugin="gama.ui.application">
 
    <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+      Eclipse, SWT and other components used by the GAMA application interface.
    </description>
 
    <copyright url="http://www.example.com/copyright">

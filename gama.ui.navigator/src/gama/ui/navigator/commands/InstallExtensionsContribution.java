@@ -51,14 +51,15 @@ import gama.ui.navigator.commands.InstallExtension.Extension;
 import gama.ui.shared.resources.GamaIcon;
 
 /**
- * Discovers installable features from the GAMA and Copilot p2 repositories without blocking menu opening.
+ * Discovers installable features from the GAMA extension p2 repositories without blocking menu opening.
  */
 public class InstallExtensionsContribution extends CompoundContributionItem implements IStartup {
 
 	private static final URI GAMA_REPOSITORY = URI.create("https://updates.gama-platform.org/2026-06/");
 	private static final URI PLUGINS_REPOSITORY = URI.create("https://updates.gama-platform.org/plugin/2026-06/");
-	private static final List<URI> REPOSITORIES =
-			List.of(GAMA_REPOSITORY, PLUGINS_REPOSITORY, InstallExtension.COPILOT_REPOSITORY);
+	private static final URI SHARED_MODELS_REPOSITORY = URI.create("https://gama-platform.org/gama.shared.models/");
+	private static final List<URI> REPOSITORIES = List.of(GAMA_REPOSITORY, PLUGINS_REPOSITORY,
+			SHARED_MODELS_REPOSITORY, InstallExtension.COPILOT_REPOSITORY);
 	private static final long REFRESH_INTERVAL = TimeUnit.HOURS.toNanos(1);
 
 	private static final Map<URI, List<Extension>> catalogue = new LinkedHashMap<>();
@@ -122,6 +123,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 								InstallExtension.install(menu.getMenu().getShell(), extension);
 							}
 						};
+						action.setToolTipText(extension.tooltipText());
 						action.setEnabled(!current);
 						categoryMenu.add(action);
 					});
@@ -200,8 +202,9 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 			if (!categories.contains(category)) categories.add(category);
 		});
 		if (categories.size() > 1) categories.remove("Uncategorized");
+		final String description = first.description().isBlank() ? second.description() : first.description();
 		return new Extension(first.repository(), first.featureId(), first.label(), first.version(),
-				List.copyOf(categories));
+				description, List.copyOf(categories));
 	}
 
 	static void refresh(final Display display) {
@@ -292,7 +295,7 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 			final List<String> labels = categories.stream()
 					.filter(category -> category.getRequirements().stream().anyMatch(requirement -> requirement.isMatch(unit)))
 					.map(InstallExtensionsContribution::unitLabel).distinct().toList();
-			extensions.add(new Extension(source, unit.getId(), unitLabel(unit), unit.getVersion(),
+			extensions.add(new Extension(source, unit.getId(), unitLabel(unit), unit.getVersion(), unitDescription(unit),
 					labels.isEmpty() ? List.of("Uncategorized") : labels));
 		}
 	}
@@ -300,5 +303,19 @@ public class InstallExtensionsContribution extends CompoundContributionItem impl
 	private static String unitLabel(final IInstallableUnit unit) {
 		final String name = unit.getProperty(IInstallableUnit.PROP_NAME, null);
 		return name == null || name.isBlank() ? unit.getId() : name;
+	}
+
+	private static String unitDescription(final IInstallableUnit unit) {
+		final String description = unit.getProperty(IInstallableUnit.PROP_DESCRIPTION, null);
+		if (description != null && !description.isBlank()
+				&& !"[Enter Feature Description here.]".equals(description.strip())) return description.strip();
+		// Older GAMA update sites still contain the PDE placeholder for these features.
+		return switch (unit.getId()) {
+			case "gama.feature.dependencies.feature.group" ->
+				"Libraries and Eclipse runtime components required by GAMA and its extensions.";
+			case "gama.feature.ui.dependencies.feature.group" ->
+				"Eclipse, SWT and other components used by the GAMA application interface.";
+			default -> "";
+		};
 	}
 }
