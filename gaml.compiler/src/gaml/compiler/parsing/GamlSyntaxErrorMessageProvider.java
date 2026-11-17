@@ -31,6 +31,12 @@ import gaml.compiler.EGaml;
  */
 public class GamlSyntaxErrorMessageProvider extends SyntaxErrorMessageProvider {
 
+	// Eclipse marker attributes cannot exceed 65,535 UTF-8 bytes.
+	private static final int MAX_MESSAGE_LENGTH = 1000;
+	private static final int MAX_SOURCE_LENGTH = 120;
+	private static final String INCOMPLETE_TOKEN_PREFIX =
+			"required (...)+ loop did not match anything at character ";
+
 	@Override
 	public SyntaxErrorMessage getSyntaxErrorMessage(final IParserErrorContext context) {
 		final EObject contextobj = context.getCurrentContext();
@@ -52,14 +58,16 @@ public class GamlSyntaxErrorMessageProvider extends SyntaxErrorMessageProvider {
 						if (contextobj != null) {
 							text = EGaml.getInstance().getKeyOf(contextobj);
 							if (text == null) { text = token; }
-							msg.append("Symbol '").append(text).append("' seems to be incomplete or misplaced");
+							msg.append("Symbol '").append(abbreviate(text, MAX_SOURCE_LENGTH))
+									.append("' seems to be incomplete or misplaced");
 						} else {
 							switch (token) {
 								case IKeyword.ENVIRONMENT -> msg.append(
 										"'environment' cannot be declared anymore.Its bounds should be declared in the global section as the value of the 'shape' attribute (since GAMA 1.7)");
 								case IKeyword.ENTITIES -> msg.append(
 										"'entities' cannot be declared anymore. The species it contains should be declared in the model or in the global section (since GAMA 1.6)");
-								default -> msg.append("Unexpected symbol '").append(token).append("'");
+								default -> msg.append("Unexpected symbol '").append(abbreviate(token, MAX_SOURCE_LENGTH))
+										.append("'");
 							}
 
 						}
@@ -71,7 +79,7 @@ public class GamlSyntaxErrorMessageProvider extends SyntaxErrorMessageProvider {
 			}
 		}
 		if (msg.isEmpty()) { msg.append(context.getDefaultMessage()); }
-		return new SyntaxErrorMessage(msg.toString(), Diagnostic.SYNTAX_DIAGNOSTIC);
+		return new SyntaxErrorMessage(abbreviate(msg.toString(), MAX_MESSAGE_LENGTH), Diagnostic.SYNTAX_DIAGNOSTIC);
 	}
 
 	/**
@@ -106,16 +114,30 @@ public class GamlSyntaxErrorMessageProvider extends SyntaxErrorMessageProvider {
 	 * @return the string
 	 */
 	private String translateMessage(final EObject contextobj, final String message, final INode node) {
-		String msg = message;
+		String msg = abbreviate(message, MAX_MESSAGE_LENGTH);
 		if (msg.startsWith("mismatched ch")) {
 			final String ch = msg.substring(msg.lastIndexOf(' '));
 			msg = "Character expected " + ch;
 		} else if (msg.startsWith("mismatched in")) {
 			msg = msg.replace("mismatched input", "Found");
-		} else if (contextobj != null) {
-			msg += "Error in expression '" + NodeModelUtils.getTokenText(NodeModelUtils.getNode(contextobj)) + "'";
-		} else if (node != null) { msg += "Error in expression '" + NodeModelUtils.getTokenText(node) + "'"; }
+		} else if (msg.startsWith(INCOMPLETE_TOKEN_PREFIX)) {
+			msg = "Incomplete or invalid token before " + msg.substring(INCOMPLETE_TOKEN_PREFIX.length());
+		} else {
+			final INode contextNode = contextobj == null ? node : NodeModelUtils.getNode(contextobj);
+			// A large context is often an entire block, not the source of the error.
+			if (contextNode != null && contextNode.getTotalLength() <= MAX_SOURCE_LENGTH) {
+				final String text = NodeModelUtils.getTokenText(contextNode);
+				if (!text.isBlank()) { msg += " (near '" + text + "')"; }
+			}
+		}
 		return msg;
+	}
+
+	private static String abbreviate(final String text, final int maxLength) {
+		if (text.length() <= maxLength) return text;
+		int end = maxLength - 3;
+		if (Character.isHighSurrogate(text.charAt(end - 1)) && Character.isLowSurrogate(text.charAt(end))) { end--; }
+		return text.substring(0, end) + "...";
 	}
 
 }

@@ -121,7 +121,7 @@ public class TestProcessor extends ElementProcessor<tests> {
 		}
 		sb.append(ln).append('}');
 		sb.append(ln).append("experiment ").append(toJavaString("Tests for " + context.currentPlugin))
-				.append(" type: test ;");
+				.append(" mode: test ;");
 		namesAlreadyUsed.clear();
 	}
 
