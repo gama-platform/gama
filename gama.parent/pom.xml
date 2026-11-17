@@ -1,9 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.gama</groupId>
 	<artifactId>gama.parent</artifactId>
@@ -40,7 +35,7 @@
 			<url>https://gama-platform.org/gama.shared.models/</url>
 			<layout>p2</layout>
 		</repository>
-	</repositories>
+	<repository xmlns=""><id>gama</id><url>https://updates.gama-platform.org/0.0.0/</url><layout>p2</layout></repository></repositories>
 
 	<profiles>
 		<!-- This profile is used while local compiling
@@ -108,7 +103,7 @@
 							<keystore>~/gama.keystore</keystore>
 							<alias>gama-platform</alias>
 							<storepass>GAMA_PLATFORM</storepass>
-							<keypass />
+							<keypass/>
 						</configuration>
 					</plugin>
 
@@ -197,7 +192,7 @@
 		<module>../gama.feature.extensions</module>
 		<module>../gama.feature.extension.sound</module>
 		<module>../gama.feature.extension.stats</module>
-		<module>../gama.feature.extension.image</module>
+		<module>../gama.feature.extension.image</module><module xmlns="">../../gama.shared.models</module>
 		
 		<module>../gama.export</module>
 		<module>../gama.ui.export</module>
@@ -294,8 +289,7 @@
 					<target>${jdk.version}</target>
 					<compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
 					<useProjectSettings>false</useProjectSettings>
-					<generatedSourcesDirectory
-                    >${project.build.directory}</generatedSourcesDirectory>
+					<generatedSourcesDirectory>${project.build.directory}</generatedSourcesDirectory>
 					<optimize>true</optimize>
 					<showWarnings>true</showWarnings>
 				</configuration>
@@ -330,103 +324,103 @@
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.jdt.core</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.jdt.ui</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.apache.ant</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.codegen.ecore</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.codegen</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.ecore.editor</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.ecore.edit</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe2.runtime</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe.core</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe.utils</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.jdt.debug</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.jdt.launching</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xpand</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtend.typesystem.emf</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtend</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.common.types.ui</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.common.types</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.generator</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.xtext.generator</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<!-- FIX the JDT core due to bug in tycho https://www.eclipse.org/forums/index.php/t/1068443/ -->
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.generator</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
@@ -439,7 +433,7 @@
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
-							<removeAll />
+							<removeAll/>
 						</filter>
 					</filters>
 					<pomDependencies>consider</pomDependencies>
@@ -570,7 +564,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -589,7 +583,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
