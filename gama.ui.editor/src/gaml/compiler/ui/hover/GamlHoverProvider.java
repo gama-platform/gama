@@ -22,7 +22,11 @@ import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.ITextViewerExtension4;
 import org.eclipse.jface.text.Region;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -174,17 +178,48 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	 */
 	public class GamlHoverControlCreator extends HoverControlCreator {
 
+		private final ITextViewer textViewer;
+
 		/**
 		 * @param informationPresenterControlCreator
 		 */
 		public GamlHoverControlCreator(final IInformationControlCreator informationPresenterControlCreator) {
+			this(informationPresenterControlCreator, null);
+		}
+
+		public GamlHoverControlCreator(final IInformationControlCreator informationPresenterControlCreator,
+				final ITextViewer textViewer) {
 			super(informationPresenterControlCreator);
+			this.textViewer = textViewer;
 		}
 
 		/**
 		 * The Class GamlInformationControl.
 		 */
 		public class GamlInformationControl extends XtextBrowserInformationControl {
+
+			@Override
+			protected void createContent(final Composite parent) {
+				super.createContent(parent);
+				if (!(textViewer instanceof ITextViewerExtension4 viewer)) return;
+				for (var child : parent.getChildren()) {
+					if (child instanceof Browser browser) {
+						browser.addListener(SWT.KeyDown, event -> {
+							if (event.keyCode != SWT.F2 || event.stateMask != 0) return;
+							event.doit = false;
+							Shell shell = getShell();
+							// Replace the hover after the native browser finishes handling the key.
+							shell.getDisplay().asyncExec(() -> {
+								var textWidget = textViewer.getTextWidget();
+								if (!shell.isDisposed() && shell.isVisible()
+										&& textWidget != null && !textWidget.isDisposed()) {
+									viewer.moveFocusToWidgetToken();
+								}
+							});
+						});
+					}
+				}
+			}
 
 			@Override
 			public void setSize(final int width, final int height) {
@@ -253,11 +288,19 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	@Override
 	public IInformationControlCreatorProvider getHoverInfo(final EObject first, final ITextViewer textViewer,
 			final IRegion hoverRegion) {
-		return new IInformationControlCreatorProvider() {
+		return new IInformationControlCreatorProvider2() {
+
+			private final IInformationControlCreator hoverCreator =
+					new GamlHoverControlCreator(GamlHoverProvider.this.getInformationPresenterControlCreator(), textViewer);
 
 			@Override
 			public IInformationControlCreator getHoverControlCreator() {
-				return GamlHoverProvider.this.getHoverControlCreator();
+				return hoverCreator;
+			}
+
+			@Override
+			public IInformationControlCreator getInformationPresenterControlCreator() {
+				return GamlHoverProvider.this.getInformationPresenterControlCreator();
 			}
 
 			@Override
