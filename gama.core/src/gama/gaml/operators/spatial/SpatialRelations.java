@@ -37,24 +37,22 @@ import gama.api.types.topology.ITopology;
 import gama.core.topology.grid.GridTopology;
 
 /**
- * Provides GAML distance, direction, and path operators between geometries. All computation is
- * delegated to the current simulation {@link gama.api.types.topology.ITopology}, making these
- * operators context-sensitive: results may differ between a continuous topology and a graph or
- * grid topology.
+ * Provides GAML distance, direction, and path operators between geometries. All computation is delegated to the current
+ * simulation {@link gama.api.types.topology.ITopology}, making these operators context-sensitive: results may differ
+ * between a continuous topology and a graph or grid topology.
  * <p>
  * Operator families provided:
  * <ul>
- *   <li><b>Direction</b>: {@code towards} / {@code direction_to}, {@code direction_between} —
- *       compute the bearing in degrees between two locations.</li>
- *   <li><b>Distance</b>: {@code distance_to}, {@code distance_between} — compute scalar distances
- *       between geometries or accumulated along a list of waypoints.</li>
- *   <li><b>Path</b>: {@code path_to}, {@code path_between} — compute shortest-path objects through
- *       the current topology or through a filtered grid of cells.</li>
+ * <li><b>Direction</b>: {@code towards} / {@code direction_to}, {@code direction_between} — compute the bearing in
+ * degrees between two locations.</li>
+ * <li><b>Distance</b>: {@code distance_to}, {@code distance_between} — compute scalar distances between geometries or
+ * accumulated along a list of waypoints.</li>
+ * <li><b>Path</b>: {@code path_to}, {@code path_between} — compute shortest-path objects through the current topology
+ * or through a filtered grid of cells.</li>
  * </ul>
  * <p>
- * Because all operators depend on an active simulation topology, most are annotated with
- * {@code @no_test} (topology-dependent operations require an active simulation and are already
- * covered in the GAMA Spatial test models).
+ * Because all operators depend on an active simulation topology, most are annotated with {@code @no_test}
+ * (topology-dependent operations require an active simulation and are already covered in the GAMA Spatial test models).
  * <p>
  * Uses JTS (Java Topology Suite) geometry objects internally for coordinate calculations.
  *
@@ -83,7 +81,8 @@ public class SpatialRelations {
 					IConcept.TOPOLOGY })
 	@doc (
 			value = "The direction (in degree) between the two geometries (geometries, agents, points) considering the topology of the agent applying the operator.",
-			usages = { @usage ("If both geometries are at the same location, the direction is undefined and may return 0."),
+			usages = {
+					@usage ("If both geometries are at the same location, the direction is undefined and may return 0."),
 					@usage ("The direction is computed in the context of the calling agent's topology; on a continuous topology this is the Euclidean angle in degrees measured clockwise from North.") },
 			examples = { @example (
 					value = "ag1 towards ag2",
@@ -93,13 +92,10 @@ public class SpatialRelations {
 	@no_test // Test already done in Spatial tests models
 	@tests ({
 			// angles are in degrees, clockwise as the y axis points downwards
-			@test ("{0, 0} towards {10, 0} = 0.0"),
-			@test ("{0, 0} towards {0, 10} = 90.0"),
-			@test ("{0, 0} direction_to {0, 10} = 90.0"),
-			@test ("{0, 0} towards {-10, 0} = 180.0"),
-			// directions are given in ]-180, 180]
-			@test ("{0, 0} towards {0, -10} = -90.0")
-	})
+			@test ("{0, 0} towards {10, 0} = 0.0"), @test ("{0, 0} towards {0, 10} = 90.0"),
+			@test ("{0, 0} direction_to {0, 10} = 90.0"), @test ("{0, 0} towards {-10, 0} = 180.0"),
+			// directions are given in ]0, 360]
+			@test ("{0, 0} towards {0, -10} = 270.0") })
 	public static Double towards(final IScope scope, final IShape agent, final IShape target) {
 		return scope.getTopology().directionInDegreesTo(scope, agent, target);
 	}
@@ -183,8 +179,7 @@ public class SpatialRelations {
 		if (size == 0 || size == 1) return 0.0;
 		final IShape g1 = geometries.firstValue(scope);
 		final IShape g2 = geometries.lastValue(scope);
-		if (g1 == null || g2 == null)
-			throw GamaRuntimeException.error("Geometries must not contain nil values", scope);
+		if (g1 == null || g2 == null) throw GamaRuntimeException.error("Geometries must not contain nil values", scope);
 		return t.directionInDegreesTo(scope, g1, g2);
 	}
 
@@ -257,8 +252,7 @@ public class SpatialRelations {
 	@tests ({
 			@test ("graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges <- list<geometry>(square_graph.edges); geometry top_edge <- square_edges first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised <- square_graph with_weights [top_edge::100.0]; path detour <- penalised path_between ({0, 0}, {10, 10}); length(detour.edges) = 2"),
 			@test ("graph square_graph2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges2 <- list<geometry>(square_graph2.edges); geometry top_edge2 <- square_edges2 first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised2 <- square_graph2 with_weights [top_edge2::100.0]; path detour2 <- penalised2 path_between ({0, 0}, {10, 10}); not (detour2.edges contains top_edge2)"),
-			@test ("graph square_graph3 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges3 <- list<geometry>(square_graph3.edges); geometry top_edge3 <- square_edges3 first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised3 <- square_graph3 with_weights [top_edge3::100.0]; path detour3 <- penalised3 path_between ({0, 0}, {10, 10}); detour3.vertices contains {0, 10}")
-	})
+			@test ("graph square_graph3 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges3 <- list<geometry>(square_graph3.edges); geometry top_edge3 <- square_edges3 first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised3 <- square_graph3 with_weights [top_edge3::100.0]; path detour3 <- penalised3 path_between ({0, 0}, {10, 10}); detour3.vertices contains {0, 10}") })
 	public static IPath path_between(final IScope scope, final ITopology topo, final IContainer<?, IShape> nodes)
 			throws GamaRuntimeException {
 		if (topo == null || nodes == null)
@@ -493,8 +487,8 @@ public class SpatialRelations {
 			see = { "towards", "direction_to", "distance_between", "direction_between", "path_between", "path_to" })
 	@no_test // test already done in Spatial tests models
 	public static Double distance_to(final IScope scope, final IShape source, final IShape target) {
-		if (source == null || target == null)
-			throw GamaRuntimeException.error("Cannot compute distance_to: the source and target must not be nil", scope);
+		if (source == null || target == null) throw GamaRuntimeException
+				.error("Cannot compute distance_to: the source and target must not be nil", scope);
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}
 
@@ -517,17 +511,15 @@ public class SpatialRelations {
 			special_cases = { "Raises a runtime error if the source or target is nil." })
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
-	@tests ({
-			@test (" {20,20} distance_to {30,30} = 14.142135623730951"),
+	@tests ({ @test (" {20,20} distance_to {30,30} = 14.142135623730951"),
 			// Distance is typically distance_to, but let's check basic Euclidean math
 			@test ("point p1 <- {0, 0}; point p2 <- {3, 4}; p1 distance_to p2 = 5"),
 			@test ("point p12 <- {0, 0}; point p22 <- {3, 4}; p22 distance_to p12 = 5"),
 			// 'distance_to' between two plain points is euclidean, it does not wrap around the torus
-			@test ("point p13 <- {5, 50}; point p23 <- {95, 50}; (p13 distance_to p23) = 90.0")
-	})
+			@test ("point p13 <- {5, 50}; point p23 <- {95, 50}; (p13 distance_to p23) = 90.0") })
 	public static Double distance_to(final IScope scope, final IPoint source, final IPoint target) {
-		if (source == null || target == null)
-			throw GamaRuntimeException.error("Cannot compute distance_to: the source and target must not be nil", scope);
+		if (source == null || target == null) throw GamaRuntimeException
+				.error("Cannot compute distance_to: the source and target must not be nil", scope);
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}
 
