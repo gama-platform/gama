@@ -7,12 +7,13 @@
 
 model GraphOperatorsTestModel
 
-species node_agent { }
+species node_agent {
+}
 
-species edge_agent { }
+species edge_agent {
+}
 
 experiment GraphOperatorsTest mode: test autorun: true {
-
 	/**
 	 * A triangle a - b - c with a tail c - d. A graph of plain values is undirected until stated otherwise
 	 */
@@ -126,7 +127,6 @@ experiment GraphOperatorsTest mode: test autorun: true {
 		graph heavy <- g with_weights (g.edges as_map (each::2.0));
 		assert heavy weight_of ("a"::"b") = 2.0;
 		assert (heavy path_between ("a", "d")).weight = 6.0;
-
 	}
 
 	test "Connected components" {
@@ -185,7 +185,7 @@ experiment GraphOperatorsTest mode: test autorun: true {
 	test "K shortest paths" {
 		// on a graph of values too
 		list<path> value_paths <- [];
-		
+
 		value_paths <- paths_between(value_triangle(), "a"::"d", 2);
 		assert length(value_paths) = 2;
 		assert length(value_paths[0].edges) = 2;
@@ -202,19 +202,20 @@ experiment GraphOperatorsTest mode: test autorun: true {
 	}
 
 	test "Generated graphs have the requested size" {
+		ask simulation {
+			graph random_graph <- generate_random_graph(10, 15, true, node_agent, edge_agent);
+			assert length(random_graph.vertices) = 10;
+			assert length(random_graph.edges) = 15;
 
-		graph random_graph <- generate_random_graph(10, 15, true, node_agent, edge_agent);
-		assert length(random_graph.vertices) = 10;
-		assert length(random_graph.edges) = 15;
+			graph scale_free <- generate_barabasi_albert(3, 2, 10, false, node_agent, edge_agent);
+			assert length(scale_free.vertices) = 10;
 
-		graph scale_free <- generate_barabasi_albert(3, 2, 10, false, node_agent, edge_agent);
-		assert length(scale_free.vertices) = 10;
-
-		// without rewiring, a small world graph is a regular ring: each vertex is linked to its 2 neighbours
-		graph ring <- generate_watts_strogatz(10, 0.0, 2, false, node_agent, edge_agent);
-		assert length(ring.vertices) = 10;
-		assert length(ring.edges) = 10;
-		assert ring.vertices all_match (ring degree_of each = 2);
+			// without rewiring, a small world graph is a regular ring: each vertex is linked to its 2 neighbours
+			graph ring <- generate_watts_strogatz(10, 0.0, 2, false, node_agent, edge_agent);
+			assert length(ring.vertices) = 10;
+			assert length(ring.edges) = 10;
+			assert ring.vertices all_match (ring degree_of each = 2);
+		}
 	}
 
 	test "Layouts keep the structure of the graph" {
