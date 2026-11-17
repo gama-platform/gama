@@ -88,7 +88,7 @@ species animal skills: [moving] {
 	}
 }
 
-experiment "Load XML" type: gui {
+experiment "Load XML" mode: gui {
 	output {
 		display "Ecosystem" {
 			species animal;

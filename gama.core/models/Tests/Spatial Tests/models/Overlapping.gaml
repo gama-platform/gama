@@ -11,6 +11,20 @@ global {
 		create polygon_square(location:location)  ;	
 		list<cell> ovelapped_cell <-cell overlapping (first(polygon_square)) ;
 	}
+	
+	
+	
+	
+	/** Insert the global definitions, variables and actions here */
+	
+	test "Overlapping Test" {
+		list<cell> ovelapped_cell;
+		using topology(self) {
+			ovelapped_cell <-cell overlapping (first(polygon_square)) ;
+		}
+		assert length(ovelapped_cell)=9;
+	}
+	
 }
 
 grid cell width: 5 height: 5{
@@ -27,20 +41,9 @@ species polygon_square {
 	} 	
 }
 
-experiment "Overlapping" type: test {
-	
-	/** Insert the global definitions, variables and actions here */
-	
-	test "Overlapping Test" {
-		list<cell> ovelapped_cell;
-		using topology(world) {
-			ovelapped_cell <-cell overlapping (first(polygon_square)) ;
-		}
-		assert length(ovelapped_cell)=9;
-	}
-}
+experiment "Overlapping" mode: test;
 
-experiment "With Visualization" type: gui {
+experiment "With Visualization" mode: gui {
 	output {
 		display map {
 			

@@ -149,7 +149,7 @@ species boids skills: [moving3D] {
 }
 
 
-experiment "3D" type: gui {
+experiment "3D" mode: gui {
 	
 	parameter 'Number of agents' var: number_of_agents;
 	parameter 'Number of obstacles' var:number_of_obstacles;
@@ -174,7 +174,7 @@ experiment "3D" type: gui {
 	
 	output synchronized: true {
 		
-		display Sky1 type:3d {
+		display Sky1 renderer:3d {
 			camera 'default' location: {555.5176,1479.257,750.4308} target: {442.2293,184.3665,0.0};
 			species boids aspect: icon;
 			species boids_goal;	

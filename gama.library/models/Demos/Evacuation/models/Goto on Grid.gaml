@@ -83,10 +83,10 @@ species people skills: [moving]{
 		draw sphere(1) at: {location.x,location.y,2} color: color;
 	}
 }
-experiment evacuationgoto type: gui {
+experiment evacuationgoto mode: gui {
 	float minimum_cycle_duration <- 0.04; 
 	output {
-		display map type: 3d axes:false{
+		display map renderer: 3d axes:false{
 			picture "../images/floor.jpg";
 			species wall refresh: false;
 			species exit refresh: false;

@@ -34,6 +34,7 @@ import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.date.GamaDateFactory;
 import gama.api.types.date.IDate;
+import gama.api.types.file.GamaFolderFile;
 import gama.api.types.file.GenericFile;
 import gama.api.types.file.IGamaFile;
 import gama.api.types.geometry.IPoint;
@@ -215,7 +216,7 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 			case IType.FLOAT -> putInStore(key, value == null ? 0.0 : value.toString());
 			case IType.BOOL -> putInStore(key, value == null ? false : value.toString());
 			case IType.STRING -> putInStore(key, StringUtils.toJavaString((String) value));
-			case IType.FILE -> putInStore(key, value == null ? "" : ((IGamaFile) value).getPath(null));
+			case IType.FILE, IType.DIRECTORY -> putInStore(key, value == null ? "" : ((IGamaFile) value).getPath(null));
 			case IType.COLOR -> putInStore(key, value == null ? 0 : ((IColor) value).getRGB());
 			case IType.POINT -> putInStore(key, value == null ? "{0,0}" : ((IPoint) value).stringValue(null));
 			case IType.FONT -> putInStore(key, value == null ? DEFAULT_FONT : value.toString());
@@ -272,6 +273,7 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 			case IType.BOOL -> (Supplier) () -> asBool(null, val);
 			case IType.STRING -> (Supplier) () -> toJavaString(asString(null, val));
 			case IType.FILE -> (Supplier) () -> new GenericFile(val, false);
+			case IType.DIRECTORY -> (Supplier) () -> new GamaFolderFile(null, val, false);
 			case IType.COLOR -> (Supplier) () -> GamaColorFactory.get(asInt(null, val));
 			case IType.FONT -> (Supplier) () -> {
 				if (DEFAULT_FONT.equals(val)) return null;

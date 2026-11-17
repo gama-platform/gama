@@ -15,22 +15,20 @@ global {
     int clicks <- 0;
 }
 
-experiment "Mouse in three referentials" type: gui {
+experiment "Mouse in three referentials" mode: gui {
     text "Purpose: compare viewport pixels, world coordinates and coordinates local to a screen overlay.<br/>Try: run, move the pointer and left-click inside any display, then zoom and pan.<br/>Expected: each click records world and screen positions from the same event and places a red world marker. The marker follows the world; the saved screen position remains the recorded pixel value." category: "What this demonstrates";
     text "The live overlay-local value simply subtracts its {16,16}-pixel origin from #mouse_location_in_display. It is not a new mouse unit. Each display supplies its own live pointer values; the last-click values and click count are shared simulation state." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             graphics "World" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
                 draw circle(2) at: clicked_world color: #red;
             }
             event #mouse_listener {
                 if #mouse_action = #mouse_down and #mouse_button = "left" {
-                    ask simulation {
                         clicked_world <- #mouse_location_in_world;
                         clicked_screen <- #mouse_location_in_display;
                         clicks <- clicks + 1;
-                    }
                 }
             }
             overlay coordinates: #screen position: {16, 16} size: {0.92, 250}
@@ -46,6 +44,6 @@ experiment "Mouse in three referentials" type: gui {
                     at: {12, 222} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
+        display "OpenGL" parent: "Java2D" renderer: opengl map_order: true {}
     }
 }

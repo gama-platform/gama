@@ -74,7 +74,7 @@ species people skills:[moving] {
     }
 }
 
-experiment Simple type:gui {
+experiment Simple mode:gui {
 	parameter 'Infection Rate:' var: infection_rate;
 	parameter 'Infection Distance:' var: infection_distance;
 	parameter 'Probability of dying:' var: dying_proba;
@@ -89,7 +89,7 @@ experiment Simple type:gui {
 // This experiment explores two parameters with a PSO strategy,
 // repeating each simulation five times (the aggregated fitness correspond to the mean fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment PSO type: batch keep_seed: true repeat: 5 until: ( time > 5000 ) {
+experiment PSO mode: batch keep_seed: true repeat: 5 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.01;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
 	method pso num_particles: 5 weight_inertia:0.7 weight_cognitive: 1.5 weight_social: 1.5  iter_max: 5 aggregation:"avr"  minimize: num_dead  ; 
@@ -98,7 +98,7 @@ experiment PSO type: batch keep_seed: true repeat: 5 until: ( time > 5000 ) {
 // This experiment explores two parameters with a GA strategy,
 // repeating each simulation three times (the aggregated fitness correspond to the min fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment Genetic type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
+experiment Genetic mode: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.01;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
 	method genetic pop_dim: 3 crossover_prob: 0.7 mutation_prob: 0.1 improve_sol: true stochastic_sel: false
@@ -109,7 +109,7 @@ experiment Genetic type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) 
 // This experiment explores two parameters with a Hill Climbing strategy from an explicit init solution (if no solution is given, start from a random sol),
 // repeating each simulation three times (the aggregated fitness correspond to the max fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment Hill_Climbing type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
+experiment Hill_Climbing mode: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.1;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
 	method hill_climbing init_solution:map(["infection_rate"::0.2, "dying_proba":: 0.05])  minimize: num_dead aggregation: "max";
@@ -119,7 +119,7 @@ experiment Hill_Climbing type: batch keep_seed: true repeat: 3 until: ( time > 5
 // This experiment explores two parameters with a Tabu Search strategy,
 // repeating each simulation three times (the aggregated fitness correspond to the max fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment Tabu_Search type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
+experiment Tabu_Search mode: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.01;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
 	method tabu iter_max: 5 tabu_list_size: 5 minimize: num_dead aggregation: "max";
@@ -128,7 +128,7 @@ experiment Tabu_Search type: batch keep_seed: true repeat: 3 until: ( time > 500
 // This experiment explores two parameters with a Reactive Tabu Search strategy,
 // repeating each simulation three times (the aggregated fitness correspond to the max fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment Reactive_Tabu_Search type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
+experiment Reactive_Tabu_Search mode: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.01;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
 	method reactive_tabu iter_max: 10 cycle_size_max: 10 cycle_size_min: 3 tabu_list_size_init: 5 minimize: num_dead aggregation: "max";
@@ -137,7 +137,7 @@ experiment Reactive_Tabu_Search type: batch keep_seed: true repeat: 3 until: ( t
 // This experiment explores two parameters with a Simulated annealing strategy,
 // repeating each simulation three times (the aggregated fitness correspond to the max fitness), 
 // in order to find the best combination of parameters to minimize the number of infected people
-experiment Simulated_annealing type: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
+experiment Simulated_annealing mode: batch keep_seed: true repeat: 3 until: ( time > 5000 ) {
 	parameter 'Infection rate' var: infection_rate min: 0.1 max:0.5 step:0.01;
 	parameter 'Probability of dying:' var: dying_proba min: 0.01 max: 0.2 step:0.01;
 	method annealing  minimize: num_dead temp_decrease: 0.5 temp_end: 10.0 temp_init: 50;

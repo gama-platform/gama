@@ -97,22 +97,22 @@ species dummy  {
 
 
 
-experiment Displays type: gui
+experiment Displays mode: gui
 {
 	float minimum_cycle_duration <-0.01;
 	parameter "Radius of selection" var: radius unit: "m";	// The radius of the disk around the click 
 	output synchronized:true
 	{    
 		layout horizontal([0::5000,1::5000]) tabs:true editors: false;
-		display View_change_color type: 2d
+		display View_change_color renderer: 2d
 		{
 			species cell;
 			species dummy transparency:0.9 aspect: aspect4ViewChangeColor;
 			// event, launches the action change_color if the event mouse_down (ie. the user clicks on the layer event) is triggered
 			// the action can be either in the experiment or in the global section. If it is defined in both, the one in the experiment will be chosen in priority
-			event #mouse_down {ask simulation {do change_color();}}  
-			event #mouse_move {ask simulation {do draw_clicked_area_in_view_color();}} 
-			event #mouse_exit {ask simulation {do hide_clicked_area();}}
+			event #mouse_down {do change_color();}
+			event #mouse_move {do draw_clicked_area_in_view_color();}
+			event #mouse_exit {do hide_clicked_area();}
 			// Shows how to manipulate the cells using keyboard events
 			event #arrow_left {ask (cell) {location <- location - {1,0};}}
 			event #arrow_right {ask (cell) {location <- location + {1,0};}}
@@ -122,16 +122,16 @@ experiment Displays type: gui
 			
 		}
 
-		display View_change_shape type: 3d
+		display View_change_shape renderer: 3d
 		{
 			light #ambient active: false;
 			species cell;
 			species dummy transparency:0.9 aspect: aspect4ViewChangeShape ;
 			//event, launches the action change_shape if the event mouse_down (ie. the user clicks on the layer event) is triggered
 			// The block is executed in the context of the experiment, so we have to ask the simulation to do it. 
-			event #mouse_down {ask simulation {do change_shape();}}  
-			event #mouse_move {ask simulation {do draw_clicked_area_in_view_shape();}} 
-			event #mouse_exit {ask simulation {do hide_clicked_area();}} 
+			event #mouse_down {do change_shape();}
+			event #mouse_move {do draw_clicked_area_in_view_shape();}
+			event #mouse_exit {do hide_clicked_area();}
 			// Shows how to manipulate the cells using keyboard events, disactivating the "regular" arrow / esc keys behavior
 			event #arrow_left {ask (cell) {location <- location - {1,0};}}
 			event #arrow_right {ask (cell) {location <- location + {1,0};}}

@@ -103,6 +103,9 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 
 	private boolean validationOnly;
 
+	/** The validation context. */
+	private volatile IValidationContext validationContext;
+
 	/** Whether errors in this synthetic resource should be collected rather than thrown as runtime errors. */
 	public boolean isValidationOnly() { return validationOnly; }
 
@@ -113,8 +116,20 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *
 	 * @return the validation context
 	 */
-	public IValidationContext getValidationContext() {
-		return GamlResourceServices.getOrCreateValidationContext(this);
+	public synchronized IValidationContext getValidationContext() {
+		if (validationContext == null) {
+			validationContext = GamlResourceServices.getOrCreateValidationContext(this);
+		}
+		return validationContext;
+	}
+
+	/**
+	 * Clears and returns the validation context bound to this resource instance.
+	 */
+	public synchronized IValidationContext clearValidationContext() {
+		final IValidationContext ctx = validationContext;
+		validationContext = null;
+		return ctx;
 	}
 
 	/**

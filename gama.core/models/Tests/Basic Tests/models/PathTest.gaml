@@ -8,7 +8,7 @@
 
 model PathTestModel
 
-experiment PathTest type: test autorun: true {
+experiment PathTest mode: test autorun: true {
 
 	/**
 	 * A square a-b-c-d, plus nothing else:

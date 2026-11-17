@@ -8,9 +8,8 @@
 */
 model NetworkAdvancedTestModel
 
-species net_agent skills: [network] { }
-
-experiment NetworkAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "An agent that is not connected has nothing to read" {
 		create net_agent number: 1 returns: created_agents;
@@ -47,4 +46,9 @@ experiment NetworkAdvancedTest type: test autorun: true {
 		assert not ag.has_more_message();
 		ask created_agents { do die(); }
 	}
+	
 }
+
+species net_agent skills: [network] { }
+
+experiment NetworkAdvancedTest mode: test autorun: true;

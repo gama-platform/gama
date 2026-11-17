@@ -15,7 +15,7 @@ model DisplayConstants
 experiment "Run" {
 
 	output {
-		display "Display2d" background: #black type: 2d {
+		display "Display2d" background: #black renderer: 2d {
 			graphics back {
 				draw rectangle(shape.width, shape.height) color: #blue;
 			}
@@ -23,10 +23,10 @@ experiment "Run" {
 				draw "In world: " + #user_location at: #user_location;
 				draw "In display: " + #user_location_in_display at: #user_location + {0,5};
 			}
-			event #mouse_move {do update_outputs();}
+			event #mouse_move {experiment. update_outputs();}
 			
 		}
-		display "Display3d" background: #black type: 3d {
+		display "Display3d" background: #black renderer: 3d {
 			graphics back {
 				draw rectangle(shape.width, shape.height) color: #blue;
 			}
@@ -34,7 +34,7 @@ experiment "Run" {
 				draw "In world: " + #user_location at: #user_location;
 				draw "In display" + #user_location_in_display at: #user_location + {0,5};
 			}
-			event #mouse_move {do update_outputs();}
+			event #mouse_move {experiment. update_outputs();}
 			
 		}
 

@@ -38,4 +38,4 @@ species worker {
 	}
 }
 
-experiment "Run" type: gui;
+experiment "Run" mode: gui;

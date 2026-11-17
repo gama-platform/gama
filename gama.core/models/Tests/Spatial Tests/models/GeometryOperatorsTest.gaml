@@ -6,7 +6,7 @@
 * Tags: geometry, spatial, transformation, test
 */
 
-experiment GeometryOperatorsTest type: test autorun: true {
+experiment GeometryOperatorsTest mode: test autorun: true {
 
 	// (0,0)-(10,10)
 	geometry base <- square(10) at_location {5, 5};

@@ -60,6 +60,8 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 
 	private final Set<String> specificTo, excludes, requires;
 
+	private final gama.annotations.facet.Context compilationContext;
+
 	/** The owner. */
 	private String owner;
 
@@ -98,7 +100,16 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	public FacetArtefact(final String name, final int[] types, final int ct, final int kt, final String[] values,
 			final boolean optional, final boolean internal, final boolean isRemote, final boolean declaresNewTemp,
 			final String[] specificTo, final String[] excludes, final String[] requires) {
+		this(name, types, ct, kt, values, optional, internal, isRemote, declaresNewTemp, specificTo, excludes,
+				requires, gama.annotations.facet.Context.ENCLOSING);
+	}
+
+	public FacetArtefact(final String name, final int[] types, final int ct, final int kt, final String[] values,
+			final boolean optional, final boolean internal, final boolean isRemote, final boolean declaresNewTemp,
+			final String[] specificTo, final String[] excludes, final String[] requires,
+			final gama.annotations.facet.Context compilationContext) {
 		this.name = name;
+		this.compilationContext = compilationContext;
 		this.specificTo = ImmutableSet.copyOf(specificTo);
 		this.excludes = ImmutableSet.copyOf(excludes);
 		this.requires = ImmutableSet.copyOf(requires);
@@ -117,6 +128,9 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 		isId = isLabel && types[0] != IType.LABEL;
 		this.values = values.length == 0 ? null : ImmutableSet.copyOf(values);
 	}
+
+	@Override
+	public gama.annotations.facet.Context getCompilationContext() { return compilationContext; }
 
 	@Override
 	public Set<String> getSpecificTo() { return specificTo; }

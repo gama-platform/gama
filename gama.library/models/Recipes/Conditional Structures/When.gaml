@@ -65,7 +65,7 @@ species dummy {
 
 experiment my_xp {
 	output {
-		display my_display type:3d{
+		display my_display renderer:3d{
 			graphics area transparency:0.3{
 				draw cr2_area color:#darkblue;
 				draw string(nb_composed_when) at:{25,25} font:font("Helvetica",60,#bold) color:#white;

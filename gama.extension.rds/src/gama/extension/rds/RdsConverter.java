@@ -46,8 +46,20 @@ import gama.extension.dataframe.IDataFrame;
 /** Explicit, loss-aware mappings between R values and GAMA containers. */
 public final class RdsConverter {
 
+	/**
+	 * Instantiates a new rds converter.
+	 */
 	private RdsConverter() {}
 
+	/**
+	 * From R.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @return the object
+	 */
 	public static Object fromR(final IScope scope, final SEXP value) {
 		if (value == Null.INSTANCE) return null;
 		if (value.inherits("data.frame") && value instanceof ListVector frame) {
@@ -94,6 +106,16 @@ public final class RdsConverter {
 		throw error(scope, "Unsupported R value: " + value.getTypeName());
 	}
 
+	/**
+	 * Check attributes.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @param allowed
+	 *            the allowed
+	 */
 	private static void checkAttributes(final IScope scope, final SEXP value, final Set<String> allowed) {
 		for (final Symbol attribute : value.getAttributes().names()) {
 			if (!allowed.contains(attribute.getPrintName()))
@@ -101,12 +123,31 @@ public final class RdsConverter {
 		}
 	}
 
+	/**
+	 * Check classes.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @param allowed
+	 *            the allowed
+	 */
 	private static void checkClasses(final IScope scope, final SEXP value, final Set<String> allowed) {
 		for (final String name : value.getS3Class()) {
 			if (!allowed.contains(name)) throw error(scope, "Unsupported R class " + name);
 		}
 	}
 
+	/**
+	 * Vector type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param vector
+	 *            the vector
+	 * @return the i type
+	 */
 	private static IType<?> vectorType(final IScope scope, final Vector vector) {
 		if (vector instanceof LogicalVector) return Types.BOOL;
 		if (vector instanceof IntVector) return Types.INT;
@@ -115,6 +156,17 @@ public final class RdsConverter {
 		throw error(scope, "Unsupported R vector: " + vector.getTypeName());
 	}
 
+	/**
+	 * Element.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param vector
+	 *            the vector
+	 * @param index
+	 *            the index
+	 * @return the object
+	 */
 	private static Object element(final IScope scope, final Vector vector, final int index) {
 		vectorType(scope, vector);
 		if (vector.isElementNA(index)) return null;
@@ -124,6 +176,15 @@ public final class RdsConverter {
 		return vector.getElementAsString(index);
 	}
 
+	/**
+	 * Factor.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @return the i list
+	 */
 	private static IList<String> factor(final IScope scope, final SEXP value) {
 		if (!(value instanceof IntVector codes)
 				|| !(value.getAttribute(Symbol.get("levels")) instanceof StringVector levels))
@@ -141,6 +202,17 @@ public final class RdsConverter {
 		return result;
 	}
 
+	/**
+	 * Matrix.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @param dimensions
+	 *            the dimensions
+	 * @return the i matrix
+	 */
 	private static IMatrix<?> matrix(final IScope scope, final SEXP value, final SEXP dimensions) {
 		if (!(dimensions instanceof IntVector dim) || dim.length() != 2 || !(value instanceof Vector vector))
 			throw error(scope, "Only two-dimensional R matrices are supported");
@@ -149,12 +221,11 @@ public final class RdsConverter {
 		final int rows = dim.getElementAsInt(0), cols = dim.getElementAsInt(1);
 		if (rows < 0 || cols < 0 || (long) rows * cols != vector.length())
 			throw error(scope, "Invalid R matrix dimensions");
-		if ((rows == 0) != (cols == 0))
+		if (rows == 0 != (cols == 0))
 			throw error(scope, "GAMA cannot preserve an empty matrix with a non-zero dimension");
 		final IType<?> type = vectorType(scope, vector);
 		// Primitive GAMA matrices cannot retain nil cells.
-		final IMatrix<?> result = vector.anyNA()
-				? GamaMatrixFactory.createObjectMatrix(cols, rows, Types.NO_TYPE)
+		final IMatrix<?> result = vector.anyNA() ? GamaMatrixFactory.createObjectMatrix(cols, rows, Types.NO_TYPE)
 				: GamaMatrixFactory.create(cols, rows, type);
 		for (int c = 0; c < cols; c++) {
 			for (int r = 0; r < rows; r++) { result.set(scope, c, r, element(scope, vector, c * rows + r)); }
@@ -162,6 +233,15 @@ public final class RdsConverter {
 		return result;
 	}
 
+	/**
+	 * Dataframe.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param frame
+	 *            the frame
+	 * @return the i data frame
+	 */
 	private static IDataFrame dataframe(final IScope scope, final ListVector frame) {
 		final IList<String> names = GamaListFactory.create(Types.STRING);
 		final IList<IList<?>> columns = GamaListFactory.create();
@@ -186,64 +266,109 @@ public final class RdsConverter {
 		return GamaDataFrameFactory.mutable(GamaDataFrameFactory.createFromColumns(scope, names, columns));
 	}
 
+	/**
+	 * To R.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @return the sexp
+	 */
 	public static SEXP toR(final IScope scope, final Object value) {
 		return new Exporter(scope).convert(value);
 	}
 
+	/**
+	 * The Class Exporter.
+	 */
 	private static final class Exporter {
+
+		/** The scope. */
 		private final IScope scope;
+
+		/** The ancestors. */
 		private final Set<Object> ancestors = Collections.newSetFromMap(new IdentityHashMap<>());
 
-		Exporter(final IScope scope) { this.scope = scope; }
+		/**
+		 * Instantiates a new exporter.
+		 *
+		 * @param scope
+		 *            the scope
+		 */
+		Exporter(final IScope scope) {
+			this.scope = scope;
+		}
 
+		/**
+		 * Convert.
+		 *
+		 * @param value
+		 *            the value
+		 * @return the sexp
+		 */
 		SEXP convert(final Object value) {
 			if (value == null) return Null.INSTANCE;
 			if (!ancestors.add(value)) throw error(scope, "Cyclic containers cannot be exported to RDS");
 			try {
-				if (value instanceof IDataFrame frame) {
-					final ListVector.NamedBuilder builder = new ListVector.NamedBuilder();
-					for (final String name : frame.getColumns()) {
-						builder.add(name, vector(frame.getColumnValues(name), frame.getColumnTypes()
-								.get(frame.getColumns().indexOf(name))));
+				switch (value) {
+					case IDataFrame frame -> {
+						final ListVector.NamedBuilder builder = new ListVector.NamedBuilder();
+						for (final String name : frame.getColumns()) {
+							builder.add(name, vector(frame.getColumnValues(name),
+									frame.getColumnTypes().get(frame.getColumns().indexOf(name))));
+						}
+						return withRows(builder.build(), frame.getRows());
 					}
-					return withRows(builder.build(), frame.getRows());
-				}
-				if (value instanceof IMatrix<?> matrix) {
-					final int rows = matrix.getRows(scope), cols = matrix.getCols(scope);
-					final List<Object> cells = new ArrayList<>();
-					for (int c = 0; c < cols; c++) {
-						for (int r = 0; r < rows; r++) { cells.add(matrix.get(scope, c, r)); }
+					case IMatrix<?> matrix -> {
+						final int rows = matrix.getRows(scope), cols = matrix.getCols(scope);
+						final List<Object> cells = new ArrayList<>();
+						for (int c = 0; c < cols; c++) {
+							for (int r = 0; r < rows; r++) { cells.add(matrix.get(scope, c, r)); }
+						}
+						final IType<?> declared = matrix.getGamlType().getContentType();
+						final SEXP vector =
+								vector(cells, declared == Types.NO_TYPE && cells.stream().allMatch(v -> v == null)
+										? Types.FLOAT : declared);
+						if (vector instanceof ListVector) throw error(scope, "Mixed/list R matrices are not supported");
+						return vector.setAttribute("dim", new IntArrayVector(rows, cols));
 					}
-					final IType<?> declared = matrix.getGamlType().getContentType();
-					final SEXP vector = vector(cells, declared == Types.NO_TYPE && cells.stream().allMatch(v -> v == null)
-							? Types.FLOAT : declared);
-					if (vector instanceof ListVector) throw error(scope, "Mixed/list R matrices are not supported");
-					return vector.setAttribute("dim", new IntArrayVector(rows, cols));
-				}
-				if (value instanceof IMap<?, ?> map) {
-					final ListVector.NamedBuilder builder = new ListVector.NamedBuilder();
-					for (final var entry : map.entrySet()) {
-						if (!(entry.getKey() instanceof String name) || name.isEmpty())
-							throw error(scope, "RDS maps require non-empty string keys");
-						builder.add(name, convert(entry.getValue()));
+					case IMap<?, ?> map -> {
+						final ListVector.NamedBuilder builder = new ListVector.NamedBuilder();
+						for (final var entry : map.entrySet()) {
+							if (!(entry.getKey() instanceof String name) || name.isEmpty())
+								throw error(scope, "RDS maps require non-empty string keys");
+							builder.add(name, convert(entry.getValue()));
+						}
+						// R has no names for a zero-length list; preserve an empty map's identity.
+						return builder.build().setAttribute("names",
+								new StringArrayVector(map.keySet().toArray(String[]::new)));
 					}
-					// R has no names for a zero-length list; preserve an empty map's identity.
-					return builder.build().setAttribute("names",
-							new StringArrayVector(map.keySet().toArray(String[]::new)));
+					case IList<?> list -> {
+						return vector(list, list.getGamlType().getContentType());
+					}
+					default -> {
+					}
 				}
-				if (value instanceof IList<?> list) return vector(list, list.getGamlType().getContentType());
 				return scalar(value);
 			} finally {
 				ancestors.remove(value);
 			}
 		}
 
+		/**
+		 * Scalar.
+		 *
+		 * @param value
+		 *            the value
+		 * @return the sexp
+		 */
 		private SEXP scalar(final Object value) {
 			if (value instanceof Boolean b) return new LogicalArrayVector(b);
 			if (value instanceof String s) return new StringArrayVector(s);
 			if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
 				final int n = ((Number) value).intValue();
-				return n == Integer.MIN_VALUE ? new DoubleArrayVector((double) n) : new IntArrayVector(n);
+				return n == Integer.MIN_VALUE ? new DoubleArrayVector(n) : new IntArrayVector(n);
 			}
 			if (value instanceof Long n) {
 				if (n < -9007199254740992L || n > 9007199254740992L)
@@ -257,51 +382,85 @@ public final class RdsConverter {
 			throw error(scope, "Unsupported value for RDS export: " + value.getClass().getSimpleName());
 		}
 
+		/**
+		 * Vector.
+		 *
+		 * @param values
+		 *            the values
+		 * @param declared
+		 *            the declared
+		 * @return the sexp
+		 */
 		SEXP vector(final List<?> values, final IType<?> declared) {
 			int kind = declared.id();
 			boolean found = false;
 			for (final Object value : values) {
-				if (value == null) continue;
+				if (value == null) { continue; }
 				final int next = scalarKind(value);
-				if (!found) { kind = next; found = true; }
-				else if (kind != next) {
-					kind = (kind == IType.INT || kind == IType.FLOAT)
-							&& (next == IType.INT || next == IType.FLOAT) ? IType.FLOAT : IType.LIST;
+				if (!found) {
+					kind = next;
+					found = true;
+				} else if (kind != next) {
+					kind = (kind == IType.INT || kind == IType.FLOAT) && (next == IType.INT || next == IType.FLOAT)
+							? IType.FLOAT : IType.LIST;
 				}
 			}
-			if (kind == IType.INT) {
-				final int[] data = new int[values.size()];
-				for (int i = 0; i < data.length; i++) {
-					data[i] = values.get(i) == null ? IntVector.NA : ((Number) values.get(i)).intValue();
+			switch (kind) {
+				case IType.INT: {
+					final int[] data = new int[values.size()];
+					for (int i = 0; i < data.length; i++) {
+						data[i] = values.get(i) == null ? IntVector.NA : ((Number) values.get(i)).intValue();
+					}
+					return new IntArrayVector(data);
 				}
-				return new IntArrayVector(data);
-			}
-			if (kind == IType.FLOAT) {
-				final double[] data = new double[values.size()];
-				for (int i = 0; i < data.length; i++) {
-					if (values.get(i) == null) data[i] = DoubleVector.NA;
-					else data[i] = ((DoubleVector) numeric(values.get(i))).getElementAsDouble(0);
+				case IType.FLOAT: {
+					final double[] data = new double[values.size()];
+					for (int i = 0; i < data.length; i++) {
+						if (values.get(i) == null) {
+							data[i] = DoubleVector.NA;
+						} else {
+							data[i] = ((DoubleVector) numeric(values.get(i))).getElementAsDouble(0);
+						}
+					}
+					return new DoubleArrayVector(data);
 				}
-				return new DoubleArrayVector(data);
-			}
-			if (kind == IType.BOOL) {
-				final int[] data = new int[values.size()];
-				for (int i = 0; i < data.length; i++) {
-					data[i] = values.get(i) == null ? LogicalVector.NA : Boolean.TRUE.equals(values.get(i)) ? 1 : 0;
+				case IType.BOOL: {
+					final int[] data = new int[values.size()];
+					for (int i = 0; i < data.length; i++) {
+						data[i] = values.get(i) == null ? LogicalVector.NA : Boolean.TRUE.equals(values.get(i)) ? 1 : 0;
+					}
+					return new LogicalArrayVector(data);
 				}
-				return new LogicalArrayVector(data);
+				case IType.STRING:
+					return new StringArrayVector(values.toArray(String[]::new));
+				default:
+					break;
 			}
-			if (kind == IType.STRING) return new StringArrayVector(values.toArray(String[]::new));
 			final ListVector.Builder builder = new ListVector.Builder();
 			for (final Object value : values) { builder.add(convert(value)); }
 			return builder.build();
 		}
 
+		/**
+		 * Numeric.
+		 *
+		 * @param value
+		 *            the value
+		 * @return the sexp
+		 */
 		private SEXP numeric(final Object value) {
 			final SEXP result = scalar(value);
-			return result instanceof IntVector integers ? new DoubleArrayVector(integers.getElementAsDouble(0)) : result;
+			return result instanceof IntVector integers ? new DoubleArrayVector(integers.getElementAsDouble(0))
+					: result;
 		}
 
+		/**
+		 * Scalar kind.
+		 *
+		 * @param value
+		 *            the value
+		 * @return the int
+		 */
 		private int scalarKind(final Object value) {
 			if (value instanceof Boolean) return IType.BOOL;
 			if (value instanceof String) return IType.STRING;
@@ -312,13 +471,31 @@ public final class RdsConverter {
 		}
 	}
 
+	/**
+	 * With rows.
+	 *
+	 * @param frame
+	 *            the frame
+	 * @param count
+	 *            the count
+	 * @return the sexp
+	 */
 	static SEXP withRows(final ListVector frame, final int count) {
 		final int[] rows = new int[count];
 		for (int i = 0; i < count; i++) { rows[i] = i + 1; }
-		return frame.setAttribute("class", new StringArrayVector("data.frame"))
-				.setAttribute("row.names", new IntArrayVector(rows));
+		return frame.setAttribute("class", new StringArrayVector("data.frame")).setAttribute("row.names",
+				new IntArrayVector(rows));
 	}
 
+	/**
+	 * Error.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param message
+	 *            the message
+	 * @return the gama runtime exception
+	 */
 	static GamaRuntimeException error(final IScope scope, final String message) {
 		return GamaRuntimeException.error("RDS: " + message, scope);
 	}

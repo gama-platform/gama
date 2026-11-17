@@ -7,7 +7,7 @@
 
 model multicriteriaTest
 
-experiment TopologyTests type: test {
+experiment TopologyTests mode: test {
 	list<list<float>> candidates <- [[1.0,1.0,1.0],[2.0,0.0,1.0],[0.0,0.0,0.0],[1.0,2.0,0.0],[0.0,0.5,3.0]];
 	
 	test "weighted_means_DM"{

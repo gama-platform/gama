@@ -33,7 +33,7 @@ species building {
 		draw shape color: type = "residential" ? #gray : #pink;
 	}
 }
-experiment main type: gui {
+experiment main mode: gui {
 	output {
 		display map {
 			species building;

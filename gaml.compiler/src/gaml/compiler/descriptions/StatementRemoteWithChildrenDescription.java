@@ -24,6 +24,8 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gaml.compiler.expressions.TempVariableExpression;
 
 /**
  * The Class StatementRemoteWithChildrenDescription.
@@ -33,6 +35,8 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 
 	/** The previous description. */
 	protected IDescription alternateEnclosingDescription;
+
+	private IDescription lexicalEnclosingDescription;
 
 	/**
 	 * Instantiates a new statement remote with children description.
@@ -62,6 +66,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	public void dispose() {
 		super.dispose();
 		alternateEnclosingDescription = null;
+		lexicalEnclosingDescription = null;
 	}
 
 	@Override
@@ -82,7 +87,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 		if (sd != null) {
 			final IType t = getTypeContext().getGamlType();
 			addTemp(this, null, MYSELF, t);
-			if (getEnclosingDescription() != sd) { setEnclosingDescription(sd); }
+			if (getEnclosingDescription() != sd) { setRemoteEnclosingDescription(sd); }
 		}
 
 		return super.compileChildren();
@@ -102,7 +107,15 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	public void setEnclosingDescription(final IDescription desc) {
 		alternateEnclosingDescription = getEnclosingDescription();
 		super.setEnclosingDescription(desc);
+		lexicalEnclosingDescription = desc;
 	}
+
+	private void setRemoteEnclosingDescription(final IDescription desc) {
+		alternateEnclosingDescription = getEnclosingDescription();
+		super.setEnclosingDescription(desc);
+	}
+
+	public IDescription getLexicalEnclosingDescription() { return lexicalEnclosingDescription; }
 
 	@Override
 	public IModelDescription getModelDescription() {
@@ -116,8 +129,16 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String name) {
 		IVarDescriptionProvider result = super.getDescriptionDeclaringVar(name);
+		if (result instanceof ITypeDescription && alternateEnclosingDescription != null) {
+			final IVarDescriptionProvider enclosing =
+					alternateEnclosingDescription.getDescriptionDeclaringVar(name);
+			if (enclosing != null && enclosing.getVarExpr(name, false) instanceof TempVariableExpression)
+				return enclosing;
+		}
 		if (result == null && alternateEnclosingDescription != null) {
 			result = alternateEnclosingDescription.getDescriptionDeclaringVar(name);
+			// Generic agents need declaration-based typing; concrete targets only inherit caller locals.
+			if (result instanceof ITypeDescription && !Types.AGENT.equals(getTypeContext().getGamlType())) return null;
 		}
 		return result;
 	}
@@ -146,7 +167,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 				addTemp(this, null, MYSELF, t);
 				if (getEnclosingDescription() != denotedSpecies) {
 					previousEnclosingDescription = getEnclosingDescription();
-					setEnclosingDescription(denotedSpecies);
+					setRemoteEnclosingDescription(denotedSpecies);
 				}
 				// FIXME ===> Model Description is lost if we are dealing with a built-in species !
 			}

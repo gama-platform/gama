@@ -8,12 +8,8 @@
 @no_warning
 model test_lists
 
-
-species dummy {
-			
-}
+global {
 	
-experiment Lists  type:test {
 	
 	init {
 		rng <- "mersenne";	
@@ -272,4 +268,12 @@ experiment Lists  type:test {
 	
 	
 	
+	
 }
+
+
+species dummy {
+			
+}
+	
+experiment Lists mode:test;

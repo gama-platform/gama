@@ -223,10 +223,10 @@ species catastrophe{
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	float minimum_cycle_duration <- 0.02;
 	output {
-		display map type: 3d{
+		display map renderer: 3d{
 			species shelter refresh: false;
 			species road refresh: false;
 			species people;

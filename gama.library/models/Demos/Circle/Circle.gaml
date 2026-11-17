@@ -94,14 +94,14 @@ species cell skills: [moving] schedules: [] {
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	parameter "Number of Agents" var: number_of_agents category: "Formation" {
 		if (number_of_agents > length(cell)) {
 			create cell number: number_of_agents - length(cell);
 		} else if (number_of_agents < length(cell)) {
 			ask (length(cell) - number_of_agents) among cell { do die(); }
 		}
-		ask simulation {do measure_formation();}
+		do measure_formation();
 	}
 	parameter "Radius of Circle" var: radius_of_circle unit: "m" category: "Formation";
 	parameter "Attraction to Ring" var: attraction_strength category: "Dynamics";
@@ -117,7 +117,7 @@ experiment main type: gui {
 	output {
 		monitor "Mean distance from ring (m)" value: with_precision(mean_error, 1);
 		monitor "Agents on ring (%)" value: with_precision(settled_fraction * 100.0, 1);
-		display Circle type: 2d background: backdrop {
+		display Circle renderer: 2d background: backdrop {
 			graphics guide {
 				if (show_guide) {
 					draw circle(radius_of_circle) at: center color: rgb(lettering, 0.3)

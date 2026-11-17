@@ -291,7 +291,7 @@ species looping_on_maps {
 	}
 
 
-experiment Maps type: gui {
+experiment Maps mode: gui {
 	user_command "Declaring maps" {create declaring_map_attributes;}
 	user_command "Accessing maps" {create accessing_map_elements;}
 	user_command "Combining maps" {create combining_maps;}

@@ -414,6 +414,7 @@ public class EGaml {
 			case GamlPackage.BINARY_OPERATOR -> ((BinaryOperator) object).getOp();
 			case GamlPackage.PARAMETER -> getKeyOfParameter((Parameter) object);
 			case GamlPackage.MODEL -> IKeyword.MODEL;
+			case GamlPackage.STANDALONE_EXPERIMENT -> ((StandaloneExperiment) object).getKey();
 			case GamlPackage.STATEMENT -> getKeyOfStatement((Statement) object);
 			case GamlPackage.FACET -> getKeyOfFacet((Facet) object);
 			case GamlPackage.FUNCTION -> getKeyOf(((Function) object).getLeft());

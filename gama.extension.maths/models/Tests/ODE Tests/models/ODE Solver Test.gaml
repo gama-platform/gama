@@ -196,37 +196,39 @@ global{
 	}
 	
 	
-experiment test type: test {
+experiment test mode: test {
 	test "Equations" {
 		create ODETest_model(with_viz:false,step:1#s);
 		// tests for consistency of the ODE solver with the same ODE solvers from Maple and Matlab
 		// Testing solutions for equations using Euler, RK4 and DP solver in Gama:;
-		assert rk4_err < 10^-10;
-		assert euler_err < 10^-10;
-		assert dp_err < 10^-3;
-		// tests that the spit system gives the same numerical solution than the non-split system (rk4)
-		assert split_err = 0;
-		assert rk4_stepsize_err < 10^-3;
+		ask simulation{
+			assert rk4_err < 10^-10;
+			assert euler_err < 10^-10;
+			assert dp_err < 10^-3;
+			// tests that the spit system gives the same numerical solution than the non-split system (rk4)
+			assert split_err = 0;
+			assert rk4_stepsize_err < 10^-3;
+		}
 		
 		create ODETest_model(with_viz:false, step:2#s);//beta::1.0 /#s, delta::0.01 /#s];
-		assert rk4_err < 10^-7;
+		assert simulation.rk4_err < 10^-7;
 		
 		create ODETest_model(with_viz:false, with_t0_tf:true,step:2#s);//beta::1.0 /#s, delta::0.01 /#s];
-		assert rk4_err < 10^-7;	
+		assert simulation.rk4_err < 10^-7;	
 		
 		create ODETest_model(with_viz:false,step:1#h, beta:1.0 /#hour, delta:0.01 /#h);
-		assert rk4_err < 10^-10;	
+		assert simulation.rk4_err < 10^-10;	
 	}	
 }
 
-experiment simulation type: gui {
+experiment simulation mode: gui {
 	action _init_() {
 		create ODETest_model(with_viz:true, step:1#s, name:"Simulation step=1s");
 		create ODETest_model(with_viz:true, step:2#s, name:"Simulation step=2s");
 	}
 	
 	output {
-		display "Equation Tests" refresh: every(1 #cycle)  type: 2d {
+		display "Equation Tests" refresh: every(1 #cycle)  renderer: 2d {
 			chart 'Comparision rk4 from Gama (lines) with rk4 from Maple (markers)' coordinates: #screen kind: series background: #white size:{0.5,0.5} position:{0.0,0.0} {
 				data "S" value: (first(SIR_model).Sm) color: #green marker: false; 
 				data "I" value: (first(SIR_model).Im) color: #red marker: false;

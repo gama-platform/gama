@@ -70,12 +70,12 @@ species B mirrors: A schedules: B where(!dead(each.target)){
     }
 }
 
-experiment mirroExp type: gui {
+experiment mirroExp mode: gui {
 	parameter "Create new agents" var: with_respawn;
 	parameter "Macimum number of agents" var: nb_agent;
 	
     output {
-        display superposedView type: 3d map_order: true{
+        display superposedView renderer: 3d map_order: true{
           	species A aspect: base ;
           	species B aspect: base ;
           

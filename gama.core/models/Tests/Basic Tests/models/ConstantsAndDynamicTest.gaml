@@ -7,19 +7,8 @@
 
 model ConstantsAndDynamicTestModel
 
-species dynamic_agent {
-	int my_constant <- 100 const: true;
-	
-	int base_val <- 5;
-	
-	// Dynamic variable evaluating every time it's called
-	int dynamic_val -> base_val * 2;
-	
-	// 'is_const' isn't a GAML operator, but we can verify it doesn't change
-}
-
-experiment ConstantsAndDynamicTest type: test autorun: true {
-	
+global {
+		
 	test "Constant Values" {
 		create dynamic_agent number: 1 returns: created_agents;
 		dynamic_agent ag <- created_agents[0];
@@ -43,3 +32,16 @@ experiment ConstantsAndDynamicTest type: test autorun: true {
 		assert ag.dynamic_val = 40;
 	}
 }
+
+species dynamic_agent {
+	int my_constant <- 100 const: true;
+	
+	int base_val <- 5;
+	
+	// Dynamic variable evaluating every time it's called
+	int dynamic_val -> base_val * 2;
+	
+	// 'is_const' isn't a GAML operator, but we can verify it doesn't change
+}
+
+experiment ConstantsAndDynamicTest mode: test autorun: true;

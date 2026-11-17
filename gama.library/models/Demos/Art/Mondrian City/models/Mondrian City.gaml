@@ -452,7 +452,7 @@ grid cell width: grid_width height: grid_height {
 	}
 }
 
-experiment MondrianCity type: gui autorun: true{
+experiment MondrianCity mode: gui autorun: true{
 	//float minimum_cycle_duration <- 0.05;
 	parameter "mobility1 level" var: weight_mobility1 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;
 	parameter "mobility2 level" var: weight_mobility2 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;
@@ -460,7 +460,7 @@ experiment MondrianCity type: gui autorun: true{
 	parameter "Population level" var: population_level min: 0 max: 100 step: 1 colors: [#gamablue] <-50;
 
 	output synchronized:true{
-		display map background:#black toolbar:false type:3d  axes:false fullscreen:false map_order: true{
+		display map background:#black toolbar:false renderer:3d  axes:false fullscreen:false map_order: true{
 			species cell aspect:default;
 			species road ;
 			species people;

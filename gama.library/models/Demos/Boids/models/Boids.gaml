@@ -196,7 +196,7 @@ species obstacle skills: [moving] {
 }
 
 
-experiment "Basic" type: gui {
+experiment "Basic" mode: gui {
 	parameter 'Number of agents' var: number_of_agents;
 	parameter 'Number of obstacles' var: number_of_obstacles;
 	parameter 'Maximal speed' var: maximal_speed;
@@ -216,7 +216,7 @@ experiment "Basic" type: gui {
 	float minimum_cycle_duration <- 0.01;
 
 	output synchronized: true {
-		display Sky type: 3d axes:false{ 
+		display Sky renderer: 3d axes:false{ 
 			picture '../images/sky.jpg' refresh: false;
 			species boids aspect: image;
 			species boids_goal;
@@ -227,7 +227,7 @@ experiment "Basic" type: gui {
 }
 
 
-experiment "Interactive" type: gui autorun: true{
+experiment "Interactive" mode: gui autorun: true{
 	parameter 'Number of agents' var: number_of_agents;
 	parameter 'Number of obstacles' var: number_of_obstacles;
 	parameter 'Maximal speed' var: maximal_speed;
@@ -246,13 +246,13 @@ experiment "Interactive" type: gui autorun: true{
 	float minimum_cycle_duration <- 0.01;
 
 	output synchronized: true {
-		display Sky  background: #blue type: 3d fullscreen: 0 toolbar: false axes:false{ 
+		display Sky  background: #blue renderer: 3d fullscreen: 0 toolbar: false axes:false{ 
 			picture '../images/sky.jpg' refresh: false;
 			species boids aspect: image trace: 10 fading: true ;
 			species boids_goal;
 			species obstacle;
 			//Event to call the action move_goal in global if the mouse move within the experiment
-			event #mouse_move {ask simulation {do move_goal();}}
+			event #mouse_move {do move_goal();}
 		}
 
 	}

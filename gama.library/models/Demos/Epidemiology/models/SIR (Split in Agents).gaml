@@ -115,7 +115,7 @@ species SIR_agt {
 }
 
 
-experiment Simulation type: gui {
+experiment Simulation mode: gui {
 	parameter 'Number of Susceptible' type: int var: number_S <- 495 category: "Initial population"; // The initial number of susceptibles
 	parameter 'Number of Infected'    type: int var: number_I <- 5   category: "Initial population";
 	parameter 'Number of Removed'     type: int var: number_R <- 0   category: "Initial population";
@@ -125,14 +125,14 @@ experiment Simulation type: gui {
 	
 	output {
 		layout #split;
-		display "split system"  type: 3d {
+		display "split system"  renderer: 3d {
 			chart 'Susceptible' kind: series background: #white {
 				data 'susceptible' value: first ( S_agt ) . Ssize color: rgb(46,204,113) ;
 				data 'infected' value: first ( I_agt ) . Isize color: rgb(231,76,60) ;
 				data 'removed' value: first ( R_agt ) . Rsize color: rgb(52,152,219) ;
 			}
 		}
-		display "unified system"  type: 3d {
+		display "unified system"  renderer: 3d {
 			chart 'Susceptible' kind: series background: #white {
 				data 'susceptible_maths' value: first( SIR_agt ).Sm color: rgb(46,204,113) ;
 				data 'infected_maths' value: first( SIR_agt ).Im color: rgb(231,76,60) ;

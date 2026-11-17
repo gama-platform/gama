@@ -98,13 +98,13 @@ species ball skills: [dynamic_body] {
 	}
 }
 
-experiment "Test it !" type: gui {
+experiment "Test it !" mode: gui {
 	image_file bang <- image_file("../images/bang.png");
 	image_file bam <- image_file("../images/bam.png");
 	float minimum_cycle_duration <- 1.0 / 120;
 	parameter "Impulse" var: ball_impulse;
 
-	user_command "  Reset balls" color: rgb(133, 177, 205) {
+	user_command "  Reset balls" color: rgb(133, 177, 205) of: experiment {
 		ask simulations {
 			ask ball { do die(); }
 			ball_hits <- 0;
@@ -127,9 +127,9 @@ experiment "Test it !" type: gui {
 		gama.pref_append_simulation_name <- prev1;
 	}
 
-	output {
+	output of: simulation {
 		layout #split;
-		display "Restitution" type: 2d axes: false background: rgb(248, 246, 240) {
+		display "Restitution" renderer: 2d axes: false background: rgb(248, 246, 240) {
 			graphics "Grid" refresh: false {
 				loop x from: 0 to: 100 step: 10 {
 					draw line([{x, 0}, {x, 100}]) color: rgb(224, 219, 210) width: 1;
@@ -142,10 +142,10 @@ experiment "Test it !" type: gui {
 			species ball;
 			graphics "Bang" {
 				if (ball_contact != nil) {
-					draw bang at: ball_contact size: {16, 16};
+					draw experiment.bang at: ball_contact size: {16, 16};
 				}
 				if (wall_contact != nil) {
-					draw bam at: wall_contact size: {16, 16};
+					draw experiment.bam at: wall_contact size: {16, 16};
 				}
 			}
 			overlay coordinates: #screen position: {5, 5} size: {250, 106} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
@@ -158,7 +158,7 @@ experiment "Test it !" type: gui {
 			}
 			event "mouse_down" {
 				point target <- #user_location;
-				ask simulations {
+				ask experiment.simulations {
 					ask ball {
 						point direction <- target - location;
 						if norm(direction) > 0 {

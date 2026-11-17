@@ -63,14 +63,14 @@ grid cells_convol height: size width: size {
 } 
 
 
-experiment diffusion type: gui {
+experiment diffusion mode: gui {
 	output {
-		display dot type: 3d antialias:false{
+		display dot renderer: 3d antialias:false{
 			camera 'default' location: {-241.1855,1167.8588,390.2962} target: {320.0,320.0,0.0};
 			// Display the grid with elevation
 			grid cells_dot elevation: true triangulation: true;
 		}
-		display convol type: 3d antialias:false{
+		display convol renderer: 3d antialias:false{
 			camera 'default' location: {-241.1855,1167.8588,390.2962} target: {320.0,320.0,0.0};
 			// Display the grid with elevation
 			grid cells_convol elevation: true triangulation: true;

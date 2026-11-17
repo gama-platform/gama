@@ -271,11 +271,11 @@ public class GamlResourceServices {
 	 */
 	public static IValidationContext getOrCreateValidationContext(final GamlResource r) {
 		final URI newURI = r.getURI();
-		// Use computeIfAbsent for atomic check-and-create operation
-		resourceErrorCollectors.computeIfAbsent(newURI, uri -> ValidationContext.create(uri, r.hasErrors()));
+		final IValidationContext ctx = ValidationContext.create(newURI, r.hasErrors());
+		resourceErrorCollectors.put(newURI, ctx);
 		resourceDocCollectors.computeIfAbsent(newURI, uri -> isEdited(uri)
 				? DocumentationContext.create(uri, getResourceDocumenter()) : DocumentationContext.NULL);
-		return resourceErrorCollectors.get(newURI);
+		return ctx;
 	}
 
 	/**
@@ -298,7 +298,12 @@ public class GamlResourceServices {
 	 */
 	public static void discardValidationContext(final GamlResource r) {
 		final URI uri = r.getURI();
-		resourceErrorCollectors.remove(uri);
+		final IValidationContext ctx = r.clearValidationContext();
+		if (ctx != null) {
+			resourceErrorCollectors.remove(uri, ctx);
+		} else {
+			resourceErrorCollectors.remove(uri);
+		}
 		resourceDocCollectors.remove(uri);
 	}
 

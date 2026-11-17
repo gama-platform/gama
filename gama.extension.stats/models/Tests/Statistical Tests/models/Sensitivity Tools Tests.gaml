@@ -6,7 +6,7 @@
 
 model sensitivity_tools_test
 
-experiment tests type:test {
+experiment tests mode:test {
 
 	
 	test sobol_2D{

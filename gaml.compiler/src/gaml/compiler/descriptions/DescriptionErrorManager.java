@@ -49,10 +49,10 @@ public abstract class DescriptionErrorManager implements IDescription {
 
 		EObject e = source;
 		IDescription desc = this;
-		if (e == null) { e = getUnderlyingElement(); }
-		while (e == null && desc != null) {
+		// Incomplete or synthetic expressions may be detached; report on their enclosing source instead.
+		while ((e == null || e.eResource() == null) && desc != null) {
+			e = desc.getUnderlyingElement();
 			desc = desc.getEnclosingDescription();
-			if (desc != null) { e = desc.getUnderlyingElement(); }
 		}
 		// throws a runtime exception if there is no way to signal the error in the source
 		// (i.e. we are probably in a runtime scenario), except for dedicated text-validation resources.

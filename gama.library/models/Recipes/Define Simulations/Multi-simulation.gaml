@@ -34,7 +34,7 @@ species dummy skills: [moving]{
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	//definition of a minimal duration for each cycle. As the model is very simple, it can run too fast to observe the results, so we slow it down.
 	float minimum_cycle_duration <- 0.1;
 	

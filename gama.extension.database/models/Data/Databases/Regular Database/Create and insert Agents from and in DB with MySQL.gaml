@@ -95,6 +95,6 @@ species DB_accessor skills: [sql] {
 
 }
 
-experiment createInsertMySQL type: gui {
+experiment createInsertMySQL mode: gui {
 }
    

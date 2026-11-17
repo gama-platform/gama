@@ -97,4 +97,4 @@ global {
 	}
 }
 
-experiment name type: gui { }
+experiment name mode: gui { }

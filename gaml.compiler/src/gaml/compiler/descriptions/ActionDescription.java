@@ -27,6 +27,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -53,6 +54,16 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	 * </p>
 	 */
 	private List<String> cachedArgNames;
+
+	private boolean evaluatesInModel;
+
+	void useModelContext() { evaluatesInModel = true; }
+
+	@Override
+	public IDescription getEnclosingContext() {
+		return evaluatesInModel || IExperimentDescription.actionsUseSimulation(this)
+				? getModelDescription() : super.getEnclosingContext();
+	}
 
 	/**
 	 * Instantiates a new action description.
@@ -83,6 +94,7 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	@Override
 	public ActionDescription copy(final IDescription into) {
 		final ActionDescription desc = new ActionDescription(getKeyword(), into, children, element, getFacetsCopy());
+		desc.evaluatesInModel = evaluatesInModel;
 		desc.setOriginName(getOriginName());
 		// Note: cachedArgNames is intentionally not copied - it will be lazily recomputed if needed
 		return desc;

@@ -43,7 +43,7 @@ class Child2 parent:Parent{
 	int virtual_action(){ return 1;}
 }
 
-experiment "Test inheritance" type:test{
+experiment "Test inheritance" mode:test{
 
 	test inheritedFieldsAreStillInitialisedInParent {
 		Child c <- Child();

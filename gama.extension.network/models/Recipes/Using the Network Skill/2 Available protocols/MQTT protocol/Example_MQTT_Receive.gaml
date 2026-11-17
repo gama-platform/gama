@@ -50,7 +50,7 @@ species NetworkingAgent skills:[network]{
 	}
 }
 
-experiment Network_receiver type: gui {
+experiment Network_receiver mode: gui {
 	output {
 	}
 }

@@ -93,13 +93,13 @@ species ball skills: [dynamic_body, moving] {
 
 }
 
-experiment "Disturbance" type: gui {
+experiment "Disturbance" mode: gui {
 
 	text "This experiment uses the Box2D library to display particles that are disturbed randomly and try to get back to their original location when this happens. Try stopping the disturbance or increasing or decreasing the restitution to see what happens. Agents are provided also with the moving skill, and it is a good example of mixing a physics-based with a behavior-based dynamics";
 
 	output {
 		layout #split;
-		display "Restitution" type: 2d axes: false background: rgb(248, 246, 240) {
+		display "Restitution" renderer: 2d axes: false background: rgb(248, 246, 240) {
 			graphics grid {
 				loop v from: 0 to: size step: 25 {
 					draw line([{v, 0}, {v, size}]) color: rgb(224, 219, 210) width: 1;

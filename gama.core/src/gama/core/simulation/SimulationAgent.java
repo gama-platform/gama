@@ -566,6 +566,14 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public SimulationPopulation getPopulation() { return (SimulationPopulation) population; }
 
 	@Override
+	public IPopulation<? extends IAgent> getPopulationFor(final ISpecies species) {
+		final var micro = species.getDescription().getModelDescription();
+		if (getModel().getDescription().getMicroModel(micro.getMicroAlias()) == null)
+			return getPopulationFor(species.getName());
+		return super.getPopulationFor(species);
+	}
+
+	@Override
 	public IPopulation<? extends IAgent> getPopulationFor(final String speciesName) throws GamaRuntimeException {
 		IPopulation<? extends IAgent> pop = super.getPopulationFor(speciesName);
 		if (pop != null) return pop;

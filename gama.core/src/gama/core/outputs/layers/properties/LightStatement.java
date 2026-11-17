@@ -61,18 +61,11 @@ import gama.core.outputs.layers.properties.LightStatement.LightStatementValidato
 						optional = true,
 						doc = @doc ("the location of the light (only for point and spot light) in model coordinates. Default is {0,0,20}")),
 				@facet (
-						name = IKeyword.TYPE,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc (
-								deprecated = " use kind: instead",
-								value = "the type of light to create. A value among {#point, #direction, #spot}")),
-				@facet (
 						name = IKeyword.KIND,
 						type = IType.STRING,
 						optional = true,
 						doc = @doc (
-								value = "the kind of light to create. A value among {#point, #direction, #spot}")),
+								value = "the kind of light to create. A value among {#point, #direction, #spot}. Legacy `type:` is accepted with a deprecation warning.")),
 				@facet (
 						name = IKeyword.DIRECTION,
 						type = IType.POINT,
@@ -161,7 +154,7 @@ public class LightStatement extends AbstractLayerStatement {
 			final IExpressionDescription linearAttenuation = desc.getFacet(IKeyword.LINEAR_ATTENUATION);
 			final IExpressionDescription quadraticAttenuation = desc.getFacet(IKeyword.QUADRATIC_ATTENUATION);
 
-			final IExpression spec = desc.getFacetExpr(IKeyword.TYPE, IKeyword.KIND);
+			final IExpression spec = desc.getFacetExpr(IKeyword.KIND);
 			if (spec != null && spec.isConst()) {
 				final String type = spec.literalValue();
 				// light type direction

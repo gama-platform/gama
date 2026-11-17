@@ -277,7 +277,7 @@ public class LayerWizard extends DeclarationWizard<LayerDraft> {
 	private ActionBodyContext context(final LayerDraft draft) {
 		if (context != null) return context.apply(draft);
 		return new ActionBodyContext(URI.createURI("synthetic:/layer-wizard/.layer-wizard.gaml"),
-				"model layer_wizard\nexperiment e type: gui { output { display d type: opengl {\n"
+				"model layer_wizard\nexperiment e mode: gui { output { display d renderer: opengl {\n"
 						+ DisplaySource.renderLayer(draft, parser()) + "\n} } }\n", "");
 	}
 

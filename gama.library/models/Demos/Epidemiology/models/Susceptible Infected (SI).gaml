@@ -108,7 +108,7 @@ species Host  {
 }
 
 
-experiment Simulation type: gui { 
+experiment Simulation mode: gui { 
  	parameter "Number of Susceptible" var: number_S ;// The number of susceptible
     parameter "Number of Infected" var: number_I ;	// The number of infected
     parameter "Survival Probability" var: survivalProbability ; // The survival probability
@@ -119,12 +119,12 @@ experiment Simulation type: gui {
 	
  	output {
  		layout #split; 
-	    display si_display  type:2d antialias:false{
+	    display si_display  renderer:2d antialias:false{
 	        grid si_grid border: #lightgray;
 	        species Host aspect: basic;
 	    }
 	        
-	    display chart refresh: every(10#cycles)  type: 3d  {
+	    display chart refresh: every(10#cycles)  renderer: 3d  {
 			chart "Susceptible" kind: series background: #white style: exploded {
 				data "susceptible" value: Host count (each.is_susceptible) color: rgb(46,204,113);
 				data "infected" value: Host count (each.is_infected) color: rgb(231,76,60);

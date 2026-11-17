@@ -28,6 +28,19 @@ import java.lang.annotation.RetentionPolicy;
 @Retention (RetentionPolicy.RUNTIME)
 public @interface facet {
 
+	/** Static name-resolution context of an expression facet, not its runtime execution target. */
+	enum Context { ENCLOSING, MODEL }
+
+	/**
+	 * Compilation context for this facet. ENCLOSING uses the declaration's ordinary evaluation context. MODEL resolves
+	 * names and species-relative types against the enclosing model without changing the structural parent. It does not
+	 * select a simulation or change the runtime scope: the symbol implementation must evaluate the expression in the
+	 * scope of the appropriate simulation. This is separate from {@link #remote_context()}.
+	 *
+	 * @return the expression compilation context, ENCLOSING by default
+	 */
+	Context context() default Context.ENCLOSING;
+
 	/**
 	 * Name.
 	 *

@@ -24,4 +24,4 @@ global {
 	}
 }
 
-experiment ZipUnzip type: gui ;
+experiment ZipUnzip mode: gui ;

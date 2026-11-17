@@ -34,9 +34,9 @@ global {
 //definition of the grid from the geotiff file: the width and height of the grid are directly read from the asc file. The values of the asc file are stored in the grid_value attribute of the cells.
 grid cell file: grid_data;
 
-experiment show_example type: gui {
+experiment show_example mode: gui {
 	output {
-		display test axes:false type:3d{
+		display test axes:false renderer:3d{
 			camera 'default' location: {16384.6813,51385.7828,15210.911} target: {15510.9655,18019.9225,0.0};
 			grid cell border: #black elevation:grid_value*5 triangulation:true;
 		}

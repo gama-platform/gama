@@ -49,7 +49,7 @@ class Node {
 }
 
 
-experiment "Complex classes" type:test{
+experiment "Complex classes" mode:test{
 
 	test recursiveAlgorithm{
 		Node root <- Node();

@@ -33,14 +33,14 @@ grid plotWeather height: grid_size width: grid_size {
 	rgb color <- rgb(0,0,rain) update: rgb(0,0,rain);
 }
 
-experiment "Weather" type: gui {
+experiment "Weather" mode: gui {
 	output {
-		display d type:2d antialias:false{
+		display d renderer:2d antialias:false{
 			grid plotWeather border: #black;
 		}
 	}
 }
 
-experiment "Weather Co-Modeling" type:gui {
+experiment "Weather Co-Modeling" mode:gui {
 	parameter "check execution step" var: write_in_console_step <- true;
 }

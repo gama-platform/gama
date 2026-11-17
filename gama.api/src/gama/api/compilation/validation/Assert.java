@@ -15,6 +15,10 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
@@ -108,6 +112,25 @@ import gama.api.gaml.types.Types;
  */
 public class Assert implements gama.annotations.constants.IKeyword {
 
+	/** Checks a statically known population access without rejecting species used as values. */
+	public static void populationIsAccessible(final IDescription context, final IExpression expression,
+			final EObject source) {
+		if (expression instanceof IExpression.Species) {
+			populationIsAccessible(context, expression.getGamlType().getDenotedSpecies(), source);
+		}
+	}
+
+	/** Checks a statically known population access in the expression's evaluation context. */
+	public static void populationIsAccessible(final IDescription context, final ITypeDescription species,
+			final EObject source) {
+		if (context == null || !(context.getTypeContext() instanceof IExperimentDescription)
+				|| !(species instanceof ISpeciesDescription sd) || species instanceof IModelDescription
+				|| sd.isExperiment()) return;
+		context.error("The population of " + species.getName()
+				+ " belongs to a simulation. Access it in an explicit simulation context, for example "
+				+ "ask simulation { ... }.", IGamlIssue.WRONG_CONTEXT, source);
+	}
+
 	/**
 	 * Validates that an assigned value is type-compatible with the receiver variable.
 	 *
@@ -161,6 +184,10 @@ public class Assert implements gama.annotations.constants.IKeyword {
 		final IExpression value = assigned.getExpression();
 		if (value == null) return;
 		final IType assignedType = value.getGamlType();
+		if (receiverType.isContainer() && receiverType.id() != IType.SPECIES
+				&& receiverType.id() != IType.CONTAINER) {
+			populationIsAccessible(context, value, assigned.getTarget());
+		}
 		verifyIntFloatAndEmptyContainers(facetName, context, receiverDescription, receiverType, assigned, value,
 				assignedType);
 		// Contents Type

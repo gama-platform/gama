@@ -11,12 +11,15 @@
 package gaml.compiler.expressions;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gaml.compiler.descriptions.StatementRemoteWithChildrenDescription;
 
 /**
  * The Class MyselfExpression.
@@ -36,6 +39,10 @@ public class CurrentExperimentExpression extends VariableExpression {
 	 */
 	public CurrentExperimentExpression() {
 		super(IKeyword.EXPERIMENT, Types.get(IKeyword.EXPERIMENT), true, null);
+	}
+
+	private CurrentExperimentExpression(final IExperimentDescription experiment) {
+		super(IKeyword.EXPERIMENT, experiment.getGamlType(), true, experiment);
 	}
 
 	@Override
@@ -67,5 +74,16 @@ public class CurrentExperimentExpression extends VariableExpression {
 	public static IExpression create() {
 	    if (INSTANCE == null) { INSTANCE = new CurrentExperimentExpression(); }
 	    return INSTANCE;
+	}
+
+	/** Keeps the declaring experiment's type in simulation-facing outputs, parameters and inline callbacks. */
+	public static IExpression create(final IDescription context) {
+		for (IDescription current = context; current != null;) {
+			if (current instanceof IExperimentDescription experiment)
+				return new CurrentExperimentExpression(experiment);
+			current = current instanceof StatementRemoteWithChildrenDescription remote
+					? remote.getLexicalEnclosingDescription() : current.getEnclosingDescription();
+		}
+		return create();
 	}
 }

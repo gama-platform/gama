@@ -5,11 +5,6 @@
 */
 model BenchmarkBinarySerialisers
 
-global {
-	int nb_agents <- 2000;
-	int repetitions <- 20;
-	int warmups <- 3;
-}
 
 species bench_agent {
 	int amount <- rnd(1000);
@@ -21,7 +16,10 @@ species bench_agent {
 	map<string, float> properties <- ["a"::rnd(1.0), "b"::rnd(1.0)];
 }
 
-experiment Benchmark type: gui {
+experiment Benchmark mode: gui {
+	int repetitions <- 20;
+	int warmups <- 3;
+
 
 	action measure (string title, unknown value) {
 		string bytes <- "";
@@ -48,19 +46,20 @@ experiment Benchmark type: gui {
 	}
 	
 	action serialize() {
+		int nb_agents <- 2000;
 		list<int> ints <- list_with(100000, rnd(1000000));
 		list<string> strings <- list_with(20000, "text" + rnd(100000));
 		map<string, float> numbers <- map<string, float>(list_with(20000, rnd(100)) as_map (("k" + rnd(100000))::each));
-		create bench_agent number: nb_agents;
+		ask simulation {create bench_agent number: nb_agents;}
 		write "Backend: Apache Fory";
 		do measure("100000 ints", ints);
 		do measure("20000 strings", strings);
 		do measure("map of 20000 floats", numbers);
-		do measure("list of " + nb_agents + " agents", list(bench_agent));
-		ask bench_agent { do die(); }
+		do measure("list of " + nb_agents + " agents", list(simulation.bench_agent));
+		ask simulation.bench_agent { do die(); }
 	}
 
-	user_command "Run benchmark" {
+	user_command "Run benchmark" of: experiment {
 		do serialize();
 	}
 

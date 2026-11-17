@@ -381,6 +381,17 @@ public class ExecutionContext implements IExecutionContext {
 		return o == null ? null : o.getTempVar(name);
 	}
 
+	@Override
+	public boolean hasTempVar(final String name) {
+		final IExecutionContext o = outer;
+		if (shared) {
+			synchronized (this) {
+				if (local != null && local.containsKey(name)) return true;
+			}
+		} else if (local != null && local.containsKey(name)) return true;
+		return o != null && o.hasTempVar(name);
+	}
+
 	/**
 	 * Creates the copy.
 	 *

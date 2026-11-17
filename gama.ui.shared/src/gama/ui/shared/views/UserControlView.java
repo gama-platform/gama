@@ -132,7 +132,8 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 					if (c.isContinue(scope)) { doContinue(); }
 				});
 				for (final UserInputStatement i : inputs) {
-					scope.addVarWithValue(i.getTempVarName(), i.value(scope));
+					i.value(scope);
+					scope.execute(i);
 					EditorFactory.create(scope, commandComposite, i, newValue -> {
 						i.setValue(scope, newValue);
 						scope.execute(i);

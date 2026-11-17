@@ -116,7 +116,7 @@ species road {
 
 }
 
-experiment traffic type: gui autorun: true{
+experiment traffic mode: gui autorun: true{
 	float minimum_cycle_duration <- 0.01;
 	list<rgb> pal <- palette([ #black, #green, #yellow, #orange, #orange, #red, #red, #red]);
 	map<rgb,string> pollutions <- [#green::"Good",#yellow::"Average",#orange::"Bad",#red::"Hazardous"];
@@ -125,32 +125,32 @@ experiment traffic type: gui autorun: true{
 	font title <- font("Arial", 18, #bold);
 	
 	output synchronized: true{
-		display carte type: opengl axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
+		display carte renderer: opengl axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
 			
 			 // The one-pixel frame deliberately allows the legend to overflow.
 			 overlay coordinates: #screen position: {50, 50} size: {1, 1} background: # black border: #black rounded: false
             	{
             	//for each possible type, we draw a square with the corresponding color and we write the name of the type
                 
-                draw "Pollution" at: {0, 0} anchor: #top_left  color: #white font: title;
+                draw "Pollution" at: {0, 0} anchor: #top_left  color: #white font: experiment.title;
                 float y <- 50#px;
                 draw rectangle(40#px, 160#px) at: {20#px, y + 60#px} wireframe: true color: #white;
              
-                loop p over: reverse(pollutions.pairs)
+                loop p over: reverse(experiment.pollutions.pairs)
                 {
                     draw square(40#px) at: { 20#px, y } color: rgb(p.key, 0.6) ;
-                    draw p.value at: { 60#px, y} anchor: #left_center color: # white font: text;
+                    draw p.value at: { 60#px, y} anchor: #left_center color: # white font: experiment.text;
                     y <- y + 40#px;
                 }
                 
                 y <- y + 40#px;
-                draw "Legend" at: {0, y} anchor: #top_left  color: #white font: title;
+                draw "Legend" at: {0, y} anchor: #top_left  color: #white font: experiment.title;
                 y <- y + 50#px;
                 draw rectangle(40#px, 120#px) at: {20#px, y + 40#px} wireframe: true color: #white;
-                loop p over: legends.pairs
+                loop p over: experiment.legends.pairs
                 {
                     draw square(40#px) at: { 20#px, y } color: rgb(p.key, 0.8) ;
-                    draw p.value at: { 60#px, y} anchor: #left_center color: # white font: text;
+                    draw p.value at: { 60#px, y} anchor: #left_center color: # white font: experiment.text;
                     y <- y + 40#px;
                 }
             }
@@ -162,7 +162,7 @@ experiment traffic type: gui autorun: true{
 			species people;
 
 			//display the pollution grid in 3D using triangulation.
-			mesh cell scale: 9 triangulation: true transparency: 0.4 smooth: 3 above: 0.8 color: pal;
+			mesh cell scale: 9 triangulation: true transparency: 0.4 smooth: 3 above: 0.8 color: experiment.pal;
 		}
 
 	}

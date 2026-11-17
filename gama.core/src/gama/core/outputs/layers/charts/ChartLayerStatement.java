@@ -200,22 +200,13 @@ import gama.core.outputs.layers.LayerData;
 						optional = true,
 						doc = @doc ("the tick lines color")),
 				@facet (
-						name = IKeyword.TYPE,
-						type = IType.ID,
-						values = { IKeyword.XY, IKeyword.SCATTER, IKeyword.HISTOGRAM, IKeyword.SERIES, IKeyword.PIE,
-								IKeyword.RADAR, IKeyword.HEATMAP, IKeyword.BOX_WHISKER },
-						optional = true,
-						doc = @doc (
-								deprecated = "use kind: instead",
-								value = "the type of chart. To choose among histogram, scatter, series, xy, pie, radar, heatmap or box_whisker. The difference between series and xy is that the former adds an implicit x-axis that refers to the numbers of cycles, while the latter considers the first declaration of data to be its x-axis.")),
-				@facet (
 						name = IKeyword.KIND,
 						type = IType.ID,
 						values = { IKeyword.XY, IKeyword.SCATTER, IKeyword.HISTOGRAM, IKeyword.SERIES, IKeyword.PIE,
 								IKeyword.RADAR, IKeyword.HEATMAP, IKeyword.BOX_WHISKER },
 						optional = true,
 						doc = @doc (
-								value = "the kind of chart. To choose among histogram, scatter, series, xy, pie, radar, heatmap or box_whisker. The difference between series and xy is that the former adds an implicit x-axis that refers to the numbers of cycles, while the latter considers the first declaration of data to be its x-axis.")),
+								value = "the kind of chart. To choose among histogram, scatter, series, xy, pie, radar, heatmap or box_whisker. The difference between series and xy is that the former adds an implicit x-axis that refers to the numbers of cycles, while the latter considers the first declaration of data to be its x-axis. Legacy `type:` is accepted with a deprecation warning.")),
 
 				@facet (
 						name = IKeyword.STYLE,
@@ -363,7 +354,7 @@ import gama.core.outputs.layers.LayerData;
 						value = "display chart_display {",
 						isExecutable = false),
 						@example (
-								value = "   chart \"chart name\" type: series [additional options] {",
+								value = "   chart \"chart name\" kind: series [additional options] {",
 								isExecutable = false),
 						@example (
 								value = "      [Set of data, datalists statements]",
@@ -377,7 +368,7 @@ import gama.core.outputs.layers.LayerData;
 				@usage (
 						value = "The body of a chart is re-evaluated at every step, so data can be declared conditionally, in loops, or with dynamic legends. In the following series chart, 'Instant' appears at cycle 2 and the series 'Even cycles' is frozen during odd cycles:",
 						examples = { @example (
-								value = "chart \"dynamic\" type: series {",
+								value = "chart \"dynamic\" kind: series {",
 								isExecutable = false),
 								@example (
 										value = "   if (cycle > 1) { data \"Instant\" value: cycle; }",
@@ -600,7 +591,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			quality = value;
 		}
 
-		IExpression expression = getFacet(IKeyword.KIND, IKeyword.TYPE);
+		IExpression expression = getFacet(IKeyword.KIND);
 
 		chartOutput = ChartOutputFactory.createChartOutput(scope, getName(), expression);
 		chartOutput.setHostDisplayOutput(getDisplayOutput());

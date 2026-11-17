@@ -34,6 +34,8 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
+import gama.api.types.file.GamaFolderFile;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.workspace.WorkspaceActivator;
@@ -126,6 +128,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	@Override
 	public void isRememberWorkspace(final boolean remember) {
 		GAMA.getPreferenceStore().putInStore(KEY_WORKSPACE_REMEMBER, remember);
+		GamaPreferences.Interface.CORE_WORKSPACE_REMEMBER.set(remember);
 	}
 
 	/**
@@ -169,6 +172,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	@Override
 	public void setLastSetWorkspaceDirectory(final String last) {
 		GAMA.getPreferenceStore().putInStore(KEY_WORSPACE_PATH, last);
+		GamaPreferences.Interface.CORE_WORKSPACE_PATH.setValue(null, new GamaFolderFile(null, last, false));
 	}
 
 	/**

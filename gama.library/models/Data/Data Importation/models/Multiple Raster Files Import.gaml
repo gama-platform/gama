@@ -46,9 +46,9 @@ grid cell files: [dem_file,land_cover_file] {
 	int land_use;
 }
 
-experiment importationraster type: gui {
+experiment importationraster mode: gui {
 	output {
-		display map type: 3d axes:false antialias:false{
+		display map renderer: 3d axes:false antialias:false{
 			grid cell elevation: true  triangulation: true refresh: false;	
 		}
 	}

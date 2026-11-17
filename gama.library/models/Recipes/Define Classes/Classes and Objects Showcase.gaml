@@ -455,18 +455,18 @@ experiment base_params virtual: true {
  * Displays the painter agents and a live chart of shape statistics.
  * Inherits the "Number of painters" parameter from {@code base_params}.
  */
-experiment "Classes and Objects" type: gui parent: base_params {
+experiment "Classes and Objects" mode: gui parent: base_params {
 
 	float minimum_cycle_duration <- 0.05;
 
 	output {
 		layout #split;
 
-		display "Painters" type: 2d antialias: true background: #black {
+		display "Painters" renderer: 2d antialias: true background: #black {
 			species painter;
 		}
 
-		display "Shape statistics" type: 3d {
+		display "Shape statistics" renderer: 3d {
 			chart "Shape stats per cycle" kind: series background: #white {
 				data "Total shapes held"
 					value: painter sum_of length(each.my_shapes)
@@ -489,7 +489,7 @@ experiment "Classes and Objects" type: gui parent: base_params {
  * showcasing calls to actions on objects stored inside agents.
  * Inherits the "Number of painters" parameter from {@code base_params}.
  */
-experiment "Object diagnostics" type: gui parent: base_params {
+experiment "Object diagnostics" mode: gui parent: base_params {
 
 	float minimum_cycle_duration <- 0.2;
 
@@ -500,7 +500,7 @@ experiment "Object diagnostics" type: gui parent: base_params {
 	 */
 	reflex diagnose when: (cycle mod 10) = 0 and cycle > 0 {
 		write "═══ Cycle " + cycle + " ══════════════════════════════════════";
-		ask painter {
+		ask simulation.painter {
 			write "  " + name
 				+ "  shapes=" + length(my_shapes)
 				+ "  circles=" + count_circles()
@@ -510,7 +510,7 @@ experiment "Object diagnostics" type: gui parent: base_params {
 	}
 
 	output {
-		display "Painters" type: 2d antialias: true background: #black {
+		display "Painters" renderer: 2d antialias: true background: #black {
 			species painter;
 		}
 	}

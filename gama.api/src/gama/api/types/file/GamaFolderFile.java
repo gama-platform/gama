@@ -189,6 +189,18 @@ public class GamaFolderFile extends GamaFile<IList<String>, String> {
 	}
 
 	@Override
+	public boolean equals(final Object o) {
+		if (this == o) return true;
+		if (!(o instanceof GamaFolderFile other)) return false;
+		return java.util.Objects.equals(localPath, other.localPath);
+	}
+
+	@Override
+	public int hashCode() {
+		return java.util.Objects.hashCode(localPath);
+	}
+
+	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		return IKeyword.FOLDER + "('" + /* StringUtils.toGamlString(getPath()) */getPath(null) + "')";
 	}

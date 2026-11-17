@@ -41,7 +41,7 @@ species building {
 	}
 }
 
-experiment ProjectionManagement type: gui {
+experiment ProjectionManagement mode: gui {
 	output {
 		display map map_order: true {
 			species building;

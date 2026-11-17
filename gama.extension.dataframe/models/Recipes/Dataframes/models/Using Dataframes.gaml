@@ -213,7 +213,7 @@ species looping_on_dataframes {
 	}
 }
 
-experiment Dataframes type: gui {
+experiment Dataframes mode: gui {
 	category "User commands" expanded:true;
 	user_command "Declaring dataframes"            category:"User commands" {create declaring_dataframes;} 
 	user_command "Accessing dataframe elements"    category:"User commands" {create accessing_dataframe_elements;}

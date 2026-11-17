@@ -13,7 +13,7 @@ global
 {
 }
 
-experiment Simple type: gui
+experiment Simple mode: gui actions_context: simulation
 {
 	list<Fly> get_flies(){
 		return list(Fly);

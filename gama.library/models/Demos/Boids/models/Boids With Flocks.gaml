@@ -205,7 +205,7 @@ species boids_in_flock_viewer {
 }
 
 
-experiment boids_flocks type: gui {
+experiment boids_flocks mode: gui {
 	parameter "Create flock?" var: create_flocks <- true;
 	parameter "Number of boids" var: number_of_agents <- 300;
 	parameter "Environment size" var: width_and_height_of_environment <- 1600;

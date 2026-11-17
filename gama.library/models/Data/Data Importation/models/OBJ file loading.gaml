@@ -30,9 +30,9 @@ species objects {
 			
 }	
 
-experiment Display  type: gui {
+experiment Display  mode: gui {
 	output {
-		display complex  background:#gray type: 3d{
+		display complex  background:#gray renderer: 3d{
 		  species objects;				
 		}
 	}

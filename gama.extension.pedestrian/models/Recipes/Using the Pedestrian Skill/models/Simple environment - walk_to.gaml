@@ -169,7 +169,7 @@ species obstacle {
 		draw shape color: #gray border: #black;
 	}
 }
-experiment big_crowd type: gui {
+experiment big_crowd mode: gui {
 	
 	parameter var:display_force;
 	parameter var:display_circle_min_dist;
@@ -209,7 +209,7 @@ experiment big_crowd type: gui {
 	}
 }
 
-experiment frontal_crossing type: gui {
+experiment frontal_crossing mode: gui {
 	float minimum_cycle_duration <- 0.02;
 	action _init_() {
 		create simulation (scenario : "frontal crossing", nb_people:100);
@@ -225,7 +225,7 @@ experiment frontal_crossing type: gui {
 		}
 	}
 }
-experiment perpendicular_crossing type: gui {
+experiment perpendicular_crossing mode: gui {
 	float minimum_cycle_duration <- 0.02;
 	action _init_() {
 		create simulation (scenario : "perpendicular crossing", nb_people:100);

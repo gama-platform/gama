@@ -5,5 +5,5 @@
 * Tags: comodel, experiment
 */
 
-experiment plantcomodel model:'../SubModel/Plant Growth.gaml' type:gui {
+experiment plantcomodel model:'../SubModel/Plant Growth.gaml' mode:gui {
 }

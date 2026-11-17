@@ -352,7 +352,7 @@ global {
 /**
  * Minimal GUI experiment — all output goes to the console.
  */
-experiment "Inheritance" type: gui {
+experiment "Inheritance" mode: gui {
 	output {
 		// No display needed; all output goes to the console via write
 	}

@@ -279,7 +279,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			if (exp.getOutputs() != null) {
 				final List<String> outputVals = exp.getLitteralOutputs();
 				for (String s : outputVals) {
-					Object v = sim.hasAttribute(s) ? sim.getDirectVarValue(getScope(), s) : null;
+					Object v = sim.hasAttribute(s) ? sim.getDirectVarValue(sim.getScope(), s) : null;
 					trackedValues.put(s, v);
 					out.put(s, v);
 				}

@@ -147,7 +147,7 @@ public class FuzzTestGenerator {
 		VALUES.put("IPair", new Values("1::2", List.of("nil::nil"), "nil_pair"));
 		VALUES.put("IColor", COLORS);
 		VALUES.put("GamaColor", COLORS);
-		VALUES.put("IAgent", new Values("world", List.of(), "nil_agent"));
+		VALUES.put("IAgent", new Values("simulation", List.of(), "nil_agent"));
 		VALUES.put("Object", new Values("1", List.of("\"a\"", "[]", "{0, 0}"), "nil_value"));
 		VALUES.put("IFont", FONTS);
 		VALUES.put("GamaFont", FONTS);
@@ -165,7 +165,7 @@ public class FuzzTestGenerator {
 		LISTS.put("Double", "[1.0, 2.0, 3.0]");
 		LISTS.put("Integer", "[1, 2, 3]");
 		LISTS.put("String", "[\"a\", \"b\"]");
-		LISTS.put("IAgent", "[world]");
+		LISTS.put("IAgent", "[simulation]");
 		LISTS.put("IList", "[[1, 2], [3, 4]]");
 		LISTS.put("IColor", "[#red, #blue]");
 	}
@@ -194,7 +194,7 @@ public class FuzzTestGenerator {
 			"-#infinity", "true", "\"\"", "\"abc\"", "\"12\"", "\"2026-01-01\"", "\"#FF0000\"", "{1, 2}", "{#nan, 0}",
 			"#red", "date(\"2026-01-01T00:00:00\")", "[]", "[1, 2, 3]", "[[1, 2], [3]]", "[\"a\"::1]", "map([])",
 			"matrix([[1, 2], [3, 4]])", "matrix([])", "square(10) at_location {5, 5}", "polygon([])", "1::2",
-			"graph([])", "world", "nil_value");
+			"graph([])", "simulation", "nil_value");
 
 	/** The attributes of the generated experiments: typed nil values, to pass nil to an operand of a given type. */
 	private static final String[] NIL_ATTRIBUTES = { "geometry nil_geometry <- nil;", "point nil_point <- nil;",
@@ -283,7 +283,9 @@ public class FuzzTestGenerator {
 	 */
 	private void collectOperator(final ProcessorContext context, final Element e) {
 		final operator op = e.getAnnotation(operator.class);
-		if (op == null || op.internal() || op.iterator() || isExcluded(e) || !(e instanceof final ExecutableElement method)) return;
+		if (op == null || op.internal() || op.iterator() || isExcluded(e)
+				|| !(e instanceof final ExecutableElement method))
+			return;
 		// The operands: the instance on which the method is called, if any, then the parameters but the scope
 		final List<TypeMirror> operands = new ArrayList<>();
 		if (!method.getModifiers().contains(Modifier.STATIC)) { operands.add(method.getEnclosingElement().asType()); }

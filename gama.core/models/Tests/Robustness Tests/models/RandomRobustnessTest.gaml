@@ -6,7 +6,7 @@
 * Tags: robustness, random, distribution, test
 */
 
-experiment RandomRobustnessTest type: test autorun: true {
+experiment RandomRobustnessTest mode: test autorun: true {
 
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");

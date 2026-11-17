@@ -15,7 +15,7 @@ global
 {
 }
 
-experiment "Different series" type: gui
+experiment "Different series" mode: gui
 {
 	
 	
@@ -24,7 +24,7 @@ experiment "Different series" type: gui
 	output synchronized: true
 	{
 		layout #split toolbars: false;
-		display "data_cumulative_serie_spline_chart" type: 3d
+		display "data_cumulative_serie_spline_chart" renderer: 3d
 		{
 			chart "Nice cumulative series chart" kind: series background: # darkblue color: # lightgreen axes: # lightgreen title_font: font( 'Serif' , 32.0, #italic)
 			 tick_font: font('Monospaced' , 14 #bold) label_font: font('Serif', 18 #plain) legend_font: font('SanSerif', 18 #bold) x_range: 50 x_tick_unit: 5 x_serie_labels: ("T+" + cycle) x_label: 'Nice Xlabel' y_label: 'Nice Ylabel'
@@ -36,7 +36,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "style_cumulative_style_chart" type: 3d
+		display "style_cumulative_style_chart" renderer: 3d
 		{
 			chart "Style Cumulative chart" kind: series
 			{
@@ -47,7 +47,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "style_cumulative_style_chart_without_axes" type: 3d
+		display "style_cumulative_style_chart_without_axes" renderer: 3d
 		{
 			chart "Style Cumulative chart Without axes" kind: series 
 				y_tick_values_visible: false y_tick_line_visible: false x_tick_values_visible: false x_tick_line_visible: false
@@ -59,7 +59,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "datalist_xy_chart" type: 3d
+		display "datalist_xy_chart" renderer: 3d
 		{
 			chart "datalist_xy_cumulative_chart" kind: xy
 			{
@@ -71,7 +71,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "datalist_xy_line_chart" type: 3d
+		display "datalist_xy_line_chart" renderer: 3d
 		{
 			chart "datalist_xy_cumulative_chart" kind: xy
 			{
@@ -82,7 +82,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "datalist_xy_non_cumulative_chart" type: 3d
+		display "datalist_xy_non_cumulative_chart" renderer: 3d
 		{
 			chart "datalist_xy_non_cumulative_chart" kind: xy
 			{
@@ -95,7 +95,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "data_cumulative_serie_chart" type: 3d
+		display "data_cumulative_serie_chart" renderer: 3d
 		{
 			chart "data_cumulative_serie_chart" kind: series x_serie_labels: (cycle * cycle)
 			{
@@ -107,7 +107,7 @@ experiment "Different series" type: gui
 
 		}
 
-		display "my_data_cumulative_xy" type: 3d
+		display "my_data_cumulative_xy" renderer: 3d
 		{
 			chart "my_data_cumulative_xy" kind: xy
 			{
@@ -118,14 +118,14 @@ experiment "Different series" type: gui
 
 		}
 		
-		display "double axes"  type: 3d {
+		display "double axes"  renderer: 3d {
 			chart "double Y axes" y_label: "axis 1" y2_label: "axis 2" y_range: {-1,1} y2_range: {0,1000} y2_log_scale: true {
 				data "cos" value: cos(100 * cycle) color: #red;
 				data "cycle" value: cycle color: #green use_second_y_axis: true;
 			}
 		}
 
-		display "double axes y2 tick values hidden" type: 3d {
+		display "double axes y2 tick values hidden" renderer: 3d {
 			chart "double Y axes (y2 ticks hidden)" y_label: "axis 1" y2_label: "axis 2" y2_tick_values_visible: false {
 				data "cos" value: cos(100 * cycle) color: #red;
 				data "cycle" value: cycle color: #green use_second_y_axis: true;

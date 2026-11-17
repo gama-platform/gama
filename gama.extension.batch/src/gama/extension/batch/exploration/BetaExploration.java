@@ -81,9 +81,10 @@ import gama.core.experiment.parameters.ParametersSet;
 								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IExploration.MORRIS)),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
+						context = facet.Context.MODEL,
 						type = IType.LIST,
 						optional = false,
-						doc = @doc ("The list of output variables to analyse")),
+						doc = @doc ("The list of output variables to analyse. Names refer to variables of each completed simulation")),
 				@facet (
 						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
@@ -106,7 +107,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						doc = @doc ("The path to the file where the Betad report will be written")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm runs an exploration with a given SAMPLING to compute BetadKu - see doi: 10.1007/s10588-021-09358-5",
+		value = "This algorithm runs an exploration with a given SAMPLING to compute BetadKu - see doi: 10.1007/s10588-021-09358-5 Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (

@@ -47,9 +47,10 @@ global torus: true{
 }
 
 experiment "Show" {
-	list<rgb> palette <- brewer_colors(any(brewer_palettes(0)));
+
 	output {
-		display Field type: 3d {
+		list<rgb> palette <- brewer_colors(any(brewer_palettes(0)));
+		display Field renderer: 3d {
 			mesh terrain color: palette triangulation: true smooth: 4;
 		}
 

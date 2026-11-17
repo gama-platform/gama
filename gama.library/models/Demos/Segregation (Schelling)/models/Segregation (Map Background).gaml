@@ -81,13 +81,13 @@ species people parent: base  {
 }
 
 
-experiment schelling type: gui parent:base_exp{
+experiment schelling mode: gui parent:base_exp{
 	
 		
 	 parameter "Name of image file to load:" var:bitmap_file_name category: "Environment";
 	
 	output {
-		display Segregation type: 2d background: backdrop {
+		display Segregation renderer: 2d background: backdrop {
 			picture bitmap_file_name.path ;
 			graphics map_tint {
 				draw shape color: rgb(backdrop, 0.35);
@@ -101,7 +101,7 @@ experiment schelling type: gui parent:base_exp{
 					at: {12#px, 72#px} color: happy_color font: font("Helvetica", 11);
 			}
 		}	
-		display Charts type: 3d background: backdrop {
+		display Charts renderer: 3d background: backdrop {
 			chart "Resident satisfaction" coordinates: #screen kind: pie background: backdrop color: lettering
 				label_background_color: backdrop label_text_color: lettering style: ring position: {0,0} size: {#display_width,0.5} {
 				data "Unhappy" value: number_of_people - sum_happy_people color: unhappy_color;

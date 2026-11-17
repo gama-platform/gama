@@ -38,30 +38,30 @@ species LV_model {
 	}
 }
 
-experiment Displays type: gui {
+experiment Displays mode: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	output {
 		layout #split tabs: true;
-		display D1 toolbar: false type: 2d {
+		display D1 toolbar: false renderer: 2d {
 			chart 'Time series' kind: series background: rgb(47,47,47) color: #white y_label:"pop" x_tick_line_visible: false{
 				data "x" value: first(LV_model).x color: rgb(52,152,219);
 				data "y" value: first(LV_model).y color: rgb(41,128,185);
 			}
 		}
-		display D2 toolbar: false type: 2d {
+		display D2 toolbar: false renderer: 2d {
 			chart 'Time series - continuous display' kind: series background:  rgb(47,47,47) color: #white y_label:"pop" x_tick_line_visible: false{
 		//	chart 'Time series - continuous display' kind: series x_serie: first(LV_model).t[] background: #white y_label:"pop"{
 				data "x" value: first(LV_model).x[] color: rgb(52,152,219) marker: false;
 				data "y" value: first(LV_model).y[] color: rgb(41,128,185) marker: false;
 			}
 		}
-		display D3 title: "Phase Portrait " toolbar: false  type: 2d {
+		display D3 title: "Phase Portrait " toolbar: false  renderer: 2d {
 			chart 'Phase Portrait' kind: xy background:  rgb(47,47,47) color: #white x_label: "x" y_label:"y"{
 				// Continuous display requires to pass a list of two values x and y
 				data "y(x(t))" value: [first(LV_model).x,first(LV_model).y] color: rgb(243,156,18);
 			}
 		}
-		display D4 title: "Phase Portrait - continuous display" toolbar: false type: 2d {
+		display D4 title: "Phase Portrait - continuous display" toolbar: false renderer: 2d {
 			chart 'Phase Portrait - continuous display' kind: xy background:  rgb(47,47,47) color: #white x_label: "x" y_label:"y"{
 				// Continuous display requires to pass a list of two values x and y
 				data "y(x(t))" value: rows_list(matrix(first(LV_model).x[],first(LV_model).y[])) color: rgb(243,156,18) marker: false;

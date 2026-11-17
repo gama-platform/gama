@@ -4,7 +4,7 @@
 * Tags: statistics, robustness, test
 */
 
-experiment HSICRobustnessTest type: test autorun: true {
+experiment HSICRobustnessTest mode: test autorun: true {
 
 	bool handled(string problem) {
 		return problem != nil and !(problem contains "Java error");

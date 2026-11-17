@@ -37,4 +37,4 @@ global {
 	}
 }
 
-experiment test_operators type: gui;
+experiment test_operators mode: gui;

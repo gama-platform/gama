@@ -5,14 +5,10 @@
 * Tags: comodel, experiment
 */
 
-experiment citycomodel model: '../../../Procedural City/models/Procedural City.gaml' type:gui {
+experiment citycomodel model: '../../../Procedural City/models/Procedural City.gaml' mode:gui actions_context: simulation {
 	Building get_building_at (geometry p)
 	{
-		ask simulation
-		{
-			return Building closest_to p;
-		}
-
+		return Building closest_to p;
 	}
 	
 	list<Building> get_building (){

@@ -12,7 +12,9 @@ package gama.core.outputs;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.Iterables;
@@ -101,10 +103,10 @@ import gama.dev.DEBUG;
 						doc = @doc ("the title of the display, which will be shown in the UI. If not specified, the identifier of the display will be used")),
 				// WARNING VALIDER EN VERIFIANT LE TYPE DU DISPLAY
 				@facet (
-						name = IKeyword.TYPE,
+						name = IKeyword.RENDERER,
 						type = IType.ID,
 						optional = true,
-						doc = @doc ("Allows to use either Java2D (for planar models) or OpenGL (for 3D models) as the rendering subsystem")),
+						doc = @doc ("Selects the rendering subsystem, e.g. Java2D for planar models or OpenGL for 3D models. Defaults to the renderer configured in preferences. Legacy `type:` is accepted with a deprecation warning.")),
 				@facet (
 						name = "antialias",
 						type = IType.BOOL,
@@ -211,7 +213,10 @@ import gama.dev.DEBUG;
 @validator (DisplayValidator.class)
 @serializer (DisplaySerializer.class)
 @doc (
-		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts.",
+		value = "A display refers to an independent and mobile part of the interface that can display species, images, texts or charts. "
+				+ "Declare persistent presentation variables in the enclosing output or permanent block, not directly inside the display. "
+				+ "These locals are available in display facets, layers and inline handlers, including remote callbacks. "
+				+ "Ordinary temporary declarations inside graphics blocks and event handlers retain their execution lifetime.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = @example (
@@ -220,7 +225,7 @@ import gama.dev.DEBUG;
 				@usage (
 						value = "Each display can include different layers (like in a GIS).",
 						examples = { @example (
-								value = "display gridWithElevationTriangulated type: opengl {",
+								value = "display gridWithElevationTriangulated renderer: opengl {",
 								isExecutable = false),
 								@example (
 										value = "	grid cell elevation: true triangulation: true;",
@@ -273,8 +278,8 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		public void collectMetaInformationInFacetValue(final IDescription desc, final String key,
 				final GamlProperties plugins) {
 			ISymbolSerializer.super.collectMetaInformationInFacetValue(desc, key, plugins);
-			if (TYPE.equals(key)) {
-				final IExpressionDescription exp = desc.getFacet(TYPE);
+			if (RENDERER.equals(key)) {
+				final IExpressionDescription exp = desc.getFacet(RENDERER);
 				if (exp.getExpression() != null) {
 					final String type = exp.getExpression().literalValue();
 					final IDisplayCreator dd = gama.api.GAMA.getGui().getDisplayDescriptionFor(type);
@@ -298,7 +303,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		@Override
 		public void validate(final IDescription d) {
 
-			handleInheritance(d);
+			if (!handleInheritance(d, new HashSet<>())) return;
 
 			IExpressionDescription name = d.getFacet(NAME);
 			IExpressionDescription title = d.getFacet(TITLE);
@@ -310,12 +315,12 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 						IGamlIssue.GENERAL, auto.getTarget(), AUTOSAVE);
 			}
 			// Are we in OpenGL world ?
-			IExpressionDescription type = d.getFacet(TYPE);
+			IExpressionDescription type = d.getFacet(RENDERER);
 			final boolean isOpenGLDefault = !GamaPreferences.Displays.CORE_DISPLAY.getValue();
 			if (type == null) {
 				type = GAML.getExpressionDescriptionFactory()
 						.createConstant(isOpenGLDefault ? IKeyword._3D : IKeyword._2D);
-				d.setFacetExprDescription(TYPE, type);
+				d.setFacetExprDescription(RENDERER, type);
 			}
 			String cand = "";
 			// Addresses and fixes Issue 833.
@@ -328,9 +333,9 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 						s + " is not a valid display type. Valid types are:"
 								+ GamaAdditionRegistry.getDisplays().keySet()
 								+ ". Gama will fallback to first valid type (" + cand + ")",
-						IGamlIssue.UNKNOWN_KEYWORD, TYPE);
+						IGamlIssue.UNKNOWN_KEYWORD, RENDERER);
 
-				d.setFacet(TYPE, GAML.getExpressionFactory().createConst(cand, Types.STRING));
+				d.setFacet(RENDERER, GAML.getExpressionFactory().createConst(cand, Types.STRING));
 			}
 
 		}
@@ -338,15 +343,19 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		/**
 		 * @param d
 		 */
-		private void handleInheritance(final IDescription d) {
+		private boolean handleInheritance(final IDescription d, final Set<IDescription> ancestors) {
 			final IExpressionDescription parentExp = d.getFacet(PARENT);
-			if (parentExp == null) return;
+			if (parentExp == null) return true;
+			if (!ancestors.add(d)) {
+				d.error("Circular display inheritance.", IGamlIssue.WRONG_CONTEXT, PARENT);
+				return false;
+			}
 			if (!parentExp.getExpression().isConst()) {
 				d.error("The parent display name must be a constant");
-				return;
+				return false;
 			}
 			final String string = parentExp.getExpression().literalValue();
-			handleInheritance(d, string);
+			return handleInheritance(d, string, ancestors);
 		}
 
 		/**
@@ -357,16 +366,17 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		 * @param string
 		 *            the string
 		 */
-		private void handleInheritance(final IDescription d, final String string) {
+		private boolean handleInheritance(final IDescription d, final String string, final Set<IDescription> ancestors) {
 			final IDescription output = d.getEnclosingDescription();
 			for (final IDescription parentDisplay : output.getChildrenWithKeyword(DISPLAY)) {
 				if (parentDisplay.getName().equals(string)) {
-					handleInheritance(parentDisplay);
+					if (!handleInheritance(parentDisplay, ancestors)) return false;
 					handleInheritanceBetween(d, parentDisplay);
-					return;
+					return true;
 				}
 			}
 			d.error("No parent display named '" + string + "' found");
+			return false;
 		}
 
 		/**
@@ -397,7 +407,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 */
 	public LayeredDisplayOutput(final IDescription desc) {
 		super(desc);
-		if (hasFacet(IKeyword.TYPE)) { getData().setDisplayType(getLiteral(IKeyword.TYPE)); }
+		if (hasFacet(IKeyword.RENDERER)) { getData().setDisplayType(getLiteral(IKeyword.RENDERER)); }
 		layers = new CopyOnWriteArrayList<>();
 		cameras = new ArrayList<>();
 		lights = new ArrayList<>();
@@ -407,17 +417,18 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public boolean init(final IScope scope) throws GamaRuntimeException {
 		final boolean result = super.init(scope);
 		if (!result) return false;
+		final IScope displayScope = getScope();
 		if (rotation != null) {
 			getData().setRotation(rotation.getDefinition());
-			rotation.init(scope);
+			rotation.init(displayScope);
 		}
 		for (CameraStatement s : cameras) {
 			getData().addCameraDefinition(s.getDefinition());
-			s.init(scope);
+			s.init(displayScope);
 		}
 		for (LightStatement s : lights) {
 			getData().addLightDefinition(s.getDefinition());
-			s.init(scope);
+			s.init(displayScope);
 		}
 		getData().initWith(getScope(), description);
 
@@ -541,7 +552,9 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public IDisplaySurface getSurface() { return surface; }
 
 	@Override
-	public List<? extends ISymbol> getChildren() { return getLayers(); }
+	public List<? extends ISymbol> getChildren() {
+		return getLayers();
+	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {

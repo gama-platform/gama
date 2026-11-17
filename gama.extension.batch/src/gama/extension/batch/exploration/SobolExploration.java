@@ -71,9 +71,10 @@ import gama.extension.stats.sampling.Sobol;
 						doc = @doc ("The size of the sample for the sobol sequence")),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
+						context = facet.Context.MODEL,
 						type = IType.LIST,
 						optional = false,
-						doc = @doc ("The list of output variables to analyse through sobol indexes")),
+						doc = @doc ("The list of output variables to analyse through sobol indexes. Names refer to variables of each completed simulation")),
 				@facet (
 						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
@@ -91,7 +92,7 @@ import gama.extension.stats.sampling.Sobol;
 						doc = @doc ("The path to the saltelli sample csv file. If the file doesn't exist automatic Saltelli SAMPLING will be performed and saved in the corresponding location")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm runs a Sobol exploration - it has been built upon the moea framework at https://github.com/MOEAFramework/MOEAFramework - disabled the repeat facet of the experiment",
+		value = "This algorithm runs a Sobol exploration - it has been built upon the moea framework at https://github.com/MOEAFramework/MOEAFramework - disabled the repeat facet of the experiment Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (

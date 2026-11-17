@@ -7,12 +7,8 @@
 
 model SpeciesOperatorsTestModel
 
-species parent_species { }
-species child_species parent: parent_species { }
-species other_species { }
-
-experiment SpeciesOperatorsTest type: test autorun: true {
-	
+global {
+		
 	test "Species Filtering and of_species" {
 		create parent_species number: 2;
 		create child_species number: 3;
@@ -50,3 +46,9 @@ experiment SpeciesOperatorsTest type: test autorun: true {
 		assert (ag is other_species) = false;
 	}
 }
+
+species parent_species { }
+species child_species parent: parent_species { }
+species other_species { }
+
+experiment SpeciesOperatorsTest mode: test autorun: true;

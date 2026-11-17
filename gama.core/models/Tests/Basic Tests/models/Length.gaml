@@ -7,14 +7,16 @@
 
 model testLength
 
-grid cell width: 5 height: 5{
-	float grid_value <-1.0;
-}
-experiment length type: test {
-	
+global {
+		
 	test "length" {
 		assert length(cell)=25; 
 		assert length(cell where (each.grid_value=1.0))=25;
 	}
 	
 }
+
+grid cell width: 5 height: 5{
+	float grid_value <-1.0;
+}
+experiment length mode: test;

@@ -38,10 +38,10 @@ species market {
 	}
 }
 
-experiment GoldBdi type: gui {
+experiment GoldBdi mode: gui {
 
 	output {
-		display map type: 3d {
+		display map renderer: 3d {
 			species market ;
 			species gold_mine ;
 		}

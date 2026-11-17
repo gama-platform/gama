@@ -14,10 +14,26 @@ import static com.jogamp.common.nio.Buffers.newDirectDoubleBuffer;
 import static com.jogamp.opengl.GL.GL_LINE_LOOP;
 import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL.GL_TRIANGLE_STRIP;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_COMBINE;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_EDGE_FLAG;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_ERROR;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_VERTEX;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_WINDING_NONZERO;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_WINDING_ODD;
+import static com.jogamp.opengl.glu.GLU.GLU_TESS_WINDING_RULE;
+import static com.jogamp.opengl.glu.GLU.gluDeleteTess;
+import static com.jogamp.opengl.glu.GLU.gluNewTess;
+import static com.jogamp.opengl.glu.GLU.gluTessBeginContour;
+import static com.jogamp.opengl.glu.GLU.gluTessBeginPolygon;
+import static com.jogamp.opengl.glu.GLU.gluTessCallback;
+import static com.jogamp.opengl.glu.GLU.gluTessEndContour;
+import static com.jogamp.opengl.glu.GLU.gluTessEndPolygon;
+import static com.jogamp.opengl.glu.GLU.gluTessNormal;
+import static com.jogamp.opengl.glu.GLU.gluTessProperty;
+import static com.jogamp.opengl.glu.GLU.gluTessVertex;
 import static java.awt.geom.PathIterator.SEG_CLOSE;
 import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
-import static com.jogamp.opengl.glu.GLU.*;
 
 import java.awt.Font;
 import java.awt.Shape;
@@ -30,29 +46,30 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.DoubleBuffer;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
-import java.util.IdentityHashMap;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
-import com.jogamp.graph.curve.Region;
 import com.jogamp.graph.curve.OutlineShape;
+import com.jogamp.graph.curve.Region;
 import com.jogamp.graph.curve.opengl.RegionRenderer;
 import com.jogamp.graph.curve.opengl.TextRegionUtil;
 import com.jogamp.graph.font.FontFactory;
 import com.jogamp.math.Recti;
 import com.jogamp.math.Vec3f;
 import com.jogamp.math.Vec4f;
-import com.jogamp.math.util.PMVMatrix4f;
 import com.jogamp.math.geom.plane.Winding;
-import com.jogamp.opengl.GL2ES2;
+import com.jogamp.math.util.PMVMatrix4f;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
@@ -68,11 +85,11 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.TextDrawingAttributes;
-import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.renderer.helpers.PolygonOffset;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.text.StringObject;
+import gama.ui.display.opengl4.OpenGL;
 
 /**
  * The Class TextDrawer.
@@ -105,8 +122,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Draw curves directly into the scene's multisampled framebuffer. JOGL's two-pass mode composites
-	 * into the context's default framebuffer, not necessarily the display's active render target.
+	 * Draw curves directly into the scene's multisampled framebuffer. JOGL's two-pass mode composites into the
+	 * context's default framebuffer, not necessarily the display's active render target.
 	 */
 	private static final int RENDER_HINTS = Region.NORM_RENDERING_BIT;
 
@@ -116,28 +133,38 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 */
 	private RegionRenderer regionRenderer;
 
+	/** The Constant DIAGNOSTICS. */
 	public static final boolean DIAGNOSTICS = Boolean.getBoolean("gama.opengl4.debug.text");
 
+	/** The diagnostic draws. */
 	private int diagnosticDraws;
 
+	/**
+	 * Trace state.
+	 *
+	 * @param gl4
+	 *            the gl 4
+	 * @param stage
+	 *            the stage
+	 */
 	public static void traceState(final GL4 gl4, final String stage) {
 		final int[] state = new int[10];
 		gl4.glGetIntegerv(GL.GL_VIEWPORT, state, 0);
 		gl4.glGetIntegerv(GL.GL_DRAW_FRAMEBUFFER_BINDING, state, 4);
 		gl4.glGetIntegerv(GL.GL_READ_FRAMEBUFFER_BINDING, state, 5);
-		gl4.glGetIntegerv(GL4.GL_VERTEX_ARRAY_BINDING, state, 6);
+		gl4.glGetIntegerv(GL2ES3.GL_VERTEX_ARRAY_BINDING, state, 6);
 		gl4.glGetIntegerv(GL2ES2.GL_CURRENT_PROGRAM, state, 7);
 		gl4.glGetIntegerv(GL.GL_SAMPLES, state, 8);
 		gl4.glGetIntegerv(GL.GL_DEPTH_FUNC, state, 9);
 		DEBUG.ERR("[GL4-TEXT single-pass-20261104] context=" + gl4.getContext().hashCode() + " " + stage
 				+ " viewport/fboDraw/fboRead/vao/program/samples/depthFunc=" + Arrays.toString(state)
 				+ " framebufferStatus=0x" + Integer.toHexString(gl4.glCheckFramebufferStatus(GL.GL_DRAW_FRAMEBUFFER))
-				+ " depth=" + gl4.glIsEnabled(GL.GL_DEPTH_TEST) + " blend=" + gl4.glIsEnabled(GL.GL_BLEND)
-				+ " cull=" + gl4.glIsEnabled(GL.GL_CULL_FACE) + " scissor=" + gl4.glIsEnabled(GL.GL_SCISSOR_TEST));
+				+ " depth=" + gl4.glIsEnabled(GL.GL_DEPTH_TEST) + " blend=" + gl4.glIsEnabled(GL.GL_BLEND) + " cull="
+				+ gl4.glIsEnabled(GL.GL_CULL_FACE) + " scissor=" + gl4.glIsEnabled(GL.GL_SCISSOR_TEST));
 		// Reading errors consumes them; keep this temporary diagnostic bounded.
 		for (int i = 0; i < 8; i++) {
 			final int error = gl4.glGetError();
-			if (error == GL.GL_NO_ERROR) break;
+			if (error == GL.GL_NO_ERROR) { break; }
 			DEBUG.ERR("[GL4-TEXT] " + stage + " GL error=0x" + Integer.toHexString(error));
 		}
 	}
@@ -148,6 +175,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 */
 	private TextRegionUtil textUtil;
 
+	/** The text vertex array. */
 	private int textVertexArray;
 
 	/**
@@ -155,19 +183,30 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 */
 	private record FontKey(Font font, boolean overlay) {}
 
+	/** The font cache. */
 	private final Map<FontKey, com.jogamp.graph.font.Font> fontCache = new HashMap<>();
+
+	/** The normalized glyphs. */
 	private final Set<OutlineShape> normalizedGlyphs = Collections.newSetFromMap(new IdentityHashMap<>());
 
+	/**
+	 * Normalize glyphs.
+	 *
+	 * @param font
+	 *            the font
+	 * @param text
+	 *            the text
+	 */
 	private void normalizeGlyphs(final com.jogamp.graph.font.Font font, final String text) {
 		for (int i = 0; i < text.length(); i++) {
 			final OutlineShape shape = font.getGlyph(text.charAt(i)).getShape();
-			if (shape == null || !normalizedGlyphs.add(shape) || shape.getOutlineCount() == 0) continue;
+			if (shape == null || !normalizedGlyphs.add(shape) || shape.getOutlineCount() == 0) { continue; }
 			var outer = shape.getOutline(0);
 			for (int contour = 1; contour < shape.getOutlineCount(); contour++) {
 				if (shape.getOutline(contour).compareTo(outer) > 0) { outer = shape.getOutline(contour); }
 			}
 			// JOGL assumes CCW outer contours. Some fonts reverse every contour within particular glyphs.
-			if (outer.getWinding() != Winding.CW) continue;
+			if (outer.getWinding() != Winding.CW) { continue; }
 			for (int contour = 0; contour < shape.getOutlineCount(); contour++) {
 				final var outline = shape.getOutline(contour);
 				outline.setWinding(outline.getWinding() == Winding.CW ? Winding.CCW : Winding.CW);
@@ -192,8 +231,10 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	/** Y coordinate of the previous contour vertex. */
 	double previousY = Double.NaN;
 
+	/** The contour start normal pos. */
 	private int contourStartNormalPos = -1;
 
+	/** The tessellator. */
 	private final GLUtessellator tessellator = gluNewTess();
 
 	/** Current contour-index pointer into {@link #indices}. */
@@ -265,19 +306,56 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	/** Extrusion depth of the current string (0 = flat). */
 	double depth;
 
+	/**
+	 * The Record OutlineKey.
+	 *
+	 * @param font
+	 *            the font
+	 * @param text
+	 *            the text
+	 * @param precision
+	 *            the precision
+	 * @param depth
+	 *            the depth
+	 * @param wireframe
+	 *            the wireframe
+	 */
 	private record OutlineKey(Font font, String text, double precision, double depth, boolean wireframe) {}
 
+	/**
+	 * The Record OutlineGeometry.
+	 *
+	 * @param bounds
+	 *            the bounds
+	 * @param faces
+	 *            the faces
+	 * @param textures
+	 *            the textures
+	 * @param normals
+	 *            the normals
+	 * @param sides
+	 *            the sides
+	 * @param contours
+	 *            the contours
+	 */
 	private record OutlineGeometry(Rectangle2D bounds, double[] faces, double[] textures, double[] normals,
 			double[] sides, int[] contours) {
+
+		/**
+		 * Weight.
+		 *
+		 * @return the int
+		 */
 		int weight() {
 			return 256 + Double.BYTES * (faces.length + textures.length + normals.length + sides.length)
 					+ Integer.BYTES * contours.length;
 		}
 	}
 
-	private final Cache<OutlineKey, OutlineGeometry> outlines = CacheBuilder.newBuilder()
-			.maximumWeight(16 * 1024 * 1024)
-			.weigher((OutlineKey key, OutlineGeometry geometry) -> geometry.weight()).build();
+	/** The outlines. */
+	private final Cache<OutlineKey, OutlineGeometry> outlines =
+			CacheBuilder.newBuilder().maximumWeight(16 * 1024 * 1024)
+					.weigher((final OutlineKey key, final OutlineGeometry geometry) -> geometry.weight()).build();
 
 	// -------------------------------------------------------------------------
 	// Constructor
@@ -331,16 +409,15 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 *
 	 * <p>
 	 * {@code FontLoader} walks the platform-specific system font directories to find TTF/OTF files that match a
-	 * requested font family and style. The search is purely file-system based: candidate files are matched by
-	 * comparing the lower-cased file name against the family name (spaces stripped) and the expected bold/italic
-	 * style suffix.
+	 * requested font family and style. The search is purely file-system based: candidate files are matched by comparing
+	 * the lower-cased file name against the family name (spaces stripped) and the expected bold/italic style suffix.
 	 * </p>
 	 *
 	 * <h3>Style suffix conventions</h3>
 	 * <p>
 	 * Font files commonly embed their style in the file name using one of several conventions, e.g.:
-	 * {@code Arial-Bold.ttf}, {@code ArialBold.ttf}, {@code Arial_Bold.ttf}. The search tries the most common
-	 * suffixes in order and falls back to the plain family name file when no styled variant is found.
+	 * {@code Arial-Bold.ttf}, {@code ArialBold.ttf}, {@code Arial_Bold.ttf}. The search tries the most common suffixes
+	 * in order and falls back to the plain family name file when no styled variant is found.
 	 * </p>
 	 *
 	 * <h3>Platform font directories</h3>
@@ -435,8 +512,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		 *            whether to include italic markers
 		 * @return ordered list of candidate stems, never {@code null}
 		 */
-		private static List<String> buildCandidateStems(final String family, final boolean bold,
-				final boolean italic) {
+		private static List<String> buildCandidateStems(final String family, final boolean bold, final boolean italic) {
 			final String base = family.toLowerCase(java.util.Locale.ROOT);
 			final String baseNoSpace = base.replace(" ", "");
 			final List<String> stems = new ArrayList<>();
@@ -623,16 +699,16 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 */
 	private static boolean isDefaultFamilyName(final String family) {
 		final String lower = family.toLowerCase(java.util.Locale.ROOT);
-		return lower.equals("default") || lower.startsWith("jetbrainsmononl") || lower.startsWith("poppins");
+		return "default".equals(lower) || lower.startsWith("jetbrainsmononl") || lower.startsWith("poppins");
 	}
 
 	/**
 	 * Loads the appropriate bundled default font from the plugin's {@code fonts/} resource folder.
 	 *
 	 * <p>
-	 * For overlay (screen-space) rendering the base family is <em>JetBrainsMonoNL</em>; for world-space rendering it
-	 * is <em>Poppins</em>. The correct variant file ({@code Regular}, {@code Bold}, {@code Italic}, or
-	 * {@code BoldItalic}) is selected from the bold/italic flags.
+	 * For overlay (screen-space) rendering the base family is <em>JetBrainsMonoNL</em>; for world-space rendering it is
+	 * <em>Poppins</em>. The correct variant file ({@code Regular}, {@code Bold}, {@code Italic}, or {@code BoldItalic})
+	 * is selected from the bold/italic flags.
 	 * </p>
 	 *
 	 * @param overlay
@@ -739,6 +815,18 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		drawWithGraphLibrary(text, attributes, overlay, false);
 	}
 
+	/**
+	 * Draw with graph library.
+	 *
+	 * @param text
+	 *            the text
+	 * @param attributes
+	 *            the attributes
+	 * @param overlay
+	 *            the overlay
+	 * @param viewportPosition
+	 *            the viewport position
+	 */
 	private void drawWithGraphLibrary(final String text, final IDrawingAttributes attributes, final boolean overlay,
 			final boolean viewportPosition) {
 		try {
@@ -749,16 +837,27 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		}
 	}
 
+	/**
+	 * Draw graph text.
+	 *
+	 * @param text
+	 *            the text
+	 * @param attributes
+	 *            the attributes
+	 * @param overlay
+	 *            the overlay
+	 * @param viewportPosition
+	 *            the viewport position
+	 */
 	private void drawGraphText(final String text, final IDrawingAttributes attributes, final boolean overlay,
 			final boolean viewportPosition) {
 		final com.jogamp.opengl.GL4 gl4 = gl.getGL();
 		final boolean diagnose = DIAGNOSTICS && diagnosticDraws++ < 12;
 		if (diagnose) {
 			traceState(gl4, "graph entry");
-			DEBUG.ERR("[GL4-TEXT] textLength=" + text.length() + " billboard=" + overlay
-					+ " viewportPosition=" + viewportPosition + " location=" + attributes.getLocation()
-					+ " anchor=" + attributes.getAnchor() + " font=" + attributes.getFont()
-					+ " view=" + gl.getViewWidth() + "x" + gl.getViewHeight()
+			DEBUG.ERR("[GL4-TEXT] textLength=" + text.length() + " billboard=" + overlay + " viewportPosition="
+					+ viewportPosition + " location=" + attributes.getLocation() + " anchor=" + attributes.getAnchor()
+					+ " font=" + attributes.getFont() + " view=" + gl.getViewWidth() + "x" + gl.getViewHeight()
 					+ " pixel/model ratio=" + gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
 		}
 		if (diagnose) { DEBUG.ERR("[GL4-TEXT] preparing region renderer"); }
@@ -789,14 +888,11 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		final IPoint p = attributes.getLocation();
 		final IPoint anchor = attributes.getAnchor();
 
-		final float scale = overlay ? 1f
-				: 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
+		final float scale = overlay ? 1f : 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 		final float pixelSize = awtFont.getSize2D() * scale;
 
 		final int[] viewport = gl.getViewport();
-		if (diagnose) {
-			DEBUG.ERR("[GL4-TEXT] preparing matrices: cached viewport=" + Arrays.toString(viewport));
-		}
+		if (diagnose) { DEBUG.ERR("[GL4-TEXT] preparing matrices: cached viewport=" + Arrays.toString(viewport)); }
 		rr.reshapeNotify(viewport[0], viewport[1], viewport[2], viewport[3]);
 		final PMVMatrix4f pmv = rr.getMatrix();
 		final float[] projection = new float[16];
@@ -809,8 +905,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final Vec3f position = new Vec3f((float) p.getX(), (float) p.getY(), (float) p.getZ());
 			if (!viewportPosition) {
 				// Billboard text still needs the containing layer and camera to locate its anchor.
-				if (!pmv.mapObjToWin(position, new Recti(0, 0, (int) gl.getViewWidth(),
-						(int) gl.getViewHeight()), position)) {
+				if (!pmv.mapObjToWin(position, new Recti(0, 0, gl.getViewWidth(), gl.getViewHeight()), position)) {
 					if (diagnose) { DEBUG.ERR("[GL4-TEXT] graph skipped: anchor projection failed"); }
 					return;
 				}
@@ -827,8 +922,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
 			final IPoint axis = rotation.getAxis();
-			pmv.rotateMv((float) Math.toRadians(-rotation.getAngle()), (float) axis.getX(),
-					(float) axis.getY(), (float) axis.getZ());
+			pmv.rotateMv((float) Math.toRadians(-rotation.getAngle()), (float) axis.getX(), (float) axis.getY(),
+					(float) axis.getZ());
 		}
 		pmv.scaleMv(pixelSize, pixelSize, pixelSize);
 		final var bounds = joglFont.getGlyphBounds(text);
@@ -843,7 +938,7 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			for (int corner = 0; corner < 4; corner++) {
 				final Vec3f point = new Vec3f((corner & 1) == 0 ? bounds.getMinX() : bounds.getMaxX(),
 						(corner & 2) == 0 ? bounds.getMinY() : bounds.getMaxY(), 0);
-				if (!pmv.mapObjToWin(point, view, position) || position.z() < 0 || position.z() > 1) continue;
+				if (!pmv.mapObjToWin(point, view, position) || position.z() < 0 || position.z() > 1) { continue; }
 				final double x = position.x(), y = gl.getViewHeight() - position.y();
 				if (first) {
 					screenBounds.setRect(x, y, 0, 0);
@@ -858,17 +953,17 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		final Vec4f color = new Vec4f((float) (c.red() / 255.0), (float) (c.green() / 255.0),
 				(float) (c.blue() / 255.0), (float) (c.alpha() / 255.0 * gl.getCurrentObjectAlpha()));
 		if (diagnose) {
-			DEBUG.ERR("[GL4-TEXT] awtFont=" + awtFont + " joglFont=" + joglFont + " pixelSize=" + pixelSize
-					+ " color=" + color + " bounds=" + bounds + " zTranslation=" + gl.getCurrentZTranslation()
-					+ " projection=" + Arrays.toString(projection) + " modelView=" + Arrays.toString(modelView)
-					+ " graphMatrices=" + pmv);
+			DEBUG.ERR("[GL4-TEXT] awtFont=" + awtFont + " joglFont=" + joglFont + " pixelSize=" + pixelSize + " color="
+					+ color + " bounds=" + bounds + " zTranslation=" + gl.getCurrentZTranslation() + " projection="
+					+ Arrays.toString(projection) + " modelView=" + Arrays.toString(modelView) + " graphMatrices="
+					+ pmv);
 			traceState(gl4, "before graph enable");
 		}
 		final int[] state = new int[10];
 		final int[] previousViewport = new int[4];
-		gl4.glGetIntegerv(GL4.GL_VERTEX_ARRAY_BINDING, state, 0);
-		gl4.glGetIntegerv(GL4.GL_DRAW_FRAMEBUFFER_BINDING, state, 1);
-		gl4.glGetIntegerv(GL4.GL_READ_FRAMEBUFFER_BINDING, state, 2);
+		gl4.glGetIntegerv(GL2ES3.GL_VERTEX_ARRAY_BINDING, state, 0);
+		gl4.glGetIntegerv(GL.GL_DRAW_FRAMEBUFFER_BINDING, state, 1);
+		gl4.glGetIntegerv(GL.GL_READ_FRAMEBUFFER_BINDING, state, 2);
 		gl4.glGetIntegerv(GL.GL_ACTIVE_TEXTURE, state, 3);
 		gl4.glGetIntegerv(GL.GL_BLEND_SRC_RGB, state, 4);
 		gl4.glGetIntegerv(GL.GL_BLEND_DST_RGB, state, 5);
@@ -924,8 +1019,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	// -------------------------------------------------------------------------
 
 	/**
-	 * One outline supplies the caps, borders and extrusion sides, including font fallback and glyph bearings.
-	 * Also used for flat perspective text when the graph library is unavailable.
+	 * One outline supplies the caps, borders and extrusion sides, including font fallback and glyph bearings. Also used
+	 * for flat perspective text when the graph library is unavailable.
 	 *
 	 * @param text
 	 *            the string to draw
@@ -936,6 +1031,14 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		drawOutline(text, attributes, false);
 	}
 
+	/**
+	 * Draw billboard for picking.
+	 *
+	 * @param text
+	 *            the text
+	 * @param attributes
+	 *            the attributes
+	 */
 	private void drawBillboardForPicking(final String text, final IDrawingAttributes attributes) {
 		final IPoint p = attributes.getLocation();
 		final double[] position = new double[3];
@@ -956,6 +1059,16 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		}
 	}
 
+	/**
+	 * Draw outline.
+	 *
+	 * @param text
+	 *            the text
+	 * @param attributes
+	 *            the attributes
+	 * @param billboard
+	 *            the billboard
+	 */
 	private void drawOutline(final String text, final IDrawingAttributes attributes, final boolean billboard) {
 		final Font awtFont = attributes.getFont().getAwtFont();
 		this.depth = attributes.getDepth();
@@ -992,12 +1105,27 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		drawOutlineText(attributes, bounds, billboard);
 	}
 
+	/**
+	 * Snapshot.
+	 *
+	 * @param source
+	 *            the source
+	 * @return the double[]
+	 */
 	private static double[] snapshot(final DoubleBuffer source) {
 		final double[] values = new double[source.limit()];
 		source.duplicate().rewind().get(values);
 		return values;
 	}
 
+	/**
+	 * Restore.
+	 *
+	 * @param target
+	 *            the target
+	 * @param values
+	 *            the values
+	 */
 	private static void restore(final DoubleBuffer target, final double[] values) {
 		target.clear();
 		target.put(values);
@@ -1023,7 +1151,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 			final double locX = rotated ? 0 : p.getX();
 			final double locY = rotated ? 0 : p.getY();
 			final double locZ = rotated ? 0 : p.getZ();
-			final float scale = billboard ? 1f : 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
+			final float scale =
+					billboard ? 1f : 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 			final double x = -bounds.getX() - width * anchor.getX();
 			final double y = bounds.getMaxY() - height * anchor.getY();
 			gl.translateBy(locX + x * scale, locY + y * scale, locZ);
@@ -1086,8 +1215,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 * Processes a {@link PathIterator} of an AWT glyph outline.
 	 *
 	 * <p>
-	 * GLU resolves the path's winding rule across all contours, including disconnected letters and glyph holes.
-	 * Side geometry is collected from that same path.
+	 * GLU resolves the path's winding rule across all contours, including disconnected letters and glyph holes. Side
+	 * geometry is collected from that same path.
 	 * </p>
 	 *
 	 * @param pi
@@ -1095,9 +1224,8 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 	 */
 	void process(final PathIterator pi, final boolean wireframe) {
 		if (!wireframe) {
-			gluTessProperty(tessellator, GLU_TESS_WINDING_RULE,
-					pi.getWindingRule() == PathIterator.WIND_EVEN_ODD ? GLU_TESS_WINDING_ODD
-							: GLU_TESS_WINDING_NONZERO);
+			gluTessProperty(tessellator, GLU_TESS_WINDING_RULE, pi.getWindingRule() == PathIterator.WIND_EVEN_ODD
+					? GLU_TESS_WINDING_ODD : GLU_TESS_WINDING_NONZERO);
 			gluTessNormal(tessellator, 0, 0, -1);
 			gluTessBeginPolygon(tessellator, null);
 		}
@@ -1153,6 +1281,9 @@ public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements IT
 		throw new IllegalStateException("Cannot tessellate text: " + new GLU().gluErrorString(code));
 	}
 
+	/**
+	 * Adds the contour index.
+	 */
 	private void addContourIndex() {
 		if (++currentIndex == indices.length) { indices = Arrays.copyOf(indices, indices.length * 2); }
 		indices[currentIndex] = sideQuadsBuffer.position();

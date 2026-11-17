@@ -158,7 +158,7 @@ species centroids
 
 }
 
-experiment "Clustering 2D" type: gui
+experiment "Clustering 2D" mode: gui
 {
 	parameter "Number of clusters" var: k init:4 min:1 max:10 category: "Clustering";
 	parameter "Number of points" var: N init:500 min:1 category: "Clustering";
@@ -166,7 +166,7 @@ experiment "Clustering 2D" type: gui
 	output
 	{
 		
-		display map_kmeans type:2d background:backdrop {
+		display map_kmeans renderer:2d background:backdrop {
 			species centroids aspect: kmeans_aspect2D;
 			species datapoints aspect: kmeans_aspect2D;
 			overlay coordinates: #screen position: {16, 16} size: {340, 118} background: backdrop rounded: true {
@@ -182,7 +182,7 @@ experiment "Clustering 2D" type: gui
 	}
 }
 
-experiment "Clustering 3D" type: gui 
+experiment "Clustering 3D" mode: gui 
 {
 	parameter "Number of clusters to split the data into" var: k init:4 min: 0 max: 10 category: "KMEANS";
 	parameter "Number of points to be clustered" var: N init:1000 ;
@@ -192,7 +192,7 @@ experiment "Clustering 3D" type: gui
 	// The display is explicitly synchronized to avoid concurrency issues (if the points are changed in the simulation while being displayed)
 	output synchronized: true
 	{
-		display map_kmeans type: 3d background:backdrop axes:false
+		display map_kmeans renderer: 3d background:backdrop axes:false
 		{
 			species centroids aspect: kmeans_aspect3D;
 			species datapoints aspect: kmeans_aspect3D;

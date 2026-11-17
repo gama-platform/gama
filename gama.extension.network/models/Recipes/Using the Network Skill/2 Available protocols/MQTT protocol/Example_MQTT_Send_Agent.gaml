@@ -48,9 +48,9 @@ species NetworkingAgent skills:[moving]{
    }
 }
 
-experiment Network_sender type: gui {
+experiment Network_sender mode: gui {
 	output {
-		display view type:3d{
+		display view renderer:3d{
 			species NetworkingAgent aspect:base;
 		}
 	}

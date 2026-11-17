@@ -181,9 +181,11 @@ species texts {
 
 experiment main {
 	
-	float minimum_cycle_duration <- step;
+	init {
+		minimum_cycle_duration <- simulation.step;
+	}
 	
-	bool has_started <- false;
+
 	
 	parameter var:param_size <- {3.0, 4.65};
 	parameter var:off_set <- {0.035,0.16,0};
@@ -195,11 +197,12 @@ experiment main {
 	
 	
 	output synchronized:true{
+		bool has_started <- false;
 		
 		layout consoles:false editors:false navigator:false parameters:false toolbars:false tray:false;
 	
 		
-		display main fullscreen:true type:2d {
+		display main fullscreen:true renderer:2d {
 			
 			picture "../includes/background.png";
 			species bird aspect:png;
@@ -217,7 +220,7 @@ experiment main {
 			
 			event " " {
 				if not has_started {
-					do play();
+					experiment.play();
 					has_started <- true;
 				}
 				ask bird {impulsion <- true;

@@ -71,9 +71,9 @@ species vehicle_following_path parent: base_vehicle {
 	}
 }
 
-experiment city type: gui {
+experiment city mode: gui {
 	output synchronized: true {
-		display map type: 3d background: #gray {
+		display map renderer: 3d background: #gray {
 			species road aspect: base;
 			species vehicle_following_path aspect: base;
 			species intersection aspect: base;

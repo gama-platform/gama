@@ -516,7 +516,7 @@ species motorbike parent: moving_agent schedules:[]{
 	
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	float minimum_cycle_duration <- 0.01;
 	
 	action _init_ (){
@@ -525,7 +525,7 @@ experiment main type: gui {
 	
 	output {
 		layout  tabs:false editors: false consoles: false navigator: false;
-		display map type: opengl axes: false background: #black{
+		display map renderer: opengl axes: false background: #black{
 			species road refresh: false;
 			species intersection;
 			species evacuation_point transparency: 0.3  refresh: false;

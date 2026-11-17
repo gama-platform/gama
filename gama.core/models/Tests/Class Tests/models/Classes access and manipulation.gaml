@@ -28,7 +28,7 @@ class ExampleClass {
 }
 
 
-experiment testAccess type:test{
+experiment testAccess mode:test{
 
 	test uninitializedClassIsNil {
 		ExampleClass c;

@@ -27,6 +27,7 @@ import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -123,7 +124,10 @@ import gama.gaml.statements.AspectStatement;
 		omissible = IKeyword.SPECIES)
 @doc (
 		value = "The `" + IKeyword.SPECIES_LAYER
-				+ "` statement is using the `species` keyword. It allows modeler to display all the agent of a given species in the current display. In particular, modeler can choose the aspect used to display them.",
+				+ "` statement is using the `species` keyword. It allows modeler to display all the agent of a given species in the current display. In particular, modeler can choose the aspect used to display them. "
+				+ "A top-level species layer uses a population owned by the output's agent: the simulation for output or output of: simulation, and the experiment for output of: experiment or permanent. "
+				+ "Experiment outputs do not implicitly select the current simulation. Put layers of simulation populations in output of: simulation. "
+				+ "Nested species layers display micro-populations of the agents drawn by their enclosing species layer.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
@@ -198,6 +202,13 @@ public class SpeciesLayerStatement extends AgentLayerStatement {
 			ITypeDescription target = description.getGamlType().getDenotedSpecies();
 			if (!(target instanceof ISpeciesDescription sd)) // Already caught by the type checking
 				return;
+			final ITypeDescription owner = description.getEnclosingDescription().getTypeContext();
+			if (sd.getMacroSpecies() != null && !isPopulationAccessible(owner, sd)) {
+				description.error("The population of species '" + sd.getName()
+						+ "' is not owned by this experiment. Use output of: simulation for simulation populations.",
+						IGamlIssue.WRONG_CONTEXT, IKeyword.SPECIES);
+				return;
+			}
 			final IExpressionDescription ed = description.getFacet(ASPECT);
 			if (ed != null) {
 				final String a = description.getLitteral(ASPECT);
@@ -211,6 +222,12 @@ public class SpeciesLayerStatement extends AgentLayerStatement {
 			}
 		}
 
+	}
+
+	private static boolean isPopulationAccessible(final ITypeDescription owner, final ISpeciesDescription species) {
+		return !(owner instanceof IExperimentDescription experiment)
+				|| species == experiment.getModelDescription()
+				|| experiment.getMicroSpecies(species.getName()) == species;
 	}
 
 	/** The aspect. */
@@ -240,12 +257,13 @@ public class SpeciesLayerStatement extends AgentLayerStatement {
 
 	@Override
 	public boolean _init(final IScope scope) throws GamaRuntimeException {
-		// top level species layer is a direct micro-species of "world_species"
-		// for sure
-		if (hostSpecies == null && scope.getSimulation() != null) { hostSpecies = scope.getSimulation().getSpecies(); }
+		if (hostSpecies == null && scope.getRoot() != null) { hostSpecies = scope.getRoot().getSpecies(); }
 		species = Cast.asSpecies(scope, getFacet(IKeyword.SPECIES).value(scope));
 		if (species == null && hostSpecies != null) { species = hostSpecies.getMicroSpecies(getName()); }
 		if (species == null) throw GamaRuntimeException.error("not a suitable species to display: " + getName(), scope);
+		if (hostSpecies != null && !isPopulationAccessible(hostSpecies.getDescription(), species.getDescription()))
+			throw GamaRuntimeException.error("The population of species '" + species.getName()
+					+ "' is not owned by this experiment. Use output of: simulation for simulation populations.", scope);
 		if (super._init(scope) && microSpeciesLayers != null) {
 			for (final SpeciesLayerStatement microLayer : microSpeciesLayers) {
 				microLayer.hostSpecies = species;

@@ -63,18 +63,18 @@ grid cell  width: int(widthImg/factorDiscret) height: int(heightImg/factorDiscre
 
 
 
-experiment main type: gui {	
+experiment main mode: gui {	
 	// We can thus compare the original MNT image and the discretized image in the grid.
 	// We define 2 displays:
 	// 1. with the original MNT image as background + izard agents
 	// 2. with the grid + izard agents 
 	output {
 		layout #split;
-		display Image type:2d antialias:false{
+		display Image renderer:2d antialias:false{
 	       picture mntImageRaster.path;
 	       species izard aspect: image; 
 	    }   
-		display Grid type:2d antialias:false{
+		display Grid renderer:2d antialias:false{
 	       grid cell;
 	       species izard aspect: image; 
 	    }   	    

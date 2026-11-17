@@ -7,12 +7,8 @@
 
 model AgentAttributesTestModel
 
-species test_agent {
-	
-}
-
-experiment AgentAttributesTest type: test autorun: true {
-	
+global {
+		
 	test "Built-in Attributes" {
 		create test_agent number: 3 returns: created_agents;
 		test_agent ag1 <- created_agents[0];
@@ -23,7 +19,7 @@ experiment AgentAttributesTest type: test autorun: true {
 		assert ag1.name != ag2.name;
 		
 		// Host is the simulation by default
-		assert ag1.host = simulation;
+		assert ag1.host = self;
 		
 		// Peers include other agents of the same species
 		list<test_agent> peers_list <- ag1.peers;
@@ -32,3 +28,9 @@ experiment AgentAttributesTest type: test autorun: true {
 		assert peers_list contains ag1 = false;
 	}
 }
+
+species test_agent {
+	
+}
+
+experiment AgentAttributesTest mode: test autorun: true;

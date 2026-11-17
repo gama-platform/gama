@@ -30,6 +30,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
@@ -80,7 +81,7 @@ import gama.gaml.statements.MigrateStatement.MigrateValidator;
 						type = IType.LIST,
 						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
-						doc = @doc ("the list of returned agents in a new local variable")) },
+						doc = @doc ("an existing compatible variable or a new temporary variable receiving the list of migrated agents")) },
 		omissible = IKeyword.SOURCE)
 @validator (MigrateValidator.class)
 @doc (
@@ -129,8 +130,8 @@ public class MigrateStatement extends AbstractStatementSequence {
 	/** The target. */
 	private final String target;
 
-	/** The return string. */
-	private final String returnString;
+	/** The returns. */
+	private final IVarExpression returns;
 
 	/**
 	 * The sequence of statements to execute on each migrated agent.
@@ -155,7 +156,17 @@ public class MigrateStatement extends AbstractStatementSequence {
 
 		target = getLiteral(IKeyword.TARGET);
 
-		returnString = getLiteral(IKeyword.RETURNS);
+		returns = (IVarExpression) getFacet(IKeyword.RETURNS);
+	}
+
+	@Override
+	public void enterScope(final IScope stack) {
+		if (returns != null && !(returns instanceof IVarExpression.Agent)
+				&& !(returns instanceof IVarExpression.Persistent) && stack.getExecutionContext() != null
+				&& !stack.getExecutionContext().hasTempVar(returns.getName())) {
+			stack.addVarWithValue(returns.getName(), null);
+		}
+		super.enterScope(stack);
 	}
 
 	@Override
@@ -208,7 +219,7 @@ public class MigrateStatement extends AbstractStatementSequence {
 			immigrants.addAll(executor.migrateMicroAgents(stack, microAgents, targetMicroSpecies));
 		}
 
-		if (returnString != null) { stack.setVarValue(returnString, immigrants); }
+		if (returns != null) { returns.setVal(stack, immigrants, false); }
 
 		return null;
 	}

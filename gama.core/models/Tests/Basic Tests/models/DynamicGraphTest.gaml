@@ -7,9 +7,8 @@
 
 model DynamicGraphTestModel
 
-species node_agent {}
-
-experiment DynamicGraphTest type: test autorun: true {
+global {
+	
 	
 	test "Dynamic Graph Modification" {
 		graph g <- as_edge_graph([]); // Empty graph
@@ -52,4 +51,9 @@ experiment DynamicGraphTest type: test autorun: true {
 		assert length(g.edges) = 2; // Edges connected to n3 are also removed
 	}
 	
+	
 }
+
+species node_agent {}
+
+experiment DynamicGraphTest mode: test autorun: true;

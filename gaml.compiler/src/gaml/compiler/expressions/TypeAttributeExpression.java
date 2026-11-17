@@ -56,12 +56,12 @@ public class TypeAttributeExpression extends VariableExpression implements IVarE
 
 	@Override
 	public Object _value(final IScope scope) throws GamaRuntimeException {
-		return scope.getCurrentAgentOrObjectAttributeValue(getName());
+		return scope.getGlobalVarValue(getName());
 	}
 
 	@Override
 	public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
-		scope.setAgentVarValue(scope.getCurrentObjectOrAgent(), getName(), v);
+		scope.setGlobalVarValue(getName(), v);
 	}
 
 	@Override

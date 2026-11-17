@@ -173,7 +173,7 @@ species pedestrian skills: [dynamic_body] {
 	}
 }
 
-experiment "Box2D Evacuation Comparison" type: gui {
+experiment "Box2D Evacuation Comparison" mode: gui {
 	action _init_() {
 		bool previous_append_name <- gama.pref_append_simulation_name;
 		gama.pref_append_simulation_name <- true;
@@ -189,7 +189,7 @@ experiment "Box2D Evacuation Comparison" type: gui {
 
 	output {
 		layout #split;
-		display "Evacuation" type: 2d axes: false background: rgb(248, 246, 240) {
+		display "Evacuation" renderer: 2d axes: false background: rgb(248, 246, 240) {
 			graphics "Door" {
 				draw line([{room_width + 0.2, room_height / 2},
 					{room_width + 1.6, room_height / 2}])

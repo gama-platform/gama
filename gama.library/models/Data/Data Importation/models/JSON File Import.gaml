@@ -33,9 +33,9 @@ grid cityMatrix width:16  height:16{
     }
 }
 
-experiment Display  type: gui {
+experiment Display  mode: gui {
 	output {
-		display cityMatrixView type: 3d{	
+		display cityMatrixView renderer: 3d{	
 			species cityMatrix aspect:base;			
 		}
 	}

@@ -74,23 +74,23 @@ species node_agent {
 	}
 }
 
-experiment clustering type: gui {
+experiment clustering mode: gui {
 	
 	output {
 		layout #split;
-		display general_graph type: 3d axes: false map_order: true{
+		display general_graph renderer: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent ;
 		}
-		display cluster_girvan_newman type: 3d axes: false map_order: true{
+		display cluster_girvan_newman renderer: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent aspect: color_cluster_gn ;
 		}
-		display cluster_k_spanning_tree type: 3d axes: false map_order: true{
+		display cluster_k_spanning_tree renderer: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent aspect: color_cluster_stc ;
 		}
-		display cluster_label_propagation type: 3d axes: false map_order: true{
+		display cluster_label_propagation renderer: 3d axes: false map_order: true{
 			species edge_agent ;
 			species node_agent aspect: color_cluster_lpc ;
 		}

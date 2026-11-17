@@ -320,7 +320,7 @@ experiment "Run" {
 	parameter "Number of people" var:nb_of_people init:500 min:100 max:20000 category:"Initialization";
 	
 	output {
-		display my_display type:3d axes:false{ 
+		display my_display renderer:3d axes:false{ 
 			species road;
 			species evacuation_point;
 			species building;

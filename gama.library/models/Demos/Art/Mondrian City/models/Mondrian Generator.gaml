@@ -108,14 +108,14 @@ species squares {
 	}
 }
 
-experiment MondrianGenerator type: gui {
+experiment MondrianGenerator mode: gui {
 	float minimum_cycle_duration<-0.1;
 	parameter "Nb max of squares: " var: nb_max_squares;
 	parameter "Nb max of border: " var: nb_max_lines;
 	parameter "Nb max of columns: " var: nb_max_columns;
 	
 	output {
-		display map type: 3d axes:false map_order: true{
+		display map renderer: 3d axes:false map_order: true{
 			species lines ;											
 			species squares ;	
 		}

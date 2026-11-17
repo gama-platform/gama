@@ -134,4 +134,4 @@ species participant skills: [fipa] {
 	}
 }
 
-experiment test type: gui { }
+experiment test mode: gui { }

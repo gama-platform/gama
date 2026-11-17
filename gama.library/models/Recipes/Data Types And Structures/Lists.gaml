@@ -306,7 +306,7 @@ species looping_on_lists {
 	}
 }
 
-experiment Lists type: gui {
+experiment Lists mode: gui {
 	user_command "Declaring lists" {create declaring_list_attributes;}
 	user_command "Accessing lists" {create accessing_list_elements;}
 	user_command "Combining lists" {create combining_lists;}

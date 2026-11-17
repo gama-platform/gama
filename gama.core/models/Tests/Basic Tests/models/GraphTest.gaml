@@ -44,17 +44,17 @@ draw string(self as int) color: #black font: font("Helvetica", 14 , #bold) at: l
 	}
 }
 
-experiment loadgraph type: gui {
+experiment loadgraph mode: gui {
 	
 	output {
-		display map type: 3d{
+		display map renderer: 3d{
 			species edge_agent ;
 			species node_agent ;
 		}
 	}
 }
 
-experiment GraphTest type: test {
+experiment GraphTest mode: test {
 	
 			
 	setup {
@@ -62,7 +62,7 @@ experiment GraphTest type: test {
 	}
 	
 	test "My Graph Test" {
-		
+	ask simulation {
 		// Directed graph test
 		assert the_graph in_degree_of (node_agent[2])=2;
 		assert the_graph out_degree_of (node_agent[2])=2;
@@ -85,6 +85,6 @@ experiment GraphTest type: test {
 		assert the_graph source_of(link(node_agent[2],node_agent[3]))=node_agent[2];
 		assert the_graph target_of(link(node_agent[2],node_agent[3]))=node_agent[3];
 		
-	}
+	}}
 	
 }

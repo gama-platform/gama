@@ -46,4 +46,4 @@ global {
 	}
 }
 
-experiment main type: gui;
+experiment main mode: gui;

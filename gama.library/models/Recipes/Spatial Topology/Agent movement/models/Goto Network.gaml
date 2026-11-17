@@ -93,7 +93,7 @@ species people skills: [moving] {
 }
 
 
-experiment goto_network type: gui {
+experiment goto_network mode: gui {
 	parameter "Shortest path algorithm" var: shortest_path_algo ;
 	parameter "Number of people" var: nb_people min: 1 max: 10000;
 	parameter "Computed all the shortest paths and save the results" var: save_shortest_paths;

@@ -109,14 +109,14 @@ species dummy skills:[moving] {
 	}
 }
 
-experiment clustering type: gui {
+experiment clustering mode: gui {
 	float minimum_cycle_duration<-0.01;
 	parameter "Number of clusters to split the data into" var: k category: "KMEANS";
 	parameter "Maximum radius of the neighborhood to be considered" var: eps category: "DBSCAN";
 	parameter "Minimum number of points needed for a cluster " var: minPoints category: "DBSCAN";
 	output {
 		layout horizontal([1::5000,0::5000]) tabs:true editors: false;
-		display map_dbscan type:2d{
+		display map_dbscan renderer:2d{
             // Center the heading in the viewport, independently of world size and zoom.
             overlay coordinates: #screen position: {0, 0} size: {#display_width, 50} background: #black transparency: 0.2 border: #black rounded: true
             {
@@ -125,7 +125,7 @@ experiment clustering type: gui {
 
 			species dummy aspect: dbscan_aspect;
 		}
-		display map_kmeans type:2d{
+		display map_kmeans renderer:2d{
 			overlay coordinates: #screen position: {0, 0} size: {#display_width, 50} background: #black transparency: 0.2 border: #black rounded: true
             {
                     draw "K-means" at: {0.5, 25} anchor: #center color: #orange font: font("SansSerif", 36, #bold);

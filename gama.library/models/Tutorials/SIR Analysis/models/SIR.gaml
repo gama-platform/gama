@@ -60,7 +60,7 @@ species person skills: [moving] {
     }
 }
 
-experiment SIR_simulation type: gui {
+experiment SIR_simulation mode: gui {
     parameter "Number of agents"      var: nb_agents;
     parameter "Initially infected"    var: nb_infected_init;
     parameter "Infection rate"        var: infection_rate;
@@ -68,10 +68,10 @@ experiment SIR_simulation type: gui {
     parameter "Recovery time"         var: recovery_time unit: "cycles";
 
     output {
-        display "Population" type: java2D {
+        display "Population" renderer: java2D {
             species person aspect: base;
         }
-        display "SIR Chart" type: 3d {
+        display "SIR Chart" renderer: 3d {
             chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;

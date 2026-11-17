@@ -7,9 +7,8 @@
 
 model DatabaseAdvancedTestModel
 
-species sql_agent skills: [sql] { }
-
-experiment DatabaseAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "An unsupported dbtype makes testConnection return false" {
 		create sql_agent number: 1 returns: dbs;
@@ -164,4 +163,9 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		assert failed;
 		assert delete_file(database_file);
 	}
+	
 }
+
+species sql_agent skills: [sql] { }
+
+experiment DatabaseAdvancedTest mode: test autorun: true;

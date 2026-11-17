@@ -7,38 +7,9 @@
 
 model StatementsAdvancedTestModel
 
-species container_agent {
-	species source_agent {
-		int my_val <- 5;
-	}
+
+global {
 	
-	species target_agent {
-		int my_val <- 0;
-	}
-	
-	action do_migrate() {
-		migrate source: list(source_agent) target: target_agent;
-	}
-
-	action migrate_species() {
-		migrate source: source_agent target: target_agent;
-	}
-
-	action migrate_one() {
-		migrate source: source_agent[0] target: target_agent;
-	}
-
-	action migrate_subset() {
-		migrate source: [source_agent[0]] target: target_agent;
-	}
-
-	action migrate_nil() {
-		source_agent candidate <- nil;
-		migrate source: candidate target: target_agent;
-	}
-}
-
-experiment StatementsAdvancedTest type: test autorun: true {
 	
 	test "Let Statement" {
 		// 'let' creates a local variable within the current scope
@@ -201,10 +172,44 @@ experiment StatementsAdvancedTest type: test autorun: true {
 
 		// Using statement dynamically changes the topology/scope
 		int seen_in_world_topology <- 0;
-		using topology(world) {
+		using topology(self) {
 			seen_in_world_topology <- length(container_agent); 
 		}
 		assert seen_in_world_topology = length(container_agent);
 		assert seen_in_world_topology >= 1;
 	}
+	
 }
+
+species container_agent {
+	species source_agent {
+		int my_val <- 5;
+	}
+	
+	species target_agent {
+		int my_val <- 0;
+	}
+	
+	action do_migrate() {
+		migrate source: list(source_agent) target: target_agent;
+	}
+
+	action migrate_species() {
+		migrate source: source_agent target: target_agent;
+	}
+
+	action migrate_one() {
+		migrate source: source_agent[0] target: target_agent;
+	}
+
+	action migrate_subset() {
+		migrate source: [source_agent[0]] target: target_agent;
+	}
+
+	action migrate_nil() {
+		source_agent candidate <- nil;
+		migrate source: candidate target: target_agent;
+	}
+}
+
+experiment StatementsAdvancedTest mode: test autorun: true;

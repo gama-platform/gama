@@ -273,7 +273,7 @@ grid matrix_cells width: 3 height: 2 {
 	float amount <- grid_x + 10.0 * grid_y;
 }
 
-experiment Matrices type: gui {
+experiment Matrices mode: gui {
 	user_command "Grid matrix access" {
 		// Grid attribute brackets return a typed snapshot at the cell coordinates.
 		matrix<float> values <- matrix_cells[amount];

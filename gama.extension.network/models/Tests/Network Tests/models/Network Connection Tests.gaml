@@ -7,9 +7,8 @@
 
 model networktest
 
-species serv skills:[network] {}
-
-experiment "Tests for gama.extension.network" type: test {
+global {
+	
 	test "Action connect to the MQTT server" {
 		bool res <- false;
 		try{ 
@@ -21,4 +20,9 @@ experiment "Tests for gama.extension.network" type: test {
 		} 
 		assert res;
 	}
+	
 }
+
+species serv skills:[network] {}
+
+experiment "Tests for gama.extension.network" mode: test {}

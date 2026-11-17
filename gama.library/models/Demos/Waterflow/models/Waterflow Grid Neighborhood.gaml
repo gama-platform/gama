@@ -61,9 +61,9 @@ grid cell  width: image_size height: image_size schedules: reverse(river sort_by
 	}
 }
 
-experiment Waterflowgridneighborhood type: gui {
+experiment Waterflowgridneighborhood mode: gui {
 	output synchronized: true{
-		display flow type:2d{
+		display flow renderer:2d{
 			species cell;
 		}		
 	}

@@ -5,18 +5,18 @@
 * Tags: comodel, experiment
 */
 
-experiment trafficcomodel model:'../../../Traffic/models/Traffic and Pollution.gaml' type:gui {
+experiment trafficcomodel model:'../../../Traffic/models/Traffic and Pollution.gaml' mode:gui actions_context: simulation {
 	point centroid <- { 15200, 1580 };
 	action transform() {		
 		loop t over:list(road){			
 			t.shape <- (t.shape * 20 );
-			t.location <- (t.location * 20) + centroid;
+			t.location <- (t.location * 20) + experiment.centroid;
 			t.buffer<-100;
 		}
 		loop t over: list(building)
 		{
 			t.shape <- t.shape * 20;
-			t.location <- (t.location * 20) + centroid;
+			t.location <- (t.location * 20) + experiment.centroid;
 		}
 
 		loop t over: list(people)

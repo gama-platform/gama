@@ -733,6 +733,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 		if (parent instanceof gaml.compiler.gaml.S_Display) {
 			if (IKeyword.SPECIES.equals(key)) key = IKeyword.SPECIES_LAYER;
 			else if (IKeyword.GRID.equals(key)) key = IKeyword.GRID_LAYER;
+		} else if (statement instanceof S_Callable) {
+			key = IKeyword.ACTION;
 		}
 		final String keyword = key;
 		final IArtefact.Symbol symbol = ArtefactRegistry.getArtefact(keyword, null);

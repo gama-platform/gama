@@ -143,14 +143,14 @@ species building {
 	}
 }
 
-experiment main_experiment type: gui {
+experiment main_experiment mode: gui {
 	parameter "Infection distance" var: infection_distance unit: #m;
 	parameter "Proba infection" var: proba_infection min: 0.0 max: 1.0;
 	parameter "Nb people infected at init" var: nb_infected_init;
 	output {
 		monitor "Current hour" value: current_date.hour;
 		monitor "Infected people rate" value: infected_rate;
-		display map_3D type: 3d {
+		display map_3D renderer: 3d {
 			light #ambient intensity: 20;
 			light #default intensity:(is_night ? 127 : 255);
 			picture "../includes/soil.jpg";
@@ -159,7 +159,7 @@ experiment main_experiment type: gui {
 			species building transparency: 0.5;
 		}
 
-		display chart refresh: every(10 #cycles)  type: 3d {
+		display chart refresh: every(10 #cycles)  renderer: 3d {
 			chart "Disease spreading" kind: series {
 				data "susceptible" value: nb_people_not_infected color: #green marker: false;
 				data "infected" value: nb_people_infected color: #red marker: false;

@@ -29,11 +29,11 @@ species shapes;
 experiment "Simplify this ! " {
 	
 	parameter "Simplification tolerance" category: "Change the value and observe the visual result" var:tolerance min: 0 max: 800 step: 1 unit: "m" {
-		do update_outputs();
+		experiment.update_outputs();
 	}
 	
 	parameter "Buffer value" category: "Change the value and observe the visual result" var:buffer min: -100 max: 100 step: 1 unit: "m" {
-		do update_outputs();
+		experiment.update_outputs();
 	}
 	
 	user_command "Close the simulation"  category:"Change the value and observe the visual result" color: #red {
@@ -44,7 +44,7 @@ experiment "Simplify this ! " {
 	
 	output {
 		layout #split consoles: false tray: false tabs: false controls: false editors: false toolbars: false navigator: false;
-		display my_display type:3d axes: false map_order: true {
+		display my_display renderer:3d axes: false map_order: true {
 			species shapes {
 				draw shape color: #red;
 			}

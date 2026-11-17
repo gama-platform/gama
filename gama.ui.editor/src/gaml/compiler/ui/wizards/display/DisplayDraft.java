@@ -36,7 +36,8 @@ public record DisplayDraft(String name, String renderer, List<Facet> facets, Lis
 		if (name.contains("\n") || name.contains("\r")) return "Display name must be on one line.";
 		String error = facetError(facets);
 		if (error != null) return error;
-		if (find(facets, "name") != null || find(facets, "type") != null) return "Use the Name and Renderer fields.";
+		if (find(facets, "name") != null || find(facets, "renderer") != null || find(facets, "type") != null)
+			return "Use the Name and Renderer fields.";
 		var ids = new HashSet<String>();
 		for (var layer : layers) {
 			if (!ids.add(layer.id())) return "Duplicate layer identity. Use Duplicate to copy a layer.";
@@ -48,7 +49,7 @@ public record DisplayDraft(String name, String renderer, List<Facet> facets, Lis
 
 	public String header() {
 		StringBuilder text = new StringBuilder("display ").append(ExperimentDraft.quoteName(name));
-		if (!renderer.isBlank()) text.append(" type: ").append(renderer);
+		if (!renderer.isBlank()) text.append(" renderer: ").append(renderer);
 		appendFacets(text, facets);
 		return text.toString();
 	}

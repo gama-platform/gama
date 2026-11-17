@@ -233,4 +233,4 @@ global {
 
 species dummy_species {}
 
-experiment exp type: gui {}
+experiment exp mode: gui {}

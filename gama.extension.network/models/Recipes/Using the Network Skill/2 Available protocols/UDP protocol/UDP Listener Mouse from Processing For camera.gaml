@@ -43,9 +43,9 @@ species observedAgents {
 
 }
 
-experiment Server_testdd type: gui {
+experiment Server_testdd mode: gui {
 	output {
-		display d type: 3d {
+		display d renderer: 3d {
 			camera #default target: cam_loc dynamic: true;
 			species observedAgents;
 		}

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IInternalFacets;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgentCreator;
@@ -24,6 +25,8 @@ import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescrip
  *
  */
 public interface IExperimentDescription extends ISpeciesDescription {
+
+	String ACTIONS_CONTEXT = "actions_context";
 
 	/** The experiment creators. */
 	Map<String, IExperimentAgentCreator> CREATORS = new HashMap<>();
@@ -107,5 +110,35 @@ public interface IExperimentDescription extends ISpeciesDescription {
 	 * @return
 	 */
 	boolean isTest();
+
+	/** Whether a declaration explicitly belongs to the experiment, including the legacy permanent output block. */
+	static boolean isExperimentContext(final IDescription description) {
+		return IKeyword.PERMANENT.equals(description.getKeyword())
+				|| IKeyword.EXPERIMENT.equals(description.getLitteral(IKeyword.OF));
+	}
+
+	/** Whether a directly declared action uses the experiment's selected simulation as its execution context. */
+	static boolean actionsUseSimulation(final IDescription action) {
+		return !action.isBuiltIn() && action.getName() != null
+				&& !action.getName().startsWith(IInternalFacets.SYNTHETIC)
+				&& action.getEnclosingDescription() instanceof IExperimentDescription experiment
+				&& IKeyword.SIMULATION.equals(experiment.getLitteral(ACTIONS_CONTEXT));
+	}
+
+	/** Keeps experiment parameters separate from simulation parameters with the same target name. */
+	static String parameterKey(final String name, final boolean experiment) {
+		return experiment ? "(Experiment) " + name : name;
+	}
+
+	/** An omitted owner always means simulation, without an implicit experiment fallback. */
+	default IVariableDescription getParameterTarget(final String name) {
+		return getParameterTarget(name, false);
+	}
+
+	default IVariableDescription getParameterTarget(final String name, final boolean experiment) {
+		if (experiment) return getAttribute(name);
+		final IModelDescription model = getModelDescription();
+		return model == null ? null : model.getAttribute(name);
+	}
 
 }

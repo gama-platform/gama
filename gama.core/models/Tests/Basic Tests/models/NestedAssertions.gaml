@@ -4,7 +4,7 @@
 * Tags: test
 */
 
-experiment NestedAssertions type: test {
+experiment NestedAssertions mode: test {
 	test assertions_in_loop {
 		loop i over: [1, 2, 3] {
 			assert i > 0;

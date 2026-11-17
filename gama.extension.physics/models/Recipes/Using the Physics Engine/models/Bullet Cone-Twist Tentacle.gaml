@@ -94,36 +94,28 @@ species tentacle_segment skills: [dynamic_body] {
 	}
 }
 
-experiment Tentacle type: gui {
+experiment Tentacle mode: gui {
 	float minimum_cycle_duration <- 10 #ms;
 	parameter "Selected segment" var: selected_segment min: 0 max: 7 category: "Interaction";
 	parameter "Push strength (impulse)" var: push_strength min: 0.5 max: 10.0 category: "Interaction";
 	user_command "Push forward (+x)" category: "Interaction" color: rgb(133, 177, 205) {
-		ask world {
 			do push({1, 0, 0});
-		}
 	}
 
 	user_command "Push backward (-x)" category: "Interaction" color: rgb(133, 177, 205) {
-		ask world {
 			do push({-1, 0, 0});
-		}
 	}
 
 	user_command "Push sideways (+y)" category: "Interaction" color: rgb(133, 177, 205) {
-		ask world {
 			do push({0, 1, 0});
-		}
 	}
 
 	user_command "Push up (+z)" category: "Interaction" color: rgb(218, 157, 164) {
-		ask world {
 			do push({0, 0, 1});
-		}
 	}
 
 	output {
-		display Tentacle type: 3d axes: false background: rgb(248, 246, 240) {
+		display Tentacle renderer: 3d axes: false background: rgb(248, 246, 240) {
 			graphics "Floor grid" {
 				loop x from: 0 to: 160 step: 20 {
 					draw line([{x, 0, 0}, {x, 80, 0}]) color: rgb(224, 219, 210);

@@ -69,7 +69,7 @@ species building {
 	}
 }
 
-experiment exportkml type: gui {
+experiment exportkml mode: gui {
 	output {
 		display map {
 			species building;

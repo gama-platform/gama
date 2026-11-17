@@ -30,10 +30,21 @@ global {
 		int scale_factor <- palette_name = "Seaside" ? 20 : 10;
 		terrain <- generate_terrain(generator_seed, width, height, details, smoothness, scattering) * scale_factor;
 	}
+	
+	
+	action update() {
+		self.generate();
+		experiment.update_outputs();
+	}
+	
+	action save_tif() {
+		string file_name <- "seed"+generator_seed+"w"+width+"h"+height+"d"+(details with_precision 2)+"smooth"+(smoothness with_precision 2)+"scatter"+(scattering with_precision 2)+".tif";
+		save grid_file(file_name, terrain);
+	}
  
 }
 
-experiment Terrain type: gui {
+experiment Terrain mode: gui {
 	
 	parameter "Seed for the generator" var: generator_seed <- 1 {
 		do update();
@@ -66,17 +77,8 @@ experiment Terrain type: gui {
 		do save_tif();
 	}
 
-	action update() {
-		ask simulation {
-			do generate();
-		}
-		do update_outputs();
-	}
 	
-	action save_tif() {
-		string file_name <- "seed"+generator_seed+"w"+width+"h"+height+"d"+(details with_precision 2)+"smooth"+(smoothness with_precision 2)+"scatter"+(scattering with_precision 2)+".tif";
-		save grid_file(file_name, terrain);
-	}
+
 
 	action _init_ (){
 		
@@ -87,11 +89,12 @@ experiment Terrain type: gui {
 		gama.pref_experiment_expand_params <- previous;
 	}
 
-	list<rgb> land_and_sea <- palette(reverse([#darkgreen, #darkgreen, #green, rgb(32, 176, 0), rgb(224, 224, 0), rgb(128, 128, 255), #blue, #blue]));
-	list<rgb> field_and_forest <- palette(reverse([#sienna, #olive, #darkgreen, #green, #forestgreen,  #lightgreen]));
+
 	output {
+		list<rgb> land_and_sea <- palette(reverse([#darkgreen, #darkgreen, #green, rgb(32, 176, 0), rgb(224, 224, 0), rgb(128, 128, 255), #blue, #blue]));
+		list<rgb> field_and_forest <- palette(reverse([#sienna, #olive, #darkgreen, #green, #forestgreen,  #lightgreen]));
 		layout #split consoles: false toolbars: false;
-		display "Terrain" type: 3d axes: false camera: #from_up_front {
+		display "Terrain" renderer: 3d axes: false camera: #from_up_front {
 			mesh terrain color: palette_name = "Seaside" ? land_and_sea : field_and_forest triangulation: true;
 		}
 

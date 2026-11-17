@@ -58,7 +58,7 @@ public class JobListFactory {
 			}
 		}
 		for (final IExperimentDescription expD : model.getDescription().getExperiments()) {
-			if (!IKeyword.BATCH.equals(expD.getLitteral(IKeyword.TYPE))) {
+			if (!IKeyword.BATCH.equals(expD.getLitteral(IKeyword.MODE))) {
 				final IExperimentJob tj = ExperimentJob.loadAndBuildJob(expD, model.getFilePath(), model);
 				// TODO AD Why 12 ??
 				tj.setSeed(12);

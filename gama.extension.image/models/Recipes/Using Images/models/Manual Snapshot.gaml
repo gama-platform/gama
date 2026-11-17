@@ -33,7 +33,7 @@ species bug skills:[moving]{
 	}
 }
 
-experiment "Snapshot Depth" type: gui {
+experiment "Snapshot Depth" mode: gui {
 	
 	reflex when: (cycle > 1) and every(100 #cycle) {
 		ask simulation {
@@ -44,7 +44,7 @@ experiment "Snapshot Depth" type: gui {
 	
 	
 	output synchronized: true {
-		display "My Display" type:3d axes: false{
+		display "My Display" renderer:3d axes: false{
 			picture background refresh: true;
 			species bug;
 		}
@@ -52,7 +52,7 @@ experiment "Snapshot Depth" type: gui {
 
 }
 
-experiment "Save Snapshots" type: gui {
+experiment "Save Snapshots" mode: gui {
 	
 	int i <- 0;
 	
@@ -66,14 +66,14 @@ experiment "Save Snapshots" type: gui {
 	
 	
 	output synchronized: true {
-		display "My Display" type:3d axes: false{
+		display "My Display" renderer:3d axes: false{
 			species bug;
 		}
 	}
 
 }
 
-experiment "Copy Snapshot to Clipboard" type: gui {
+experiment "Copy Snapshot to Clipboard" mode: gui {
 	
 	int i <- 0;
 	
@@ -82,9 +82,9 @@ experiment "Copy Snapshot to Clipboard" type: gui {
 	}
 	
 	output synchronized: true {
-		display "My Display" type:3d axes: false{
+		display "My Display" renderer:3d axes: false{
 			species bug;
-			event "c" {if (copy_to_clipboard(snapshot(simulation, "My Display"))) {write "Snapshot copied to the clipboard !" ;}}
+			event "c" {if (copy_to_clipboard(snapshot(self, "My Display"))) {write "Snapshot copied to the clipboard !" ;}}
 		}
 	}
 

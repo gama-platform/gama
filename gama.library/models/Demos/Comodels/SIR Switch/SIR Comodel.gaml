@@ -66,12 +66,12 @@ global
 
 }
 
-experiment Simple_exp type: gui
+experiment Simple_exp mode: gui
 {
 	output
 	{
 	 	layout horizontal([0::5000,vertical([1::5000,2::5000])::5000]) tabs:true editors: false;
-		display "Switch_SIR chart" type: 3d 
+		display "Switch_SIR chart" renderer: 3d 
 		{
 			chart "SIR_agent" kind: series background: # white
 			{
@@ -81,14 +81,14 @@ experiment Simple_exp type: gui
 			}
 
 		}
-		display "EBM Disp"  type: 3d {			
+		display "EBM Disp"  renderer: 3d {			
 			chart "SIR_agent" kind: series background: #white {
 				data 'S' value: first(first(SIR_EBM.EBMcomodel).simulation.agent_with_SIR_dynamic).S color: #green ;				
 				data 'I' value: first(first(SIR_EBM.EBMcomodel).simulation.agent_with_SIR_dynamic).I color: #red ;
 				data 'R' value: first(first(SIR_EBM.EBMcomodel).simulation.agent_with_SIR_dynamic).R color: #blue ;
 			}
 		}
-		display "ABM Disp" type:2d{			
+		display "ABM Disp" renderer:2d{			
 			agents "Host" value:first(SIR_ABM.ABMcomodel).simulation.Host aspect:base;
 		}
 	}

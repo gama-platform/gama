@@ -95,19 +95,19 @@ species areaclc {
 }
 
 
-experiment "Compare" type: gui {
+experiment "Compare" mode: gui {
 	output {
 		layout #split consoles: false editors: false navigator: false parameters: false tabs: true toolbars: false tray: false ;
-		display "Simulated Map" type: 3d{
+		display "Simulated Map" renderer: 3d{
 			species areaclc aspect: simulation;
 		}
-		display "Observed Map" type: 3d{
+		display "Observed Map" renderer: 3d{
 			species areaclc aspect: observed refresh: false;
 		}
-		display "Initial Map" type: 3d{
+		display "Initial Map" renderer: 3d{
 			species areaclc aspect: initial refresh: false;
 		}
-		display "Fuzzy Comparison Map" type: 3d background: #black{
+		display "Fuzzy Comparison Map" renderer: 3d background: #black{
 			species areaclc aspect: fuzzy_sim ;
 		}
 	}

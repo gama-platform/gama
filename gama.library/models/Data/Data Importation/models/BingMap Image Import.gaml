@@ -48,12 +48,12 @@ global
 
 experiment Display
 {
-	user_command "Change destination" category: "Bing service" {ask simulation {do load_map();}}
+	user_command "Change destination" category: "Bing service" {do load_map();}
 
 	 
 	output
 	{
-		display "Bing Map" type: 3d axes:false
+		display "Bing Map" renderer: 3d axes:false
 		{
 			picture static_map_request refresh:true;
 		}

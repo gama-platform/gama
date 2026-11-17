@@ -33,6 +33,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
@@ -86,7 +87,7 @@ import gama.gaml.statements.CaptureStatement.CaptureValidator;
 						type = IType.LIST,
 						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
-						doc = @doc ("a list of the newly captured agent(s)")) },
+						doc = @doc ("an existing compatible variable or a new temporary variable receiving the list of newly captured agent(s)")) },
 		omissible = IKeyword.TARGET)
 @doc (
 		value = "Allows an agent to capture other agent(s) as its micro-agent(s).",
@@ -173,8 +174,8 @@ public class CaptureStatement extends AbstractStatementSequence {
 	 */
 	private volatile IExpression target;
 
-	/** The return string. */
-	private final String returnString;
+	/** The returns. */
+	private final IVarExpression returns;
 
 	/**
 	 * The micro-species name from the {@code as} facet. {@code volatile} for safe publication and
@@ -198,7 +199,7 @@ public class CaptureStatement extends AbstractStatementSequence {
 		super(desc);
 		target = getFacet(IKeyword.TARGET);
 		microSpeciesName = getLiteral(IKeyword.AS);
-		returnString = getLiteral(IKeyword.RETURNS);
+		returns = (IVarExpression) getFacet(IKeyword.RETURNS);
 		if (hasFacet(IKeyword.TARGET)) {
 			setName(IKeyword.CAPTURE + " " + getFacet(IKeyword.TARGET).serializeToGaml(false));
 		}
@@ -206,7 +207,11 @@ public class CaptureStatement extends AbstractStatementSequence {
 
 	@Override
 	public void enterScope(final IScope stack) {
-		if (returnString != null) { stack.addVarWithValue(returnString, null); }
+		if (returns != null && !(returns instanceof IVarExpression.Agent)
+				&& !(returns instanceof IVarExpression.Persistent) && stack.getExecutionContext() != null
+				&& !stack.getExecutionContext().hasTempVar(returns.getName())) {
+			stack.addVarWithValue(returns.getName(), null);
+		}
 		super.enterScope(stack);
 	}
 
@@ -295,7 +300,7 @@ public class CaptureStatement extends AbstractStatementSequence {
 			}
 		}
 
-		if (returnString != null) { scope.setVarValue(returnString, capturedAgents); }
+		if (returns != null) { returns.setVal(scope, capturedAgents, false); }
 
 		// throw GamaRuntimeException if necessary
 		if (!removedComponents.isEmpty()) {

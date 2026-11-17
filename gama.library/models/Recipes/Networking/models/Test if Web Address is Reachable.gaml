@@ -20,4 +20,4 @@ global {
 	
 }
 
-experiment testWebAddress type: gui ;
+experiment testWebAddress mode: gui ;

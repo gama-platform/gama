@@ -429,7 +429,7 @@ species Boundary {
 	}
 }
 
-experiment downloadGISdata type: gui autorun: true{
+experiment downloadGISdata mode: gui autorun: true{
 	action _init_ (){
 		bool pref_gis <- gama.pref_gis_auto_crs ;
 		int crs <- gama.pref_gis_default_crs;
@@ -441,7 +441,7 @@ experiment downloadGISdata type: gui autorun: true{
 		gama.pref_gis_default_crs <- crs;
 	}
 	output {
-		display map type: 3d axes: false{
+		display map renderer: 3d axes: false{
 			species OSM_agent;
 			graphics "google map building" {
 				loop bd over: building_google {

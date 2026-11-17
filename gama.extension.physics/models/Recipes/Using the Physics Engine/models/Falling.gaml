@@ -61,9 +61,9 @@ species ball skills: [dynamic_body] {
 
 }
 
-experiment Display type: gui {
+experiment Display mode: gui {
 	output {	
-		display Falling  type: 3d background:rgb(128,128,128) axes:false{
+		display Falling  renderer: 3d background:rgb(128,128,128) axes:false{
 			camera 'default' location: {177.8131,883.5764,615.7961} target: {250.0,250.0,0.0};
 			graphics World refresh: false{
 				 draw shape color: #white; 

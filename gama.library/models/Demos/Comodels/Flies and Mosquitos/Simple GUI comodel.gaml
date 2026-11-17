@@ -35,7 +35,7 @@ global
 	}
 }
 
-experiment Complex type: gui{
+experiment Complex mode: gui{
 	output{
 		display "Comodel Display" {
 			//to display the agents of micro-models, we use the agent layer with the values from the coupling.

@@ -200,12 +200,12 @@ species objects skills:[moving]{
 			
 }	
 
-experiment "Run me !"   type: gui autorun:false{
+experiment "Run me !"   mode: gui autorun:false{
 	float minimum_cycle_duration<-0.025#sec;
 	parameter 'Mode' var: mode   category: "Preferences";
 	parameter 'Inner rings' var: inner_rings   category: "Preferences";
 	output {
-		display "1.9"  background: world.changeColor(cycle) type: opengl axes:true autosave:false fullscreen:false toolbar:false{
+		display "1.9"  background: world.changeColor(cycle) renderer: opengl axes:true autosave:false fullscreen:false toolbar:false{
 		  species objects aspect:obj;			
 		}
 	}

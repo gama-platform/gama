@@ -43,13 +43,13 @@ species road  {
 	}
 }
 
-experiment road_traffic type: gui {
+experiment road_traffic mode: gui {
 	parameter "Shapefile for the buildings:" var: shape_file_buildings category: "GIS" ;
 	parameter "Shapefile for the roads:" var: shape_file_roads category: "GIS" ;
 	parameter "Shapefile for the bounds:" var: shape_file_bounds category: "GIS" ;
 		
 	output {
-		display city_display type:3d map_order: true {
+		display city_display renderer:3d map_order: true {
 			species building aspect: base ;
 			species road aspect: base ;
 		}

@@ -86,9 +86,9 @@ species ball skills: [dynamic_body] {
 
 }
 
-experiment Stairs type: gui {
-	output {
-		display "Climb" type: 3d axes: false {
+experiment Stairs mode: gui {
+	output of: simulation{
+		display "Climb" renderer: 3d axes: false {
 	
 			camera 'default' location: {-47.816,165.8396,88.7059} target: {60.0,60.0,0.0};
 			graphics ground refresh:false{

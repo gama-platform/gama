@@ -4,7 +4,7 @@
 * Tags: statistics, robustness, test
 */
 
-experiment StatsInputRobustnessTest type: test autorun: true {
+experiment StatsInputRobustnessTest mode: test autorun: true {
 
 	bool rejected(string problem) {
 		return problem != nil and !(problem contains "Java error");

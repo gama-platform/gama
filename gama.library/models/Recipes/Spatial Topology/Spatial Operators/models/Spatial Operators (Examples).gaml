@@ -90,7 +90,7 @@ species objects topology: topology(shape_file_name_init) {
 
 
 
-experiment example_spatial_operators type: gui {
+experiment example_spatial_operators mode: gui {
 	parameter 'Path of shapefile to load for the initial agent:' var: shape_file_name_init  category: 'GIS specific' ;
 	parameter 'Path of shapefile to load for the background:' var: shape_file_name_background category: 'GIS specific';
 	parameter 'Size (area) from which an agent dies:' var: dying_size min: 100.0  category: 'Population'; 

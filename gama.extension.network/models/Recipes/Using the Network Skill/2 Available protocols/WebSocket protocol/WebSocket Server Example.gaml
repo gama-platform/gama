@@ -39,7 +39,7 @@ species Server skills: [network] parallel: true {
 
 }
 
-experiment "WebSocket Server Test" type: gui {
+experiment "WebSocket Server Test" mode: gui {
 	float minimum_cycle_duration <- 0.25;
 	output {
 	}

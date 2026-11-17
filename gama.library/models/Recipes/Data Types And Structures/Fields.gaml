@@ -78,24 +78,24 @@ grid cell width: 100 height: 100 {
 	rgb color <- rgb(255 * (1 - grid_value / 100), 0,0);
 }
 
-experiment Fields type: gui {
+experiment Fields mode: gui {
 	user_command "Declaring field" {create declaring_field;}	
 	user_command "Manipulating field" {create manipulating_field;}	
 }
 
-experiment Field_view type:gui{
+experiment Field_view mode:gui{
 	output {
 		layout #split;
-		display "field through mesh" type:3d {
+		display "field through mesh" renderer:3d {
 			mesh field_display grayscale:true scale: 0.05 triangulation: true smooth: true refresh: false;
 		}
-		display "rgb field through mesh" type:3d {
+		display "rgb field through mesh" renderer:3d {
 			mesh field_display color:field_display.bands scale: 0.1 triangulation: true smooth: 4 refresh: false;
 		}
-		display "rnd field with palette mesh"  type:3d {
+		display "rnd field with palette mesh"  renderer:3d {
 			mesh field_display.bands[2] color:scale([#red::100, #yellow::115, #green::101, #darkgreen::105]) scale:0.2 refresh: false ;
 		}
-		display "var field" type:3d  {
+		display "var field" renderer:3d  {
 			mesh var_field color:(brewer_colors("RdBu")) scale:0.0;
 		}
 	}

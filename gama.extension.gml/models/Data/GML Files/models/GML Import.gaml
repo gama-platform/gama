@@ -35,7 +35,7 @@ species road {
 	
 }
 
-experiment Run type: gui {
+experiment Run mode: gui {
 	output {
 		display city_display  {
 			species road;

@@ -38,12 +38,12 @@ species marker {
     }
 }
 
-experiment "1 - Text and outlines" type: gui {
+experiment "1 - Text and outlines" mode: gui {
     text "Purpose: compare multiline spacing, italic anchors, glyph holes, borders, wireframes and extruded glyph faces.<br/>Try: compare equal-sized views, then resize and zoom; no simulation steps are needed. Give each viewport at least 690 by 450 logical pixels to see the fixed panel. Experiment 7 isolates world extrusion and billboards without a covering panel." category: "What to compare";
     text "Expected: LF preserves the empty line and CRLF creates two lines. Red dots mark the italic labels' bottom-left anchors. O and B keep their holes and separated letters stay separate.<br/>Known differences: plain OpenGL4 text uses JOGL font resolution, which can substitute a different typeface than AWT. Font shapes, exact widths and antialiasing are not promised to be pixel-identical." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "Text panel" coordinates: #screen position: {16, 16} size: {650, 395}
                 background: #white border: #black {
                 draw "Multiline, bearings and outlines" at: {16, 24} font: shared_font color: #black;
@@ -68,16 +68,16 @@ experiment "1 - Text and outlines" type: gui {
                     at: {16, 370} font: font("SansSerif", 12) color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "2 - Geometry and transparency" type: gui {
+experiment "2 - Geometry and transparency" mode: gui {
     text "Purpose: compare filled, holed, concave and extruded geometry, wireframes, depth ordering and alpha blending.<br/>Try: inspect without running, then rotate and zoom both cameras to similar viewpoints. Run to rotate the blue cube." category: "What to compare";
     text "Expected: the ring has a clear hole; the L-shaped polygon is not filled across its missing corner. Front and back surfaces should remain closed when rotated. The translucent orange square reveals the blue square beneath it. Transparent surfaces are order-dependent; this experiment does not claim order-independent transparency." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "Shapes" {
                 draw square(100) at: {50, 50, -1} color: #white border: #gray;
                 draw (square(20) - square(10)) at: {22, 25} color: #blue border: #black depth: 4;
@@ -94,16 +94,16 @@ experiment "2 - Geometry and transparency" type: gui {
                 draw "Bottom: alpha overlap / sphere / wireframe" at: {16, 50} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "3 - Lighting and textures" type: gui {
+experiment "3 - Lighting and textures" mode: gui {
     text "Purpose: compare normals and shading on textured and untextured primitives under the same point light.<br/>Try: inspect first, then run to move the light; rotate the cameras and compare equivalent views." category: "What to compare";
     text "Expected: all objects remain visible. The moving point light changes the lit spheres and cube, while the unlit textured square keeps its brightness. The GAMA image must have the same orientation, not a vertical flip. Exact lighting intensity can differ between the fixed-function and shader backends; do not treat this as a photometric reference." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             light #ambient intensity: 80;
             light #default intensity: 0;
             light "Moving point" kind: #point location: {50 + 35 * cos(cycle * 2), 50, 45}
@@ -120,32 +120,32 @@ experiment "3 - Lighting and textures" type: gui {
                 draw "Unlit reference: flat GAMA square (bottom right)" at: {16, 50} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "4 - Wide grid and agents" type: gui {
+experiment "4 - Wide grid and agents" mode: gui {
     text "Purpose: preserve the wide-grid regression case (#1156) and compare moving agent geometry over a grid.<br/>Try: inspect before running, pan/zoom/rotate, then run. Compare cameras at similar angles." category: "What to compare";
     text "Expected: all 200 columns and 10 rows stay filled and bordered, including the left edge. Orange spheres must remain above the grid. Both displays share the same twelve agents; this is a correctness comparison, not a renderer performance benchmark." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             grid lane border: #black;
             species marker;
             overlay {
                 draw "200 x 10 cells; inspect the left edge while rotating" at: {16, 26} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "5 - Mesh and image" type: gui {
+experiment "5 - Mesh and image" mode: gui {
     text "Purpose: compare an elevated triangulated field with a raster image inset.<br/>Try: rotate the world to inspect the mesh peak and triangles, then resize and zoom. No steps are needed." category: "What to compare";
     text "Expected: both meshes have the same central peak, palette and triangle edges. The 160-by-110-pixel GAMA inset stays upright and fixed at the top right. Neither the image nor the mesh should disappear after drawing the caption." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             mesh heights scale: 2 triangulation: true border: #black
                 color: palette([#blue, #cyan, #yellow, #red]);
             image "../images/Gama.jpg" coordinates: #screen position: {-176, 16} size: {160, 110};
@@ -153,16 +153,16 @@ experiment "5 - Mesh and image" type: gui {
                 draw "5 x 5 field, central peak, triangulation" at: {16, 26} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "6 - Chart raster quality" type: gui {
+experiment "6 - Chart raster quality" mode: gui {
     text "Purpose: compare chart text, thin strokes, markers and texture scaling at identical frame sizes.<br/>Try: run, then pause and compare equal-sized viewports. Resize both views. The upper chart is 420 by 210 logical pixels; the lower chart follows viewport width but stays 180 pixels high. Allow at least 460 by 480 pixels per view." category: "What to compare";
     text "Expected: both backends plot the same shared signal with a 0-to-100 Y axis; curves, legend and axis labels stay readable and upright. Neither chart follows the world camera.<br/>OpenGL chart quality is also controlled by the saved graphical-resolution preference: set it to 1 for full resolution. This is not a Java2D comparison or an FPS benchmark." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             chart "Fixed pixel chart" kind: series position: {16, 16} size: {420, 210}
                 x_range: 200 y_range: {0, 100} {
                 data "Signal" value: signal color: #blue;
@@ -174,16 +174,16 @@ experiment "6 - Chart raster quality" type: gui {
                 data "Signal" value: signal color: #blue;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }
 
-experiment "7 - World text and billboards" type: gui {
+experiment "7 - World text and billboards" mode: gui {
     text "Purpose: compare world-oriented text, closed extrusion caps and camera-facing labels without a covering screen panel.<br/>Try: rotate, zoom and pan both views to similar camera angles; no steps are needed." category: "What to compare";
     text "Expected: the blue O and B keep holes in their front and back caps and their extruded sides remain closed. The green plain text follows the world plane. The red billboard stays camera-facing, but its position follows the world camera.<br/>Known differences: legacy OpenGL billboards use restricted GLUT bitmap fonts and anchor handling. Plain OpenGL4 text uses JOGL font substitution; bordered/extruded text uses AWT outlines. These are comparison targets, not a claim of full typography parity." category: "What to compare";
     output {
         layout #horizontal;
-        display "OpenGL" type: opengl antialias: true {
+        display "OpenGL" renderer: opengl antialias: true {
             graphics "World text" {
                 draw world.shape color: #lightgray border: #gray;
                 draw "O B i j" at: {50, 60, 2} anchor: #center font: font("Serif", 38, #italic)
@@ -196,6 +196,6 @@ experiment "7 - World text and billboards" type: gui {
                 draw "Rotate: inspect caps, holes and camera-facing label" at: {16, 26} color: #black;
             }
         }
-        display "OpenGL4" parent: "OpenGL" type: opengl4 {}
+        display "OpenGL4" parent: "OpenGL" renderer: opengl4 {}
     }
 }

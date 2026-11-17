@@ -18,17 +18,8 @@ global {
 			location <- {rnd(world.shape.width), rnd(world.shape.height), rnd(depth)};
 		}
 	}
-}
-
-species walker skills: [moving3D] {
-	reflex wander_around {
-		do wander(amplitude: 90.0);
-	}
-}
-
-experiment "Envelope3D Test" type: test autorun: true {
-
-	test "Envelope with depth keeps XY extent and sets depth" {
+	
+test "Envelope with depth keeps XY extent and sets depth" {
 		geometry e <- envelope(source, 10.0);
 		assert e.width = envelope(source).width;
 		assert e.height = envelope(source).height;
@@ -36,7 +27,7 @@ experiment "Envelope3D Test" type: test autorun: true {
 	}
 
 	test "World has a depth" {
-		assert world.shape.depth = depth;
+		assert shape.depth = depth;
 	}
 
 	test "3D wander in a world built from a 2D geometry" {
@@ -47,5 +38,12 @@ experiment "Envelope3D Test" type: test autorun: true {
 		assert walker all_match (each.location.z >= 0 and each.location.z <= depth);
 		assert (walker collect each.location) != before;
 	}
-
 }
+
+species walker skills: [moving3D] {
+	reflex wander_around {
+		do wander(amplitude: 90.0);
+	}
+}
+
+experiment "Envelope3D Test" mode: test autorun: true;

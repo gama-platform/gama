@@ -93,7 +93,7 @@ experiment KNearestNeighbors {
 	parameter "Generate points automatically" var: automatic category: "Interaction";
 	parameter "Show neighbors of last clicked point" var: show_neighbors category: "Appearance";
 	output {
-		display main type:2d background:backdrop {
+		display main renderer:2d background:backdrop {
 			graphics classification {
 				if (show_neighbors and last_query != nil) {
 					loop neighbor over: neighbors {
@@ -108,7 +108,7 @@ experiment KNearestNeighbors {
 					draw circle(1.6) at: last_query.location color: lettering wireframe: true width: 2;
 				}
 			}
-			event #mouse_down {ask simulation {do createAgent();}} 
+			event #mouse_down {do createAgent();}
 			overlay coordinates: #screen position: {16, 16} size: {345, 118} background: backdrop rounded: true {
 				draw "K-NEAREST NEIGHBORS" at: {14#px, 22#px} color: lettering font: font("Helvetica", 12, #bold);
 				draw "Click to classify a new point" at: {14#px, 49#px} color: colours[0] font: font("Helvetica", 11);

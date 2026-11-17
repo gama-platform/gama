@@ -25,7 +25,7 @@ species prey {
 	}
 } 
 
-experiment prey_predator type: gui {
+experiment prey_predator mode: gui {
 	parameter "Initial number of preys: " var: nb_preys_init min: 1 max: 1000 category: "Prey";
 	output {
 		display main_display {

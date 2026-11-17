@@ -60,7 +60,7 @@ species buildings {
 	}
 }
 
-experiment default_expr type: gui {
+experiment default_expr mode: gui {
 	output {
 		
 		display GlobalView {

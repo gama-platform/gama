@@ -165,9 +165,9 @@ global{
 
 	
 
-experiment normal type: gui {
+experiment normal mode: gui {
 	output {
-		display "Equation Tests" refresh: every(1 #cycle)  type: 2d {
+		display "Equation Tests" refresh: every(1 #cycle)  renderer: 2d {
 			chart '5 infected added at cycle=5, all infected at cycle=1' kind: series background: #white y_range: {0,500} {
 				data "S" value: (first(SIR_model).Sm) color: #green marker: true line_visible: false; 
 				data "I" value: (first(SIR_model).Im) color: #red marker: true line_visible: false;
@@ -182,13 +182,13 @@ experiment normal type: gui {
 }
 
 
-experiment dynamical_creation type: gui {
+experiment dynamical_creation mode: gui {
 	action _init_ (){
 		create SplitTest_model(dynamics_creation:true);
 	}
 	
 	output {
-		display "Equation Tests" refresh: every(1 #cycle)  type: 2d  {
+		display "Equation Tests" refresh: every(1 #cycle)  renderer: 2d  {
 			chart '5 infected added at cycle=5, all infected at cycle=1' kind: series background: #white y_range: {0,500} {
 				data "S" value: (first(SIR_model).Sm) color: #green marker: true line_visible: false; 
 				data "I" value: (first(SIR_model).Im) color: #red marker: true line_visible: false;
@@ -203,13 +203,13 @@ experiment dynamical_creation type: gui {
 }
 
 
-experiment test type: test {
+experiment test mode: test {
 	test "Equations" {
 		create SplitTest_model(with_viz:false);
 		//write "Distance between the static split system\nand the static regular system: "+error;
-		assert error = 0;
+		assert simulation.error = 0;
 		create SplitTest_model(with_viz:false, dynamics_creation:true);
 		//write "Distance between the dynamics split system\nand the dynamics regular system: "+error;
-		assert error = 0;
+		assert simulation.error = 0;
 	}	
 }

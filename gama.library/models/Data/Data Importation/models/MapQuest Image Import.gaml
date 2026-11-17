@@ -48,14 +48,14 @@ global {
 experiment Display
 {
 	parameter "Zoom" var: map_zoom  {
-		ask simulation  {do load_map();}
-		do update_outputs(true);
+		do load_map();
+		experiment.update_outputs(true);
 	}
 
 	output
 	{
 		
-		display "MapQuest" type: 3d axes:false
+		display "MapQuest" renderer: 3d axes:false
 		{
 			graphics toto {
 				draw static_map_request;

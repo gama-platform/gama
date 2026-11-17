@@ -9,13 +9,8 @@ model GridTestModel
 
 global {
 	geometry shape <- square(100);
-}
-
-grid my_grid width: 10 height: 10 {
-	float val <- rnd(1.0);
-}
-
-experiment GridTest type: test autorun: true {
+	
+	
 	
 	test "Grid Dimensions and Cell Access" {
 		assert length(my_grid) = 100;
@@ -54,4 +49,11 @@ experiment GridTest type: test autorun: true {
 		assert mat.rows = 10;
 		assert mat[0, 0] = my_grid[0, 0];
 	}
+	
 }
+
+grid my_grid width: 10 height: 10 {
+	float val <- rnd(1.0);
+}
+
+experiment GridTest mode: test autorun: true;

@@ -18,6 +18,20 @@ species user_agent control: user_first {
 			// Action executed by user
 		}
 	}
+	
+		
+}
+
+global {
+	test "User Architecture Blocks Compilation" {
+		create user_agent number: 1;
+		create user_agent2 number: 1;
+
+		assert length(user_agent) = 1;
+		assert length(user_agent2) = 1;
+		assert user_agent[0].state = "my_initial_state";
+		assert user_agent2[0].state = "my_initial_state";
+	}
 }
 
 species user_agent2 control: user_last {
@@ -32,15 +46,4 @@ species user_agent2 control: user_last {
 	}
 }
 
-experiment UserArchitectureTest type: test autorun: true {
-	
-	test "User Architecture Blocks Compilation" {
-		create user_agent number: 1;
-		create user_agent2 number: 1;
-
-		assert length(user_agent) = 1;
-		assert length(user_agent2) = 1;
-		assert user_agent[0].state = "my_initial_state";
-		assert user_agent2[0].state = "my_initial_state";
-	}
-}
+experiment UserArchitectureTest mode: test autorun: true;

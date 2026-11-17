@@ -256,8 +256,9 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	private void executeEvent(final UserInputEvent input, final int motionKind) {
 		final IGraphicsScope source = executionScope;
 		if (source == null || source.isClosed()) return;
-		final ISimulationAgent simulation = source.getSimulation();
-		final IExperimentAgent experiment = source.getExperiment();
+		final IAgent owner = ((ILayerStatement.Event) definition).getExecuter(source);
+		final ISimulationAgent simulation = owner instanceof ISimulationAgent sim ? sim : null;
+		final IExperimentAgent experiment = owner instanceof IExperimentAgent exp ? exp : null;
 		if (simulation != null && !simulation.isInOwnThread()) {
 			synchronized (pendingMotion) {
 				final WeakReference<PendingMotion> reference = pendingMotion.get(simulation);

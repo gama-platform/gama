@@ -162,7 +162,7 @@ grid grille width: 25 height: 25 neighbors:4 {
 }
 
 
-experiment fight_fire type: gui {
+experiment fight_fire mode: gui {
 	float minimum_cycle_duration <- 0.05;
 	output {					
 		display view1 { 

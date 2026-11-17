@@ -132,7 +132,7 @@ grid vegetation_cell width: 50 height: 50 neighbors: 4 {
 	list<vegetation_cell> neighbors2 <- (self neighbors_at 2);
 }
 
-experiment prey_predator type: gui {
+experiment prey_predator mode: gui {
 	parameter "Initial number of preys: " var: nb_preys_init min: 0 max: 1000 category: "Prey";
 	parameter "Prey max energy: " var: prey_max_energy category: "Prey";
 	parameter "Prey max transfer: " var: prey_max_transfer category: "Prey";

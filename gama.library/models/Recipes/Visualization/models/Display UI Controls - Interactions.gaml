@@ -54,10 +54,10 @@ species particle skills: [moving] {
 	}
 }
 
-experiment "Control interactions" type: gui {
+experiment "Control interactions" mode: gui {
 	float minimum_cycle_duration <- 0.05;
 	output {
-		display "Interaction playground" type: java2D background: #white {
+		display "Interaction playground" renderer: java2D background: #white {
 			species particle;
 			overlay position: {16, 16} size: {360, 450}
 				background: #white with_alpha 0.92 border: #lightgray rounded: true {
@@ -65,40 +65,34 @@ experiment "Control interactions" type: gui {
 					anchor: #top_left font: font("Helvetica", 18, #bold) color: #black;
 				ui_button "Scatter agents" at: {16, 48} size: {328, 30}
 					accent: button_accent active: !controls_locked {
-					ask simulation { do scatter(); }
+					do scatter(); 
 				}
 				ui_button (moving ? "Pause motion" : "Resume motion")
 					toggle: true var: moving at: {16, 88} size: {328, 30}
 					accent: button_accent active: !controls_locked {
-					ask simulation {
 						feedback <- moving ? "Toggle resumed movement." : "Toggle paused movement.";
-					}
 				}
 				ui_switch "Moving (same binding)" var: moving at: {16, 128} size: {328, 30}
 					accent: button_accent active: !controls_locked;
 				ui_slider "Motion speed" var: motion_speed min: 0.0 max: 6.0 step: 0.25
 					at: {16, 168} size: {328, 44} accent: button_accent active: !controls_locked {
-					ask simulation {
 						slow_mode <- false;
 						fast_mode <- false;
 						feedback <- "Custom speed selected.\nBoth preset radios cleared by the simulation.";
-					}
 				}
 				ui_radio "Slow preset" var: slow_mode group: "speed"
 					at: {16, 222} size: {328, 30} accent: button_accent active: !controls_locked {
-					if ui_value { ask simulation { do set_preset(false); } }
+					if ui_value {  do set_preset(false); } 
 				}
 				ui_radio "Fast preset" var: fast_mode group: "speed"
 					at: {16, 262} size: {328, 30} accent: button_accent active: !controls_locked {
-					if ui_value { ask simulation { do set_preset(true); } }
+					if ui_value {  do set_preset(true); } 
 				}
 				ui_button (controls_locked ? "Unlock controls" : "Lock controls")
 					at: {16, 302} size: {158, 30} rounded: false accent: #orange {
-					ask simulation {
 						controls_locked <- !controls_locked;
 						feedback <- controls_locked ? "Other controls disabled; Reset still works."
 							: "Other controls enabled again.";
-					}
 				}
 				// A direct global action reference also targets the simulation.
 				ui_button ("Reset (" + string(resets) + ")") action: reset_panel

@@ -7,17 +7,8 @@
 
 model ThreadSkillTestModel
 
-species thread_agent skills: [thread] {
-	bool is_running <- false;
-	
-	action thread_action() {
-		is_running <- true;
-	}
-}
-
-experiment ThreadSkillTest type: test autorun: true {
-	
-	test "Thread Skill Lifecycle" {
+global {
+		test "Thread Skill Lifecycle" {
 		create thread_agent number: 1 returns: created_agents;
 		thread_agent ag <- created_agents[0];
 		
@@ -33,4 +24,17 @@ experiment ThreadSkillTest type: test autorun: true {
 			do end_thread();
 		}
 	}
+}
+
+species thread_agent skills: [thread] {
+	bool is_running <- false;
+	
+	action thread_action() {
+		is_running <- true;
+	}
+}
+
+experiment ThreadSkillTest mode: test autorun: true {
+	
+
 }

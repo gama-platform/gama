@@ -54,9 +54,9 @@ species people skills: [moving] {
 	}
 }
 
-experiment Display type: gui {
+experiment Display mode: gui {
 	output {
-		display City type: 2d {
+		display City renderer: 2d {
 			species building;
 			species road;
 			species people;

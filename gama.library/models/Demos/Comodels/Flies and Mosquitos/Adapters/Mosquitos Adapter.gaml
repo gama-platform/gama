@@ -13,7 +13,7 @@ global
 {
 }
 
-experiment Generic type: gui
+experiment Generic mode: gui actions_context: simulation
 {
 	list<Mosquito> get_mosquitos (){
 		return list(Mosquito);

@@ -49,7 +49,7 @@ experiment "Record and keep same seed" record: true keep_seed: true {
 			grid vegetation_cell border: #black ;
 			species prey aspect: base;
 		}
-		display location_x type: 2d antialias:false{
+		display location_x renderer: 2d antialias:false{
 			chart "grid_x of the prey" {
 				data "grid_x" value: first(prey).my_cell.grid_x;
 			}
@@ -64,7 +64,7 @@ experiment "Record without keeping seed" record: true keep_seed: false {
 			grid vegetation_cell border: #black ;
 			species prey aspect: base;
 		}
-		display location_x type: 2d antialias:false{
+		display location_x renderer: 2d antialias:false{
 			chart "grid_x of the prey" {
 				data "grid_x" value: first(prey).my_cell.grid_x;
 			}

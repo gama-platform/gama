@@ -50,4 +50,4 @@ species dummy_species {
 	}
 }
 
-experiment name type: gui {}
+experiment name mode: gui {}

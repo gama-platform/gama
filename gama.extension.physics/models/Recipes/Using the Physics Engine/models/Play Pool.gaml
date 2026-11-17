@@ -161,7 +161,7 @@ species ball skills: [dynamic_body] {
 
 }
 
-experiment "Play !" type: gui autorun: true   {
+experiment "Play !" mode: gui autorun: true   {
 	parameter "Ball Restitution" var: ball_restitution category: "Ball properties" ;
 	parameter "Ball Damping (natural deceleration)" var: ball_damping category: "Ball properties" ;
 	parameter "Ball Friction" var: ball_friction category: "Ball properties" ;
@@ -183,7 +183,7 @@ experiment "Play !" type: gui autorun: true   {
 	}
 	
 	output {
-		display Pool type: 3d antialias: false axes: false{
+		display Pool renderer: 3d antialias: false axes: false{
 			camera #default location: {100.0,400.0,300.0} target: {width/2,height/2,-20.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};

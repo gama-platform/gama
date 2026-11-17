@@ -203,7 +203,7 @@ species house {
 }
 
 
-experiment multicriteria type: gui {
+experiment multicriteria mode: gui {
 	parameter "weight of the standing criterion" var:weight_standing category: "Weight";
 	parameter "weight of the price criterion" var:weight_price category: "Weight";
 	parameter "weight of the distance criterion" var:weight_distance category: "Weight";
@@ -250,23 +250,23 @@ experiment multicriteria type: gui {
 	parameter "max rejection of the area criterion" var:v2c_area category: "Evidence Theory";
 	output {
 		layout #split;
-		display Map_Weighted_Means type: 3d{
+		display Map_Weighted_Means renderer: 3d{
 			species house aspect: weighted_means_aspect;
 			species people;
 		}
-		display Map_Electre type: 3d{
+		display Map_Electre renderer: 3d{
 			species house aspect: electre_aspect;
 			species people;
 		}
-		display Map_Promethee type: 3d{
+		display Map_Promethee renderer: 3d{
 			species house aspect: promethee_aspect;
 			species people;
 		}
-		display Map_Evidence_theory type: 3d{
+		display Map_Evidence_theory renderer: 3d{
 			species house aspect: evidence_theory_aspect;
 			species people;
 		}
-		display Map_Choquet type: 3d{
+		display Map_Choquet renderer: 3d{
 			species house aspect: choquet_aspect;
 			species people;
 		}

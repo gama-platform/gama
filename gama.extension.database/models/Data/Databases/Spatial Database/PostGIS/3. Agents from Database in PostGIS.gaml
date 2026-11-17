@@ -53,9 +53,9 @@ species buildings {
 	}	
 }	
 
-experiment DB2agentPOSTGIS type: gui {
+experiment DB2agentPOSTGIS mode: gui {
 	output {
-		display fullView type:3d{
+		display fullView renderer:3d{
 			species buildings aspect: default;
 		}
 	}

@@ -23,11 +23,11 @@ grid cell width: 10 height: 10 {
 	string type <- one_of(color_per_type.keys);
 	rgb color <- color_per_type[type];
 }
-experiment "Overlay" type: gui
+experiment "Overlay" mode: gui
 {
     output 
     {
-        display map type: 3d axes:false antialias:false
+        display map renderer: 3d axes:false antialias:false
         {
             // Place a 180-by-100-pixel legend five pixels from the viewport origin.
             overlay coordinates: #screen position: { 5, 5 } size: { 180, 100 } background: # black transparency: 0.5 border: #black rounded: true

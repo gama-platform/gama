@@ -46,9 +46,9 @@ species NetworkingAgent{
 	
 }
 
-experiment Network_receiver type: gui {
+experiment Network_receiver mode: gui {
 	output {
-		display view type: opengl {
+		display view renderer: opengl {
 			species NetworkingAgent aspect:base;
 		}
 	}

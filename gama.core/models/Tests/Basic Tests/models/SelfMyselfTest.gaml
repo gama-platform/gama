@@ -7,37 +7,8 @@
 
 model SelfMyselfTestModel
 
-species caller_agent {
-	int my_id <- 1;
-	// what the asked agent saw
-	int self_seen_in_ask <- 0;
-	int myself_seen_in_ask <- 0;
-	agent self_agent_in_ask <- nil;
-	agent myself_agent_in_ask <- nil;
-
-	action test_scope() {
-		create receiver_agent number: 1 returns: receivers;
-		receiver_agent rec <- receivers[0];
-
-		// In an ask block, 'self' is the asked agent, 'myself' is the caller
-		ask rec {
-			myself.self_seen_in_ask <- self.my_id;
-			myself.myself_seen_in_ask <- myself.my_id;
-			myself.self_agent_in_ask <- self;
-			myself.myself_agent_in_ask <- myself;
-			// Change caller's id via myself
-			myself.my_id <- 10;
-		}
-	}
-}
-
-species receiver_agent {
-	int my_id <- 2;
-}
-
-experiment SelfMyselfTest type: test autorun: true {
-
-	// asserts are only taken into account directly inside a test: the action records what it sees and the
+global {
+		// asserts are only taken into account directly inside a test: the action records what it sees and the
 	// test checks it afterwards
 	test "Self and Myself Scope Resolution" {
 		create caller_agent number: 1 returns: callers;
@@ -68,3 +39,33 @@ experiment SelfMyselfTest type: test autorun: true {
 		assert seen_myself != seen_self;
 	}
 }
+
+species caller_agent {
+	int my_id <- 1;
+	// what the asked agent saw
+	int self_seen_in_ask <- 0;
+	int myself_seen_in_ask <- 0;
+	agent self_agent_in_ask <- nil;
+	agent myself_agent_in_ask <- nil;
+
+	action test_scope() {
+		create receiver_agent number: 1 returns: receivers;
+		receiver_agent rec <- receivers[0];
+
+		// In an ask block, 'self' is the asked agent, 'myself' is the caller
+		ask rec {
+			myself.self_seen_in_ask <- self.my_id;
+			myself.myself_seen_in_ask <- myself.my_id;
+			myself.self_agent_in_ask <- self;
+			myself.myself_agent_in_ask <- myself;
+			// Change caller's id via myself
+			myself.my_id <- 10;
+		}
+	}
+}
+
+species receiver_agent {
+	int my_id <- 2;
+}
+
+experiment SelfMyselfTest mode: test autorun: true;

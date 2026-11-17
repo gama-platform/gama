@@ -32,9 +32,9 @@ species countries {
 	}
 }
 
-experiment Display  type: gui {
+experiment Display  mode: gui {
 	output {
-		display Countries type: 3d{	
+		display Countries renderer: 3d{	
 			species countries;			
 		}
 	}

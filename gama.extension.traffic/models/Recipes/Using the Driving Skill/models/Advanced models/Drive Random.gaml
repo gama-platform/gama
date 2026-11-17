@@ -116,7 +116,7 @@ species car_random parent: vehicle_random {
 
 
 
-experiment ring type: gui {
+experiment ring mode: gui {
 
 	parameter 'Traffic light interval' var:traffic_light_interval;
 	
@@ -129,7 +129,7 @@ experiment ring type: gui {
 	}
 
 	output synchronized: true {
-		display map type: 2d background: #gray {
+		display map renderer: 2d background: #gray {
 			species road aspect: base;
 			species car_random aspect: base;
 			species motorbike_random aspect: base;
@@ -139,7 +139,7 @@ experiment ring type: gui {
 }
 
 
-experiment city type: gui {
+experiment city mode: gui {
 	action _init_(){
 		create simulation (
 			map_name:"rouen",
@@ -149,7 +149,7 @@ experiment city type: gui {
 	}
 
 	output synchronized: true {
-		display map type: 2d background: #gray {
+		display map renderer: 2d background: #gray {
 			species road aspect: base;
 			species car_random aspect: base;
 			species motorbike_random aspect: base;

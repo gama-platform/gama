@@ -20,7 +20,7 @@ global {
 }
 
 // Writes the result of the checks on the simulations of one run (called at the end of each run).
-experiment regression_abstract type: batch virtual: true until: world.stop_sim() {
+experiment regression_abstract mode: batch virtual: true until: world.stop_sim() {
 	parameter "p" var: p min: 0.0 max: 1.0 step: 0.5;
 
 	action check(string title) {
@@ -30,13 +30,13 @@ experiment regression_abstract type: batch virtual: true until: world.stop_sim()
 }
 
 // 1. Each simulation must stop on its own 'until' condition, whatever the concurrency.
-experiment until_sequential parent: regression_abstract type: batch repeat: 6 parallel: 1 keep_seed: true
+experiment until_sequential parent: regression_abstract mode: batch repeat: 6 parallel: 1 keep_seed: true
 		until: world.stop_sim() {
 	method exploration;
 	reflex end_of_runs { do check("until_sequential"); }
 }
 
-experiment until_parallel parent: regression_abstract type: batch repeat: 6 parallel: 3 keep_seed: true
+experiment until_parallel parent: regression_abstract mode: batch repeat: 6 parallel: 3 keep_seed: true
 		until: world.stop_sim() {
 	method exploration;
 	reflex end_of_runs { do check("until_parallel"); }
@@ -44,14 +44,14 @@ experiment until_parallel parent: regression_abstract type: batch repeat: 6 para
 
 // 2. Many short simulations, not kept: used to hang or leave simulations behind (#198, #282).
 // The batch must finish by itself ("Batch over" in the status bar) and the experiment reflex must fire.
-experiment many_not_kept parent: regression_abstract type: batch repeat: 100 parallel: 4 keep_simulations: false
+experiment many_not_kept parent: regression_abstract mode: batch repeat: 100 parallel: 4 keep_simulations: false
 		until: world.stop_sim() {
 	method exploration;
 	reflex end_of_runs { write "many_not_kept | end of a run (simulations kept: " + length(simulations) + ")"; }
 }
 
 // 3. 'with:' needs parameter names as strings; each run must use one of the given values.
-experiment explicit_with parent: regression_abstract type: batch repeat: 3 keep_seed: true
+experiment explicit_with parent: regression_abstract mode: batch repeat: 3 keep_seed: true
 		until: world.stop_sim() {
 	method exploration(["p"::0.2], ["p"::0.4], ["p"::0.8]);
 	reflex end_of_runs {
@@ -62,10 +62,10 @@ experiment explicit_with parent: regression_abstract type: batch repeat: 3 keep_
 }
 
 // 4. A 'permanent' section must be closed and reopened when the experiment is reloaded (#199).
-experiment permanent_reload parent: regression_abstract type: batch repeat: 3 until: world.stop_sim() {
+experiment permanent_reload parent: regression_abstract mode: batch repeat: 3 until: world.stop_sim() {
 	method exploration;
 	permanent {
-		display Cycles type: 2d {
+		display Cycles renderer: 2d {
 			chart "Cycles" kind: series {
 				data "Max" value: max(simulations collect each.cycle) color: #red;
 			}
@@ -75,7 +75,7 @@ experiment permanent_reload parent: regression_abstract type: batch repeat: 3 un
 
 // 5. Simulations that kill themselves ('do die') must be collected like the others: the batch used to wait for them
 // forever. The check is only written if the batch reaches the end of its runs.
-experiment die_in_batch parent: regression_abstract type: batch repeat: 4 parallel: 3 keep_seed: true
+experiment die_in_batch parent: regression_abstract mode: batch repeat: 4 parallel: 3 keep_seed: true
 		until: world.stop_sim() {
 	parameter "dies" var: dies <- true;
 	method exploration;

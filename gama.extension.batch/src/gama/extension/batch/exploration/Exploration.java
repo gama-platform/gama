@@ -71,9 +71,10 @@ import gama.core.experiment.parameters.ParametersSet;
 						doc = @doc ("the list of parameter sets to explore; a parameter set is defined by a map: key: name of the variable, value: expression for the value of the variable")),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
+						context = facet.Context.MODEL,
 						type = IType.LIST,
 						optional = true,
-						doc = @doc ("The list of output variables to track throughout exploration")),
+						doc = @doc ("The list of output variables to track throughout exploration. Names refer to variables of each completed simulation")),
 				@facet (
 						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
@@ -113,7 +114,7 @@ import gama.core.experiment.parameters.ParametersSet;
 		},
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This is the standard batch method. The exploration mode is defined by default when there is no method element present in the batch section. It explores all the combination of parameter values in a sequential way. You can also choose a SAMPLING method for the exploration. See [batch161 the batch dedicated page].",
+		value = "This is the standard batch method. The exploration mode is defined by default when there is no method element present in the batch section. It explores all the combination of parameter values in a sequential way. You can also choose a SAMPLING method for the exploration. See [batch161 the batch dedicated page]. Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "As other batch methods, the basic syntax of the exploration statement uses `method exploration` instead of the expected `exploration name: id` : ",
 				examples = { @example (

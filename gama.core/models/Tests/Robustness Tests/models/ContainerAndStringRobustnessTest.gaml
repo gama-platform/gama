@@ -8,7 +8,7 @@
 
 @no_warning
 
-experiment ContainerAndStringRobustnessTest type: test autorun: true {
+experiment ContainerAndStringRobustnessTest mode: test autorun: true {
 
 	list<int> numbers <- [1, 2, 3];
 

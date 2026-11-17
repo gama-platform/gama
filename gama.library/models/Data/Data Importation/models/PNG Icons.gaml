@@ -92,13 +92,13 @@ experiment Icons
 	{
 		layout #split;
 		
-		display "Colorful in 3D" type: 3d axes:false
+		display "Colorful in 3D" renderer: 3d axes:false
 		{
 			// We simply display people, which will use their aspect named 3d
 			species people aspect: 3d;
 		}
 		
-		display "Colorful in 2D" type:  2d {
+		display "Colorful in 2D" renderer:  2d {
 			
 			// Idem for 2d
 			species people aspect: java2d;

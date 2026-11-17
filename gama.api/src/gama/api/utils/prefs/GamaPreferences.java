@@ -32,9 +32,11 @@ import gama.api.constants.Generators;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.GamaMetaModel;
+import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
+import gama.api.types.file.GamaFolderFile;
 import gama.api.types.file.GenericFile;
 import gama.api.types.file.IGamaFile;
 import gama.api.types.font.GamaFontFactory;
@@ -298,6 +300,24 @@ public class GamaPreferences {
 
 		/** The name of the "Navigator" group within the Interface tab. */
 		public static final String WORKSPACE = "Workspace";
+
+		/**
+		 * Whether GAMA should remember the previously selected workspace and skip the workspace-selection dialog at
+		 * startup. Activates {@link #CORE_WORKSPACE_PATH}.
+		 */
+		public static final Pref<Boolean> CORE_WORKSPACE_REMEMBER =
+				create(IWorkspaceManager.KEY_WORKSPACE_REMEMBER, "Remember previously launched workspace", false,
+						IType.BOOL, false).in(NAME, WORKSPACE).inPlayer(false)
+								.activates(IWorkspaceManager.KEY_WORSPACE_PATH).withLabels("Yes", "No");
+
+		/**
+		 * The file-system path of the workspace directory to open when {@link #CORE_WORKSPACE_REMEMBER} is enabled.
+		 */
+		public static final Pref<? extends IGamaFile> CORE_WORKSPACE_PATH =
+				create(IWorkspaceManager.KEY_WORSPACE_PATH, "Workspace directory to use",
+						() -> new GamaFolderFile(null,
+								GAMA.getWorkspaceManager().getLastSetWorkspaceDirectory(), false),
+						IType.DIRECTORY, false).in(NAME, WORKSPACE).inPlayer(false).restartRequired();
 
 		/** Whether GAMA should ask before automatically rebuilding a corrupted workspace. */
 		public static final Pref<Boolean> CORE_ASK_REBUILD =

@@ -24,29 +24,29 @@ global {
 }
 
 
-experiment Palettes type: gui {
+experiment Palettes mode: gui {
 	output synchronized: true {
 		layout #split;
-		display "Brewer" type: 3d {
+		display "Brewer" renderer: 3d {
 			mesh cells  color:(brewer_colors("Set3")) triangulation: true smooth: true;
 		}
 
 
-		display "One Color" type: 3d  {
+		display "One Color" renderer: 3d  {
 			mesh cells  color: #green triangulation: true border: #yellow smooth: true;
 		}
 		
 		
-		display "Scale" type: 3d  {
+		display "Scale" renderer: 3d  {
 			mesh cells  color: scale([#red::1, #yellow::2, #green::3, #blue::6]) triangulation: true smooth: true;
 		}
 		
 
-		display "Texture " type: 3d { 
+		display "Texture " renderer: 3d { 
 			mesh cells texture: file("includes/Texture.jpg") triangulation: true border: #black smooth: true;
 			
 		}
-		display "Simple gradient" type: 3d { 
+		display "Simple gradient" renderer: 3d { 
 			mesh cells color: palette([#darkgreen, #darkgreen, #green, #green, #sienna, #sienna, #white]) triangulation: true border: #black ;
 			
 		}

@@ -107,7 +107,7 @@ species TexturedGeometry3D{
     }
 }
 
-experiment "3D Shapes"  type: gui {
+experiment "3D Shapes"  mode: gui {
 	parameter "Are geometries empty?" var: emptiness ;
 	init {
 		gama.pref_display_slice_number <- 64;
@@ -116,7 +116,7 @@ experiment "3D Shapes"  type: gui {
 	
 
 	output synchronized:true{
-		display View1 type:3d background:rgb(10,40,55)   {
+		display View1 renderer:3d background:rgb(10,40,55)   {
 			species Geometry2D aspect:default;
 			species TexturedGeometry2D aspect:default;
 			species Geometry3D aspect:default;

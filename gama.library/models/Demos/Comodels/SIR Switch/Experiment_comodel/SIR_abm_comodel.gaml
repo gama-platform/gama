@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment ABMcomodel model:'../Legacy_models/SIR_ABM.gaml' type:gui {
+experiment ABMcomodel model:'../Legacy_models/SIR_ABM.gaml' mode:gui actions_context: simulation {
 	int get_num_S()
 	{
 		return length(Host where (each.state = 0));
@@ -23,9 +23,9 @@ experiment ABMcomodel model:'../Legacy_models/SIR_ABM.gaml' type:gui {
 
 	action set_num_S_I_R (int numS, int numI, int numR)
 	{
-		self.set_num_S(numS);
-		self.set_num_I(numI);
-		self.set_num_R(numR);
+		experiment.set_num_S(numS);
+		experiment.set_num_I(numI);
+		experiment.set_num_R(numR);
 	}
 
 	action set_num_S (int num)

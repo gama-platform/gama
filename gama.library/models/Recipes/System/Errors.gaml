@@ -43,7 +43,7 @@
 model Errors
 
 global {
-	int divisor <- 0;
+
 }
 
 species error_probe {
@@ -101,6 +101,7 @@ experiment "4 - Catch an invalid assignment" {
 }
 
 experiment "5 - Catch division by zero" {
+	int divisor <- 0;
 	init {
 		bool reached <- false;
 		try {
@@ -135,6 +136,7 @@ experiment "6 - Evaluate GAML safely" {
 }
 
 experiment "7 - Inspect thrown errors and warnings" {
+	int divisor <- 0;
 	init {
 		assert is_error(5 mod divisor);
 		assert !is_error(nil);
@@ -164,7 +166,7 @@ experiment "9 - Deliberately ignore a failure" {
 	}
 }
 
-experiment "Error handling regression checks" type: test {
+experiment "Error handling regression checks" mode: test {
 	test "Nil action calls are catchable" {
 		error_probe absent <- nil;
 		bool caught <- false;
@@ -204,6 +206,7 @@ experiment "Error handling regression checks" type: test {
 	test "Modulo fails before computing a result" {
 		bool caught <- false;
 		bool reached <- false;
+		int divisor <- 0;
 		try {
 			write 5 mod divisor;
 			reached <- true;

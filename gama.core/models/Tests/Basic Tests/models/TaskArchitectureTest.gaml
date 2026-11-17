@@ -7,23 +7,8 @@
 
 model TaskArchitectureTestModel
 
-species task_agent control: weighted_tasks {
-	int counter <- 0;
-	bool task1_run <- false;
-	bool task2_run <- false;
+global {
 	
-	task task1 weight: 1.0 {
-		task1_run <- true;
-		counter <- counter + 1;
-	}
-	
-	task task2 weight: 2.0 {
-		task2_run <- true;
-		counter <- counter + 2;
-	}
-}
-
-experiment TaskArchitectureTest type: test autorun: true {
 	
 	test "Task Execution by Weight" {
 		create task_agent number: 1 returns: created_agents;
@@ -41,7 +26,39 @@ experiment TaskArchitectureTest type: test autorun: true {
 		assert ag.task1_run = false;
 		assert ag.counter = 2;
 	}
+	
+	
+	
+	test "Probabilistic Task Execution" {
+		create prob_task_agent number: 1 returns: created_agents;
+		prob_task_agent ag <- created_agents[0];
+		
+		ask ag { do _step_(); }
+		
+		// Since one task has weight 1.0 and the other 0.0, the first one is always chosen
+		assert ag.run_count = 1;
+	}
+	
+	
 }
+
+species task_agent control: weighted_tasks {
+	int counter <- 0;
+	bool task1_run <- false;
+	bool task2_run <- false;
+	
+	task task1 weight: 1.0 {
+		task1_run <- true;
+		counter <- counter + 1;
+	}
+	
+	task task2 weight: 2.0 {
+		task2_run <- true;
+		counter <- counter + 2;
+	}
+}
+
+experiment TaskArchitectureTest mode: test autorun: true;
 
 species prob_task_agent control: probabilistic_tasks {
 	int run_count <- 0;
@@ -54,15 +71,3 @@ species prob_task_agent control: probabilistic_tasks {
 	}
 }
 
-experiment ProbabilisticTasksTest type: test autorun: true {
-	
-	test "Probabilistic Task Execution" {
-		create prob_task_agent number: 1 returns: created_agents;
-		prob_task_agent ag <- created_agents[0];
-		
-		ask ag { do _step_(); }
-		
-		// Since one task has weight 1.0 and the other 0.0, the first one is always chosen
-		assert ag.run_count = 1;
-	}
-}

@@ -8,7 +8,7 @@
 
 model NestedMapCastingTestModel
 
-experiment NestedMapCastingTest type: test autorun: true {
+experiment NestedMapCastingTest mode: test autorun: true {
 	test "Nested maps accept mixed values after homogeneous initialization" {
 		map<string, unknown> flat <- ["a"::1.0];
 		flat["x"] <- "X";

@@ -32,13 +32,13 @@ global {
 	}
 }
 
-experiment "CoModel" type: gui {
+experiment "CoModel" mode: gui {
 	output {
-		display d type:2d antialias:false{
+		display d renderer:2d antialias:false{
 			agents "weather" value: weather_simu.plotWeather ;
 		}
 		
-		display data  type: 3d {
+		display data  renderer: 3d {
 			chart "rain" kind: series {
 				data "rainfall" value: sum(weather_simu.plotWeather accumulate (each.rain));
 			}

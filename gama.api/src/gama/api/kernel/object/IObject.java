@@ -13,6 +13,7 @@ import java.util.Map;
 import gama.api.compilation.IVarAndActionSupport;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
@@ -35,12 +36,21 @@ public interface IObject extends IAttributed, IContainer.ToGet<String, Object>, 
 		}
 	}
 
+	/** Binds the model owner before initializing even custom Java-backed objects. */
+	default void initializeAttributesWithOwner(final IScope scope, final Map<String, Object> values) {
+		ObjectModelOwners.bind(this, scope);
+		initializeAttributes(scope, values);
+	}
+
 	/**
 	 * Gets the species.
 	 *
 	 * @return the species
 	 */
 	IClass getSpecies();
+
+	/** The simulation in which this object was created, if any. */
+	default ISimulationAgent getModelOwner() { return ObjectModelOwners.get(this); }
 
 	/**
 	 * Gets the species name.

@@ -12,9 +12,10 @@ species var_agent {
 	int dynamic_val <- 0 update: dynamic_val + 1;
 }
 
-experiment VariablesAdvancedTest type: test autorun: true {
+experiment VariablesAdvancedTest mode: test autorun: true {
 	
 	test "Variable Bounds" {
+		ask simulation {
 		create var_agent number: 1 returns: created_agents;
 		var_agent ag <- created_agents[0];
 		
@@ -23,16 +24,20 @@ experiment VariablesAdvancedTest type: test autorun: true {
 		
 		ag.bounded_val <- -5; // Should be capped at 0
 		assert ag.bounded_val = 0;
+		}
 	}
 	
 	test "Variable Dynamic Updates" {
+		var_agent ag;
+		ask simulation{
 		create var_agent number: 1 returns: created_agents;
-		var_agent ag <- created_agents[0];
+		ag <- created_agents[0];
 		assert ag.dynamic_val = 0;
 
 		// '_step_' only executes the behaviours of the agent: the 'update' facet is not evaluated
 		ask ag { do _step_(); }
 		assert ag.dynamic_val = 0;
+		}
 
 		// it is evaluated when the agent is stepped by the simulation
 		ask simulation { do _step_(); }
@@ -47,8 +52,11 @@ experiment VariablesAdvancedTest type: test autorun: true {
 	}
 
 	test "Bounds apply to updates too" {
+		var_agent ag;
+		ask simulation{
 		create var_agent number: 1 returns: created_agents;
-		var_agent ag <- created_agents[0];
+		ag <- created_agents[0];
+		}
 		ag.bounded_val <- 9;
 		ask ag { bounded_val <- bounded_val + 5; }
 		assert ag.bounded_val = 10;

@@ -72,9 +72,10 @@ import gama.extension.stats.analysis.Stochanalysis;
 								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IExploration.MORRIS)),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
+						context = facet.Context.MODEL,
 						type = IType.LIST,
 						optional = false,
-						doc = @doc ("The list of output variables to analyse")),
+						doc = @doc ("The list of output variables to analyse. Names refer to variables of each completed simulation")),
 				@facet (
 						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
@@ -94,7 +95,7 @@ import gama.extension.stats.analysis.Stochanalysis;
 		},
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm runs an exploration with a given SAMPLING to compute a Stochasticity Analysis",
+		value = "This algorithm runs an exploration with a given SAMPLING to compute a Stochasticity Analysis Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (

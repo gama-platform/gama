@@ -106,7 +106,7 @@ species person skills: [moving] {
 }
 
 // ── GUI experiment ─────────────────────────────────────────────────────────────
-experiment SIR_gui type: gui {
+experiment SIR_gui mode: gui {
     parameter "Number of agents"    var: nb_agents;
     parameter "Initially infected"  var: nb_infected_init;
     parameter "Infection rate"      var: infection_rate;
@@ -114,10 +114,10 @@ experiment SIR_gui type: gui {
     parameter "Recovery time"       var: recovery_time unit: "cycles";
 
     output {
-        display "Population" type: java2D {
+        display "Population" renderer: java2D {
             species person aspect: base;
         }
-        display "SIR Chart" type: 3d {
+        display "SIR Chart" renderer: 3d {
             chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
@@ -137,7 +137,7 @@ experiment SIR_gui type: gui {
 //  sampling : orthogonal gives uniform marginal coverage (recommended for betad)
 //  bootstrap: confidence interval resamples — omit or set to 0 to skip
 //
-experiment SIR_Betad type: batch
+experiment SIR_Betad mode: batch
     repeat:    1
     keep_seed: false
     until: (cycle >= 1000 or nb_infected = 0) {

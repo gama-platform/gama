@@ -8,7 +8,7 @@
 
 model DifferentialTestModel
 
-experiment DifferentialTest type: test autorun: true {
+experiment DifferentialTest mode: test autorun: true {
 
 	int cases <- 100;
 

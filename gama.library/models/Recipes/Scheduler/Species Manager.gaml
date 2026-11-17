@@ -50,7 +50,7 @@ species B schedules:[]
 	}
 	
 }
-experiment "Schedule" type:gui
+experiment "Schedule" mode:gui
 {
 	
 }

@@ -6,7 +6,7 @@
 * Tags: statistics, distribution, clustering, test
 */
 
-experiment StatsOperatorsTest type: test autorun: true {
+experiment StatsOperatorsTest mode: test autorun: true {
 
 	list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0];
 	list<float> doubled <- [2.0, 4.0, 6.0, 8.0, 10.0];

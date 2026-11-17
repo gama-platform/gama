@@ -329,20 +329,20 @@ species socialLinkRepresentation{
 	}
 }
 
-experiment GoldBdi type: gui {
+experiment GoldBdi mode: gui {
 	output {
-		display map type: 3d {
+		display map renderer: 3d {
 			species market ;
 			species gold_mine ;
 			species miner;
 			species policeman aspect:base;
 		}	
 		
-        display socialLinks type: 3d{
+        display socialLinks renderer: 3d{
         	species socialLinkRepresentation aspect: base;
     	}
 
-		display chart type: 2d {
+		display chart renderer: 2d {
 			chart "Money" kind: series  {
 				datalist legend: miner accumulate each.name value: miner accumulate each.gold_sold color: miner accumulate each.my_color;
 				data "policeman" value: fine color: #red;

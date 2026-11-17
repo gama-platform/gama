@@ -12,6 +12,9 @@
 | [Part 0](#part-0-changelog-at-a-glance) | Changelog at a glance |
 | [Part 1](#part-1-whats-new-and-why-it-matters) | What's new and why it matters |
 | [Part 2](#part-2-migration-reference) | Step-by-step migration reference |
+| [Experiment and simulation ownership](#experiment-and-simulation-ownership) | Populations, commands, outputs and case-by-case modeler migration guide |
+| [Presentation variables](#presentation-variables-in-experiments-migrate-to-output-locals) | Output locals, ownership, lifetime and inheritance |
+| [Facet compilation contexts](#facet-compilation-contexts-for-plugin-developers) | Declaring and implementing model-context facets |
 
 ---
 
@@ -65,6 +68,8 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Grid attribute brackets are typed matrix reads and writes | Replace `matrix_with(cell, "attribute")` with `cell[attribute]` and `set_values` with `cell[attribute] <- matrix;` |
 | Attribute brackets also support ordinary species | `species[attribute]` reads a typed list; assigning a list requires exactly one element per current agent |
 | Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
+| Explicit output owners and persistent presentation locals (draft PR) | Keep model/controller state as attributes; move output-only styling into `output` instead of relying on implicit experiment lookup |
+| Explicit experiment/simulation contexts (unreleased) | Select a simulation before accessing its populations; review command owners and batch facet name resolution |
 
 ## Engine, UI, and Graphics
 
@@ -364,7 +369,918 @@ Work through each section that applies to your plugin. Each section is self-cont
 
 ## 1. GAML Language Syntax Changes
 
-These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
+These changes affect `.gaml` model files. Simple syntax replacements can often be applied globally;
+changes involving ownership, state or presentation variables require reviewing their uses.
+
+### Experiment and simulation ownership
+
+**Development status:** these changes are unreleased. In GAMA 2026, **`experiment` and `simulation`
+have strictly separated compile-time and runtime contexts**:
+
+- **`simulation` (`global` / `world`)** is an individual simulation instance with its own environment
+  (`shape`), clock (`cycle`, `step`, `time`), random generator (`seed`, `rng`), global attributes,
+  actions, and species populations.
+- **`experiment`** is the controller agent managing one or more simulations (`simulation`,
+  `simulations`), execution lifecycle (`play`, `pause`, `step_once`, `step_back`, `reload`,
+  `update_outputs`), and experiment-wide parameters or state.
+
+Previously, GAML allowed implicit fallbacks in both directions: experiment code could silently read
+or mutate `global` variables and species populations of the current simulation, while simulation
+outputs (`output`) could silently read attributes or call actions declared on `experiment`. These
+implicit cross-context lookups have been removed. Every block and facet now has a well-defined
+owner (`simulation` or `experiment`), and crossing the boundary requires explicit qualification
+(`simulation.x`, `experiment.y`, `myself.z`, or `ask simulation` / `ask experiment`).
+
+#### Quick reference: default context by construct
+
+| Construct inside `experiment` | Default context (`self`) | How to switch or qualify |
+|---|---|---|
+| `experiment` attributes (`init:`, `->`, `update:`), `init`, `reflex` | `experiment` | Use `simulation.attr`, `ask simulation { ... }`, or `ask simulations { ... }` |
+| `action` declared in `experiment` | `experiment` (unless `actions_context: simulation` is set on the experiment) | Add `actions_context: simulation` to the `experiment` header, or use `ask simulation` inside the action |
+| `parameter` | `simulation` (`of: simulation`) | Add `of: experiment` when `var:` targets an `experiment` attribute; inside `on_change:` / `{ ... }`, qualify experiment members with `experiment.` |
+| `user_command` | `simulation` (`of: simulation`) | Add `of: experiment` when the command targets the experiment or iterates over `simulations` |
+| `output` (displays, layers, `event`, `overlay`, `ui_*`, `monitor`, `chart`) | `simulation` (`of: simulation`) | Move display-only styling into `output`, qualify shared controller state with `experiment.`, or use `output of: experiment` (`permanent`) for experiment-level dashboards |
+| `test` / `setup` inside `experiment type: test` | `experiment` | Move `test` and `setup` blocks into `global` (recommended), or wrap body in `ask simulation { ... }` |
+| Batch `until:`, `record:`, and method `minimize:` / `maximize:` | `simulation` (evaluated on each simulation) | Qualify experiment attributes with `experiment.`; other batch `method` configuration facets remain in `experiment` context |
+
+Below are the concrete migration cases encountered across the GAMA model library, with before/after
+examples taken directly from migrated models.
+
+---
+
+#### Case 1: Reading or initializing `simulation` globals from `experiment` (`init`, reflexes, attributes)
+
+Code directly inside an `experiment` (`init`, `reflex`, or attribute initializers) runs with
+`self = experiment`. It can no longer read or write `global` attributes unqualified, even for
+homonymous built-in attributes such as `step` or `seed`.
+
+**Rule:** Prefix simulation globals with `simulation.` (or wrap multiple statements in
+`ask simulation { ... }`).
+
+*Example — `Flappy Bird.gaml` (reading `step` in an experiment attribute initializer):*
+```gaml
+// Before
+experiment main {
+    float minimum_cycle_duration <- step;
+}
+
+// After
+experiment main {
+    float minimum_cycle_duration <- simulation.step;
+}
+```
+
+*Example — `Exploration.gaml` and `TCP Teleportation.gaml` (initializing simulation globals in `experiment init`):*
+```gaml
+// Before (Exploration.gaml)
+experiment batch_abstract type: batch virtual: true until: (time > end_cycle) {
+    init { is_batch <- true; }
+}
+
+// After
+experiment batch_abstract type: batch virtual: true until: (time > end_cycle) {
+    init { simulation.is_batch <- true; }
+}
+
+// Before (TCP Teleportation.gaml)
+experiment start {
+    init {
+        int nb_simul <- 3;
+        simulation_id <- 0;
+        seed <- 1.0;
+        loop i from: 1 to: nb_simul - 1 {
+            create simulation(simulation_id: i, seed: 1 + i, numberOfSimulation: nb_simul);
+        }
+    }
+}
+
+// After
+experiment start {
+    init {
+        int nb_simul <- 3;
+        simulation.simulation_id <- 0;
+        simulation.seed <- 1.0;
+        loop i from: 1 to: nb_simul - 1 {
+            create simulation(simulation_id: i, seed: 1 + i, numberOfSimulation: nb_simul);
+        }
+    }
+}
+```
+
+---
+
+#### Case 2: Creating agents or querying model species populations in `experiment`
+
+Ordinary model species belong to a `simulation`, not to the `experiment`. Direct `create my_species`
+or population queries (`length(my_species)`, `first(my_species)`, `list(my_species)`,
+`loop x over: my_species`, `ask my_species`, `my_species[i]`) in experiment context are rejected by
+the compiler.
+
+**Rule:** Enter the target simulation with `ask simulation { ... }` (or qualify the population as
+`simulation.my_species`). Inside `ask simulation`, `self` is the simulation and `myself` (or
+`experiment`) is the enclosing experiment.
+
+*Example — `Soccer Experiments.gaml` and `Ant Foraging (Charts examples).gaml` (`experiment init` populating the model):*
+```gaml
+// Before (Ant Foraging (Charts examples).gaml)
+experiment "Experiment" type: gui {
+    list<list<int>> nbants;
+    list<string> statesnames;
+
+    init {
+        nbants <- list<list<int>>([]);
+        statesnames <- list<string>([]);
+        loop x over: (world.ant) {
+            if !(statesnames contains (x.state)) {
+                add [(ant count (each.state = x.state and !each.hasFood)),
+                     (ant count (each.state = x.state and each.hasFood))] to: nbants;
+                add (x.state) to: statesnames;
+            }
+        }
+    }
+}
+
+// After: ask simulation for population queries; use myself (or experiment) for experiment lists
+experiment "Experiment" type: gui {
+    list<list<int>> nbants;
+    list<string> statesnames;
+
+    init {
+        nbants <- list<list<int>>([]);
+        statesnames <- list<string>([]);
+        ask simulation {
+            loop x over: (ant) {
+                if !(myself.statesnames contains (x.state)) {
+                    add [(ant count (each.state = x.state and !each.hasFood)),
+                         (ant count (each.state = x.state and each.hasFood))] to: myself.nbants;
+                    add (x.state) to: myself.statesnames;
+                }
+            }
+        }
+    }
+}
+```
+
+*Example — `Classes and Objects Showcase.gaml` and `Camera Definitions.gaml` (reflexes and dynamic experiment attributes):*
+```gaml
+// Before
+experiment "Object diagnostics" type: gui {
+    point p -> first(objects).location;
+    reflex diagnose when: (cycle mod 10) = 0 and cycle > 0 {
+        ask painter { write name; }
+    }
+}
+
+// After
+experiment "Object diagnostics" type: gui {
+    point p -> first(simulation.objects).location;
+    reflex diagnose when: (cycle mod 10) = 0 and cycle > 0 {
+        ask simulation.painter { write name; }
+    }
+}
+```
+
+---
+
+#### Case 3: `parameter` declarations (`of: simulation` by default vs `of: experiment`)
+
+Parameters declared in an experiment now default to `of: simulation` with **no implicit fallback**
+to `experiment`.
+- If a `parameter` targets an attribute declared in `experiment` (including built-in experiment
+  attributes like `minimum_cycle_duration` or the experiment's own `seed`), you must add
+  `of: experiment`.
+- For a standard simulation parameter (`of: simulation`), its `on_change:` facet or `{ ... }`
+  callback block already runs in the `simulation` context: `ask simulation` is no longer needed
+  there, whereas calling an experiment action like `update_outputs()` requires `experiment.`.
+
+*Example — `Snake.gaml`, `Declaration of Parameters.gaml`, and `Parameters and Commands.gaml` (targeting experiment attributes):*
+```gaml
+// Before (Snake.gaml)
+experiment snake_game type: gui autorun: true {
+    float minimum_cycle_duration <- 0.3;
+    parameter "Size of the environment" var: environment_size <- 30 min: 10 max: 100;
+    parameter "Game speed (0.0: fast; 1.0: slow)" var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
+}
+
+// After: minimum_cycle_duration belongs to experiment
+experiment snake_game type: gui autorun: true {
+    float minimum_cycle_duration <- 0.3;
+    parameter "Size of the environment" var: environment_size <- 30 min: 10 max: 100;
+    parameter "Game speed (0.0: fast; 1.0: slow)" of: experiment var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
+}
+```
+
+*Example — `Spatial Queries.gaml`, `Simplification and Buffer.gaml`, and `Circle.gaml` (parameter change callbacks):*
+```gaml
+// Before (Spatial Queries.gaml & Simplification and Buffer.gaml)
+experiment Spatialqueries type: gui {
+    parameter "Query" var: type_query on_change: {
+        ask simulation { do apply_query(); }
+        do update_outputs();
+    };
+    parameter "Buffer value" var: buffer {
+        do update_outputs();
+    }
+}
+
+// After: the callback is already in simulation context; qualify experiment.update_outputs()
+experiment Spatialqueries type: gui {
+    parameter "Query" var: type_query on_change: {
+        do apply_query();
+        experiment.update_outputs();
+    };
+    parameter "Buffer value" var: buffer {
+        experiment.update_outputs();
+    }
+}
+```
+
+*Example — `Testing Restitution.gaml` (experiment parameter broadcasting to multiple simulations):*
+```gaml
+experiment "Test Restitution !" type: gui {
+    float wall_restitution <- 1.0 min: 0.0 max: 1.0;
+
+    parameter "Restitution of the walls" of: experiment var: wall_restitution {
+        ask simulations {
+            ask wall {
+                restitution <- myself.wall_restitution;
+            }
+        }
+    }
+}
+```
+
+---
+
+#### Case 4: `user_command` and actions moved between `experiment` and `global`
+
+Like `parameter`, `user_command` directly inside an `experiment` now defaults to `of: simulation`.
+1. **Commands calling simulation actions (`global`)** no longer need `ask world { ... }` or
+   `ask simulation { ... }` — call the action directly.
+2. **Actions that were placed in `experiment` only to be triggered by `user_command`** while
+   manipulating `global` variables (e.g. `Particle Life.gaml`, `DEM Generator.gaml`) should be moved
+   to `global`.
+3. **Commands that control the experiment or all `simulations`** (calling `pause`, `play`,
+   `step_once`, or `ask simulations { ... }`) must declare `of: experiment`.
+
+*Example — `Graph.gaml`, `Parameters and Commands.gaml`, and `Bullet Cone-Twist Tentacle.gaml` (removing redundant `ask world`):*
+```gaml
+// Before
+user_command "Layout graph" {
+    ask world {
+        do layout_graph();
+    }
+}
+
+// After: user_command runs on the simulation by default
+user_command "Layout graph" {
+    do layout_graph();
+}
+```
+
+*Example — `Particle Life.gaml` and `DEM Generator.gaml` (moving simulation-manipulating actions from `experiment` to `global`):*
+```gaml
+// Before: action declared in experiment but mutating global variables
+experiment ParticleLife type: gui {
+    action randomize_matrix() {
+        A_0_0 <- rnd(-1.0, 1.0);
+        do sync_matrix_from_vars();
+    }
+    user_command "Random matrix" action: randomize_matrix;
+}
+
+// After: action lives in global; user_command invokes it directly on the simulation
+global {
+    action randomize_matrix() {
+        A_0_0 <- rnd(-1.0, 1.0);
+        do sync_matrix_from_vars();
+    }
+}
+
+experiment ParticleLife type: gui {
+    user_command "Random matrix" { do randomize_matrix(); }
+}
+```
+
+*Example — `Testing Restitution.gaml` and `EXPERIMENT_AGENT.md` (commands that belong to the experiment):*
+```gaml
+experiment "Test Restitution !" type: gui {
+    user_command "  Move balls" color: rgb(133, 177, 205) of: experiment {
+        ask simulations {
+            ask ball { do apply(impulse: ball_impulse); }
+        }
+    }
+    user_command "Pause" of: experiment {
+        do pause;
+    }
+}
+```
+
+---
+
+#### Case 5: Display `event` layers and `overlay` UI controls (`ui_button`, `ui_slider`, ...)
+
+A standard `output { ... }` block is owned by `simulation` (`output of: simulation`). Therefore,
+every `display`, `event` handler, `overlay` control (`ui_button`, `ui_slider`, `ui_switch`,
+`ui_radio`), and `monitor` inside it executes directly with **`self = simulation`**:
+
+1. **Remove redundant `ask simulation { ... }`** in `event` and `ui_*` blocks when calling `global`
+   actions or modifying `global` variables.
+2. **Use `experiment.` (or `ask experiment`)** when calling controller actions (`experiment.play()`,
+   `experiment.pause()`, `experiment.update_outputs()`) from an event or UI control.
+3. **In `monitor` or `snapshot`**, `self` is already the simulation (`value: self`,
+   `snapshot(self, "My Display")`).
+
+*Example — `Boids.gaml`, `Snake.gaml`, `Event Layer.gaml`, `Mouse Drag.gaml`, and `Display UI Controls - Interactions.gaml`:*
+```gaml
+// Before: redundant ask simulation inside simulation-owned display events and UI buttons
+display map type: 2d {
+    species boids;
+    event #mouse_move { ask simulation { do move_goal(); } }
+    overlay position: {16, 16} size: {360, 400} {
+        ui_button "Scatter agents" at: {16, 48} size: {328, 30} {
+            ask simulation { do scatter(); }
+        }
+    }
+}
+
+// After: event and ui_button blocks already execute on the simulation
+display map type: 2d {
+    species boids;
+    event #mouse_move { do move_goal(); }
+    overlay position: {16, 16} size: {360, 400} {
+        ui_button "Scatter agents" at: {16, 48} size: {328, 30} {
+            do scatter();
+        }
+    }
+}
+```
+
+*Example — `Flappy Bird.gaml`, `Building Elevation.gaml`, `Mouse Exit and Enter.gaml`, and `Display Constants.gaml` (calling experiment actions from events):*
+```gaml
+// Before: unqualified experiment actions inside display events
+event #mouse_down {
+    do play();
+}
+event #mouse_exit {
+    closed <- true;
+    do update_outputs();
+}
+
+// After: qualify controller actions with experiment.
+event #mouse_down {
+    experiment.play();
+}
+event #mouse_exit {
+    closed <- true;
+    experiment.update_outputs();
+}
+```
+
+---
+
+#### Case 6: Experiment variables used in `output` / `display` — three migration patterns
+
+Because `output { ... }` runs in the `simulation` context, it no longer sees attributes declared in
+`experiment` unqualified. Depending on the role of those variables, use one of three patterns:
+
+1. **Pattern A — Move pure presentation variables into `output { ... }` (Output Locals):**
+   Fonts, palettes, colors, and UI-only flags (`has_started`) that are only used inside `output`
+   should be declared directly at the top of `output { ... }` (see the dedicated
+   [Presentation variables](#presentation-variables-in-experiments-migrate-to-output-locals) section
+   below).
+   *Models migrated this way:* `SIR with FSM Architecture.gaml`, `Accessing Fields.gaml`,
+   `DEM Generator.gaml`, `Moving Agents.gaml`, `Units And Constants.gaml`, `Eroding Vulcano.gaml`,
+   `Flappy Bird.gaml`, `Ant Foraging (Charts examples).gaml`.
+
+2. **Pattern B — Keep experiment-level state in `experiment` and qualify with `experiment.` in `output`:**
+   When an attribute is controlled by an `of: experiment` parameter, shared across multiple
+   simulations (e.g. a shared camera zoom or light position), or initialized in `experiment init`,
+   keep it in `experiment` and reference it as `experiment.attr` in displays, cameras, lights,
+   graphics, and `ui_slider var: experiment.attr`.
+   *Models migrated this way:* `Flow on Terrain.gaml`, `Camera Definitions.gaml`,
+   `Camera Shared Zoom.gaml`, `Quadratic Linear and Constant attenuation.gaml`,
+   `Traffic and Pollution.gaml`, `Corridor.gaml`, `Testing Restitution.gaml`, `Testing Steps.gaml`.
+
+3. **Pattern C — Declare `output of: experiment { ... }` for experiment-owned displays:**
+   When an entire output block is a controller-level UI (such as a custom simulation toolbar or
+   standalone text/control showcase that manipulates experiment attributes and actions), add
+   `of: experiment` to `output`. If such a display also needs to draw a simulation species, use an
+   `agents` layer with an explicit value (`agents "Agents" value: simulation.particle;`).
+   *Models migrated this way:* `Display UI Controls.gaml`,
+   `Display UI Controls - Simulation Toolbar.gaml`, `Text Display.gaml`.
+
+*Example of Pattern B — `Flow on Terrain.gaml` and `Camera Shared Zoom.gaml` (shared camera parameters across simulations):*
+```gaml
+experiment "Four different scales" type: gui {
+    point camera_loc <- #from_up_front;
+    int distance <- 500;
+    init {
+        create simulation(z_scale: 0.5);
+        create simulation(z_scale: 1.0);
+    }
+    parameter "Location of the camera" of: experiment var: camera_loc among: [#from_up_front, #from_above];
+    parameter "Distance of the camera" of: experiment var: distance min: 1 max: 1000 slider: true;
+
+    output {
+        layout #split;
+        display "Flow" type: 3d {
+            camera #default location: experiment.camera_loc distance: experiment.distance dynamic: true;
+            mesh cell;
+        }
+    }
+}
+```
+
+*Example of Pattern C — `Display UI Controls - Simulation Toolbar.gaml`:*
+```gaml
+experiment "Simulation toolbar in the display" type: gui {
+    bool autohide <- true;
+    bool show <- true;
+    point location_of_controls <- {12, 12};
+    point size_of_controls <- {264, 56};
+
+    output of: experiment {
+        display "Native experiment controls" type: opengl background: #white axes: false {
+            agents "Agents" value: simulation.particle;
+            event #mouse_move {
+                show <- autohide ? (#mouse_location_in_display > location_of_controls)
+                    and #mouse_location_in_display < location_of_controls + size_of_controls : true;
+            }
+        }
+    }
+}
+```
+
+---
+
+#### Case 7: Comodeling — adapter experiments (`actions_context: simulation`) and coupling models
+
+In comodeling, an adapter `experiment` imported from another model is instantiated as an experiment
+agent, while the coupled model's species and globals live inside that experiment's `simulation`. Two
+complementing adjustments apply:
+
+1. **In the adapter experiment (`*_comodel.gaml` / `* Adapter.gaml`):**
+   Add `actions_context: simulation` to the `experiment` header so all user actions declared in the
+   adapter execute directly in the context of its current `simulation` (giving direct access to
+   species like `Host`, `Building`, `road`, `prey` and model globals). Inside those actions, `self`
+   is the simulation; qualify any attribute or sibling action belonging to the adapter experiment
+   itself with `experiment.` (e.g. `experiment.centroid`, `experiment.set_num_S(numS)`).
+2. **In the coupling model (`create` / `ask` on a comodel experiment):**
+   When configuring or querying a comodel experiment instance (`create ANT.antcomodel { ... }` or
+   `ask Evacuation.movecomodel { ... }`), `self` is the comodel **experiment** and `myself` is the
+   coupling model's simulation. Prefix the comodel's global variables and species with `simulation.`
+   (e.g. `simulation.gridsize <- 100;`, `list(simulation.building)`), and prefix the coupling
+   model's own attributes with `myself.`. When stepping a comodel's simulation with
+   `ask ANT.antcomodel[0].simulation { ... }`, `self` is that simulation and `myself` is the
+   coupling model.
+
+*Example — Adapter experiments (`SIR_abm_comodel.gaml` and `move_comodel.gaml`):*
+```gaml
+// Before (SIR_abm_comodel.gaml)
+experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' type: gui {
+    int get_num_S() {
+        return length(Host where (each.state = 0));
+    }
+    action set_num_S_I_R(int numS, int numI, int numR) {
+        self.set_num_S(numS);
+        self.set_num_I(numI);
+        self.set_num_R(numR);
+    }
+    action set_num_S(int num) { ... }
+}
+
+// After: actions_context: simulation lets actions access Host directly;
+// sibling experiment actions are called on experiment
+experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' type: gui actions_context: simulation {
+    int get_num_S() {
+        return length(Host where (each.state = 0));
+    }
+    action set_num_S_I_R(int numS, int numI, int numR) {
+        experiment.set_num_S(numS);
+        experiment.set_num_I(numI);
+        experiment.set_num_R(numR);
+    }
+    action set_num_S(int num) { ... }
+}
+
+// Before (move_comodel.gaml)
+experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' type: gui {
+    point centroid <- {200, 580};
+    action transform_environment() {
+        loop t over: list(building) {
+            t.shape <- t.shape * 20;
+            t.location <- (t.location * 10) + centroid;
+        }
+    }
+}
+
+// After: building is resolved in simulation; centroid is qualified with experiment.
+experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' type: gui actions_context: simulation {
+    point centroid <- {200, 580};
+    action transform_environment() {
+        loop t over: list(building) {
+            t.shape <- t.shape * 20;
+            t.location <- (t.location * 10) + experiment.centroid;
+        }
+    }
+}
+```
+
+*Example — Coupling models (`Comodel Example (Mixed Behaviors).gaml` and `Flood Evacuation Comodel.gaml`):*
+```gaml
+// Before (Comodel Example (Mixed Behaviors).gaml)
+global {
+    int number_of_ants <- 100;
+    list<agent> theAnts <- [];
+
+    init {
+        create ANT.antcomodel {
+            gridsize <- 100;
+            ants_number <- number_of_ants;
+            theAnts <- list(ant);
+        }
+    }
+    reflex simulate_step {
+        ask ANT.antcomodel[0].simulation {
+            do _step_();
+            theAnts <- list(ant);
+        }
+    }
+}
+
+// After: inside create ANT.antcomodel, self is the comodel experiment,
+// simulation is its simulation, and myself is the coupling model
+global {
+    int number_of_ants <- 100;
+    list<agent> theAnts <- [];
+
+    init {
+        create ANT.antcomodel {
+            simulation.gridsize <- 100;
+            simulation.ants_number <- myself.number_of_ants;
+            myself.theAnts <- list(simulation.ant);
+        }
+    }
+    reflex simulate_step {
+        ask ANT.antcomodel[0].simulation {
+            do _step_();
+            myself.theAnts <- list(ant);
+        }
+    }
+}
+```
+
+---
+
+#### Case 8: Unit tests (`experiment type: test`)
+
+A `test` or `setup` block placed inside `experiment ... type: test` runs in the `experiment`
+context and can no longer directly create model species, access their populations, or read/write
+`global` attributes without qualification. You have two migration options:
+
+1. **Recommended — Move `setup` and `test` blocks into `global` and leave an empty test experiment
+   (`experiment MyTest type: test;`):**
+   In `global`, tests run directly in the simulation context (`create my_species`, `my_species[0]`,
+   `do _step_()`, and global attributes/actions work without qualification).
+   *Models migrated this way:* `Ant Foraging Tests.gaml`, `TestBDI.gaml`, `BDIAdvancedTest.gaml`,
+   `BDIReasoningTest.gaml`, `ActionAdvancedTest.gaml`, `PhysicsAdvancedTest.gaml`,
+   `Network Interaction Tests.gaml`, `SerializeAdvancedTest.gaml`, `TrafficAdvancedTest.gaml`.
+2. **Alternative — Keep `test` inside `experiment` and qualify with `ask simulation` or `simulation.`:**
+   Useful when a test specifically inspects experiment parameters, creates multiple simulations, or
+   tests experiment-level features.
+   *Models migrated this way:* `NestingTest.gaml`, `Slicing.gaml`, `CommandContextTest.gaml`,
+   `Consistency Test.gaml`, `ODE Solver Test.gaml`, `RDS Tests.gaml`.
+
+*Example — Option 1: Moving tests to `global` (`Ant Foraging Tests.gaml` / `TestBDI.gaml`):*
+```gaml
+// Before
+species bdi_agent control: simple_bdi;
+
+experiment testBDI type: test autorun: true {
+    setup {
+        create bdi_agent {
+            do add_belief(new_predicate("test1"));
+        }
+    }
+    test "add_beliefTest" {
+        assert first(bdi_agent).has_belief(new_predicate("test1"));
+    }
+}
+
+// After: tests in global run directly in the simulation context
+global {
+    setup {
+        create bdi_agent {
+            do add_belief(new_predicate("test1"));
+        }
+    }
+    test "add_beliefTest" {
+        assert first(bdi_agent).has_belief(new_predicate("test1"));
+    }
+}
+
+species bdi_agent control: simple_bdi;
+experiment testBDI type: test autorun: true;
+```
+
+*Example — Option 2: Keeping tests in `experiment` with `ask simulation` or `simulation.` (`NestingTest.gaml` / `Consistency Test.gaml`):*
+```gaml
+// Using ask simulation for agent creation and population queries (NestingTest.gaml)
+experiment NestingTest type: test autorun: true {
+    test "Micro Species Creation" {
+        ask simulation {
+            create macro_agent number: 1 returns: macros;
+            macro_agent ma <- macros[0];
+            ask ma { do create_children(); }
+            assert length(ma.micro_agent) = 3;
+        }
+    }
+}
+
+// Qualifying global variables with simulation. (Consistency Test.gaml)
+experiment consistency_test type: test {
+    test "consistency" {
+        simulation.with_viz <- false;
+        assert simulation.diff1 < 0.6;
+        assert simulation.diff2 < 10^-3;
+    }
+}
+```
+
+---
+
+#### Case 9: Batch experiments and exploration/optimization methods
+
+In batch experiments, facet expressions are compiled and evaluated according to what they configure:
+- **`until:`**, **`record:`**, and batch method **`minimize:` / `maximize:`** are compiled in the
+  **model (`simulation`) context** and evaluated on each simulation as it runs or finishes. They
+  access model globals directly (`cycle`, `time`, `loss`), whereas experiment attributes must be
+  qualified (`experiment.offset`).
+- **Exploration `outputs:`** takes simulation attribute **names** (bare identifiers or strings), not
+  arbitrary expressions.
+- **Other batch `method` facets** (`iter_max:`, `pop_dim:`, `tabu_list_size:`, ...) are compiled in
+  the **`experiment` context**.
+
+The [experiment guide](EXPERIMENT_AGENT.md#experiment-and-simulation-contexts) gives complete
+examples, behavior before a simulation exists, multi-simulation semantics and compatibility
+details. Plugin authors should also read [facet compilation contexts](#facet-compilation-contexts-for-plugin-developers).
+
+### Presentation variables in experiments: migrate to output locals
+
+**Development status:** implemented on the branch of draft
+[PR #1313](https://github.com/gama-platform/gama/pull/1313), including commit
+[`828cff24c`](https://github.com/gama-platform/gama/commit/828cff24c50f24b1e173f9d1c3418ac09a2c13cf).
+This feature is not yet merged or released.
+
+Experiment attributes often exist only to configure displays: fonts, colors, text positions,
+line widths, palettes or other presentation settings. Such definitions can now be placed
+directly inside `output` and `permanent`. They become **persistent lexical
+locals**, not attributes of the experiment or simulation.
+
+Declarations directly inside `display` are not supported. Put even single-display
+presentation variables in the enclosing output. Display bodies contain layers and display
+configuration; `image name;` always denotes a layer there, not a declaration.
+Ordinary temporary declarations inside graphics blocks and event handlers remain supported.
+
+This also provides a migration path for the stricter experiment/simulation boundaries:
+plain `output { ... }` means `output of: simulation { ... }`; it no longer implicitly reads
+experiment-only attributes. Do not move styling into `global` merely to satisfy that lookup
+if it is only used by outputs.
+
+Parameter declarations use the same owner selector: omitted `of:` means simulation;
+`parameter "Controller setting" of: experiment var: setting;` explicitly targets an
+experiment attribute. The two owners keep separate parameter namespaces, including
+homonymous built-ins such as `seed`.
+
+#### Before and after
+
+The following historical pattern relied on experiment attributes being implicitly visible
+inside simulation-facing output code:
+
+```gaml
+global {}
+
+experiment styled type: gui {
+    font label_font <- font("Helvetica", 14);
+    rgb accent <- #teal;
+
+    output {
+        display main background: accent {
+            graphics labels {
+                draw "Hello" font: label_font color: accent;
+            }
+        }
+    }
+}
+```
+
+When these values are presentation-only, move both the font and the color into the output:
+
+```gaml
+global {}
+
+experiment styled type: gui {
+    output {
+        font label_font <- font("Helvetica", 14);
+        rgb accent <- #teal;
+
+        display main background: accent {
+            graphics labels {
+                draw "Hello" font: label_font color: accent;
+            }
+        }
+        display summary {
+            graphics labels {
+                draw "Summary" font: label_font;
+            }
+        }
+    }
+}
+```
+
+Both locals are available to both displays, including their header facets, layers and
+inline handlers. Neither declaration creates
+`experiment.label_font`, `simulation.label_font` or `self.accent`.
+
+#### Choose storage and ownership deliberately
+
+| Definition | Visibility and storage |
+|---|---|
+| Experiment attribute | Controller/model state owned by the experiment; use explicit qualification from simulation outputs |
+| Output local | Visible to that output block's child displays, monitors, inspectors, browse outputs and other child declarations |
+| Local inside a layer, action or handler | Ordinary temporary variable with its existing execution lifetime, not a persistent presentation local |
+
+The enclosing output selects the initialization and execution owner:
+
+| Output spelling | Owner and lifetime |
+|---|---|
+| `output { ... }` or `output of: simulation { ... }` | Independent output/local instances for each simulation |
+| `output of: experiment { ... }` | The declaring experiment instance, shared across its simulations |
+| `permanent { ... }` | Legacy spelling of experiment-owned output, with the same local-variable rules |
+
+Choose the owner based on what the output does, not just on where its fonts used to be
+declared. A simulation visualization should normally remain simulation-owned after moving
+its styling. An experiment-wide dashboard may use `of: experiment`.
+`of:` does not select a particular simulation instance. Experiment-owned species layers
+cannot implicitly borrow a simulation's population; keep those layers in
+`output of: simulation` unless the population is genuinely owned by the experiment.
+
+If a value is also used by experiment actions, model behavior, parameter declarations or
+external consumers, keep it as an attribute. For example, a parameter controlling a font
+size still needs an attribute target; a parameter declared outside the output cannot
+bind an output local:
+
+```gaml
+experiment adjustable type: gui {
+    int label_size <- 14;
+    parameter "Label size" of: experiment var: label_size min: 8 max: 40;
+
+    output {
+        display main {
+            graphics labels {
+                draw "Hello" font: font("Helvetica", experiment.label_size);
+            }
+        }
+    }
+}
+```
+
+Likewise, keeping an experiment-owned font attribute and using
+`font: experiment.label_font` is valid. Moving an attribute is optional, not an automatic
+rename or a blanket requirement to remove all experiment presentation attributes.
+
+#### Initialization, mutation and refresh
+
+Direct declarations are initialized **once per output instance**, in declaration
+order and in the selected owner's context, before evaluating its facets and child outputs.
+This makes output locals available in display header facets such as `background: accent`.
+An initializer may use an earlier local from the same output block.
+Do not rely on forward references or dependency sorting.
+
+Experiment-owned output locals are prepared before early layout-facet evaluation.
+Consequently, they are initialized after experiment attributes but **before the
+experiment's GAML `init` behavior**, rather than waiting for the first rendered frame.
+Do not initialize such locals from state that is only established by that behavior.
+Display refreshes and reopenings do not rerun the enclosing output's declarations.
+Recreating the owner or output instance creates new local storage and reevaluates
+the initializers. In particular, experiment-owned locals are not reset just because
+another simulation is created.
+
+An initializer is not a dynamic getter. A local computed from `cycle`, a random draw,
+an attribute or a parameter retains its initial value until explicitly assigned.
+Declarations support ordinary typed initialization and assignment, not attribute facets
+such as `update:` or `function:`. Keep changing expressions in drawing/refresh facets,
+or update the persistent local from code inside its lexical scope.
+
+Inline overlay controls may bind persistent locals through `var:` and modify them from
+their handlers. Ordinary transient locals remain invalid control bindings. Assignments
+are visible to the other child outputs sharing that output local.
+
+Typed defaults and nil semantics are unchanged:
+
+```gaml
+output {
+    list<int> numbers;          // a new empty list, retained by this output
+    map<string,int> scores;     // a new empty map, retained by this output
+    list<int> missing <- nil;   // nil, not an empty list
+    display main {
+        graphics labels { draw string(length(numbers)); }
+    }
+}
+```
+
+Independent storage does not imply a deep copy of every initializer result. An initializer
+that explicitly reads a shared mutable object can still introduce an alias.
+
+#### Remote layers and callbacks
+
+Persistent locals remain available through nested `remote_context` statements, including
+`ask`, remote inline drawing code and event/control callbacks. Entering a remote context
+changes `self` to the target agent, not the lexical binding of a presentation local.
+The closest lexical declaration wins over an unqualified target attribute with the same
+name; use `self.attribute` to explicitly access the target's attribute.
+
+```gaml
+// With particle declared in the model:
+output {
+    int selected_count <- 0;
+    display main {
+        event 'a' {
+            selected_count <- 0;
+            ask particle {
+                selected_count <- selected_count + 1;
+            }
+        }
+    }
+}
+```
+
+Separately declared species actions/aspects, global reflexes and experiment actions do not
+gain access to the caller's output locals. Move inline presentation code with its
+declarations, or retain explicitly accessible attributes for code outside the output tree.
+Sharing storage also does not make a parallel read-modify-write expression an atomic
+reduction.
+
+#### Experiment inheritance and overrides
+
+Experiment inheritance copies output **declarations**, not a running parent's
+local values. Each child initializes its own storage in its selected owner context.
+Inherited expressions are rebound to the copied lexical declarations, rather than keeping
+references to the parent's live output scope.
+
+If the child defines its own output block, the existing merge rules apply: its same-name
+local declaration replaces the inherited declaration; missing parent declarations and
+outputs are copied into the child. A duplicate declaration within one block remains an
+error. For example, a child can override the size used by an inherited font and display:
+
+```gaml
+experiment base type: gui {
+    output of: experiment {
+        int label_size <- 14;
+        font label_font <- font("Helvetica", label_size);
+        display main {
+            graphics labels { draw "Hello" font: label_font; }
+        }
+    }
+}
+
+experiment larger parent: base type: gui {
+    output of: experiment {
+        int label_size <- 20;
+    }
+}
+```
+
+The inherited font initializer in `larger` uses its local size `20`; the parent's
+declarations are unchanged. The two owner contexts are inherited/merged separately:
+simulation output and experiment output are not one shared namespace.
+
+The merge keeps the child's declarations first and appends missing inherited declarations.
+There is no dependency-based reordering: a new child initializer cannot assume that a
+later appended inherited local is already available. Redeclare required prerequisites
+before dependent child declarations. Keep override types compatible with the inherited
+expressions that use them; a different type can invalidate those expressions.
+
+Explicit **display inheritance** (`display child parent: base`) is distinct from experiment
+inheritance. It inherits display facets and layers, without creating display-local storage.
+Displays in the same output share its locals; inherited layers keep their declaration-site
+bindings.
+
+#### Migration checklist
+
+1. Find experiment attributes used only by output declarations, layers and inline callbacks.
+2. Move presentation-only values into their output block, including values used by only
+   one display. Move any existing direct display declarations there too.
+3. Keep parameters, controller/model state and values used by separately declared
+   actions/aspects as attributes, with explicit owner/receiver access where needed.
+4. Review initializer order, one-time versus dynamic evaluation, and early experiment layout
+   preparation before `init`.
+5. Review inherited overrides, local name collisions and qualified accesses that still
+   assume an agent attribute.
+
+See the [changelog entry](CHANGELOG_2026.md#draft-follow-up-persistent-output-presentation-locals)
+and [PR #1313](https://github.com/gama-platform/gama/pull/1313) for implementation status.
 
 ### Explicit container types for built-in action arguments
 
@@ -802,6 +1718,91 @@ use the new metadata. Custom implementations/callers of `IArtefactFactory.create
 must pass the new `declaresNewTemp` boolean; custom facet artefacts must expose their raw
 content/key descriptors through `getContentTypeProvider()` and `getKeyTypeProvider()`.
 Ordinary expression facets keep `declares_new_temp = false` (the default).
+
+---
+
+### Facet compilation contexts for plugin developers
+
+The `context` member of `@facet` declares **where an expression is compiled**:
+
+```java
+import gama.annotations.facet;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.types.IType;
+
+@facet(name = IKeyword.MINIMIZE, type = IType.FLOAT, optional = true,
+       context = facet.Context.MODEL)
+```
+
+`ENCLOSING` is the default and preserves the ordinary enclosing context. `MODEL`
+resolves names and species-relative types against the enclosing model while
+retaining the declaration's structural parent. It is per facet: do not switch
+an entire batch method to the model context, because its configuration facets
+are experiment expressions. `MODEL` does not mean “whatever simulation is
+currently selected”, and is not an implicit `ask` or a runtime scope switch.
+`CALLER` and `CALLEE` are not currently supported values.
+
+The annotation processor passes non-default context metadata through
+`AbstractGamlAdditions` and `IArtefactFactory` into `IArtefact.Facet`; the
+compiler's `SymbolDescription.getFacetCompilationContext` uses it when
+compiling ordinary expression facets. Labels are handled as labels, not as
+ordinary compiled expressions. `IDescription.getEnclosingDescription()` is
+still the structural parent; `getEnclosingContext()` controls expression
+lookup and typing. Do not change structural ancestry merely to resolve a
+facet against a model. `remote_context` is a different mechanism: it describes
+the target of a remote statement and its `self`/`myself` relationship.
+
+The symbol implementation is responsible for matching runtime evaluation to
+the declared compilation context. For result facets, use the scope of the
+specific simulation whose result is being collected, not the experiment scope
+or a global/frontmost scope. The batch implementation evaluates fitness and
+reads tracked attributes on the completed simulation's thread and scope.
+`outputs:` extracts names from its list entries; it is not a general expression
+evaluator. The experiment's `until:` and `record:` use the same `MODEL`
+metadata, but are evaluated at their respective stop and recording points.
+
+Optimization configuration is initialized with the batch experiment scope
+through `initializeFor`, rather than the globally current scope during
+construction. This occurs before the experiment's GAML `init` behavior; do not
+rely on values assigned there when initializing those configuration facets.
+Overrides of `initializeFor` must preserve the superclass initialization.
+
+Rebuild the annotation processor and regenerate the declaring bundle's GAML
+contributions after changing facet metadata. Existing factories and facet
+artefacts default to `ENCLOSING`; a custom `IArtefactFactory` must implement
+the context-aware overload and return a facet whose `getCompilationContext()`
+reports `MODEL` when it supports that context. The default overload explicitly
+rejects unsupported non-default contexts instead of silently compiling them as
+`ENCLOSING`. Inspect generated contributions when diagnosing incremental
+annotation processing.
+
+Experiment `user_command` ownership is a separate, dynamic-by-declaration
+rule: `of:` changes the command description's enclosing lookup context, its
+body and its passed arguments. Its structural parent stays the experiment.
+At runtime, dispatch on the selected owner and use that owner's scope; preserve
+caller arguments when crossing scopes. The parameters panel dispatches on the
+selected experiment or simulation executor. A simulation-scoped invocation
+retains that simulation; an experiment-scoped invocation resolves the current
+simulation. Do not iterate over all simulations as an implicit fallback.
+
+The experiment's `actions_context:` is distinct from facet metadata and command
+ownership. `IExperimentDescription.actionsUseSimulation` identifies eligible
+direct user-action declarations; `ActionDescription.getEnclosingContext`
+selects model lookup while the structural parent remains the experiment.
+`ActionStatement` dispatches on the receiving experiment's current simulation
+using that simulation's scope. Caller arguments must be evaluated before the
+scope change; defaults are evaluated in the action context. Preserve synthetic
+callbacks, built-in actions and inherited declaration contexts.
+
+Likewise, `ExperimentAgent.getPopulationFor` no longer forwards ordinary
+model-species requests to its current simulation or fabricates an empty
+population. It still handles its simulation population and directly imported
+comodel-experiment populations. Resolve an ordinary population through the
+intended simulation agent; `SimulationAgent.getPopulationFor` preserves the
+simulation's species resolution. A known invalid `create` is rejected by
+`CreateStatement` validation, but dynamic requests still need the runtime
+guard. See the [experiment guide](EXPERIMENT_AGENT.md#experiment-and-simulation-contexts)
+for model-facing behavior and compatibility.
 
 ---
 

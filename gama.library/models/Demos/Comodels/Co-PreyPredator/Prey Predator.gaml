@@ -149,7 +149,7 @@ species predator parent: generic_species
 
 }
 
-experiment "Prey Predator Exp" type: gui
+experiment "Prey Predator Exp" mode: gui
 {
 	output
 	{

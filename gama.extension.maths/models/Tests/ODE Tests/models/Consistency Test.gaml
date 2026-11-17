@@ -113,20 +113,20 @@ global{
 		}
 	}
 
-experiment consistency_test type: test {
+experiment consistency_test mode: test {
 	test "consistency" {
-		with_viz <- false;
-		assert diff1 < 0.6;
-		assert diff2 < 10^-3;
+		simulation.with_viz <- false;
+		assert simulation.diff1 < 0.6;
+		assert simulation.diff2 < 10^-3;
 	}
 }
 
-experiment with_visualization type: gui {
+experiment with_visualization mode: gui {
 	action _init_ (){
 		create consistencyTest_model(with_viz:true);
 	}
 	output {
-		display "Numerical solutions" refresh: every(1 #cycle)  type: 2d {
+		display "Numerical solutions" refresh: every(1 #cycle)  renderer: 2d {
 			chart 'Comparision between the numerical solutions provided by EDO solvers' kind: series background:  #white  { 
 				loop m over: EDO_model{
 					data m.my_method value: m.Im color: m.color marker: false;

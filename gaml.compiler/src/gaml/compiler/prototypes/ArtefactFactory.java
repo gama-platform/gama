@@ -137,4 +137,13 @@ public class ArtefactFactory implements IArtefactFactory {
 				specificTo, excludes, requires);
 	}
 
+	@Override
+	public IArtefact.Facet createFacetArtefact(final String name, final int[] types, final int ct, final int kt,
+			final String[] values, final boolean optional, final boolean internal, final boolean isRemote,
+			final boolean declaresNewTemp, final String[] specificTo, final String[] excludes, final String[] requires,
+			final gama.annotations.facet.Context context) {
+		return new FacetArtefact(name, types, ct, kt, values, optional, internal, isRemote, declaresNewTemp,
+				specificTo, excludes, requires, context);
+	}
+
 }

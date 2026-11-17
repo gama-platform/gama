@@ -103,7 +103,7 @@ species person skills: [moving] {
 }
 
 // ── GUI experiment ─────────────────────────────────────────────────────────────
-experiment SIR_gui type: gui {
+experiment SIR_gui mode: gui {
     parameter "Number of agents"    var: nb_agents;
     parameter "Initially infected"  var: nb_infected_init;
     parameter "Infection rate"      var: infection_rate;
@@ -111,10 +111,10 @@ experiment SIR_gui type: gui {
     parameter "Recovery time"       var: recovery_time unit: "cycles";
 
     output {
-        display "Population" type: java2D {
+        display "Population" renderer: java2D {
             species person aspect: base;
         }
-        display "SIR Chart" type: 3d {
+        display "SIR Chart" renderer: 3d {
             chart "SIR dynamics" kind: series {
                 data "Susceptible" value: nb_susceptible color: #green;
                 data "Infected"    value: nb_infected    color: #red;
@@ -140,7 +140,7 @@ experiment SIR_gui type: gui {
 //
 //  Total runs = repeat × sample = 25 × 100 = 2500
 //
-experiment SIR_Stochanalyse type: batch
+experiment SIR_Stochanalyse mode: batch
     repeat:     25
     keep_seed:  false
     until: (cycle >= 1000 or nb_infected = 0) {
@@ -167,7 +167,7 @@ experiment SIR_Stochanalyse type: batch
     // which gives immediate visual intuition of stochastic spread.
     permanent {
 
-        display "Stochastic spread" type: 3d {
+        display "Stochastic spread" renderer: 3d {
             chart "nb_recovered distribution across all runs" kind: histogram
                   background: #white {
                 data "nb_recovered"

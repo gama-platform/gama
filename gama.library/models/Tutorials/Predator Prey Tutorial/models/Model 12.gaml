@@ -180,7 +180,7 @@ grid vegetation_cell width: 50 height: 50 neighbors: 4 {
 	list<vegetation_cell> neighbors2 <- (self neighbors_at 2);
 }
 
-experiment prey_predator type: gui {
+experiment prey_predator mode: gui {
 	parameter "Initial number of preys: " var: nb_preys_init min: 0 max: 1000 category: "Prey";
 	parameter "Prey max energy: " var: prey_max_energy category: "Prey";
 	parameter "Prey max transfer: " var: prey_max_transfer category: "Prey";
@@ -197,19 +197,19 @@ experiment prey_predator type: gui {
 	parameter 'Predator energy reproduce: ' var: predator_energy_reproduce category: 'Predator';
 
 	output {
-		display main_display type:2d antialias:false {
+		display main_display renderer:2d antialias:false {
 			grid vegetation_cell border: #black;
 			species prey aspect: icon;
 			species predator aspect: icon;
 		}
 
-		display info_display type:2d antialias:false{
+		display info_display renderer:2d antialias:false{
 			grid vegetation_cell border: #black;
 			species prey aspect: info;
 			species predator aspect: info;
 		}
 
-		display Population_information refresh: every(5#cycles)  type: 3d {
+		display Population_information refresh: every(5#cycles)  renderer: 3d {
 			chart "Species evolution" coordinates: #screen kind: series size: {#display_width,0.5} position: {0, 0} {
 				data "number_of_preys" value: nb_preys color: #blue;
 				data "number_of_predator" value: nb_predators color: #red;

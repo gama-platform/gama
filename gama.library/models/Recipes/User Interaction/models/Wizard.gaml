@@ -30,4 +30,4 @@ global {
 	}
 }
 
-experiment Wizard_example type: gui ;
+experiment Wizard_example mode: gui ;

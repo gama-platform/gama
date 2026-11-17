@@ -550,19 +550,19 @@ grid cell width: grid_width height: grid_height {
 	}
 }
 
-experiment ABValuationDemo type: gui autorun:true{
+experiment ABValuationDemo mode: gui autorun:true{
 	parameter "Commuting cost" var: commutingCost min: 0.0 max: 1.0 step: 0.05; 
 	parameter "Share of low income" var: shareLowIncome min: 0.0 max: 1.0 step: 0.05 unit: #percent;
 	parameter "Housing Supply" var: updateUnitSize; 
 	output { 
-		display map_3D  type:opengl background: #black axes: false  toolbar:true 
+		display map_3D  renderer:opengl background: #black axes: false  toolbar:true 
 		{
 			camera 'default' location: {139.364,176.9895,71.3573} target: {40.9962,59.7593,0.0} dynamic:false;
 			species cell aspect: dark_aspect;			
 			species worker aspect:threeD;
 			species firm aspect: threeD transparency: 0.25;
 			species building aspect:threeD transparency: 0.35;
-			event #mouse_down {ask simulation {do create_firm();}}  
+			event #mouse_down {do create_firm();}
 			event "p" {if(commutingCost<1){commutingCost<-commutingCost+0.1;}}
 			event "m" {if(commutingCost>0){commutingCost<-commutingCost-0.1;}}
 			event "u" {if(shareLowIncome<0.9){shareLowIncome<-shareLowIncome+0.1;}}

@@ -5,7 +5,7 @@
 * Tags: test
 */
 
-experiment "Test Experiment" type: test autorun: true {
+experiment "Test Experiment" mode: test autorun: true {
 	
 	string a_string <- "aaa";
 	

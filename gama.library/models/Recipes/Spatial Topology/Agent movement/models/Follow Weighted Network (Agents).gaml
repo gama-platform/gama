@@ -91,10 +91,10 @@ species people skills: [moving] {
 	}
 }
 
-experiment weightperagents type: gui {
+experiment weightperagents mode: gui {
 	float minimum_cycle_duration <- 0.1;
 	output {
-		display map type:2d{
+		display map renderer:2d{
 			species road aspect: geom;
 			species people aspect: base;
 		}

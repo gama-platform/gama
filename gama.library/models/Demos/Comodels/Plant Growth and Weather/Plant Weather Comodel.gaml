@@ -38,7 +38,7 @@ global {
 	reflex coupling {
 		
 		ask weather_simu.plotWeather {
-			list<plotGrow> overlapped_plots <- plantGrow_simu.plotGrow where (each.shape.location overlaps self);
+			list<plotGrow> overlapped_plots <- myself.plantGrow_simu.plotGrow where (each.shape.location overlaps self);
 						
 			ask overlapped_plots {
 				available_water <- available_water + myself.rain;
@@ -54,16 +54,16 @@ global {
 	}
 }
 
-experiment "CoModel" type: gui {
+experiment "CoModel" mode: gui {
 	output {
-		display w type:2d antialias:false{
+		display w renderer:2d antialias:false{
 			agents "weather" value: weather_simu.plotWeather ;
 		}
-		display pG type:2d antialias:false{
+		display pG renderer:2d antialias:false{
 			agents "plantGrowth" value: plantGrow_simu.plotGrow ;
 		}		
 		
-		display data  type: 3d  {
+		display data  renderer: 3d  {
 			chart "rain" kind: series {
 				data "rainfall" value: sum(weather_simu.plotWeather accumulate (each.rain));
 			}

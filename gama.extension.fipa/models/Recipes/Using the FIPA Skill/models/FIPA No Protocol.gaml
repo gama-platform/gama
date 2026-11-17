@@ -66,4 +66,4 @@ species Participant skills: [fipa] {
 	}
 }
 
-experiment test_no_protocol type: gui {}
+experiment test_no_protocol mode: gui {}

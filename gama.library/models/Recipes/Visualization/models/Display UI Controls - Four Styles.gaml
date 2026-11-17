@@ -68,7 +68,7 @@ species particle skills: [moving] {
 	}
 }
 
-experiment "Four styles together" type: gui {
+experiment "Four styles together" mode: gui {
 	float minimum_cycle_duration <- 0.05;
 
 	// Override default creation: these are exactly four simulations, not five.
@@ -101,7 +101,7 @@ experiment "Four styles together" type: gui {
 	output {
 		layout #split tabs: false;
 		// Each simulation instantiates this output using its own facet attributes.
-		display "Styled controls" type: 3d background: scene_color axes: false{
+		display "Styled controls" renderer: 3d background: scene_color axes: false{
 			species particle;
 			overlay position: panel_position size: panel_size
 				background: panel_color border: panel_border rounded: round_panel {

@@ -113,7 +113,7 @@ species people skills: [moving]{
 	}
 }
 
-experiment fieldofvision type: gui {
+experiment fieldofvision mode: gui {
 	
 	parameter "Number of obstacles" var: nb_obstacles category: "Environment";
 	
@@ -126,7 +126,7 @@ experiment fieldofvision type: gui {
 	
 	float minimum_cycle_duration <- 0.05;
 	output synchronized: true {
-		display view type: 3d background: ground axes: false camera: #from_up_front {
+		display view renderer: 3d background: ground axes: false camera: #from_up_front {
 			light #ambient intensity: 170;
 			species people aspect: perception;
 			species obstacle;

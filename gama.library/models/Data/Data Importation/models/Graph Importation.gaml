@@ -57,12 +57,12 @@ global {
 	}
 }
 
-experiment import_graph type: gui {
+experiment import_graph mode: gui {
 	
 	parameter var:type;
 	
 	output {
-		display graph_display type: 3d axes: false map_order: true{
+		display graph_display renderer: 3d axes: false map_order: true{
 			graphics "graph " {
 				
 				loop v over: g.vertices {

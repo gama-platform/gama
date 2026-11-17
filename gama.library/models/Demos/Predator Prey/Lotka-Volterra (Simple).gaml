@@ -48,7 +48,7 @@ species LotkaVolterra_agent {
 }
 
 
-experiment maths type: gui {
+experiment maths mode: gui {
 
 	parameter "Prey birth rate" var: prey_birth_rate <- 0.05 min: 0.0 max: 1.0 category: "Prey";						// the user defines the value of parameter prey_birth_rate on the interface, the default value is 0.05 and this value must be between 0 and 1
 	parameter "Predation rate" var: predation_rate <- 0.001 min: 0.0 max: 1.0 category: "Prey"; 						// the user defines the value of parameter prey_birth_rate on the interface, the default value is 0.001 and this value must be between 0 and 1
@@ -61,13 +61,13 @@ experiment maths type: gui {
 	parameter "Integration time step" var: integration_time_step <- 0.01 min: 0.0 max:0.1 category: "Integration method";  // the user defines the value of the integration step, the default value is 0.01 and this value must be between 0 and 1
 
 	output {
- 		display TimeSeries  type: 3d  {																	// creation of a display to show time series of the model, values are plotted at every step
+ 		display TimeSeries  renderer: 3d  {																	// creation of a display to show time series of the model, values are plotted at every step
 			chart "Lotka Volterra Time Series" kind: series background: paper axes: ink {
 				data 'Number of preys' value: first(LotkaVolterra_agent).nb_prey color: inks[0];
 				data 'Number of predators' value: first(LotkaVolterra_agent).nb_predator color: inks[1];
 			}
 		}
-		display PhasePortrait  type: 3d  {																// creation of a display to show the phase portait, values are plotted at every time step
+		display PhasePortrait  renderer: 3d  {																// creation of a display to show the phase portait, values are plotted at every time step
 			chart "Lotka Volterra Phase Portrait" kind: xy background: paper axes: ink {
 			data ' ' value: {predator_death_rate / predation_efficiency, prey_birth_rate/predation_rate} color: inks[1]; // equilibrium point
 			data 'Number of preys according to number of predators' value:{first(LotkaVolterra_agent).nb_prey, first(LotkaVolterra_agent).nb_predator} color: inks[0];

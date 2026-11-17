@@ -6,7 +6,7 @@
 * Tags: robustness, string, unicode, test
 */
 
-experiment UnicodeRobustnessTest type: test autorun: true {
+experiment UnicodeRobustnessTest mode: test autorun: true {
 
 	string emoji <- "😀a";
 	string mixed <- "é😀日本語 Ωω\n\t\"'";

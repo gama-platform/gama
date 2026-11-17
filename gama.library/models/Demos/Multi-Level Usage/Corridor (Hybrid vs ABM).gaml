@@ -203,12 +203,12 @@ species corridor_info_drawer
 	}
 }
 
-experiment default_experiment type: gui autorun: true
+experiment default_experiment mode: gui autorun: true
 {
 	float minimum_cycle_duration <- 10 #msec;
 	output 
 	{
-		display default_display background: backdrop type: 2d
+		display default_display background: backdrop renderer: 2d
 		{
 			graphics direction {
 				loop lane over: [corridor_location_0, corridor_location_1] {

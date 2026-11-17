@@ -7,29 +7,8 @@
 
 model FSMTestModel
 
-species fsm_agent control: fsm {
-	int counter <- 0;
-	bool visited_init <- false;
-	bool visited_second <- false;
+global {
 	
-	state init_state initial: true {
-		enter { visited_init <- true; }
-		counter <- counter + 1;
-		transition to: second_state when: counter = 1;
-	}
-	
-	state second_state {
-		enter { visited_second <- true; }
-		counter <- counter + 1;
-		transition to: final_state when: counter >= 2;
-	}
-	
-	state final_state final: true {
-		counter <- 100;
-	}
-}
-
-experiment FSMTest type: test autorun: true {
 	
 	test "FSM Transitions and Enter Actions" {
 		create fsm_agent number: 1 returns: created_agents;
@@ -59,4 +38,29 @@ experiment FSMTest type: test autorun: true {
 		assert ag.counter = 100;
 		assert ag.state = "final_state";
 	}
+	
 }
+
+species fsm_agent control: fsm {
+	int counter <- 0;
+	bool visited_init <- false;
+	bool visited_second <- false;
+	
+	state init_state initial: true {
+		enter { visited_init <- true; }
+		counter <- counter + 1;
+		transition to: second_state when: counter = 1;
+	}
+	
+	state second_state {
+		enter { visited_second <- true; }
+		counter <- counter + 1;
+		transition to: final_state when: counter >= 2;
+	}
+	
+	state final_state final: true {
+		counter <- 100;
+	}
+}
+
+experiment FSMTest mode: test autorun: true;

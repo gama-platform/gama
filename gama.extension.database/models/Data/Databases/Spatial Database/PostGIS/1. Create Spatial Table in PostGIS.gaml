@@ -48,5 +48,5 @@ global {
 species dummy skills: [sql] {
 }
 
-experiment default_expr type: gui {
+experiment default_expr mode: gui {
 }

@@ -375,7 +375,7 @@ global {
  * GUI experiment.  Displays the node agents and their energy in a 2-D view,
  * while the console shows detailed object-level information.
  */
-experiment "Advanced Features" type: gui {
+experiment "Advanced Features" mode: gui {
 
 	float minimum_cycle_duration <- 0.05;
 
@@ -383,7 +383,7 @@ experiment "Advanced Features" type: gui {
 	parameter "Number of nodes" var: nb_nodes min: 2 max: 50 category: "Setup";
 
 	output {
-		display "Nodes" type: 2d background: #black {
+		display "Nodes" renderer: 2d background: #black {
 			species node_agent;
 		}
 	}

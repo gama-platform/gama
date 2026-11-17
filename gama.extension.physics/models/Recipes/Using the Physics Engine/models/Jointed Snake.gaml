@@ -76,7 +76,7 @@ species snake_segment skills: [dynamic_body] {
 	}
 }
 
-experiment Snake type: gui {
+experiment Snake mode: gui {
 	float minimum_cycle_duration <- 10 #ms;
 	category "Swimming" expanded: true;
 	parameter "Wave amplitude (motor speed)" var: wave_amplitude min: 0.0 max: 10.0 category: "Swimming";
@@ -84,7 +84,7 @@ experiment Snake type: gui {
 	parameter "Thrust" var: thrust min: 0.0 max: 20.0 category: "Swimming";
 
 	output {
-		display Snake type: 3d axes: false background: rgb(248, 246, 240) {
+		display Snake renderer: 3d axes: false background: rgb(248, 246, 240) {
 			graphics "World" {
 				draw shape color: rgb(156, 151, 142) wireframe: true;
 			}

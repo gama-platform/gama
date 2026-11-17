@@ -37,7 +37,7 @@ species Fly skills: [moving]
 
 }
 
-experiment Simple type: gui
+experiment Simple mode: gui
 { 
 	output
 	{

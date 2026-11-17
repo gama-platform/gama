@@ -12,11 +12,11 @@ global {
     float stored_pixel_value <- 20#px;
 }
 
-experiment "Contextual constants" type: gui {
+experiment "Contextual constants" mode: gui {
     text "Purpose: show that #px depends on the drawing context, but display dimensions always describe the viewport.<br/>Try: zoom the world and resize both displays independently.<br/>Expected: screen #px stays 1; world #px uses the world-to-pixel conversion. Both dimension readings match their display's viewport and do not change with zoom. The red circle keeps its pixel radius." category: "What this demonstrates";
     text "The displayed global 20#px value was evaluated before drawing. It is an ordinary stored number: moving it into a screen overlay does not reevaluate its original expression or preserve unit metadata." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             graphics "World readings" coordinates: #world {
                 draw world.shape color: #lightgray border: #gray;
                 draw ("World #px = " + #px) at: {4, 55} color: #blue;
@@ -41,6 +41,6 @@ experiment "Contextual constants" type: gui {
                 draw circle(10#px) at: {0.9, 120} color: #red;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
+        display "OpenGL" parent: "Java2D" renderer: opengl map_order: true {}
     }
 }

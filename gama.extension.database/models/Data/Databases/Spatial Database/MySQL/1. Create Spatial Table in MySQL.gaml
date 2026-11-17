@@ -40,4 +40,4 @@ global
 
 species test_species skills: [sql]  { }
 
-experiment default_expr type: gui { }
+experiment default_expr mode: gui { }

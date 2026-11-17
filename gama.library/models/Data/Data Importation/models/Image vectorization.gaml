@@ -161,11 +161,11 @@ species tree {
 	}
 }
 
-experiment Vectorize type: gui {
+experiment Vectorize mode: gui {
 	parameter var:resolution_factor;
 	
 	output {
-		display map_vector type:3d axes:false map_order: true{
+		display map_vector renderer:3d axes:false map_order: true{
 			species water;
 			species ground;
 			species beach;

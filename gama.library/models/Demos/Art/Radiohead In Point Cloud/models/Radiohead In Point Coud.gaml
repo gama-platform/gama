@@ -48,9 +48,9 @@ species paranoid_android skills:[moving]{
 	}
 }
 
-experiment OK_Computer type:gui autorun:true{
+experiment OK_Computer mode:gui autorun:true{
 	output synchronized:true{
-		display videotape type:3d background:rgb(0,0,15) axes:false fullscreen:true toolbar:false{
+		display videotape renderer:3d background:rgb(0,0,15) axes:false fullscreen:true toolbar:false{
 	    species paranoid_android aspect:house_of_cards;
 	    	event "r"  {pyramid_song<-!pyramid_song;}
 	    	event "a"  {the_bend<-{1,0,0};}

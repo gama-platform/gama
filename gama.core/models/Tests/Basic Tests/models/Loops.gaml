@@ -12,7 +12,7 @@ species dummy {
 	int value;
 }
 
-experiment loop_over type:test{
+experiment loop_over mode:test{
 	
 	test loop_over_list_int {
 		list<int> l <- [1,2,3,4];
@@ -33,6 +33,7 @@ experiment loop_over type:test{
 	
 	test loop_over_species {
 		int i <- 1;
+		ask simulation {
 		create dummy number:4 {
 			value <- i;
 			i <- i + 1;
@@ -44,13 +45,15 @@ experiment loop_over type:test{
 		assert sum = 10;
 		ask dummy {
 			do die;
-		}
+		}}
 	}
 	
 	test loop_over_empty_species {
 		int sum <- 0;
+		ask simulation {
 		loop d over: dummy{
 			sum <- sum + d.value;
+		}
 		}
 		assert sum = 0;
 	}
@@ -86,7 +89,7 @@ experiment loop_over type:test{
 	
 }
 
-experiment loop_times type:test{
+experiment loop_times mode:test{
 	
 	test loop_times {
 		int i <- 1;
@@ -178,7 +181,7 @@ experiment loop_times type:test{
 	
 }
 
-experiment loop_from_to type:test{
+experiment loop_from_to mode:test{
 		
 
 	test loop_from_to {
@@ -435,7 +438,7 @@ experiment loop_from_to type:test{
 }
 
 
-experiment loop_while type:test{
+experiment loop_while mode:test{
 	
 	test loop_while {
 		int i <- 0;

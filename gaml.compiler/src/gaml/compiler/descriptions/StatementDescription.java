@@ -34,10 +34,15 @@ import gama.api.additions.delegates.ICreateDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.expressions.IOperator;
@@ -97,6 +102,16 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	}
 
 	@Override
+	public IDescription getEnclosingContext() {
+		final IDescription enclosing = getEnclosingDescription();
+		if ((IKeyword.OUTPUT.equals(getKeyword()) || IKeyword.USER_COMMAND.equals(getKeyword()))
+				&& enclosing != null && enclosing.isExperiment()
+				&& !IExperimentDescription.isExperimentContext(this))
+			return enclosing.getModelDescription();
+		return enclosing;
+	}
+
+	@Override
 	public void dispose() {
 		if (isBuiltIn()) return;
 		super.dispose();
@@ -126,6 +141,21 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 				getFacetsCopy(), passedArgs == null ? null : passedArgs.cleanCopy());
 		desc.originName = getOriginName();
 		return desc;
+	}
+
+	@Override
+	public Facets getFacetsCopy() {
+		final Facets copy = super.getFacetsCopy();
+		final IDescription enclosing = getEnclosingDescription();
+		if (copy != null && IKeyword.LET.equals(getKeyword()) && enclosing != null
+				&& (IKeyword.OUTPUT.equals(enclosing.getKeyword()) || IKeyword.PERMANENT.equals(enclosing.getKeyword()))) {
+			// A declaring label is mutable: compiling the copy must not replace the parent's binding.
+			final IExpressionDescription name =
+					GAML.getExpressionDescriptionFactory().createLabel(getLitteral(IKeyword.NAME));
+			name.setTarget(getFacet(IKeyword.NAME).getTarget());
+			copy.put(IKeyword.NAME, name);
+		}
+		return copy;
 	}
 
 	@Override
@@ -222,7 +252,9 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	 * @return the arguments
 	 */
 	protected Arguments validatePassedArgs() {
-		final IDescription superDesc = getEnclosingDescription();
+		final IDescription enclosing = getEnclosingDescription();
+		final IDescription superDesc = IKeyword.USER_COMMAND.equals(getKeyword()) && enclosing != null
+				&& enclosing.isExperiment() ? this : enclosing;
 		if (passedArgs != null) {
 			passedArgs.forEachFacet((nm, exp) -> {
 				if (exp != null) { exp.compile(superDesc); }
@@ -368,7 +400,63 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 			error("Impossible to return " + varName, GENERAL);
 			return null;
 		}
+		if (IKeyword.RETURNS.equals(facetName)) {
+			final IVarExpression existing = resolveExistingReturnVar(varName, type);
+			if (existing != null) return existing;
+		}
 		return (IVarExpression) sc.addTemp(this, facetName, varName, type);
+	}
+
+	/**
+	 * Resolves an existing variable in the enclosing context for a {@code returns:} facet, verifying that it is
+	 * accessible, modifiable, and type-compatible with the returned value.
+	 *
+	 * @param varName
+	 *            the name of the variable referenced by {@code returns:}
+	 * @param type
+	 *            the type produced by the statement
+	 * @return the existing {@link IVarExpression} if found, or {@code null} if a new temporary variable should be
+	 *         declared
+	 */
+	private IVarExpression resolveExistingReturnVar(final String varName, final IType<?> type) {
+		if (varName == null) return null;
+		final IVarDescriptionProvider provider = getDescriptionDeclaringVar(varName);
+		if (provider == null) return null;
+		if (provider instanceof ISpeciesDescription foundSd) {
+			final ITypeDescription remoteSd = getTypeContext();
+			if (remoteSd != null && remoteSd != provider && !remoteSd.isBuiltIn()
+					&& remoteSd instanceof ISpeciesDescription rsd && !rsd.hasMacroSpecies(foundSd)) {
+				error("The variable " + varName + " is not accessible in this context (" + remoteSd.getName()
+						+ "), but in the context of " + foundSd.getName() + ".", IGamlIssue.UNKNOWN_VAR,
+						IKeyword.RETURNS, varName);
+				return null;
+			}
+		}
+		final IExpression expr = provider.getVarExpr(varName, false);
+		if (!(expr instanceof IVarExpression varExpr)) return null;
+		if (varExpr.isNotModifiable()) {
+			error("The variable " + varName + " is a constant or a function and cannot be assigned a value.",
+					IGamlIssue.NOT_CONST, IKeyword.RETURNS, varName);
+			return varExpr;
+		}
+		final IType<?> receiverType = varExpr.getGamlType();
+		if (receiverType != Types.NO_TYPE && type != Types.NO_TYPE) {
+			final boolean baseCompatible = type.getGamlType().isTranslatableInto(receiverType.getGamlType());
+			final boolean contentCompatible = !receiverType.isContainer() || !type.isContainer()
+					|| receiverType.getContentType() == Types.NO_TYPE || type.getContentType() == Types.NO_TYPE
+					|| type.getContentType().isTranslatableInto(receiverType.getContentType());
+			if (!baseCompatible || !contentCompatible) {
+				error("Variable " + varName + " of type " + receiverType + " cannot hold the returned value of type "
+						+ type, IGamlIssue.WRONG_TYPE, IKeyword.RETURNS, receiverType.toString());
+			} else if (Types.intFloatCase(receiverType, type)
+					|| receiverType.isContainer() && type.isContainer()
+							&& Types.intFloatCase(receiverType.getContentType(), type.getContentType())) {
+				warning("Variable " + varName + " of type " + receiverType + " is assigned a value of type " + type
+						+ ", which will be casted to " + receiverType, IGamlIssue.SHOULD_CAST, IKeyword.RETURNS,
+						receiverType.toString());
+			}
+		}
+		return varExpr;
 	}
 
 	@Override

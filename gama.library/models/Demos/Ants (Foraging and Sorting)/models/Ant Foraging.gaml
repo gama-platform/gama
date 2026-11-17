@@ -194,7 +194,7 @@ experiment base virtual:true {
 }
 
 	//Complete experiment that will inspect all ants in a table
-experiment "With Inspector" type: gui parent:base{
+experiment "With Inspector" mode: gui parent:base{
 	parameter 'Number:' var: ants_number <- 100  category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 
@@ -202,7 +202,7 @@ experiment "With Inspector" type: gui parent:base{
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
 	output {
 		layout #split editors: false;
-		display Ants type: opengl axes:false map_order: true{
+		display Ants renderer: opengl axes:false map_order: true{
 			// This inset belongs to the world and must keep following the 3D camera.
 			picture terrain coordinates: #world position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} refresh: false;
 			agents "agents" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
@@ -221,12 +221,12 @@ experiment "With Inspector" type: gui parent:base{
 	}
 }
 
-experiment "Classic" type: gui parent:base {
+experiment "Classic" mode: gui parent:base {
 	bool fake;
 	
 	output {
 		layout #split parameters: false consoles: false;
-		display Ants antialias: false type: opengl axes: false map_order: true{
+		display Ants antialias: false renderer: 3d axes: false map_order: true{
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
@@ -237,7 +237,7 @@ experiment "Classic" type: gui parent:base {
 				ui_slider "Signal diffusion / cycle" var: diffusion_rate min: 0.0 max: 1.0 step: 0.01 at: {12, 62} size: {276, 40};
 				ui_switch "Use agent icons" var: use_icons at: {12, 112} size: {276, 28} ;
 				ui_switch "Display agent state" var: display_state at: {12, 162} size: {276, 28} ;
-				ui_button "Add food" at: {12, 212} size: {276, 28} { ask simulation {do add_food();}}	
+				ui_button "Add food" at: {12, 212} size: {276, 28} {do add_food();}	
 			} 
 		}
 
@@ -247,12 +247,12 @@ experiment "Classic" type: gui parent:base {
 experiment Record parent: Classic record: true {}
 
 //Complete experiment that will inspect all ants in a table
-experiment "3D View" type: gui parent:base{
+experiment "3D View" mode: gui parent:base{
 	parameter 'Number:' var: ants_number <- 30 category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output synchronized: true{
-		display "Ants3D" type: opengl4 show_fps: true antialias: false{
+		display "Ants3D" renderer: opengl4 show_fps: true antialias: false{
 			camera 'default' location: {50.0,134.8682,105.6514} target: {50.0,59.403,0.0};
 			grid ant_grid elevation: grid_values triangulation: true texture: terrain refresh: false;
 			agents "Trail" coordinates: #world transparency: 0.7 position: {0.05 * world.shape.width, 0.05 * world.shape.height, 0.02} size: {0.9 * world.shape.width, 0.9 * world.shape.height} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
@@ -262,7 +262,7 @@ experiment "3D View" type: gui parent:base{
 }
 
 //Experiment to show how to make multi simulations
-experiment "3 Simulations" type: gui  parent:base{
+experiment "3 Simulations" mode: gui  parent:base{
 	parameter 'Number:' var: ants_number <- 100 category: 'Environment and Population';
 	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
@@ -276,7 +276,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 
 	permanent {
-		display Comparison background: #white type:opengl4{
+		display Comparison background: #white renderer:opengl4{
 			chart "Food Gathered" kind: series {
 			loop s over: simulations {
 				if (!dead(s)) {
@@ -289,7 +289,7 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
-		display Ants background: color type: opengl4 toolbar: color axes: false map_order: true{
+		display Ants background: color renderer: opengl4 toolbar: color axes: false map_order: true{
 			picture terrain coordinates: #world refresh: false;
 			agents "agents" coordinates: #world transparency: 0.5 value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant coordinates: #world aspect: icon;

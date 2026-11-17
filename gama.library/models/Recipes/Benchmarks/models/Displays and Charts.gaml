@@ -169,7 +169,7 @@ species particle parallel: false {
 	}
 }
 
-experiment Benchmark type: gui {
+experiment Benchmark mode: gui {
 	float minimum_cycle_duration <- 0.0;
 
 	parameter "First load level" var: first_level min: 0 max: 10;
@@ -185,14 +185,14 @@ experiment Benchmark type: gui {
 
 	output synchronized: true {
 		layout #split;
-		display "2D" type: 2d {
+		display "2D" renderer: 2d {
 			species particle aspect: flat;
 		}
 
-		display "3D" type: opengl {
+		display "3D" renderer: opengl {
 			species particle aspect: solid;
 		}
-		display "Charts" type: 3d {
+		display "Charts" renderer: 3d {
 			chart "Time series" kind: series {
 				datalist legend: series_names value: series_values;
 			}
@@ -200,4 +200,4 @@ experiment Benchmark type: gui {
 	}
 }
 
-experiment Profile type: gui parent: Benchmark benchmark: true {}
+experiment Profile mode: gui parent: Benchmark benchmark: true {}

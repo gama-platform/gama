@@ -101,7 +101,7 @@ grid cells height:cell_max_size width:cell_max_size {
 	}
 }
 
-experiment my_experiment type:gui {
+experiment my_experiment mode:gui {
 	parameter "proportion" var:proportion;
 	parameter "variation" var:variation;
 	parameter "min_value" var:min_value;
@@ -113,7 +113,7 @@ experiment my_experiment type:gui {
 		minimum_cycle_duration <- 200#ms;
 	}
 	output {
-		display my_display type: 3d {
+		display my_display renderer: 3d {
 			species cells aspect:base;
 		}
 	}

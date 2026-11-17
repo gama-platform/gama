@@ -105,7 +105,7 @@ species my_SIR_maths {
 
 
 
-experiment Simulation type: gui {
+experiment Simulation mode: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	parameter 'Number of Susceptible' type: int var: number_S <- 495 category: "Initial population"; 
 	parameter 'Number of Infected'    type: int var: number_I <- 5   category: "Initial population";
@@ -116,7 +116,7 @@ experiment Simulation type: gui {
 	
 	output {
 		layout #split tabs: true;
-		display chart_3system_eq title: "Split system" toolbar: false  type: 2d {
+		display chart_3system_eq title: "Split system" toolbar: false  renderer: 2d {
 			chart 'Split system' kind: series background: rgb(47,47,47) color: #white x_tick_line_visible: false{
 				data 'susceptible' value: first(S_agt).Ssize color: rgb(46,204,113) marker_shape: marker_circle;
 				data 'infected 1' value: first(I_agt).beta * first(I_agt).Isize color: rgb(231,76,60)+120 marker_shape: marker_diamond;
@@ -127,7 +127,7 @@ experiment Simulation type: gui {
 
 		}
 
-		display chart_1system_eq title: "Unified system" toolbar: false  type: 2d  {
+		display chart_1system_eq title: "Unified system" toolbar: false  renderer: 2d  {
 			chart 'Unified system' kind: series background: rgb(47,47,47) color: #white x_tick_line_visible: false{
 				data 'susceptible (maths)' value: first(my_SIR_maths).Sm color: rgb(46,204,113) marker_shape: marker_circle;
 				data 'infected (maths)' value: first(my_SIR_maths).Im color: rgb(231,76,60) marker_shape: marker_circle;

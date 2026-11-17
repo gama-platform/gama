@@ -102,7 +102,7 @@ species building {
 	}
 }
 
-experiment main type: gui {
+experiment main mode: gui {
 	parameter "Nb people infected at init" var: nb_infected_init min: 1 max: 2147;
 
 	output {
@@ -116,13 +116,13 @@ experiment main type: gui {
 			species people aspect:circle;			
 		}
 	
-		display chart_display type: 3d refresh: every(10 #cycles) {
+		display chart_display renderer: 3d refresh: every(10 #cycles) {
 			chart "Disease spreading" kind: series {
 				data "susceptible" value: nb_people_not_infected color: #green;
 				data "infected" value: nb_people_infected color: #red;
 			}
 		}
-		display view3D type: 3d antialias: false {
+		display view3D renderer: 3d antialias: false {
 			light #ambient intensity: 80;
 			picture "../includes/luneray.jpg" refresh:false; 
 			species building aspect:geom3D refresh: false;
@@ -132,14 +132,14 @@ experiment main type: gui {
 	}
 }
 
-experiment test_robustness type: batch until: time > 2#h repeat: 10 {
+experiment test_robustness mode: batch until: time > 2#h repeat: 10 {
 	reflex information {
 		list<float> vals <- simulations collect each.infected_rate;
 		write "mean: " + mean(vals) + " standard deviation: " + standard_deviation(vals);	
 	}
 }
 
-experiment explore_model type: batch until: time > 2#h repeat: 2 {
+experiment explore_model mode: batch until: time > 2#h repeat: 2 {
 	parameter "proba_leave" var: proba_leave among: [0, 0.01, 0.05, 0.1, 1.0];
 	
 	reflex save_results {
@@ -151,7 +151,7 @@ experiment explore_model type: batch until: time > 2#h repeat: 2 {
 	}
 }
 
-experiment calibration_model type: batch until: time > 2#h repeat: 3 {
+experiment calibration_model mode: batch until: time > 2#h repeat: 3 {
 	parameter "infection distance" var: infection_distance min: 1.0 max: 20.0 step: 1 unit: #m;
 	parameter "proba infection" var: proba_infection min: 0.01 max: 1.0 step: 0.01;
 	

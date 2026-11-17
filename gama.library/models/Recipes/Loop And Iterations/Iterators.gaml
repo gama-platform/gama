@@ -97,4 +97,4 @@ species dummy_species {
 	int val;
 }
 
-experiment exp type: gui {}
+experiment exp mode: gui {}

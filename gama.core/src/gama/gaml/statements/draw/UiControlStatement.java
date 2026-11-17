@@ -27,7 +27,6 @@ import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.validator;
-import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IActionDescription;
@@ -89,7 +88,7 @@ import gama.core.outputs.layers.OverlayLayer;
 		@facet(name = "on_change", type = IType.ACTION, optional = true, doc = @doc("Switch, radio, toggle button or slider change handler, as an action or block. Radio group bindings are updated before handlers run; ui_value is false for deselected radios and true for the selected radio.")),
 }, omissible = "label")
 @validator(UiControlStatement.ControlValidator.class)
-@doc("Screen-overlay controls. A final block handles activation/change, never drawing. var: binds directly; value: requires a handler. Inline handlers run on the experiment, like event blocks. Pointer activation commits on release, except sliders with continuous: true, which commit as their value changes during press and drag.")
+@doc("Screen-overlay controls. A final block handles activation/change, never drawing. var: binds directly; value: requires a handler. Handlers run in the context selected by the enclosing output's of: facet (simulation by default). Pointer activation commits on release, except sliders with continuous: true, which commit as their value changes during press and drag.")
 public class UiControlStatement extends AbstractStatementSequence {
 
 	public static final String OVERLAY_SCOPE_KEY = "gama.ui.overlay.controls";
@@ -101,7 +100,6 @@ public class UiControlStatement extends AbstractStatementSequence {
 	private final boolean toggle;
 	private final IExpression binding, value, handler;
 	private final IExecutable compiledHandler;
-	private final boolean handlerInSimulation;
 
 	public UiControlStatement(final IDescription description) {
 		super(description);
@@ -114,8 +112,6 @@ public class UiControlStatement extends AbstractStatementSequence {
 		// Action references denote descriptions even though they are not marked constant.
 		final IActionDescription action = handler != null && handler.getConstValue() instanceof IActionDescription a ? a : null;
 		compiledHandler = action == null ? null : (IExecutable) action.compile();
-		handlerInSimulation = action != null && !action.getName().startsWith(IInternalFacets.SYNTHETIC)
-				&& action.getTypeContext().isModel();
 	}
 
 	public static class ControlValidator implements IDescriptionValidator<IDescription> {
@@ -530,7 +526,7 @@ public class UiControlStatement extends AbstractStatementSequence {
 				if (!(action instanceof IExecutable executable)) {
 					throw GamaRuntimeException.error("The UI handler must resolve to an action", scope);
 				}
-				final var agent = handlerInSimulation ? scope.getRoot().getSimulation() : scope.getExperiment();
+				final var agent = scope.getRoot();
 				if (agent != null && !agent.dead()) scope.execute(executable, agent, null);
 			} else if (commands != null) {
 				for (final IStatement statement : commands) {

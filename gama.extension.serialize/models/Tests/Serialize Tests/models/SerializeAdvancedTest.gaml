@@ -6,12 +6,8 @@
 */
 model SerializeAdvancedTestModel
 
-species serialised_agent {
-	int amount <- 3;
-	string label <- "initial";
-}
-
-experiment SerializeAdvancedTest type: test autorun: true {
+global {
+	
 
 	test "to_gaml produces the GAML literal of a value" {
 		assert to_gaml([1, 2, 3]) = "[1,2,3]";
@@ -81,4 +77,12 @@ experiment SerializeAdvancedTest type: test autorun: true {
 		assert restored.label = "changed";
 		ask created_agents { do die(); }
 	}
+	
 }
+
+species serialised_agent {
+	int amount <- 3;
+	string label <- "initial";
+}
+
+experiment SerializeAdvancedTest mode: test autorun: true;

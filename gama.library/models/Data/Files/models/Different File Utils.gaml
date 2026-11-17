@@ -47,4 +47,4 @@ global {
 	
 }
 
-experiment fileUtils type: gui ;
+experiment fileUtils mode: gui ;

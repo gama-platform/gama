@@ -20,7 +20,7 @@ global {
 	//Evaporation value per cycle for the pheromons
 	float evaporation_per_cycle <- 5.0 min: 0.0 max: 240.0 ;
 	//Diffusion rate for the pheromons
-	float diffusion_rate <- 1.0 min: 0.0 max: 1.0 ;
+				float diffusion_rate <- 1.0 min: 0.0 max: 1.0 ;
 	//Size of the grid
 	int gridsize <- 75 ;
 	//Center of the grid to put the location of the nest
@@ -115,14 +115,7 @@ species ant skills: [moving] control: fsm {
 		draw circle(1.0) wireframe: !hasFood color: colors[8] ; 
 	}
 }
-experiment "Experiment" type: gui {
-	
-	font title_font <- font("Helvetica", 11, #bold);
-	font chart_font <- font("Helvetica", 10);
-
-	
-	
-	
+experiment "Experiment" mode: gui {
 	
 	//Parameters to play with  in the gui
 	parameter 'Number of ants:' var: ants_number category: 'Model' ;
@@ -143,31 +136,33 @@ experiment "Experiment" type: gui {
 		statesnames<-list<string>([]);
 		categnames<-["empty","carry"];
 		nbantsbydist<-list<list<int>>([]);
-		loop x over:(world.ant)
+		ask simulation {
+		loop x over:(ant)
 		{
-			if !(statesnames contains (x.state))
+			if !(myself.statesnames contains (x.state))
 			{				
-			add [(ant count (each.state=x.state and !each.hasFood)),(ant count (each.state=x.state and each.hasFood))] to: nbants;
-			add (x.state) to:statesnames;				
+			add [(ant count (each.state=x.state and !each.hasFood)),(ant count (each.state=x.state and each.hasFood))] to: myself.nbants;
+			add (x.state) to:myself.statesnames;				
 			list<int> nl<-list<int>([]);
 			loop d from:0 to:9
-				{
-			add (ant count (each.state=x.state and (((each distance_to center)>gridsize/20*d) and ((each distance_to center)<gridsize/20*(d+1))))) to: nl;
-				}
-			add nl to:nbantsbydist;
+				{ add (ant count (each.state=x.state and (((each distance_to center)>gridsize/20*d) and ((each distance_to center)<gridsize/20*(d+1))))) to: nl;}
+			add nl to:myself.nbantsbydist;
 			}
 		}
+	}
 	
 	}
 	//The different displays
 	output {
+	font title_font <- font("Helvetica", 11, #bold);
+	font chart_font <- font("Helvetica", 10);
 	     layout horizontal([vertical([0::6721,1::3279])::2403,vertical([2::3668,horizontal([3::5175,4::4825])::6332])::7597])  editors: false consoles: false parameters: false background: #white tabs: false;
 		
-		display Ants type: 3d antialias:false toolbar: false map_order: true{
+		display Ants renderer: 3d antialias:false toolbar: false map_order: true{
 			grid ant_grid ;
 			species ant  ;
 		}
-		display ProportionCarryFood  type: 3d toolbar: false {
+		display ProportionCarryFood  renderer: 3d toolbar: false {
 			chart "Proportions carrying: Pie" coordinates: #screen size: {0.5,0.5} position: {0, 0} kind: pie  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font
 			{
 				data "empty_ants" value:(ant count (!each.hasFood)) color:colors[0];
@@ -193,7 +188,7 @@ experiment "Experiment" type: gui {
 			}
 		}
 
-		display CentroidPosition  type: 3d toolbar: false {
+		display CentroidPosition  renderer: 3d toolbar: false {
 			chart "Positions and History of centroid and size by state" kind: scatter title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
 			{
 				datalist legend: ["avg-carry","avg-empty"] 
@@ -212,7 +207,7 @@ experiment "Experiment" type: gui {
 
 			}
 		}	
-		display Distribution2dPosition  type: 3d toolbar: false {
+		display Distribution2dPosition  renderer: 3d toolbar: false {
 			chart "Distribution of the X positions" coordinates: #screen size: {0.65,0.3} position: {0.05, 0} kind: histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			x_tick_line_visible: false y_tick_line_visible: false flat: false
 			{
@@ -237,7 +232,7 @@ experiment "Experiment" type: gui {
 			}
 		}
 		
-		display DistributionPosition  type: 3d toolbar: false{
+		display DistributionPosition  renderer: 3d toolbar: false{
 			chart "Distribution of the X positions" coordinates: #screen size: {0.92,0.3} position: {0, 0} kind: histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			
 			{

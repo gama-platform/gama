@@ -93,7 +93,7 @@ species Client skills: [network]  parallel:true{
 
 }
 
-experiment "WebSocket Server and Client" type: gui {
+experiment "WebSocket Server and Client" mode: gui {
 	float minimum_cycle_duration <- 0.25;
 
 	init {

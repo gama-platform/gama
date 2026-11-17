@@ -5,7 +5,7 @@
 * Tags: control, statement, test
 */
 
-experiment ControlStatementsTest type: test autorun: true {
+experiment ControlStatementsTest mode: test autorun: true {
 	
 	test "If Else Statement" {
 		int a <- 10;

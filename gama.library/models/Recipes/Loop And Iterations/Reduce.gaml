@@ -130,4 +130,4 @@ species contributor {
 	float energy;
 }
 
-experiment "Run reduce recipes" type: gui {}
+experiment "Run reduce recipes" mode: gui {}

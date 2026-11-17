@@ -21,7 +21,6 @@ import com.google.common.base.Objects;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -48,7 +47,6 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.IRotationDefinition;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
-import gama.core.experiment.ExperimentAgent;
 import gama.core.outputs.layers.properties.GenericCameraDefinition;
 import gama.core.outputs.layers.properties.GenericLightDefinition;
 import gama.dev.DEBUG;
@@ -545,17 +543,7 @@ public class LayeredDisplayData implements IDisplayData {
 	public void initWith(final IScope scope, final IDescription desc) {
 		final Facets facets = desc.getFacets();
 		// Initializing the size of the environment
-		ISimulationAgent sim = scope.getSimulation();
-		// hqnghi if layer come from micro-model
-		final IModelDescription micro = desc.getModelDescription();
-		final IModelDescription main = scope.getModel().getDescription();
-		final boolean fromMicroModel = main.getMicroModel(micro.getMicroAlias()) != null;
-		if (fromMicroModel) {
-			final ExperimentAgent exp = (ExperimentAgent) scope.getRoot()
-					.getExternMicroPopulationFor(micro.getMicroAlias() + "." + desc.getOriginName()).getAgent(0);
-			sim = exp.getSimulation();
-		}
-		// end-hqnghi
+		final ISimulationAgent sim = scope.getSimulation();
 		IEnvelope env = null;
 		if (sim != null) {
 			env = sim.getEnvelope();

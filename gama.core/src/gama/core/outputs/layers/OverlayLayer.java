@@ -19,6 +19,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.types.geometry.IShape;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
@@ -215,16 +216,20 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 
 	private void activateControl(final Control active, final Object next) {
 		final IDisplaySurface surface = controlSurface;
-		final List<Control> radioGroup = active.statement().isRadio()
-				? controls.stream().filter(c -> c.statement().isRadio() && Objects.equals(c.group(), active.group())).toList()
-				: List.of();
-		GAMA.runAndUpdateAll(() -> {
-			if (surface == null || controlSurface != surface || surface.isDisposed() || !getData().isVisible()
-					|| controls.stream().noneMatch(c -> sameControl(c, active))) return;
-			try (IGraphicsScope callback = surface.getScope().copyForGraphics("for overlay control")) {
-				final IAgent experiment = callback.getExperiment();
-				if (experiment == null || experiment.dead()) return;
-				callback.execute(s -> {
+		final IGraphicsScope source = surface == null ? null : surface.getScope();
+		if (source == null || source.isClosed()) return;
+		final ITopLevelAgent owner = source.getRoot();
+		if (owner == null || owner.dead()) return;
+		owner.executeAction(ignored -> {
+			final List<Control> current = controls;
+			if (controlSurface != surface || surface.isDisposed() || surface.getScope() != source
+					|| source.isClosed() || source.getRoot() != owner || owner.dead() || !getData().isVisible()
+					|| current.stream().noneMatch(c -> sameControl(c, active))) return null;
+			final List<Control> radioGroup = active.statement().isRadio()
+					? current.stream().filter(c -> c.statement().isRadio() && Objects.equals(c.group(), active.group())).toList()
+					: List.of();
+			try (IGraphicsScope callback = source.copyForGraphics("for overlay control")) {
+				GAMA.runAndUpdateAll(() -> callback.execute(s -> {
 					if (active.statement().isRadio()) {
 						final List<Control> changed = new ArrayList<>();
 						for (final Control radio : radioGroup) {
@@ -239,8 +244,9 @@ public class OverlayLayer extends GraphicLayer implements IDisplayControlLayer {
 						active.statement().activate(s, next);
 					}
 					return null;
-				}, experiment, null);
+				}, owner, null));
 			}
+			return null;
 		});
 	}
 

@@ -26,10 +26,10 @@ species gis_3d_object {
 	}
 }
 
-experiment display_shape type: gui {
+experiment display_shape mode: gui {
 
 	output {
-		display city_display type: 3d axes:false background: #black{
+		display city_display renderer: 3d axes:false background: #black{
 			species gis_3d_object aspect: base;
 		}
 

@@ -138,7 +138,7 @@ species group_people {
 	}
 }
 
-experiment clustering type: gui {
+experiment clustering mode: gui {
 	parameter "Maximal distance for people clustering" var: max_dist_people min: 0.0 max: 100.0 category: "People";
 	parameter "Maximal distance for vegetation cell clustering" var: max_dist_cell min: 0 max: 5 category: "Forest";
 	parameter "Probability for vegetation cells" var: proba_vegetation min: 0.1 max: 1.0 category: "Forest";
@@ -153,7 +153,7 @@ experiment clustering type: gui {
 			species people aspect: tree;
 			species group_people;
 		}
-		display map_forest_clusters type:2d antialias:false{
+		display map_forest_clusters renderer:2d antialias:false{
 			grid vegetation_cell border: #black;
 			species forest;
 		}

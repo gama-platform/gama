@@ -23,6 +23,7 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -92,7 +93,7 @@ import gama.api.utils.prefs.GamaPreferences;
 						type = IType.LIST,
 						of = IType.FLOAT,
 						optional = true,
-						doc = @doc ("Declares a new temporary list<float> variable containing one duration in milliseconds per execution, in execution order. It is available after the benchmark in the enclosing scope; do not predeclare it. The list has repeat elements (one by default), and its entries can be indexed directly without a cast")),
+						doc = @doc ("An existing compatible variable or a new temporary list<float> variable receiving one duration in milliseconds per execution, in execution order. The list has repeat elements (one by default), and its entries can be indexed directly without a cast")),
 				@facet (
 						name = "console",
 						type = IType.BOOL,
@@ -127,7 +128,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 
 	/** The optional console output and results variable. */
 	final IExpression console;
-	final String results;
+	final IVarExpression results;
 
 	/** The color. */
 	final IExpression color;
@@ -146,7 +147,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 		repeat = getFacet(IKeyword.REPEAT);
 		message = getFacet(IKeyword.MESSAGE);
 		console = getFacet("console");
-		results = getLiteral(IKeyword.RETURNS);
+		results = (IVarExpression) getFacet(IKeyword.RETURNS);
 		color = getFacet(IKeyword.COLOR);
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
 		end = getFacet(IKeyword.END);
@@ -154,7 +155,11 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 
 	@Override
 	public void enterScope(final IScope scope) {
-		if (results != null) { scope.addVarWithValue(results, GamaListFactory.create(Types.FLOAT)); }
+		if (results != null && !(results instanceof IVarExpression.Agent)
+				&& !(results instanceof IVarExpression.Persistent) && scope.getExecutionContext() != null
+				&& !scope.getExecutionContext().hasTempVar(results.getName())) {
+			scope.addVarWithValue(results.getName(), GamaListFactory.create(Types.FLOAT));
+		}
 		super.enterScope(scope);
 	}
 
@@ -165,7 +170,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 			throw GamaRuntimeException.error("The repeat facet of a benchmark statement must be positive", scope);
 		}
 		final IList<Double> durations = GamaListFactory.create(Types.FLOAT, repeatTimes);
-		if (results != null) { scope.setVarValue(results, durations); }
+		if (results != null) { results.setVal(scope, durations, false); }
 		final boolean printSummary = console == null || Cast.asBool(scope, console.value(scope));
 		IColor rgb = null;
 		BufferingStrategies strategy = null;
@@ -201,6 +206,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 			}
 			total += duration;
 		}
+		if (results != null) { results.setVal(scope, durations, false); }
 
 		var messageToSend = new StringBuilder();
 		messageToSend.append(message == null ? "Execution time " : Cast.asString(scope, message.value(scope)));

@@ -141,11 +141,11 @@ global
 	}
 }
 
-experiment main type: gui
+experiment main mode: gui
 {
 	output synchronized: true
 	{
-		display "Comodel Display" type:2d antialias:false
+		display "Comodel Display" renderer:2d antialias:false
 		{
 			agents "cell" value: (Urbanization.urbancomodel[0]).get_plot() transparency:0.75;
 			agents "road" 		value: Traffic.trafficcomodel[0].get_road();

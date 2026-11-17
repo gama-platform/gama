@@ -27,17 +27,17 @@ global
 		// 1. Initialize the Ant Model
 		create ANT.antcomodel
 		{
-			gridsize <- 100;
-			ants_number <- number_of_ants;
-			theAnts <- list(ant);	
+			simulation.gridsize <- 100;
+			simulation.ants_number <- myself.number_of_ants;
+			myself.theAnts <- list(simulation.ant);	
 		} 	
 		
 		// 2. Initialize the Prey-Predator Model
 		create PP.ppcomodel
 		{
-			shape <- square(100);
-			preyinit <- number_of_ants; // Ensure 1:1 ratio with ants
-			predatorinit <- 2;
+			simulation.shape <- square(100);
+			simulation.preyinit <- myself.number_of_ants; // Ensure 1:1 ratio with ants
+			simulation.predatorinit <- 2;
 		}
 	}
 	
@@ -51,7 +51,7 @@ global
 		ask ANT.antcomodel[0].simulation
 		{
 			do _step_(); // Advance the Ant simulation one tick
-			theAnts <- list(ant); // Refresh the local list
+			myself.theAnts <- list(ant); // Refresh the local list
 		}
 		
 		// --- PHASE 2: Handle Predation and Mortality ---
@@ -61,15 +61,15 @@ global
 			
 			do _step_(); // Advance the PP simulation (predators might eat prey here)
 			
-			thePreys <- list(prey);
+			myself.thePreys <- list(prey);
 			
 			// Compare lists: if a prey is gone, the corresponding ant must die
-			if(prey_before != thePreys){
+			if(prey_before != myself.thePreys){
 				loop i from: 0 to: length(prey_before) - 1
 				{
 					if(dead(prey_before at i)) // Check if agent was removed from world
 					{
-						if(!dead(theAnts at i)) // Match by index
+						if(!dead(myself.theAnts at i)) // Match by index
 						{
 							ant_to_delete << i;	// Mark index for deletion					
 						}
@@ -85,14 +85,14 @@ global
 			{
 				(ant at index_to_delete).die();
 			}	
-			theAnts <- list(ant); // Update list after deaths
+			myself.theAnts <- list(ant); // Update list after deaths
 		}
 		
 		// --- PHASE 4: Sync Positions ---
 		// Forces the 'Prey' agents to be at the exact coordinates of the 'Ants'
 		ask PP.ppcomodel[0].simulation
 		{
-			loop tmp over: theAnts
+			loop tmp over: myself.theAnts
 			{
 				loop tmp_pp over: prey
 				{

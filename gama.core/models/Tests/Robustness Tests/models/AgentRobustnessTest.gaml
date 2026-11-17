@@ -11,20 +11,8 @@ model AgentRobustnessTestModel
 
 global {
 	geometry shape <- square(100);
-}
-
-species bounded_agent {
-	int level <- 1 min: 0 max: 10;
-	float ratio <- 0.5 min: 0.0 max: 1.0;
-}
-
-species walker skills: [moving] { 
-	float speed <- 0.0 min: 0.0;
-}
-
-grid cell width: 3 height: 3 { }
-
-experiment AgentRobustnessTest type: test autorun: true {
+	
+	
 
 	bool handled(string problem) {
 		return problem = nil ? true : !(problem contains "Java error");
@@ -226,4 +214,18 @@ experiment AgentRobustnessTest type: test autorun: true {
 		assert handled(problem);
 		assert problem contains "Cannot compute distance_to: the source and target must not be nil";
 	}
+	
 }
+
+species bounded_agent {
+	int level <- 1 min: 0 max: 10;
+	float ratio <- 0.5 min: 0.0 max: 1.0;
+}
+
+species walker skills: [moving] { 
+	float speed <- 0.0 min: 0.0;
+}
+
+grid cell width: 3 height: 3 { }
+
+experiment AgentRobustnessTest mode: test autorun: true;

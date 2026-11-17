@@ -8,11 +8,8 @@ model MovingOnGraphsTestModel
 
 global {
 	geometry shape <- square(100);
-}
-
-species walker skills: [moving] { }
-
-experiment MovingOnGraphsTest type: test autorun: true {
+	
+	
 
 	// an L-shaped network: {0, 0} -> {50, 0} -> {50, 50}
 	graph network <- as_edge_graph([line([{0, 0}, {50, 0}]), line([{50, 0}, {50, 50}])]);
@@ -80,7 +77,7 @@ experiment MovingOnGraphsTest type: test autorun: true {
 			ask w { do wander(); }
 			visited <+ w.location;
 		}
-		assert visited all_match (world.shape covers each);
+		assert visited all_match (shape covers each);
 		ask created { do die(); }
 	}
 
@@ -97,4 +94,9 @@ experiment MovingOnGraphsTest type: test autorun: true {
 		assert steps all_match (each <= 3.0 + 1e-9);
 		ask created { do die(); }
 	}
+	
 }
+
+species walker skills: [moving] { }
+
+experiment MovingOnGraphsTest mode: test autorun: true;

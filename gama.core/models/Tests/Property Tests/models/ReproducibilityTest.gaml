@@ -9,12 +9,24 @@ model ReproducibilityTestModel
 
 global {
 	geometry shape <- square(100);
+	
+	
+	test "Creating agents at random locations is reproducible" {
+		seed <- 11.0;
+		create walker number: 10 returns: first_agents;
+		list<point> first_locations <- first_agents collect each.location;
+		seed <- 11.0;
+		create walker number: 10 returns: second_agents;
+		list<point> second_locations <- second_agents collect each.location;
+		assert first_locations = second_locations;
+		ask first_agents + second_agents { do die(); }
+	}
 }
 
 species walker {
 }
 
-experiment ReproducibilityTest type: test autorun: true {
+experiment ReproducibilityTest mode: test autorun: true {
 
 	/** Draws one value with each random operator */
 	list<float> draw_all() {
@@ -93,16 +105,6 @@ experiment ReproducibilityTest type: test autorun: true {
 		assert empty(failures);
 	}
 
-	test "Creating agents at random locations is reproducible" {
-		seed <- 11.0;
-		create walker number: 10 returns: first_agents;
-		list<point> first_locations <- first_agents collect each.location;
-		seed <- 11.0;
-		create walker number: 10 returns: second_agents;
-		list<point> second_locations <- second_agents collect each.location;
-		assert first_locations = second_locations;
-		ask first_agents + second_agents { do die(); }
-	}
 
 	test "The draws are not altered by an unrelated computation" {
 		list<list<float>> first_draw <- draw_sequence(5.0);

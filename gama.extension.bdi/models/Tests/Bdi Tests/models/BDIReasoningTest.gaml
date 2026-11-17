@@ -7,36 +7,8 @@
 */
 model BDIReasoningTestModel
 
-species reasoning_agent control: simple_bdi {
-	/** The plans that were executed, in order */
-	list<string> executed_plans <- [];
-	predicate hungry <- new_predicate("hungry");
-	predicate eat <- new_predicate("eat");
-	predicate rest <- new_predicate("rest");
-
-	// believing to be hungry gives a strong desire to eat
-	rule belief: hungry new_desire: eat strength: 5.0;
-
-	plan do_eat intention: eat {
-		executed_plans <+ "eat";
-		do remove_belief(hungry);
-		do remove_intention(eat, true);
-	}
-
-	plan do_rest intention: rest {
-		executed_plans <+ "rest";
-		do remove_intention(rest, true);
-	}
-}
-
-species social_agent control: simple_bdi {
-	bool use_emotions_architecture <- true;
-	bool use_social_architecture <- true;
-}
-
-species parallel_thought_agent control: parallel_bdi {}
-
-experiment BDIReasoningTest type: test autorun: true {
+global {
+	
 
 	test "Thought-history capacity" {
 		create reasoning_agent returns: created_agents;
@@ -318,4 +290,36 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert link.familiarity = 0.3;
 		ask created_agents { do die(); }
 	}
+	
 }
+
+species reasoning_agent control: simple_bdi {
+	/** The plans that were executed, in order */
+	list<string> executed_plans <- [];
+	predicate hungry <- new_predicate("hungry");
+	predicate eat <- new_predicate("eat");
+	predicate rest <- new_predicate("rest");
+
+	// believing to be hungry gives a strong desire to eat
+	rule belief: hungry new_desire: eat strength: 5.0;
+
+	plan do_eat intention: eat {
+		executed_plans <+ "eat";
+		do remove_belief(hungry);
+		do remove_intention(eat, true);
+	}
+
+	plan do_rest intention: rest {
+		executed_plans <+ "rest";
+		do remove_intention(rest, true);
+	}
+}
+
+species social_agent control: simple_bdi {
+	bool use_emotions_architecture <- true;
+	bool use_social_architecture <- true;
+}
+
+species parallel_thought_agent control: parallel_bdi {}
+
+experiment BDIReasoningTest mode: test autorun: true;

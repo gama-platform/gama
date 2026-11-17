@@ -101,6 +101,19 @@ public interface IExecutionContext extends IDisposable {
 	Object getTempVar(String name);
 
 	/**
+	 * Checks if a temporary variable is defined in this context or any outer context.
+	 *
+	 * @param name
+	 *            the variable name
+	 * @return true if the variable is defined in this context or an outer context
+	 */
+	default boolean hasTempVar(final String name) {
+		if (hasLocalVar(name)) return true;
+		final IExecutionContext o = getOuterContext();
+		return o != null && o.hasTempVar(name);
+	}
+
+	/**
 	 * Local variables, for example arguments, defined in execution contexts. Are only managed locally
 	 */
 

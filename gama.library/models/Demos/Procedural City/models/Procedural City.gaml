@@ -53,7 +53,7 @@ species Building{
 }
 
 
-experiment ProceduralCity  type: gui{
+experiment ProceduralCity  mode: gui{
 	float minimum_cycle_duration <- 0.05;
 	parameter 'Number of Agents' var:number_of_building  category: 'Initialization';
 	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';
@@ -62,7 +62,7 @@ experiment ProceduralCity  type: gui{
 	}
 
 	output {
-		display City type:3d background:#white axes:false{
+		display City renderer:3d background:#white axes:false{
 	  	camera 'default' location: {178.9256,868.4599,470.2417} target: {274.5961,228.3136,0.0};
 			species Building aspect:textured;							
 		}

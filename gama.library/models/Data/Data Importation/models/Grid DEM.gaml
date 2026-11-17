@@ -47,37 +47,37 @@ experiment base virtual:true {
 	parameter 'Texture' var:texture;	
 }
 
-experiment Comparison type: gui parent:base{
+experiment Comparison mode: gui parent:base{
 	output {
 		layout #split;
 
 		//Display the grid triangulated in 3D with the cell altitude corresponding to its grid_value and the color cells (if defined otherwise in black)
- 		display "Grid with triangles" type: 3d {
+ 		display "Grid with triangles" renderer: 3d {
 			grid cell elevation: true triangulation: true;
 		}
 
 		//Display the grid triangulated in 3D with the cell altitude corresponding to its grid_value and the color of cells as a gray value corresponding to grid_value / maxZ *255
-		display "Grid with triangles and grayscale" type: 3d {
+		display "Grid with triangles and grayscale" renderer: 3d {
 			grid cell elevation: true grayscale: true triangulation: true;
 		}
 
 		//Display the textured grid in 3D with the cell altitude corresponding to its grid_value.				
-		display "Grid with triangles and texture" type: 3d {
+		display "Grid with triangles and texture" renderer: 3d {
 			grid cell texture: texture triangulation: true elevation: true;
 		}
 
 		//Display the field triangulated in 3D with the cell altitude corresponding to its value and the color defined (otherwise in default color)
- 		display "Field with triangles, green color" type: 3d {
+ 		display "Field with triangles, green color" renderer: 3d {
 			mesh grid_data triangulation: true color: #green;
 		}
 
 		//Display the field triangulated in 3D with the cell altitude corresponding to its value and the color of cells as a gray value corresponding to grid_value / maxZ *255
- 		display "Field with triangles and grayscale" type: 3d {
+ 		display "Field with triangles and grayscale" renderer: 3d {
 			mesh grid_data grayscale: true triangulation: true;
 		}
 
 		//Display the textured field in 3D with the cell altitude corresponding to its value.				
- 		display "Field scaled by 2, with triangles and texture" type: 3d {
+ 		display "Field scaled by 2, with triangles and texture" renderer: 3d {
 			mesh grid_data texture: texture triangulation: true scale: 2.0;
 		}
 
@@ -85,45 +85,45 @@ experiment Comparison type: gui parent:base{
 
 }
 
-experiment "Grids" type: gui parent:base{
+experiment "Grids" mode: gui parent:base{
 	output {
 		layout #split toolbars: false;
 
 		//Display the grid on a plan with cell color (if defined otherwise in black)
- 		display grid type: 3d { //Same as in 2d
+ 		display grid renderer: 3d { //Same as in 2d
  			grid cell border: #black;
 		}
 
 		//Display the grid in 3D with the cell altitude corresponding to its grid_value and the color cells (if defined otherwise in black)
- 		display gridWithElevation type: 3d {
+ 		display gridWithElevation renderer: 3d {
 			grid cell elevation: true;
 		}
 
 		//Display the grid triangulated in 3D with the cell altitude corresponding to its grid_value and the color cells (if defined otherwise in black)
- 		display gridWithElevationTriangulated type: 3d {
+ 		display gridWithElevationTriangulated renderer: 3d {
 			grid cell elevation: true triangulation: true;
 		}
 
 		//Display the grid in 3D with the cell altitude corresponding to its grid_value and the color of cells as a gray value corresponding to grid_value / maxZ *255
- 		display gridGrayScaled type: 3d {
+ 		display gridGrayScaled renderer: 3d {
 			grid cell elevation: true grayscale: true;
 		}
 		//Display the grid triangulated in 3D with the cell altitude corresponding to its grid_value and the color of cells as a gray value corresponding to grid_value / maxZ *255
-		display gridGrayScaledTriangulated type: 3d {
+		display gridGrayScaledTriangulated renderer: 3d {
 			grid cell elevation: true grayscale: true triangulation: true;
 		}
 
 		//Display the textured grid in 3D with the cell altitude corresponding to its grid_value.				
-		display gridTextured type: 3d {
+		display gridTextured renderer: 3d {
 			grid cell texture: texture text: false triangulation: false elevation: true;
 		}
 
 		//Display the textured triangulated grid in 3D with the cell altitude corresponding to its grid_value.
- 		display gridTexturedTriangulated type: 3d {
+ 		display gridTexturedTriangulated renderer: 3d {
 			grid cell texture: texture text: false triangulation: true elevation: true;
 		}
 
-		display gridWithText type: 3d {
+		display gridWithText renderer: 3d {
 			grid cell text: true elevation: true wireframe: true refresh: false;
 		}
 
@@ -131,50 +131,50 @@ experiment "Grids" type: gui parent:base{
 
 }
 
-experiment "Meshes" type: gui parent:base{
+experiment "Meshes" mode: gui parent:base{
 	output {
 		layout #split toolbars: false;
-		display "Large file, rectangles, wireframe and scaled" type: 3d axes: false {
+		display "Large file, rectangles, wireframe and scaled" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh europe coordinates: #world wireframe: true border: #green refresh: false size: {world.shape.width, world.shape.height, 0.2};
 		}
 
-		display "Large file, triangles, wireframe and scaled" type: 3d axes: false {
+		display "Large file, triangles, wireframe and scaled" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh europe coordinates: #world grayscale: true triangulation: true smooth: true refresh: false size: {world.shape.width, world.shape.height, 0.2};
 		}
 
-		display "Large file, triangles, smooth, wireframe and scaled" type: 3d axes: false {
+		display "Large file, triangles, smooth, wireframe and scaled" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh europe coordinates: #world wireframe: true triangulation: true border: #green refresh: false size: {world.shape.width, world.shape.height, 0.2} smooth: true;
 		}
 
-		display "Triangles, grayscale, lines, colored and scaled" type: 3d axes: false {
+		display "Triangles, grayscale, lines, colored and scaled" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh grid_data coordinates: #world size: {world.shape.width, world.shape.height, 0.75} triangulation: true border: #yellow color: #violet;
 		}
 
-		display "Triangles, textured, no scale" type: 3d axes: false {
+		display "Triangles, textured, no scale" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh grid_data texture: texture triangulation: true;
 		}
 
-		display "Triangles, textured and scaled" type: 3d axes: false {
+		display "Triangles, textured and scaled" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh grid_data texture: texture triangulation: true scale: 0.75;
 		}
 
-		display "Triangles, textured, smooth and scaled" type: 3d axes: false {
+		display "Triangles, textured, smooth and scaled" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh grid_data coordinates: #world texture: texture smooth: true triangulation: true size: {world.shape.width, world.shape.height, 0.75};
 		}
 
-		display "Triangles, textured, scaled, with labels" type: 3d axes: false {
+		display "Triangles, textured, scaled, with labels" renderer: 3d axes: false {
 			camera "default" location: {100.0, 269.7056, 169.7056} target: {100.0, 100.0, 0.0};
 			mesh grid_data coordinates: #world texture: texture triangulation: true size: {world.shape.width, world.shape.height, 0.5} text: true;
 		}
 
-		display "Large file, trianges, grayscale, scaled" type: 3d axes: false {
+		display "Large file, trianges, grayscale, scaled" renderer: 3d axes: false {
 			camera 'default' location: {104.7273,233.3361,685.4581} target: {100.135,-29.7603,0.0};
 			mesh dem_file grayscale: true triangulation: true scale: 2.0;
 		}

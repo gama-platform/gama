@@ -5,7 +5,7 @@
 * Tags: list, map, matrix, container, test
 */
 
-experiment ContainerOperatorsTest type: test autorun: true {
+experiment ContainerOperatorsTest mode: test autorun: true {
 
 	list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6];
 

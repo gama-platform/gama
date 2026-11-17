@@ -32,7 +32,6 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.runtime.scope.InScope;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.extension.batch.BatchAgent;
@@ -98,7 +97,7 @@ public abstract class AOptimizationAlgorithm extends Symbol implements IExplorat
 	 */
 	@Override
 	public void initializeFor(final IScope scope, final IExperimentAgent.Batch agent) throws GamaRuntimeException {
-		// setCurrentExperiment(agent);
+		initParams(scope);
 	}
 
 	/**
@@ -106,19 +105,6 @@ public abstract class AOptimizationAlgorithm extends Symbol implements IExplorat
 	 */
 	protected void initializeTestedSolutions() {
 		testedSolutions = new HashMap<>();
-	}
-
-	/**
-	 * Inits the params.
-	 */
-	protected void initParams() {
-		GAMA.run(new InScope.Void() {
-
-			@Override
-			public void process(final IScope scope) {
-				initParams(scope);
-			}
-		});
 	}
 
 	/**

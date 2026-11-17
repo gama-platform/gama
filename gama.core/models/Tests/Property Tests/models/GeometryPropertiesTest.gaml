@@ -6,7 +6,7 @@
 * Tags: property, geometry, spatial, random, test
 */
 
-experiment GeometryPropertiesTest type: test autorun: true {
+experiment GeometryPropertiesTest mode: test autorun: true {
 
 	int cases <- 200;
 

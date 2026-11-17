@@ -73,14 +73,16 @@ import gama.extension.batch.StoppingCriterionMaxIt;
 						doc = @doc ("size of the tabu list")),
 				@facet (
 						name = IKeyword.MAXIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to maximize")),
+						doc = @doc ("the fitness expression to maximize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.MINIMIZE,
+						context = facet.Context.MODEL,
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("the value the algorithm tries to minimize")),
+						doc = @doc ("the fitness expression to minimize, evaluated in each completed simulation")),
 				@facet (
 						name = IKeyword.AGGREGATION,
 						type = IType.LABEL,
@@ -89,7 +91,7 @@ import gama.extension.batch.StoppingCriterionMaxIt;
 						doc = @doc ("the agregation method")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm is an implementation of the Tabu Search algorithm. See the wikipedia article and [batch161 the batch dedicated page].",
+		value = "This algorithm is an implementation of the Tabu Search algorithm. See the wikipedia article and [batch161 the batch dedicated page]. Configuration facets are evaluated in the experiment context.",
 		usages = { @usage (
 				value = "As other batch methods, the basic syntax of the tabu statement uses `method tabu` instead of the expected `tabu name: id` : ",
 				examples = { @example (
@@ -122,7 +124,6 @@ public class TabuSearch extends ALocalSearchAlgorithm {
 	 */
 	public TabuSearch(final IDescription species) {
 		super(species);
-		initParams();
 
 	}
 

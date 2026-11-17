@@ -151,11 +151,11 @@ global {
 // -----------------------------------------------------------------------
 // Charts — rendered in a GUI experiment
 // -----------------------------------------------------------------------
-experiment "Explore Coffee Sales" type: gui {
+experiment "Explore Coffee Sales" mode: gui {
 
 	output {
 
-		display "Revenue by Store" type: 2d {
+		display "Revenue by Store" renderer: 2d {
 			chart "Revenue by Store Location" kind: pie {
 				loop i from: 0 to: (by_store.rows) - 1 {
 					data string(cell(by_store, i, "store"))
@@ -164,7 +164,7 @@ experiment "Explore Coffee Sales" type: gui {
 			}
 		}
 
-		display "Revenue by Category" type: 2d {
+		display "Revenue by Category" renderer: 2d {
 			chart "Revenue by Product Category" kind: histogram {
 				loop i from: 0 to: (by_category.rows) - 1 {
 					data string(cell(by_category, i, "category"))
@@ -173,7 +173,7 @@ experiment "Explore Coffee Sales" type: gui {
 			}
 		}
 
-		display "Avg Price by Category" type: 2d {
+		display "Avg Price by Category" renderer: 2d {
 			chart "Average Unit Price by Product Category" kind: histogram {
 				loop i from: 0 to: (by_category.rows) - 1 {
 					data string(cell(by_category, i, "category"))

@@ -28,10 +28,10 @@ species dot {
     }
 }
 
-experiment "1 - Spatial layers" type: gui {
+experiment "1 - Spatial layers" mode: gui {
     text "Purpose: draw the same grid and population in world layers and a fixed 200-by-200-pixel screen frame.<br/>Try: resize, zoom and pan each display; no simulation steps are needed.<br/>Expected: the background grid follows the camera, while the small copy stays at {16,100} pixels. Both copies keep the same relative dot locations: screen placement does not change agent data." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             grid cell coordinates: #world border: #gray;
             species dot coordinates: #world;
             // Both the grid and the dots are fitted to the same viewport-relative rectangle.
@@ -43,14 +43,14 @@ experiment "1 - Spatial layers" type: gui {
                 draw "Screen frame: 200 x 200 pixels" at: {16, 330} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" renderer: opengl {}
     }
 }
 
-experiment "2 - Image mesh and chart" type: gui {
+experiment "2 - Image mesh and chart" mode: gui {
     text "Purpose: apply screen placement to image, mesh and chart layers, not just graphics and overlays.<br/>Try: run to populate the chart, then resize and zoom each display.<br/>Expected: the image and flat mesh keep 200-by-140-pixel frames. The chart keeps a 180-pixel height but follows 90 percent of the viewport width. Camera movement should not move these frames." category: "What this demonstrates";
     output {
-        display "Java2D" type: 3d {
+        display "Java2D" renderer: 3d {
             image "../images/Gama.jpg" coordinates: #screen position: {16, 60} size: {200, 140};
             mesh heights coordinates: #screen position: {240, 60} size: {200, 140}
                 scale: 0 color: palette([#blue, #cyan, #yellow, #red]);
@@ -64,6 +64,6 @@ experiment "2 - Image mesh and chart" type: gui {
                 draw "Chart: 90 percent viewport width, 180 pixels high" at: {16, 224} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl {}
+        display "OpenGL" parent: "Java2D" renderer: opengl {}
     }
 }

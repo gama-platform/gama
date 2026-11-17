@@ -17,14 +17,12 @@ import gama.annotations.inside;
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.Symbol;
 import gama.api.gaml.types.Cast;
-import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IOutput;
@@ -225,21 +223,7 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	 */
 	public void setScope(final IScope scope) {
 		if (this.outputScope != null) { GAMA.releaseScope(this.outputScope); }
-		if (scope.getModel() != null) {
-			final IModelDescription micro = this.getDescription().getModelDescription();
-			final IModelDescription main = scope.getModel().getDescription();
-			final boolean fromMicroModel = main.getMicroModel(micro.getMicroAlias()) != null;
-			if (fromMicroModel) {
-				final IExperimentAgent exp = (IExperimentAgent) scope.getRoot()
-						.getExternMicroPopulationFor(micro.getMicroAlias() + "." + this.getDescription().getOriginName())
-						.getAgent(0);
-				this.outputScope = exp.getSimulation().getScope();
-			} else {
-				this.outputScope = scope;
-			}
-		} else {
-			this.outputScope = scope;
-		}
+		this.outputScope = scope;
 	}
 
 	@Override

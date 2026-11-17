@@ -105,11 +105,11 @@ grid cell width: 150 height: 150  neighbors: 8 frequency: 0 {
 	rgb color <- #white;
 }
 
-experiment Run type: gui {
+experiment Run mode: gui {
 	parameter "nb people" var: nb_people min: 1 max: 1000;
 	float minimum_cycle_duration <- 0.04; 
 	output {
-		display map type: 3d    {
+		display map renderer: 3d    {
 			species building refresh: false;
 			species people;
 			graphics "exit" refresh: false {

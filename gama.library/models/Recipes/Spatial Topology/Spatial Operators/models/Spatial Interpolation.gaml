@@ -66,12 +66,12 @@ grid cell_location width: nb_columns height: nb_rows {
 }
 
 
-experiment spatialinterpolation type: gui {
+experiment spatialinterpolation mode: gui {
 	parameter "nb of columns" var: nb_columns;
 	parameter "nb of rows" var: nb_rows;
 	parameter "power parameter" var: power;
 	output {
-		display map_shape type:3d map_order: true{
+		display map_shape renderer:3d map_order: true{
 			grid cell_shape;
 			graphics "points" {
 				loop pt over: pts.keys {
@@ -81,7 +81,7 @@ experiment spatialinterpolation type: gui {
 				}
 			}
 		}
-		display map_location type:3d map_order: true{
+		display map_location renderer:3d map_order: true{
 			grid cell_location;
 			graphics "points" {
 				loop pt over: pts.keys {

@@ -35,9 +35,9 @@ species river {
 	}
 }
 
-experiment testStrahler type: gui {
+experiment testStrahler mode: gui {
 	output {
-		display map type:2d {
+		display map renderer:2d {
 			species river;
 		}
 	}

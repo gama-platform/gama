@@ -182,7 +182,8 @@ public class UserControlDialog extends AbstractDetailsDialog {
 
 				});
 				for (final UserInputStatement i : inputs) {
-					scope.addVarWithValue(i.getTempVarName(), i.value(scope));
+					i.value(scope);
+					scope.execute(i);
 					EditorFactory.create(scope, composite, i, newValue -> {
 						i.setValue(scope, newValue);
 						scope.execute(i);

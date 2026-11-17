@@ -81,4 +81,4 @@ species DB_Accessor parent: AgentDB {
 	}
 }
 
-experiment simple_SQL_exp type: gui {}     
+experiment simple_SQL_exp mode: gui {}     

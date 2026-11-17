@@ -104,12 +104,12 @@ species lamp {
 
 }
 
-experiment specular_light type: gui autorun:true{
+experiment specular_light mode: gui autorun:true{
 	parameter "turn on/off the ligth" var:button init:true;
 	output {
 		layout #split;
 
-		display "OpenGL" type: 3d background:#black  {
+		display "OpenGL" renderer: 3d background:#black  {
 			camera 'default' location: {-50.692,109.4647,74.8304} target: {60.563,33.0012,0.0};
 			light #ambient intensity: 20;
 			light #default active:button kind: #point location: {7, 7, 48} intensity: #white show: true;

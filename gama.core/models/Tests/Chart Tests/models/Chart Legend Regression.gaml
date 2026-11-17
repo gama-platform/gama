@@ -6,7 +6,7 @@
 
 model chart_legend_regression
 
-experiment "Chart legend regression" type: gui {
+experiment "Chart legend regression" mode: gui {
 	init {
 		gama.pref_cast_container_contents <- true;
 	}

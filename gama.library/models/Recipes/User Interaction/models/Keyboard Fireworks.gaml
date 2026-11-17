@@ -57,20 +57,20 @@ species spark {
 	}
 }
 
-experiment Fireworks type: gui {
+experiment Fireworks mode: gui {
 	float minimum_cycle_duration <- 0.04;
 
 	output {
-		display "Fireworks Java2D" type: 2d background: #black {
+		display "Fireworks Java2D" renderer: 2d background: #black {
 			graphics "night" { draw world color: rgb(8, 10, 28); }
 			species spark;
 
 			event #key_listener {
-				ask simulation { do react_to_key(); }
+				do react_to_key(); 
 			}
 			event #mouse_listener {
 				if #mouse_action = #mouse_down and #mouse_button = "left" {
-					ask simulation { launch_at <- #user_location; }
+					 launch_at <- #user_location; 
 				}
 			}
 
@@ -82,7 +82,7 @@ experiment Fireworks type: gui {
 			}
 		}
 
-		display "Fireworks OpenGL" type: opengl parent: "Fireworks Java2D" {
+		display "Fireworks OpenGL" renderer: opengl parent: "Fireworks Java2D" {
 			camera #from_above locked: true;
 		}
 	}

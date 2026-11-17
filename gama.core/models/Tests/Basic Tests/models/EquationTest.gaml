@@ -9,18 +9,8 @@ model EquationTestModel
 
 global {
 	float step <- 0.1;
-}
-
-species ode_agent {
-	float t <- 0.0;
-	float S <- 100.0;
 	
-	equation decay {
-		diff(S, t) = -0.1 * S;
-	}
-}
-
-experiment EquationTest type: test autorun: true {
+	
 	
 	test "ODE System Solving" {
 		create ode_agent number: 1 returns: created_agents;
@@ -38,4 +28,16 @@ experiment EquationTest type: test autorun: true {
 		assert ag.S < 100.0;
 		assert (ag.S > 99.0);
 	}
+	
 }
+
+species ode_agent {
+	float t <- 0.0;
+	float S <- 100.0;
+	
+	equation decay {
+		diff(S, t) = -0.1 * S;
+	}
+}
+
+experiment EquationTest mode: test autorun: true;

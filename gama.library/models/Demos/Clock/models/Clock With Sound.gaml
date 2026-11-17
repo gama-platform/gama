@@ -75,7 +75,7 @@ species  clock {
  
 }
 
-experiment Display type: gui {
+experiment Display mode: gui {
 	float minimum_cycle_duration <- 0.001#s;
 	parameter 'Zoom: ' var: zoom category: 'Init' ;
 	parameter 'Milliseconds/cycle' var: stepDuration category: 'Init';
@@ -85,7 +85,7 @@ experiment Display type: gui {
 	parameter 'alarm Minutes' var: alarm_minutes unit: "min";
 	parameter 'alarm Seconds' var: alarm_seconds unit: "s";
 	output {
-		display ClockView type: opengl { 
+		display ClockView renderer: opengl { 
 			graphics "c" refresh: false {
    				 draw image_file(clock_normal) size: 10 * zoom at: {world.shape.width / 5, world.shape.height / 5};
 			}		

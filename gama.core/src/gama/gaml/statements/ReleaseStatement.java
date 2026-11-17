@@ -15,6 +15,7 @@ import java.util.List;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
@@ -78,7 +79,7 @@ import gama.annotations.support.ITypeProvider;
 						type = IType.LIST,
 						of = ITypeProvider.STATEMENT_TYPE,
 						optional = true,
-						doc = @doc ("a new variable containing a list of the newly released agent(s)")) },
+						doc = @doc ("an existing compatible variable or a new temporary variable receiving the list of newly released agent(s)")) },
 		omissible = IKeyword.TARGET)
 @doc (
 		value = "Allows an agent to release its micro-agent(s). The preliminary for an agent to release its micro-agents is that species of these micro-agents are sub-species of other species (cf. [Species161#Nesting_species Nesting species]). The released agents won't be micro-agents of the calling agent anymore. Being released from a macro-agent, the micro-agents will change their species and host (macro-agent).",
@@ -146,8 +147,8 @@ public class ReleaseStatement extends AbstractStatementSequence {
 	/** The in expr. */
 	private final IExpression inExpr;
 
-	/** The return string. */
-	private final String returnString;
+	/** The returns. */
+	private final IVarExpression returns;
 
 	/**
 	 * The sequence of statements to execute on each released agent.
@@ -170,12 +171,16 @@ public class ReleaseStatement extends AbstractStatementSequence {
 		target = getFacet(IKeyword.TARGET);
 		asExpr = getFacet(IKeyword.AS);
 		inExpr = getFacet(IKeyword.IN);
-		returnString = getLiteral(IKeyword.RETURNS);
+		returns = (IVarExpression) getFacet(IKeyword.RETURNS);
 	}
 
 	@Override
 	public void enterScope(final IScope stack) {
-		if (returnString != null) { stack.addVarWithValue(returnString, null); }
+		if (returns != null && !(returns instanceof IVarExpression.Agent)
+				&& !(returns instanceof IVarExpression.Persistent) && stack.getExecutionContext() != null
+				&& !stack.getExecutionContext().hasTempVar(returns.getName())) {
+			stack.addVarWithValue(returns.getName(), null);
+		}
 		super.enterScope(stack);
 	}
 
@@ -219,7 +224,7 @@ public class ReleaseStatement extends AbstractStatementSequence {
 			}
 		}
 
-		if (returnString != null) { scope.setVarValue(returnString, releasedMicroAgents); }
+		if (returns != null) { returns.setVal(scope, releasedMicroAgents, false); }
 
 		return releasedMicroAgents;
 	}

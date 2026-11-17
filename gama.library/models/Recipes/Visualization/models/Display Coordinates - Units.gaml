@@ -8,11 +8,11 @@
 */
 model coordinate_units
 
-experiment "Screen units and boundaries" type: gui {
+experiment "Screen units and boundaries" mode: gui {
     text "Purpose: expose the strict screen-coordinate threshold in a 400-pixel-wide panel.<br/>Expected: the blue dot at x=0.5 and purple dot at x=0.5#px both have local x=200 pixels. The red dot at x=1 and orange dot at x=1.0 both have local x=1 pixel. #px is numerically 1 here; it does not carry unit metadata." category: "What this demonstrates";
     text "Try: resize the displays; no simulation steps are needed. The reference panel stays 400 pixels wide.<br/>Intrinsic circle radii are pixels even below 1; rectangular draw sizes use the threshold. The lower orange layer has a one-pixel frame, but its circle and caption deliberately overflow because layers do not implicitly clip their contents." category: "What this demonstrates";
     output {
-        display "Java2D" type: java2D {
+        display "Java2D" renderer: java2D {
             // An omitted size is full viewport; an explicit size {1,1} is not.
             graphics "Full viewport" coordinates: #screen border: #gray {
                 draw "Full frame: size omitted" at: {16, -16} color: #black;
@@ -40,6 +40,6 @@ experiment "Screen units and boundaries" type: gui {
                 draw "size: {1,1}; drawings are NOT clipped" at: {40, 26} color: #black;
             }
         }
-        display "OpenGL" parent: "Java2D" type: opengl map_order: true {}
+        display "OpenGL" parent: "Java2D" renderer: opengl map_order: true {}
     }
 }

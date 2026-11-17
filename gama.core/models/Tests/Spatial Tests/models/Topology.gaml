@@ -22,31 +22,7 @@ global {
 		create dummy number:100;
 	}
 	
-}
-
-grid cell4 width: x_cells height: y_cells neighbors: 4 {}
-grid cell6 width: x_cells height: y_cells neighbors: 6 {}
-grid cell8 width: x_cells height: y_cells neighbors: 8 {}
-	
-species dummy { aspect default {draw shape color:#grey;} }
-
-experiment visu type: gui {
-	output {
-		display map4 {
-			grid cell4 border:#grey;
-			species dummy;
-		}	
-		display map6 {
-			grid cell6 border:#grey;
-		}
-		display map8 {
-			grid cell8 border:#grey;
-		}
-	}	
-}
-
-experiment Topology type: test autorun: true {	
-	
+		
 	
 	test "Distance_to using topology" {
 		
@@ -58,12 +34,12 @@ experiment Topology type: test autorun: true {
 		assert dc4 = dc4_ter and dc4 = dc4_bis and dc4_bis = dc4_ter;
 		assert dc4 = 1.0;
 		
-		float dw4 <- (cell4[0,0].location distance_to cell4[0,1].location) using topology(world);
+		float dw4 <- (cell4[0,0].location distance_to cell4[0,1].location) using topology(self);
 		float dw4_bis;
-		using topology(world){dw4_bis <- cell4[0,0].location distance_to cell4[0,1].location;}
+		using topology(self){dw4_bis <- cell4[0,0].location distance_to cell4[0,1].location;}
 		
 		assert dw4 = dw4_bis; 
-		assert dw4 = world.shape.height/10.0;
+		assert dw4 = shape.height/10.0;
 		
 		float dg4 <- (cell4[0,0] distance_to cell4[0,1]) using topology(c_graph4);
 		float dg4_bis;
@@ -83,5 +59,31 @@ experiment Topology type: test autorun: true {
 		
 		assert dg8 = geometry(c_graph8 edge_between (cell8[0,0]::cell8[0,1])).perimeter;
 	}
+	
+}
+
+grid cell4 width: x_cells height: y_cells neighbors: 4 {}
+grid cell6 width: x_cells height: y_cells neighbors: 6 {}
+grid cell8 width: x_cells height: y_cells neighbors: 8 {}
+	
+species dummy { aspect default {draw shape color:#grey;} }
+
+experiment visu mode: gui {
+	output {
+		display map4 {
+			grid cell4 border:#grey;
+			species dummy;
+		}	
+		display map6 {
+			grid cell6 border:#grey;
+		}
+		display map8 {
+			grid cell8 border:#grey;
+		}
+	}	
+}
+
+experiment Topology mode: test autorun: true {	
+
 	
 }
