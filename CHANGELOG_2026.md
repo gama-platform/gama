@@ -1196,6 +1196,10 @@ Clients can also send `{"type":"server_log","enabled":true}` (or `false`) to tog
 
 The GUI logging preference also takes effect immediately, without restarting GAMA or disconnecting clients. The log-directory preference still applies to the next server run.
 
+### GAMA Server: desktop server disabled by default
+
+The `pref_enable_server` preference now defaults to `false`, so GAMA does not start the desktop WebSocket server automatically for a new preference store. Enable **Enable GAMA server mode** in **Preferences > Network > Server mode**, or set `-Dpref_enable_server=true` in `Gama.ini`. Existing saved preference values and explicit JVM system properties retain their precedence.
+
 ### GAMA Server: configurable GUI loading
 
 WebSocket `load` now honors `parameters`, `until`, `console`, `status`, `dialog` and `runtime` in desktop GUI mode, not only headless mode (#394). Parameter values are applied before `global init`. Forwarding options use the same defaults in both modes and do not suppress local GUI output. The loaded experiment retains its requesting socket even when another client connects. A GUI experiment pauses and sends `SimulationEnded` when its stop condition is reached; reload it before running again. See the [GUI loading guide and runnable client example](gama.headless/README.md).
