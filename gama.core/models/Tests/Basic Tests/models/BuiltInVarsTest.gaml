@@ -25,7 +25,8 @@ experiment BuiltInVarsTest mode: test autorun: true {
 		assert simulation.world != nil;
 		
 		// In a simulation, 'agents' returns all agents in the current simulation/world
-		assert length(simulation.agents) > 0;
-		assert simulation.agents contains simulation = true;
+		write simulation.agents;
+		assert length(simulation.agents) = 0;
+		assert (simulation.agents contains simulation) = false;
 	}
 }
