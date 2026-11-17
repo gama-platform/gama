@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.hover;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
 
 import org.eclipse.emf.common.util.URI;
@@ -178,19 +179,21 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	 */
 	public class GamlHoverControlCreator extends HoverControlCreator {
 
-		private final ITextViewer textViewer;
+		/** The text viewer of the editor that requested the current hover. */
+		private WeakReference<ITextViewer> textViewer = new WeakReference<>(null);
 
 		/**
 		 * @param informationPresenterControlCreator
 		 */
 		public GamlHoverControlCreator(final IInformationControlCreator informationPresenterControlCreator) {
-			this(informationPresenterControlCreator, null);
+			super(informationPresenterControlCreator);
 		}
 
-		public GamlHoverControlCreator(final IInformationControlCreator informationPresenterControlCreator,
-				final ITextViewer textViewer) {
-			super(informationPresenterControlCreator);
-			this.textViewer = textViewer;
+		/**
+		 * Sets the text viewer whose hover is about to be shown, so that F2 can be forwarded to it from the hover.
+		 */
+		void setTextViewer(final ITextViewer viewer) {
+			textViewer = new WeakReference<>(viewer);
 		}
 
 		/**
@@ -201,7 +204,8 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 			@Override
 			protected void createContent(final Composite parent) {
 				super.createContent(parent);
-				if (!(textViewer instanceof ITextViewerExtension4 viewer)) return;
+				// When the browser has the keyboard focus (e.g. after a click in the hover), F2 does not reach the
+				// editor anymore: forward it so that the hover is replaced by the focused, scrollable presenter.
 				for (var child : parent.getChildren()) {
 					if (child instanceof Browser browser) {
 						browser.addListener(SWT.KeyDown, event -> {
@@ -210,11 +214,10 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 							Shell shell = getShell();
 							// Replace the hover after the native browser finishes handling the key.
 							shell.getDisplay().asyncExec(() -> {
-								var textWidget = textViewer.getTextWidget();
-								if (!shell.isDisposed() && shell.isVisible()
-										&& textWidget != null && !textWidget.isDisposed()) {
-									viewer.moveFocusToWidgetToken();
-								}
+								if (shell.isDisposed() || !shell.isVisible()) return;
+								if (!(textViewer.get() instanceof ITextViewerExtension4 viewer)) return;
+								var textWidget = textViewer.get().getTextWidget();
+								if (textWidget != null && !textWidget.isDisposed()) { viewer.moveFocusToWidgetToken(); }
 							});
 						});
 					}
@@ -290,12 +293,11 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 			final IRegion hoverRegion) {
 		return new IInformationControlCreatorProvider2() {
 
-			private final IInformationControlCreator hoverCreator =
-					new GamlHoverControlCreator(GamlHoverProvider.this.getInformationPresenterControlCreator(), textViewer);
-
 			@Override
 			public IInformationControlCreator getHoverControlCreator() {
-				return hoverCreator;
+				IInformationControlCreator result = GamlHoverProvider.this.getHoverControlCreator();
+				if (result instanceof GamlHoverControlCreator gc) { gc.setTextViewer(textViewer); }
+				return result;
 			}
 
 			@Override
