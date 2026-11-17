@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -96,6 +98,17 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 	private record TestRerun(TestExperimentSummary experiment, IndividualTestSummary test,
 			int completed, int total) {}
 	private volatile TestRerun rerun;
+
+	/** A completed test sequence kept so that previous reports can be browsed and run again. */
+	private record Report(List<AbstractSummary<?>> experiments, int completed, int total, boolean stopped,
+			Runnable restart, LocalTime time) {
+		Report withCounts(final int c, final int t) { return new Report(experiments, c, t, stopped, restart, time); }
+	}
+	private static final int MAX_HISTORY = 20;
+	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
+	private final List<Report> history = new ArrayList<>();
+	private int current = -1;
+	private ToolItem previous, next;
 
 	@Override
 	public void createPartControl(final Composite parent) {
@@ -318,9 +331,23 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 
 	private void updateControls() {
 		if (!running && report && TestsRunner.canRestart() && (restart == null || restart.isDisposed())) {
-			restart = tool(tools, SWT.PUSH, "Run the same tests again", "toolbar/server.restart", TestsRunner::restart);
+			restart = tool(tools, SWT.PUSH, "Run the same tests again", "toolbar/server.restart",
+					() -> TestsRunner.restart(current < 0 ? TestsRunner.lastRun() : history.get(current).restart()));
 		} else if (running && restart != null && !restart.isDisposed()) {
 			restart.dispose();
+		}
+		final boolean browsable = !running && history.size() > 1;
+		if (browsable && (previous == null || previous.isDisposed())) {
+			previous = tool(tools, SWT.PUSH, "Show previous test results", "editor/search.previous",
+					() -> showReport(current - 1));
+			next = tool(tools, SWT.PUSH, "Show next test results", "editor/search.next", () -> showReport(current + 1));
+		} else if (!browsable && previous != null && !previous.isDisposed()) {
+			previous.dispose();
+			next.dispose();
+		}
+		if (browsable) {
+			previous.setEnabled(current > 0);
+			next.setEnabled(current < history.size() - 1);
 		}
 		// Keep the filter available even when it hides every result.
 		final boolean resultsAvailable = !running && report && !experiments.isEmpty();
@@ -578,17 +605,42 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 			running = false;
 			report = true;
 			final boolean stopped = GAMA.getRegularGui().isTestStopRequested();
-			status.setText(stopped ? "Stopped - partial results" : "");
 			if (rerun == null) {
+				history.add(new Report(List.copyOf(experiments), completedTests, totalTests, stopped,
+						TestsRunner.lastRun(), LocalTime.now()));
+				if (history.size() > MAX_HISTORY) { history.removeFirst(); }
+				current = history.size() - 1;
+				status.setText(statusText(stopped));
 				refresh();
 			} else {
 				completedTests = rerun.completed();
 				totalTests = rerun.total();
 				rerun = null;
+				if (current >= 0) { history.set(current, history.get(current).withCounts(completedTests, totalTests)); }
+				status.setText(statusText(stopped || current >= 0 && history.get(current).stopped()));
 				updateCounters();
 				updateControls();
 			}
 		});
+	}
+
+	private String statusText(final boolean stopped) {
+		final String text = stopped ? "Stopped - partial results" : "";
+		if (history.size() < 2 || current < 0) return text;
+		return "Results " + (current + 1) + " of " + history.size() + " (run at "
+				+ TIME.format(history.get(current).time()) + ")" + (text.isEmpty() ? "" : " - " + text);
+	}
+
+	private void showReport(final int index) {
+		if (running || index < 0 || index >= history.size() || index == current) return;
+		current = index;
+		final Report report = history.get(index);
+		experiments.clear();
+		experiments.addAll(report.experiments());
+		completedTests = report.completed();
+		totalTests = report.total();
+		status.setText(statusText(report.stopped()));
+		refresh();
 	}
 
 	private void replaceTestResult(final TestExperimentSummary result) {
@@ -713,6 +765,7 @@ public class TestView extends ViewPart implements IGamaView, IGamaView.Test {
 	@Override
 	public void dispose() {
 		experiments.clear();
+		history.clear();
 		children.clear();
 		items.clear();
 		finalizedExperiments.clear();

@@ -6,17 +6,11 @@
 
 model RNGTestModel
 
-species dummy {
-}
-
-species walker skills: [moving] {
-}
-
-experiment RNGTest mode: test autorun: true {
+global {
+	
 
 	test "Resetting usage, seed and generator" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				int first_draw <- rnd(100, true);
@@ -30,13 +24,11 @@ experiment RNGTest mode: test autorun: true {
 				rng <- generator;
 				assert rng_usage = 0;
 				assert rnd(100, true) = first_draw;
-			}
 		}
 	}
 
 	test "Usage is an absolute position, including odd positions" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				loop position over: [0, 1, 3, 4, 5, 6, 31, 625] {
 					seed <- 123.0;
@@ -57,12 +49,10 @@ experiment RNGTest mode: test autorun: true {
 				seed <- 123.0;
 				assert rnd(1.0) = first_draw;
 			}
-		}
 	}
 
 	test "Legacy draws consume two raw draws and keep their sequences" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 1.0;
 				int first_draw <- rnd(10);
@@ -89,12 +79,10 @@ experiment RNGTest mode: test autorun: true {
 				point p <- rnd({1, 2, 3}, {4, 5, 6});
 				assert rng_usage = 6;
 			}
-		}
 	}
 
 	test "Bounded integer sampling consumes one raw draw for power-of-two ranges" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				int value <- rnd(31, true);
@@ -107,13 +95,11 @@ experiment RNGTest mode: test autorun: true {
 				assert rng_usage = 3;
 				assert rnd(0, true) = 0;
 				assert rng_usage = 4;
-			}
 		}
 	}
 
 	test "Rejection sampling counts every raw draw and remains replayable" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				bool rejected <- false;
@@ -129,13 +115,11 @@ experiment RNGTest mode: test autorun: true {
 					assert rng_usage = after_draw;
 				}
 				assert rejected;
-			}
 		}
 	}
 
 	test "Weighted choices and container selections keep float-based accounting" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				int choice_index <- rnd_choice([0.2, 0.5, 0.3]);
@@ -154,13 +138,11 @@ experiment RNGTest mode: test autorun: true {
 				seed <- 123.0;
 				bool result <- flip(0.3);
 				assert rng_usage = 2;
-			}
 		}
 	}
 
 	test "Agent creation and spatial sampling account for float coordinates" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				create dummy returns: created;
@@ -173,13 +155,11 @@ experiment RNGTest mode: test autorun: true {
 				seed <- 123.0;
 				assert any_location_in(square(10)) = p;
 				assert rng_usage = 6;
-			}
 		}
 	}
 
 	test "Moving agents draw a heading at creation and another when wandering" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				// A fixed location isolates heading draws from spatial sampling.
@@ -203,12 +183,10 @@ experiment RNGTest mode: test autorun: true {
 				assert rng_usage = 4;
 				ask replay { do die(); }
 			}
-		}
 	}
 
 	test "Binomial sampling counts raw integer draws and is reproducible" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				int value <- binomial(15, 0.5);
@@ -226,13 +204,11 @@ experiment RNGTest mode: test autorun: true {
 				assert rnd(1.0) = next_value;
 				rng_usage <- consumed;
 				assert rnd(1.0) = next_value;
-			}
 		}
 	}
 
 	test "Rewinding clears cached Gaussian draws" {
 		loop generator over: ["java", "mersenne", "parallel"] {
-			ask simulation {
 				rng <- generator;
 				seed <- 123.0;
 				float first_draw <- gauss(0, 1);
@@ -241,11 +217,9 @@ experiment RNGTest mode: test autorun: true {
 				assert rng_usage = 0;
 				assert gauss(0, 1) = first_draw;
 			}
-		}
 	}
 
 	test "The threaded generator has no reproducible usage counter" {
-		ask simulation {
 			rng <- "threaded";
 			int value <- rnd(31, true);
 			assert value >= 0 and value <= 31;
@@ -255,5 +229,13 @@ experiment RNGTest mode: test autorun: true {
 			rng_usage <- -1;
 			assert rng_usage = 0;
 		}
-	}
+	
 }
+
+species dummy {
+}
+
+species walker skills: [moving] {
+}
+
+experiment RNGTest mode: test autorun: true {}

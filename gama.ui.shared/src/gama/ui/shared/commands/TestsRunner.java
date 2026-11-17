@@ -60,9 +60,16 @@ public class TestsRunner {
 
 	/** Repeats the last selection without rediscovering a different set of model files. */
 	public static void restart() {
-		final Runnable run = lastRun;
+		restart(lastRun);
+	}
+
+	/** Repeats a selection previously returned by {@link #lastRun()}, e.g. one kept in the test history. */
+	public static void restart(final Runnable run) {
 		if (run != null && !RUNNING.get()) { run.run(); }
 	}
+
+	/** The selection run by the last (or current) full test sequence, excluding single-test reruns. */
+	public static Runnable lastRun() { return lastRun; }
 
 	public static void start(final IModelSpecies model, final String experiment) {
 		start(model, experiment, null);
