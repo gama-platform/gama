@@ -119,7 +119,9 @@ Name collisions keep the existing project and import the bundled project with a 
 Use **Clean and update workspace...** in the Models navigator to retry reconciliation and rebuild file metadata
 and projects. Library projects are silently relinked to the running installation's versions, including legacy
 projects and projects changed in an older installation. No user copies or backups of library projects are created.
-Original library files and genuine user projects are not deleted.
+Generated test projects from packaged and development installations are reconciled as the same projects; duplicate
+workspace references are removed without deleting their files. Original library files and genuine user projects are
+not deleted.
 The result dialog reports unresolved projects and discovery failures instead of silently treating them as success.
 The full latest reconciliation report, including old and new locations, is in
 `<workspace>/.metadata/gama-library-repair.log`. Exported standalone simulations do not reconcile the model library.

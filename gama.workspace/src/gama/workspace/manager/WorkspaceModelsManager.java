@@ -507,6 +507,7 @@ public class WorkspaceModelsManager {
 					+ "The workspace was not stamped as updated. Run Clean and update workspace to retry.", null);
 			return report;
 		}
+		if (!report.getStatus().matches(IStatus.ERROR)) { removeDuplicateGeneratedProjects(importedNames, report); }
 		removeObsoleteProjects(importedNames, report);
 		if (!report.needsAttention()) { stampWorkspaceFromModels(); }
 		// If the directory is not empty, we should maybe try to recreate the projects (if they do not exist...)
@@ -672,6 +673,62 @@ public class WorkspaceModelsManager {
 				report.error("Could not check project " + p.getName(), e);
 			}
 		}
+	}
+
+	/**
+	 * Packaged and development bundles expose generated tests under different roots. Once an authoritative project
+	 * has been imported, remove only other library-owned registrations of that same generated project.
+	 */
+	private void removeDuplicateGeneratedProjects(final java.util.Set<String> importedNames,
+			final LibraryUpdateReport report) {
+		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
+		final Map<String, IProject> active = new HashMap<>();
+		try {
+			for (final String name : importedNames) {
+				final IProject project = root.getProject(name);
+				if (!project.exists()) { continue; }
+				final String source = LibraryProjectSupport.propertyOf(project, LibraryProjectSupport.SOURCE);
+				final String identity = generatedTestIdentity(source);
+				if (identity == null) { continue; }
+				final IProject previous = active.get(identity);
+				if (previous == null || source.contains(":gaml/models/")
+						&& !LibraryProjectSupport.propertyOf(previous, LibraryProjectSupport.SOURCE)
+								.contains(":gaml/models/")) {
+					active.put(identity, project);
+				}
+			}
+			for (final IProject project : root.getProjects()) {
+				final String source = LibraryProjectSupport.propertyOf(project, LibraryProjectSupport.SOURCE);
+				final String identity = generatedTestIdentity(source);
+				final IProject selected = identity == null ? null : active.get(identity);
+				if (selected == null || selected.equals(project)) { continue; }
+				final IPath location = project.getLocation();
+				project.delete(false, true, null);
+				LibraryProjectSupport.forget(project);
+				report.changed("Removed duplicate generated test reference: " + project.getName() + " (" + location
+						+ "). Its files were left untouched.");
+			}
+		} catch (final CoreException e) {
+			report.error("Could not reconcile duplicate generated test projects", e);
+		}
+	}
+
+	/**
+	 * Returns the common provenance of a processor-generated test project, or null for any other project.
+	 */
+	private static String generatedTestIdentity(final String source) {
+		if (source == null) return null;
+		final int separator = source.indexOf(':');
+		if (separator <= 0) return null;
+		final String bundle = source.substring(0, separator);
+		final String suffix = bundle.substring(bundle.lastIndexOf('.') + 1);
+		if (suffix.isEmpty()) return null;
+		final String project = "Generated From " + suffix.substring(0, 1).toUpperCase(java.util.Locale.ROOT)
+				+ suffix.substring(1);
+		final String regular = "models/Tests/" + project;
+		final String generated = "gaml/" + regular;
+		final String path = source.substring(separator + 1);
+		return path.equals(regular) || path.equals(generated) ? bundle + ":" + regular : null;
 	}
 
 	/**
@@ -866,6 +923,14 @@ public class WorkspaceModelsManager {
 			final LibraryUpdateReport report, final Map<String, IProject> bySource) throws CoreException, IOException {
 		final IProject known = bySource.get(source);
 		if (known != null) return known;
+		final String identity = generatedTestIdentity(source);
+		if (identity != null) {
+			final int separator = identity.indexOf(':');
+			final String alternate = source.equals(identity)
+					? identity.substring(0, separator + 1) + "gaml/" + identity.substring(separator + 1) : identity;
+			final IProject generated = bySource.get(alternate);
+			if (generated != null) return generated;
+		}
 		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
 		final IProject candidate = root.getProject(name);
 		if (!candidate.exists() || sameLocation(candidate.getLocation(), location)) return candidate;
