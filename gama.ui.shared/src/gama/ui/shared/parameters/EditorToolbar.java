@@ -19,13 +19,11 @@ import static gama.ui.shared.interfaces.IParameterEditor.MINUS;
 import static gama.ui.shared.interfaces.IParameterEditor.PLUS;
 import static gama.ui.shared.interfaces.IParameterEditor.REVERT;
 import static gama.ui.shared.interfaces.IParameterEditor.VALUE;
+import static gama.ui.shared.resources.IGamaIcons.FONT_DECREASE;
+import static gama.ui.shared.resources.IGamaIcons.FONT_INCREASE;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_BROWSE;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_CHANGE;
-import static gama.ui.shared.resources.IGamaIcons.SMALL_EDIT;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_INSPECT;
-import static gama.ui.shared.resources.IGamaIcons.SMALL_MINUS;
-import static gama.ui.shared.resources.IGamaIcons.SMALL_PLUS;
-import static gama.ui.shared.resources.IGamaIcons.SMALL_REVERT;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_UNDEFINE;
 import static gama.ui.shared.views.toolbar.GamaCommand.build;
 
@@ -128,10 +126,10 @@ public class EditorToolbar<T> {
 	final Composite group;
 
 	static {
-		commands[REVERT] = build(SMALL_REVERT, null, "Revert to original value", null);
-		commands[PLUS] = build(SMALL_PLUS, null, "Increment the value", null);
-		commands[MINUS] = build(SMALL_MINUS, null, "Decrement the value ", null);
-		commands[EDIT] = build(SMALL_EDIT, null, "Edit the parameter", null);
+		commands[REVERT] = build("toolbar/editor.revert", null, "Revert to original value", null);
+		commands[PLUS] = build(FONT_INCREASE, null, "Increment the value", null);
+		commands[MINUS] = build(FONT_DECREASE, null, "Decrement the value ", null);
+		commands[EDIT] = build("toolbar/editor.edit", null, "Edit the parameter", null);
 		commands[INSPECT] = build(SMALL_INSPECT, null, "Inspect the agent", null);
 		commands[BROWSE] = build(SMALL_BROWSE, null, "Browse the list of agents", null);
 		commands[CHANGE] = build(SMALL_CHANGE, null, "Choose another agent", null);
@@ -277,7 +275,12 @@ public class EditorToolbar<T> {
 	 */
 	protected void update() {
 		final var c = items[IParameterEditor.REVERT];
-		if (c != null && !c.isDisposed()) { c.enable(editor.isValueModified()); }
+		if (c != null && !c.isDisposed()) {
+			final boolean modified = editor.isValueModified();
+			final boolean restoreDefault = !modified && editor.canRevertToDefault();
+			c.label.setToolTipText(restoreDefault ? "Revert to default value" : "Revert to original value");
+			c.enable(active && (modified || restoreDefault));
+		}
 	}
 
 	/**

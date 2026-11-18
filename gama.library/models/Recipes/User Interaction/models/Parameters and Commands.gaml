@@ -27,8 +27,8 @@ global {
 	
 	string a_string ;
 	rgb a_color <- #yellow;
-	file a_fil <- shape_file("../../Data/Data Importation/includes/test.shp");
-	file a_fil2 <- file("../../Data/Data Importation/includes/hab10.asc");
+	file a_fil <- shape_file("../../../Data/Data Importation/includes/test.shp");
+	file a_fil2 <- file("../../../Data/Data Importation/includes/hab10.asc");
 	list<string> list_of_string <- ["A","B","C"];
 	matrix<string> matrix_of_string <- matrix([["R1C1","R2C1"],["R1C2","R2C2"],["R1C3","R2C3"]]);
 	

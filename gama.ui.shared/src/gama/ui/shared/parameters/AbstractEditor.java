@@ -38,6 +38,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
+import gama.api.utils.prefs.Pref;
 import gama.core.experiment.parameters.ExperimentParameter;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.interfaces.IParameterEditor;
@@ -489,6 +490,11 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	@Override
 	public boolean isValueModified() { return isValueDifferentFrom(getOriginalValue()); }
 
+	/** Whether a preference can be restored to its compiled-in default. */
+	protected boolean canRevertToDefault() {
+		return param instanceof Pref<?> preference && isValueDifferentFrom(preference.getDefaultValue());
+	}
+
 	/**
 	 * Checks if is value different from.
 	 *
@@ -656,6 +662,9 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	 * @return the t
 	 */
 	protected T applyRevert() {
+		if (!isValueModified() && param instanceof Pref<?> preference) {
+			return castValueToInnerType(preference.getDefaultValue());
+		}
 		return getOriginalValue();
 	}
 
