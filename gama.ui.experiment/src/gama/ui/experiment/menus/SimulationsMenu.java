@@ -23,6 +23,7 @@ import gama.api.gaml.constants.GamlCoreConstants;
 import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.ui.experiment.commands.ArrangeDisplayViews;
@@ -37,6 +38,14 @@ import gama.ui.shared.views.toolbar.GamaCommand;
  * @date 18 août 2023
  */
 public class SimulationsMenu extends ContributionItem {
+
+	private static IExperimentAgent getSelectedExperiment() {
+		return GAMA.getCurrentTopLevelAgent().getExperiment();
+	}
+
+	private static ISimulationAgent getSelectedSimulation() {
+		return GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent simulation ? simulation : null;
+	}
 
 	/**
 	 * Runs an operation on the lifecycle of simulations outside of the UI thread, which never waits for simulation
@@ -60,40 +69,45 @@ public class SimulationsMenu extends ContributionItem {
 	/** The create new simulation. */
 	public static final GamaCommand addNewSimulation = new GamaCommand("experiment/experiment.simulations.add",
 			"Add Simulation", "Add a new simulation (with the current parameters) to this experiment",
-			e -> runOutsideUI("Adding simulation", () -> {
-				final ISimulationAgent sim =
-						GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
-				if (sim == null) return;
-				WorkbenchHelper.runInUI("Adding simulation", 0, m -> {
-					if ("None".equals(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue())) {
-						ArrangeDisplayViews.execute(GamlCoreConstants.split);
-					} else {
-						ArrangeDisplayViews.execute(GamaPreferences.Displays.LAYOUTS
-								.indexOf(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue()));
-					}
+			e -> {
+				final IExperimentAgent experiment = getSelectedExperiment();
+				if (experiment == null) return;
+				runOutsideUI("Adding simulation", () -> {
+					final ISimulationAgent sim = experiment.createSimulation(new ParametersSet(), true);
+					if (sim == null) return;
+					WorkbenchHelper.runInUI("Adding simulation", 0, m -> {
+						if ("None".equals(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue())) {
+							ArrangeDisplayViews.execute(GamlCoreConstants.split);
+						} else {
+							ArrangeDisplayViews.execute(GamaPreferences.Displays.LAYOUTS
+									.indexOf(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue()));
+						}
+					});
 				});
-			}));
+			});
 
 	/** The duplicate current simulation. */
 	public static final GamaCommand duplicateCurrentSimulation =
 			new GamaCommand("experiment/experiment.simulations.duplicate", "Duplicate Simulation",
 					"Duplicate the current simulation and add it to the experiment",
-					e -> runOutsideUI("Duplicating simulation", () -> {
-						final ISimulationAgent original = GAMA.getSimulation();
+					e -> {
+						final ISimulationAgent original = getSelectedSimulation();
 						if (original == null) return;
-						byte[] bytes = original.computeInOwnThread(
-								() -> BinarySerialisation.saveToBytes(original.getScope(), original));
-						final ISimulationAgent sim =
-								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
-						if (sim == null) return;
-						GAMA.runAndUpdateAll(
-								() -> sim.runInOwnThread(() -> BinarySerialisation.restoreFromBytes(sim, bytes)));
-					}));
+						runOutsideUI("Duplicating simulation", () -> {
+							byte[] bytes = original.computeInOwnThread(
+									() -> BinarySerialisation.saveToBytes(original.getScope(), original));
+							final ISimulationAgent sim =
+									original.getExperiment().createSimulation(new ParametersSet(), true);
+							if (sim == null) return;
+							GAMA.runAndUpdateAll(
+									() -> sim.runInOwnThread(() -> BinarySerialisation.restoreFromBytes(sim, bytes)));
+						});
+					});
 
 	/** The kill current simulation. */
 	public static final GamaCommand killCurrentSimulation = new GamaCommand("experiment/experiment.simulations.kill",
 			"Kill Simulation", "Kill and remove the current simulation from the experiment", e -> {
-				ISimulationAgent sim = GAMA.getSimulation();
+				ISimulationAgent sim = getSelectedSimulation();
 				if (sim == null) return;
 				sim.primDie(sim.getScope());
 			});
@@ -101,7 +115,7 @@ public class SimulationsMenu extends ContributionItem {
 	/** The save current simulation. */
 	public static final GamaCommand saveCurrentSimulation = new GamaCommand("experiment/experiment.simulations.save",
 			"Save Simulation...", "Save the current simulation to disk", e -> {
-				ISimulationAgent sim = GAMA.getSimulation();
+				ISimulationAgent sim = getSelectedSimulation();
 				if (sim == null) return;
 				FileDialog fileSave = new FileDialog(e.display.getActiveShell(), SWT.SAVE);
 				fileSave.setFilterNames(
@@ -126,7 +140,7 @@ public class SimulationsMenu extends ContributionItem {
 	public static final GamaCommand saveCurrentSimulationAndHistory =
 			new GamaCommand("experiment/experiment.simulations.save.history", "Save Simulation with its History...",
 					"Save the current simulation and its history to disk", e -> {
-						ISimulationAgent sim = GAMA.getSimulation();
+						ISimulationAgent sim = getSelectedSimulation();
 						if (sim == null) return;
 						FileDialog fileSave = new FileDialog(e.display.getActiveShell(), SWT.SAVE);
 						// Only binary allowed when saving history
@@ -143,7 +157,7 @@ public class SimulationsMenu extends ContributionItem {
 			new GamaCommand("experiment/experiment.simulations.load.replace", "Load and Replace Simulation...",
 					"Load a previously saved simulation and replace the current one", e -> {
 
-						ISimulationAgent sim = GAMA.getSimulation();
+						ISimulationAgent sim = getSelectedSimulation();
 						if (sim == null) return;
 						FileDialog fileOpen = new FileDialog(e.display.getActiveShell(), SWT.OPEN);
 						fileOpen.setFilterExtensions("*.simulation");
@@ -161,6 +175,8 @@ public class SimulationsMenu extends ContributionItem {
 	/** The load new simulation. */
 	public static final GamaCommand loadNewSimulation = new GamaCommand("experiment/experiment.simulations.load.new",
 			"Load New Simulation...", "Load a previously saved simulation and add it to the experiment", e -> {
+				final IExperimentAgent experiment = getSelectedExperiment();
+				if (experiment == null) return;
 				FileDialog fileOpen = new FileDialog(e.display.getActiveShell(), SWT.OPEN);
 				fileOpen.setFilterExtensions("*.simulation");
 				fileOpen.setFilterNames("Simulation files");
@@ -168,7 +184,7 @@ public class SimulationsMenu extends ContributionItem {
 				if (open != null) {
 					runOutsideUI("Loading simulation", () -> {
 						final ISimulationAgent sim =
-								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
+								experiment.createSimulation(new ParametersSet(), true);
 						if (sim == null) return;
 						sim.runInOwnThread(() -> BinarySerialisation.restoreFromFile(sim, open));
 					});
@@ -209,9 +225,10 @@ public class SimulationsMenu extends ContributionItem {
 		MenuItem saveHistory = SimulationsMenu.saveCurrentSimulationAndHistory.toItem(menu);
 		MenuItem loadAndReplace = SimulationsMenu.replaceCurrentSimulation.toItem(menu);
 		MenuItem loadNew = SimulationsMenu.loadNewSimulation.toItem(menu);
-		boolean isExperiment = GAMA.getCurrentTopLevelAgent() instanceof IExperimentAgent;
-		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent;
-		boolean isBackward = isSimulation && GAMA.getExperiment() != null && GAMA.getExperiment().isMemorize();
+		final ITopLevelAgent selected = GAMA.getCurrentTopLevelAgent();
+		boolean isExperiment = selected instanceof IExperimentAgent;
+		boolean isSimulation = selected instanceof ISimulationAgent;
+		boolean isBackward = isSimulation && selected.getExperiment().getSpecies().isMemorize();
 		add.setEnabled(isExperiment || isSimulation);
 		kill.setEnabled(isSimulation);
 		duplicate.setEnabled(isSimulation);

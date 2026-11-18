@@ -9,6 +9,8 @@
  ********************************************************************************************************/
 package gama.api.kernel.agent;
 
+import java.util.List;
+
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.setter;
@@ -352,5 +354,12 @@ public interface IMacroAgent extends IAgent {
 	 * @return the extern micro population for
 	 */
 	IPopulation<? extends IAgent> getExternMicroPopulationFor(final String expName);
+
+	/**
+	 * Returns a snapshot of the registered external (comodel experiment) populations.
+	 *
+	 * @return the external populations, or an empty list when none are registered
+	 */
+	default List<IPopulation<? extends IAgent>> getExternMicroPopulations() { return List.of(); }
 
 }

@@ -215,7 +215,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 										}""",
 								isExecutable = false)),
 				@usage (
-						value = "Creating an experiment defined by an imported comodel from the host experiment's `init`. The alias identifies the imported model, and `Simple` is the experiment declared in that model. `returns:` holds a list of created experiment agents (also a list when there is only one); use that reference to interact with them. Creation registers the child with the current experiment and immediately initializes its agent, initial simulation, and outputs. The child is not a separately loaded top-level experiment, and this does not allow creating an experiment from an unrelated model.",
+						value = "Creating an experiment defined by an imported comodel from the host experiment's `init`. The alias identifies the imported model, and `Simple` is the experiment declared in that model. Creation arguments such as `create exploration.Simple (preyinit: 20);` can initialize experiment attributes or model globals; globals are forwarded before the child simulation initializes. The optional creation block runs in the experiment's context before its simulation exists: access simulation populations only after `create` returns. `returns:` holds a list of created experiment agents (also a list when there is only one); use that reference to interact with them. Creation registers the child with the current experiment and immediately initializes its agent, initial simulation, and outputs. The child is not a separately loaded top-level experiment, and this does not allow creating an experiment from an unrelated model.",
 						examples = @example (
 								value = """
 										model batchtests

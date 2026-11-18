@@ -68,6 +68,8 @@ import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticFactory;
 import gama.api.gaml.GAML;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
 import gama.api.types.list.GamaListFactory;
@@ -77,8 +79,10 @@ import gaml.compiler.EGaml;
 import gaml.compiler.ast.SyntacticExperimentModelElement;
 import gaml.compiler.ast.SyntacticFactory;
 import gaml.compiler.ast.SyntacticModelElement;
+import gaml.compiler.descriptions.EcoreBasedExpressionDescription;
 import gaml.compiler.descriptions.IndexedExpressionDescription;
 import gaml.compiler.descriptions.OperatorExpressionDescription;
+import gaml.compiler.expressions.GamlExpressionCompiler;
 import gaml.compiler.factories.ExpressionDescriptionFactory;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ArgumentDefinition;
@@ -520,17 +524,22 @@ public class GamlSyntacticConverter {
 	 */
 	private void processCreate(final Statement stm, final ISyntacticElement elt) {
 		Expression exp = stm.getExpr();
+		Function function = switch (exp) {
+			case Function f -> f;
+			case Access access when ".".equals(access.getOp()) && access.getRight() instanceof Function f -> f;
+			default -> null;
+		};
 		boolean hasWith = EGAML.hasFacet(stm, IKeyword.WITH);
-		if (hasWith && !(exp instanceof Function)) {
+		if (hasWith && function == null) {
 			emitWarning(elt,
 					"The use of with: is deprecated. Prefer the functional form 'create species_name(args) number:...;'");
-		} else if (!hasWith && exp instanceof Function function) {
+		} else if (!hasWith && function != null) {
 			ExpressionList parameters = function.getRight();
-			Expression species = function.getLeft();
-			// DEBUG.LOG("Species = " + species + " -- Parameters = " + parameters);
-			if (!EGAML.getKeyOf(species).startsWith(IKeyword.SPECIES)) {
+			Expression name = function.getLeft();
+			if (!EGAML.getKeyOf(name).startsWith(IKeyword.SPECIES)) {
 				addFacet(elt, IKeyword.WITH, convExpr(parameters));
-				addFacet(elt, IKeyword.SPECIES, convExpr(species));
+				addFacet(elt, IKeyword.SPECIES,
+						exp instanceof Access access ? new QualifiedSpeciesDescription(access, name) : convExpr(name));
 			}
 		}
 	}
@@ -1187,6 +1196,45 @@ public class GamlSyntacticConverter {
 	 */
 	private IExpressionDescription findExpr(final StandaloneExperiment stm) {
 		return findExpr(stm, true, true);
+	}
+
+	/**
+	 * Species of a qualified functional creation such as {@code create alias.experiment(args)}: compiles only
+	 * {@code alias.experiment}, the arguments being carried separately by the {@code with:} facet.
+	 */
+	private static final class QualifiedSpeciesDescription extends EcoreBasedExpressionDescription {
+
+		/** The name of the species, without its arguments. */
+		private final Expression name;
+
+		/**
+		 * @param access
+		 *            the complete {@code alias.experiment(args)} expression, used as the target for error reporting
+		 * @param name
+		 *            the reference to the species name
+		 */
+		QualifiedSpeciesDescription(final Access access, final Expression name) {
+			super(access);
+			this.name = name;
+		}
+
+		@Override
+		public IExpression compile(final IDescription context) {
+			if (expression == null && target instanceof Access access) {
+				expression = GamlExpressionCompiler.getInstance().compileActionCall(access.getLeft(), name, context);
+			}
+			return expression;
+		}
+
+		@Override
+		public IExpressionDescription cleanCopy() {
+			return new QualifiedSpeciesDescription((Access) target, name);
+		}
+
+		@Override
+		public String toOwnString() {
+			return EGAML.toString(((Access) target).getLeft()) + "." + EGAML.getKeyOf(name);
+		}
 	}
 
 }

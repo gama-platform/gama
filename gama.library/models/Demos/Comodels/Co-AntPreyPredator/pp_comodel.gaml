@@ -6,5 +6,5 @@
 * Tags: 
 */
 
-experiment ppcomodel model:'../Co-PreyPredator/Prey Predator.gaml' mode:gui {
+experiment ppcomodel model:'../Co-PreyPredator/Prey Predator.gaml' mode:gui actions_context: simulation {
 }

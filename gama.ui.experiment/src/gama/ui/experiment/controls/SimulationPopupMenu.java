@@ -12,7 +12,9 @@ package gama.ui.experiment.controls;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.jface.dialogs.PopupDialog;
@@ -28,6 +30,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -39,7 +42,7 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import gama.api.GAMA;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
-import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
@@ -97,6 +100,8 @@ public class SimulationPopupMenu extends PopupDialog {
 
 	private static final int SIMULATION_INDENT = 24;
 
+	private record ContextEntry(ITopLevelAgent agent, int depth, int parentIndex) {}
+
 	/**
 	 * Sets the text of a label and records whether the popup needs to be enlarged to show it.
 	 */
@@ -150,17 +155,35 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @return the agents to display
 	 * @date 25 août 2023
 	 */
-	List<ITopLevelAgent> getAgentsToDisplay() {
+	private List<ContextEntry> getAgentsToDisplay() {
 		IExperimentSpecies plan = GAMA.getExperiment();
-		if (plan == null) return Collections.EMPTY_LIST;
-		IExperimentAgent exp = GAMA.getExperiment().getAgent();
-		if (exp == null) return Collections.EMPTY_LIST;
-		List<ITopLevelAgent> agents = new ArrayList<>();
-		agents.add(exp);
-		IPopulation<ISimulationAgent> simPop = exp.getSimulationPopulation();
-		if (simPop == null) return agents;
-		agents.addAll(GAMA.getExperiment().getAgent().getSimulationPopulation());
+		if (plan == null) return List.of();
+		List<ContextEntry> agents = new ArrayList<>();
+		addExperiment(plan.getAgent(), 0, -1, agents, Collections.newSetFromMap(new IdentityHashMap<>()));
 		return agents;
+	}
+
+	private void addExperiment(final IExperimentAgent experiment, final int depth, final int parentIndex,
+			final List<ContextEntry> agents, final Set<IExperimentAgent> visited) {
+		if (experiment == null || experiment.dead() || experiment.getScope().isClosed() || !visited.add(experiment))
+			return;
+		final int experimentIndex = agents.size();
+		agents.add(new ContextEntry(experiment, depth, parentIndex));
+		final var simulations = experiment.getSimulationPopulation();
+		if (simulations != null) {
+			for (final ISimulationAgent simulation : simulations.toArray(new ISimulationAgent[0])) {
+				if (!simulation.dead() && !simulation.getScope().isClosed()) {
+					agents.add(new ContextEntry(simulation, depth + 1, experimentIndex));
+				}
+			}
+		}
+		for (final var population : experiment.getExternMicroPopulations()) {
+			for (final IAgent agent : population.toArray(new IAgent[0])) {
+				if (agent instanceof IExperimentAgent controlled) {
+					addExperiment(controlled, depth + 1, experimentIndex, agents, visited);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -182,21 +205,19 @@ public class SimulationPopupMenu extends PopupDialog {
 
 	private void paintHierarchy(final PaintEvent event) {
 		if (labels.size() < 2) return;
-		final Composite experiment = labels.get(0);
-		if (experiment.isDisposed()) return;
-		final Rectangle rootBounds = experiment.getBounds();
-		final Rectangle iconBounds = experiment.getChildren()[0].getBounds();
-		final int x = rootBounds.x + iconBounds.x + iconBounds.width / 2;
-		int previousY = rootBounds.y + rootBounds.height;
 		event.gc.setForeground(contents.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 		for (int i = 1; i < labels.size(); i++) {
-			final Composite simulation = labels.get(i);
-			if (simulation.isDisposed()) continue;
-			final Rectangle bounds = simulation.getBounds();
+			final Composite row = labels.get(i);
+			if (row.isDisposed() || !(row.getData() instanceof ContextEntry entry) || entry.parentIndex() < 0) continue;
+			final Composite parentRow = labels.get(entry.parentIndex());
+			if (parentRow.isDisposed()) continue;
+			final Rectangle parentBounds = parentRow.getBounds();
+			final Rectangle iconBounds = parentRow.getChildren()[0].getBounds();
+			final int x = parentBounds.x + iconBounds.x + iconBounds.width / 2;
+			final Rectangle bounds = row.getBounds();
 			final int y = bounds.y + bounds.height / 2;
-			event.gc.drawLine(x, previousY, x, y);
+			event.gc.drawLine(x, parentBounds.y + parentBounds.height, x, y);
 			event.gc.drawLine(x, y, bounds.x - 1, y);
-			previousY = y;
 		}
 	}
 
@@ -208,17 +229,24 @@ public class SimulationPopupMenu extends PopupDialog {
 	 *            the agents
 	 * @date 26 août 2023
 	 */
-	private void fillLabels(final List<ITopLevelAgent> agents) {
+	private void fillLabels(final List<ContextEntry> agents) {
 		int size = agents.size();
 		// createLabels(size);
 		for (int i = 0; i < size; i++) {
 			try {
-				ITopLevelAgent agent = agents.get(i);
+				final ContextEntry entry = agents.get(i);
+				ITopLevelAgent agent = entry.agent();
 				Composite labelComposite = getOrCreateLabel(i);
 				final Label b = (Label) labelComposite.getChildren()[0];
 				final Label label = (Label) labelComposite.getChildren()[1];
 				b.setImage(GamaIcon.ofColor(agent.getColor()).image());
-				labelComposite.setData(agent);
+				labelComposite.setData(entry);
+				final var layout = (GridData) labelComposite.getLayoutData();
+				final int indent = entry.depth() * SIMULATION_INDENT;
+				if (layout.horizontalIndent != indent) {
+					layout.horizontalIndent = indent;
+					needsResize = true;
+				}
 				setText(label, GamlIdiomsProvider.toText(status.popupTextFor(agent)));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -239,11 +267,11 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @return the or create label
 	 */
 	Composite getOrCreateLabel(final int i) {
-		if (i > labels.size() - 1) { labels.add(createLabel(i > 0)); }
+		if (i > labels.size() - 1) { labels.add(createLabel()); }
 		Composite c = labels.get(i);
 		if (c == null || c.isDisposed()) {
 			labels.remove(i);
-			c = createLabel(i > 0);
+			c = createLabel();
 			labels.add(i, c);
 		}
 		return c;
@@ -253,16 +281,13 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * Creates the label.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param simulation
-	 *            whether this row is a simulation leaf
 	 * @date 26 août 2023
 	 */
-	private Composite createLabel(final boolean simulation) {
+	private Composite createLabel() {
 		try {
 			final Composite labelComposite = new Composite(contents, SWT.NONE);
 			GridLayoutFactory.swtDefaults().numColumns(2).margins(0, 0).spacing(5, 0).applyTo(labelComposite);
-			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false)
-					.indent(simulation ? SIMULATION_INDENT : 0, 0).applyTo(labelComposite);
+			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(labelComposite);
 			Label labelButton = new Label(labelComposite, SWT.NONE);
 			final Label labelText = new Label(labelComposite, SWT.NONE);
 			GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, true).applyTo(labelButton);
@@ -279,7 +304,7 @@ public class SimulationPopupMenu extends PopupDialog {
 				public void mouseEnter(final MouseEvent e) {
 					background = labelText.getBackground();
 					foreground = labelText.getForeground();
-					IColor c = ((ITopLevelAgent) labelComposite.getData()).getColor();
+					IColor c = ((ContextEntry) labelComposite.getData()).agent().getColor();
 					Color b = GamaColors.toSwtColor(c);
 					GamaColors.setBackAndForeground(b, GamaColors.getTextColorForBackground(b).color(), labelText);
 				}
@@ -294,7 +319,7 @@ public class SimulationPopupMenu extends PopupDialog {
 				@Override
 				public void mouseDown(final MouseEvent e) {
 					hide();
-					status.setSelection((ITopLevelAgent) labelComposite.getData());
+					status.setSelection(((ContextEntry) labelComposite.getData()).agent());
 				}
 
 			});
@@ -336,9 +361,10 @@ public class SimulationPopupMenu extends PopupDialog {
 			}
 		}
 		// GamaColors.setBackground(provider.getColor(), toolbar, toolbarComposite);
-		boolean isExperiment = GAMA.getCurrentTopLevelAgent() instanceof IExperimentAgent;
-		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent;
-		boolean isBackward = isSimulation && GAMA.getExperiment() != null && GAMA.getExperiment().isMemorize();
+		final ITopLevelAgent selected = GAMA.getCurrentTopLevelAgent();
+		boolean isExperiment = selected instanceof IExperimentAgent;
+		boolean isSimulation = selected instanceof ISimulationAgent;
+		boolean isBackward = isSimulation && selected.getExperiment().getSpecies().isMemorize();
 		add.setEnabled(isExperiment || isSimulation);
 		kill.setEnabled(isSimulation);
 		duplicate.setEnabled(isSimulation);

@@ -368,7 +368,7 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 	}
 
 	@Override
-	public void addExternMicroPopulation(final String expName, final IPopulation<? extends IAgent> pop) {
+	public synchronized void addExternMicroPopulation(final String expName, final IPopulation<? extends IAgent> pop) {
 		if (externMicroPopulations == null) {
 			externMicroPopulations = GamaMapFactory.create(Types.STRING, Types.LIST.of(Types.AGENT));
 		}
@@ -376,9 +376,14 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 	}
 
 	@Override
-	public IPopulation<? extends IAgent> getExternMicroPopulationFor(final String expName) {
+	public synchronized IPopulation<? extends IAgent> getExternMicroPopulationFor(final String expName) {
 		if (externMicroPopulations != null) return externMicroPopulations.get(expName);
 		return null;
+	}
+
+	@Override
+	public synchronized List<IPopulation<? extends IAgent>> getExternMicroPopulations() {
+		return externMicroPopulations == null ? List.of() : List.copyOf(externMicroPopulations.values());
 	}
 
 }

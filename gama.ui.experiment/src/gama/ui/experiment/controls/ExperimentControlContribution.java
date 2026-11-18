@@ -133,9 +133,10 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	 */
 
 	public void setSelection(final ITopLevelAgent agent) {
+		if (agent == null || agent.dead() || agent.getScope().isClosed()) return;
 		if (agent instanceof IExperimentAgent exp) {
 			GAMA.changeCurrentTopLevelAgent(exp, false);
-		} else if (agent instanceof ISimulationAgent sim) { GAMA.getExperiment().getAgent().setCurrentSimulation(sim); }
+		} else if (agent instanceof ISimulationAgent sim) { sim.getExperiment().setCurrentSimulation(sim); }
 	}
 
 	/**
@@ -150,6 +151,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	String popupTextFor(final ITopLevelAgent exp) {
 		if (exp == null) return "";
 		text.setLength(0);
+		appendContextName(exp);
 		final IClock clock = exp.getClock();
 		clock.getInfo(text).append(StringUtils.LN);
 		text.append("Durations: cycle ").append(clock.getDuration()).append("ms; average ")
@@ -253,6 +255,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		final IExperimentAgent exp = agent.getExperiment();
 		if (exp == null) return "";
 		text.setLength(0);
+		if (exp != GAMA.getExperimentAgent()) { appendContextName(agent); }
 		agent.getClock().getInfo(text);
 		final IPopulation.Simulation pop = exp.getSimulationPopulation();
 		final int nbThreads = pop == null ? 1 : pop.getNumberOfActiveThreads();
@@ -262,6 +265,13 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		final IExperimentSpecies plan = exp.getSpecies();
 		if (plan.shouldBeBenchmarked()) { text.append(" [benchmarking]"); }
 		return text.toString();
+	}
+
+	private void appendContextName(final ITopLevelAgent agent) {
+		final IExperimentAgent experiment = agent.getExperiment();
+		if (experiment == null) return;
+		text.append(experiment.getModel().getName()).append(" / ").append(experiment.getSpecies().getName())
+				.append(" [").append(experiment.getIndex()).append("] - ");
 	}
 
 }

@@ -4,7 +4,7 @@
 * Concept: Ants act as the "physical body" (movement), while Prey agents act as the "biological state" (survival).
 * Author: Lucas Grosjean
 */
-
+ 
 model modelCouplerAntPP
 
 // Import the sub-models as namespaces
@@ -21,87 +21,68 @@ global
 	// Lists to keep track of agents across both sub-models
 	list<ant> theAnts;
 	list<prey> thePreys;
+	map<ant, prey> prey_by_ant;
 	
 	init
 	{
-		// 1. Initialize the Ant Model
-		create ANT.antcomodel
-		{
-			simulation.gridsize <- 100;
-			simulation.ants_number <- myself.number_of_ants;
-			myself.theAnts <- list(simulation.ant);	
-		} 	
+		// Pass globals as creation arguments, before the child simulation initializes.
+		create ANT.antcomodel (gridsize: 100, ants_number: number_of_ants);
+		// The simulation and its populations are available after create returns.
+		theAnts <- list(ANT.antcomodel[0].simulation.ant);
 		
 		// 2. Initialize the Prey-Predator Model
-		create PP.ppcomodel
+		create PP.ppcomodel (shape: square(100), preyinit: number_of_ants, predatorinit: 2);
+		thePreys <- list(PP.ppcomodel[0].simulation.prey);
+		if (length(theAnts) != number_of_ants or length(thePreys) != number_of_ants)
 		{
-			simulation.shape <- square(100);
-			simulation.preyinit <- myself.number_of_ants; // Ensure 1:1 ratio with ants
-			simulation.predatorinit <- 2;
+			error "Both co-models must initialize with number_of_ants agents.";
 		}
+		// Pair agent references once; population positions change when agents die.
+		prey_by_ant <- create_map(theAnts, thePreys);
 	}
 	
 	/** Main Orchestration Reflex: Runs every simulation step **/
 	reflex synchronize_models
 	{
-		list<int> ant_to_delete; // Tracks which ants should die this step
-		list<prey> prey_before;  // Snapshot of prey before predation occurs
+		list<ant> ants_to_delete;
 		
 		// --- PHASE 1: Update Ant Movement ---
 		ask ANT.antcomodel[0].simulation
 		{
 			do _step_(); // Advance the Ant simulation one tick
-			myself.theAnts <- list(ant); // Refresh the local list
 		}
 		
 		// --- PHASE 2: Handle Predation and Mortality ---
 		ask PP.ppcomodel[0].simulation
 		{
-			prey_before <- list(prey); // Store state before stepping
-			
 			do _step_(); // Advance the PP simulation (predators might eat prey here)
 			
 			myself.thePreys <- list(prey);
 			
-			// Compare lists: if a prey is gone, the corresponding ant must die
-			if(prey_before != myself.thePreys){
-				loop i from: 0 to: length(prey_before) - 1
+			loop body over: myself.theAnts
+			{
+				if (dead(myself.prey_by_ant[body]))
 				{
-					if(dead(prey_before at i)) // Check if agent was removed from world
-					{
-						if(!dead(myself.theAnts at i)) // Match by index
-						{
-							ant_to_delete << i;	// Mark index for deletion					
-						}
-					}
+					ants_to_delete << body;
 				}
 			}
 		}
 		
 		// --- PHASE 3: Clean up "Dead" Ants ---
-		ask ANT.antcomodel[0].simulation
+		ask ants_to_delete
 		{
-			loop index_to_delete over: ant_to_delete
-			{
-				(ant at index_to_delete).die();
-			}	
-			myself.theAnts <- list(ant); // Update list after deaths
+			do die();
 		}
+		theAnts <- theAnts where (!dead(each));
 		
 		// --- PHASE 4: Sync Positions ---
 		// Forces the 'Prey' agents to be at the exact coordinates of the 'Ants'
 		ask PP.ppcomodel[0].simulation
 		{
-			loop tmp over: myself.theAnts
+			loop body over: myself.theAnts
 			{
-				loop tmp_pp over: prey
-				{
-					// Match agents by their index and teleport prey to ant position
-					if(tmp_pp.index = tmp.index)
-					{
-						tmp_pp.location <- tmp.location;
-					}
-				}
+				prey partner <- myself.prey_by_ant[body];
+				partner.location <- body.location;
 			}
 		}
 	}
