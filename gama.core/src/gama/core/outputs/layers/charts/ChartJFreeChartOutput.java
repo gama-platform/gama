@@ -219,6 +219,22 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
+	@Override
+	public void draw(final Graphics2D graphics, final Rectangle2D area, final boolean antiAlias) {
+		synchronized (renderLock) {
+			final JFreeChart renderingChart;
+			synchronized (lock) {
+				if (chart == null) return;
+				renderingChart = supportsRenderingSnapshot() ? createRenderingSnapshot() : chart;
+				if (renderingChart == chart) {
+					renderingChart.draw(graphics, area, null);
+					return;
+				}
+			}
+			renderingChart.draw(graphics, area, null);
+		}
+	}
+
 	protected boolean supportsRenderingSnapshot() { return false; }
 
 	/**

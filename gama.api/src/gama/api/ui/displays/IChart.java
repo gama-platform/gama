@@ -9,7 +9,9 @@
  ********************************************************************************************************/
 package gama.api.ui.displays;
 
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import org.jfree.chart.JFreeChart;
@@ -43,6 +45,23 @@ public interface IChart {
 	 * @return rendered BufferedImage
 	 */
 	BufferedImage getImage(int width, int height, int rasterWidth, int rasterHeight, boolean antialias);
+
+	/**
+	 * Draws the chart into the supplied logical display area.
+	 *
+	 * @param graphics drawing target
+	 * @param area logical display area
+	 * @param antialias whether anti-aliasing should be enabled
+	 */
+	default void draw(final Graphics2D graphics, final Rectangle2D area, final boolean antialias) {
+		final int width = Math.max(1, (int) Math.round(area.getWidth()));
+		final int height = Math.max(1, (int) Math.round(area.getHeight()));
+		final BufferedImage image = getImage(width, height, antialias);
+		if (image != null) {
+			graphics.drawImage(image, (int) Math.round(area.getX()), (int) Math.round(area.getY()), width, height,
+					null);
+		}
+	}
 
 	/**
 	 * Returns the underlying native chart object (e.g. JFreeChart instance or other chart engine object).

@@ -1008,7 +1008,7 @@ public class GamaPreferences {
 
 		/**
 		 * Raster scale relative to native device resolution: {@code 1.0} is native resolution, values above it
-		 * supersample, and values below it trade quality for speed.
+		 * supersample, and values below it trade quality for speed. Java2D charts draw directly at target resolution.
 		 */
 		public static final Pref<Double> CHART_QUALITY = create("pref_chart_quality",
 				"Chart raster scale (1 = native resolution, 2 = supersampling; higher uses more resources)", 1.5,

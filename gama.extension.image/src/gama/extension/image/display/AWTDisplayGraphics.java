@@ -14,18 +14,25 @@ package gama.extension.image.display;
 import static java.awt.RenderingHints.KEY_ALPHA_INTERPOLATION;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.KEY_COLOR_RENDERING;
+import static java.awt.RenderingHints.KEY_FRACTIONALMETRICS;
 import static java.awt.RenderingHints.KEY_INTERPOLATION;
 import static java.awt.RenderingHints.KEY_RENDERING;
+import static java.awt.RenderingHints.KEY_STROKE_CONTROL;
 import static java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY;
 import static java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import static java.awt.RenderingHints.VALUE_COLOR_RENDER_QUALITY;
 import static java.awt.RenderingHints.VALUE_COLOR_RENDER_SPEED;
+import static java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 import static java.awt.RenderingHints.VALUE_RENDER_QUALITY;
 import static java.awt.RenderingHints.VALUE_RENDER_SPEED;
+import static java.awt.RenderingHints.VALUE_STROKE_PURE;
+import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF;
+import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -62,8 +69,9 @@ import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
-import gama.api.ui.displays.IAsset;
 import gama.api.ui.displays.GeometryDrawing;
+import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.IChart;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.LayerCoordinates;
@@ -840,9 +848,44 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 	}
 
 	@Override
+	public Rectangle2D drawChart(final IChart chart, final int rasterWidth, final int rasterHeight,
+			final boolean antiAlias) {
+		if (chart.getJFChart() == null) {
+			final int width = Math.max(1, Math.abs(getLayerWidth()));
+			final int height = Math.max(1, Math.abs(getLayerHeight()));
+			final BufferedImage image = chart.getImage(width, height, rasterWidth, rasterHeight, antiAlias);
+			return image == null ? null : drawChart(image);
+		}
+		final int x = (int) getXOffsetInPixels(), y = (int) getYOffsetInPixels();
+		final int width = getLayerWidth(), height = getLayerHeight();
+		final Graphics2D renderer = (Graphics2D) currentRenderer.create();
+		try {
+			if (antiAlias) {
+				renderer.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
+				renderer.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON);
+				renderer.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY);
+				renderer.setRenderingHint(KEY_STROKE_CONTROL, VALUE_STROKE_PURE);
+				renderer.setRenderingHint(KEY_FRACTIONALMETRICS, VALUE_FRACTIONALMETRICS_ON);
+			} else {
+				renderer.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
+				renderer.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_OFF);
+			}
+			chart.draw(renderer, new Rectangle2D.Double(x, y, width, height), antiAlias);
+		} finally {
+			renderer.dispose();
+		}
+		chartRect.setRect(x, y, width, height);
+		return chartRect;
+	}
+
+	@Override
 	public boolean imageUpdate(final Image img, final int flags, final int x, final int y, final int width,
 			final int height) {
-		drawChart = (flags & ALLBITS) == 0;
-		return drawChart;
+		if ((flags & (ALLBITS | ABORT | ERROR)) != 0) {
+			drawChart = true;
+			return false;
+		}
+		drawChart = false;
+		return true;
 	}
 }

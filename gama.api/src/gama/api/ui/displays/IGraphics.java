@@ -177,6 +177,18 @@ public interface IGraphics {
 	 */
 	Rectangle2D drawChart(BufferedImage chart);
 
+	/**
+	 * Draw chart content using the display's native rendering target when supported.
+	 * Implementations that require a raster retain the requested raster dimensions.
+	 */
+	default Rectangle2D drawChart(final IChart chart, final int rasterWidth, final int rasterHeight,
+			final boolean antiAlias) {
+		final int width = Math.max(1, Math.abs(getLayerWidth()));
+		final int height = Math.max(1, Math.abs(getLayerHeight()));
+		final BufferedImage image = chart.getImage(width, height, rasterWidth, rasterHeight, antiAlias);
+		return image == null ? null : drawChart(image);
+	}
+
 	/** Physical device pixels per logical display pixel for the current drawing target. */
 	default double getDevicePixelRatio() { return 1d; }
 
