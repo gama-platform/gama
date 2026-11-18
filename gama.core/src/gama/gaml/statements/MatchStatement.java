@@ -233,11 +233,16 @@ public class MatchStatement extends AbstractStatementSequence {
 	 */
 	class MatchRegex extends MatchExecuter {
 
+		private record CachedPattern(String source, Pattern compiled) {}
+
 		/**
 		 * The pre-compiled pattern, non-null only when the value expression is a constant.
 		 * Reused on every call to {@link #matches(IScope, Object)} to avoid repeated compilation.
 		 */
 		private Pattern compiledPattern;
+
+		/** The most recently used dynamic pattern. */
+		private volatile CachedPattern cachedDynamicPattern;
 
 		@Override
 		public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
@@ -250,11 +255,18 @@ public class MatchStatement extends AbstractStatementSequence {
 			if (!(val instanceof String pattern)) throw GamaRuntimeException
 					.error("Can only match strings against a regular expression. " + val + " is not a string", scope);
 			if (pattern.isEmpty()) return false;
-			try {
-				return Pattern.compile(pattern).matcher(target).find();
-			} catch (PatternSyntaxException e) {
-				return target.contains(pattern);
+			CachedPattern cached = cachedDynamicPattern;
+			if (cached == null || !cached.source().equals(pattern)) {
+				Pattern compiled;
+				try {
+					compiled = Pattern.compile(pattern);
+				} catch (PatternSyntaxException e) {
+					compiled = null;
+				}
+				cached = new CachedPattern(pattern, compiled);
+				cachedDynamicPattern = cached;
 			}
+			return cached.compiled() == null ? target.contains(pattern) : cached.compiled().matcher(target).find();
 		}
 
 		@Override
