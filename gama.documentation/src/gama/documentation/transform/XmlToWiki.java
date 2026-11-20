@@ -43,9 +43,6 @@ public class XmlToWiki {
 	/** The ext file name. */
 	public static final String EXT_FILE_NAME = "Extension";
 
-	/** The ext folder. */
-	public static final String EXT_FOLDER = "PluginDocumentation/";
-
 	/**
 	 * Creates the all wikis.
 	 *
@@ -243,7 +240,7 @@ public class XmlToWiki {
 			extBw.newLine();
 
 			for (final String pluginName : hmExt.keySet()) {
-				extBw.write("* [" + pluginName + "](" + EXT_FOLDER + EXT_FILE_NAME + "_" + pluginName + ")");
+				extBw.write("* [" + pluginName + "](" + EXT_FILE_NAME + "_" + pluginName + ")");
 				extBw.newLine();
 			}
 		}
