@@ -47,7 +47,7 @@ With the exception of these special cases above, the following rules apply to th
 
 All of these alternative syntaxes are completely equivalent.
 
-Operators in GAML are purely functional, i.e. they are guaranteed to not have any side effects on their operands. For instance, the `shuffle` operator, which randomizes the positions of elements in a list, does not modify its list operand but returns a new shuffled list.
+Operators in GAML generally follow a functional style: they return a result without modifying their operands. This is a convention, not a guarantee; some operators can have side effects. Check an operator’s documentation for its specific behavior.
 
 
 ----
