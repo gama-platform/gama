@@ -32,7 +32,7 @@ global
 		//create experiment form micro-model Procedural City
 		create City.citycomodel
 		(
-			number_of_building:Boids.B_Adapter[0].simulation.number_of_agents*2,
+			number_of_building:Boids.boidscomodel[0].simulation.number_of_agents*2,
 			width_and_height_of_environment:width_and_height_of_environment
 		);
 	}
