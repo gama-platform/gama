@@ -17,7 +17,7 @@ on:
         description: "Choose a JDK version to embed inside GAMA release"
         type: string
         required: true
-        default: 25.0.5+8
+        default: 25.0.5.1+2
       releaseGithub:
         description: "[Release] On Github (uncheck == no) ?"
         type: boolean
