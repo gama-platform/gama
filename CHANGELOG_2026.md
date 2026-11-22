@@ -15,7 +15,7 @@ Unmerged branches are outside the historical audit. Changes in companion reposit
 [gama.copilot](https://github.com/gama-platform/gama.copilot), [gama.shared.models](https://github.com/gama-platform/gama.shared.models),
 [gama.experimental](https://github.com/gama-platform/gama.experimental) and the [gama-platform-plugins](https://github.com/gama-platform-plugins)
 graphical modelling and LLM plugins) are summarised in the relevant topics from their own histories since July 2025.
-Separately identified draft follow-ups below document development work, not released or merged behavior.
+Later follow-ups are also included; this version remains unreleased.
 
 For migration-sensitive additions, start with the [GAML syntax overhaul and translator](#breaking-change-gaml-syntax-overhaul-and-model-translator),
 then see [compiler diagnostics](#compiler-diagnostics-dates-and-expression-semantics),
@@ -41,10 +41,10 @@ and the discovery and installation of optional extensions, plugins and models.
 
 - **GAML language evolution:** [BREAKING CHANGE: GAML syntax overhaul and model translator](#breaking-change-gaml-syntax-overhaul-and-model-translator) · [GAML language and compiler: classes and objects](#gaml-language-and-compiler-classes-and-objects) · [Compiler diagnostics, dates and expression semantics](#compiler-diagnostics-dates-and-expression-semantics) · [BREAKING CHANGE: explicit container types for built-in action arguments](#breaking-change-explicit-container-types-for-built-in-action-arguments) · [Lists and maps: explicit nil is distinct from an empty container](#lists-and-maps-explicit-nil-is-distinct-from-an-empty-container) · [Nested map content types](#nested-map-content-types) · [GAML: percentage literals](#gaml-percentage-literals) · [GAML: reduce and scan iterators](#gaml-reduce-and-scan-iterators) · [GAML: string, container and numeric correctness](#gaml-string-container-and-numeric-correctness) · [Mesh source name resolution](#mesh-source-name-resolution) · [Co-model imports: preserve aliases while editing](#co-model-imports-preserve-aliases-while-editing) · [Benchmark statement: individual durations and optional console output](#benchmark-statement-individual-durations-and-optional-console-output)
 - **Editor, validation and online help:** [Editor: formatter, online help and code minings](#editor-formatter-online-help-and-code-minings) · [Editor validation error reporting](#editor-validation-error-reporting) · [Editor: per-file automatic validation control](#editor-per-file-automatic-validation-control) · [Adjustable editor delays for large models](#adjustable-editor-delays-for-large-models) · [Editor Find/Replace](#editor-findreplace) · [GAML outline icons](#gaml-outline-icons)
-- **History, wizards and views of the modeling perspective:** [Major addition: previous versions for model editing](#major-addition-previous-versions-for-model-editing) · [GAML file creation](#gaml-file-creation) · [Wizards, refactoring and syntax conversion](#wizards-refactoring-and-syntax-conversion) · [File viewers and editors: CSV, JSON/GeoJSON, SVG and GML](#file-viewers-and-editors-csv-jsongeojson-svg-and-gml)
-- **Navigator and workspace stability:** [Workspace models organisation and navigator](#workspace-models-organisation-and-navigator) · [Navigator and workspace stability](#navigator-and-workspace-stability) · [Navigator metadata during workspace recovery](#navigator-metadata-during-workspace-recovery)
+- **History, wizards and views of the modeling perspective:** [Major addition: previous versions for model editing](#major-addition-previous-versions-for-model-editing) · [GAML file creation](#gaml-file-creation) · [Wizards, refactoring and syntax conversion](#wizards-refactoring-and-syntax-conversion) · [File viewers and editors: CSV, JSON/GeoJSON, SVG and GML](#file-viewers-and-editors-csv-jsongeojson-svg-and-gml) · [Model dependencies view](#model-dependencies-view)
+- **Navigator and workspace stability:** [Workspace models organisation and navigator](#workspace-models-organisation-and-navigator) · [Navigator and workspace stability](#navigator-and-workspace-stability) · [Navigator metadata during workspace recovery](#navigator-metadata-during-workspace-recovery) · [Navigator extension API](#navigator-extension-api) · [Preference editor reset](#preference-editor-reset)
 - **Tests:** [Tests view and test execution](#tests-view-and-test-execution)
-- **Installing and discovering extensions, plugins and models:** [GitHub Copilot: independent optional integration](#github-copilot-independent-optional-integration) · [Optional installations and memory indicator](#optional-installations-and-memory-indicator) · [GitHub Copilot integration (gama.copilot)](#github-copilot-integration-gamacopilot) · [LLM plugin (gama.plugin.llm)](#llm-plugin-gamapluginllm) · [Graphical modelling (diagram editor)](#graphical-modelling-diagram-editor) · [Bundled library models](#bundled-library-models) · [Shared models (gama.shared.models)](#shared-models-gamasharedmodels) · [Experimental plugins (gama.experimental)](#experimental-plugins-gamaexperimental) · [Icons and resources (gama.resources)](#icons-and-resources-gamaresources)
+- **Installing and discovering extensions, plugins and models:** [GitHub Copilot: independent optional integration](#github-copilot-independent-optional-integration) · [Optional installations and memory indicator](#optional-installations-and-memory-indicator) · [Extension discovery and installation](#extension-discovery-and-installation) · [GitHub Copilot integration (gama.copilot)](#github-copilot-integration-gamacopilot) · [LLM plugin (gama.plugin.llm)](#llm-plugin-gamapluginllm) · [Graphical modelling (diagram editor)](#graphical-modelling-diagram-editor) · [Bundled library models](#bundled-library-models) · [Shared models (gama.shared.models)](#shared-models-gamasharedmodels) · [Experimental plugins (gama.experimental)](#experimental-plugins-gamaexperimental) · [Icons and resources (gama.resources)](#icons-and-resources-gamaresources)
 
 #### BREAKING CHANGE: GAML syntax overhaul and model translator
 
@@ -79,6 +79,16 @@ form in the table is rejected**: some legacy calls/facets remain accepted, and
 `create ... with:` is deprecated rather than removed. Functional creation is also available,
 for example `create person(age: 20) number: 10;`.
 
+**Selector facets:** use `mode:` for experiments, `renderer:` for displays, `kind:` for charts
+and lights, and `device:` for events. The compiler still accepts their former `type:` selector,
+but emits a deprecation warning. For inspection, use `inspect` for agents or `browse` for tables
+instead of specifying `type: agent` or `type: table`. Other, genuinely type-related `type:`
+facets retain their meaning. These selector migrations are performed during compilation, not
+necessarily rewritten in the source by the syntax converter; update the declarations themselves
+to remove the warnings. Standalone experiment files can also start with pragmas, like model files
+([`454eee6ce`](https://github.com/gama-platform/gama/commit/454eee6ce), #1312;
+[`c1217803a`](https://github.com/gama-platform/gama/commit/c1217803a)).
+
 The `with:` change concerns **argument passing**, not ordinary maps/pairs: map literals still
 use `::`. Removing braces after `->` concerns the outer expression wrapper, not normal statement
 blocks or point literals. Use `title:` when a human-readable label differs from the identifier;
@@ -105,7 +115,33 @@ and the [navigator conversion command](gama.ui.navigator/src/gama/ui/navigator/c
 
 #### GAML language and compiler: classes and objects
 
-The GAML compiler has been completely rewritten into a stateless architecture, ensuring faster compilation. Furthermore, GAML now natively supports Object-Oriented concepts (`class` and `object`).
+The GAML compiler has been rewritten into a stateless architecture, and GAML now supports
+`class` and `object`. A class defines attributes and actions without creating an agent population
+or a simulation schedule. Construct objects with named initial values; omitted attributes keep
+their defaults. Objects can be stored, passed to actions and accessed through dot notation:
+
+```gaml
+class point2d {
+    float x <- 0.0;
+    float y <- 0.0;
+    float distance_to(point2d other) {
+        return sqrt((x - other.x) ^ 2 + (y - other.y) ^ 2);
+    }
+}
+
+global {
+    init {
+        point2d p <- point2d(x: 3.0, y: 4.0);
+        write p.distance_to(point2d());
+    }
+}
+```
+
+Classes can inherit attributes and actions with `parent:`, override actions and call parent
+implementations. `object` is the implicit root class. Unlike species, classes cannot declare
+agent lifecycle or spatial behaviors such as reflexes and aspects. See the bundled
+[Define Classes recipes](gama.library/models/Recipes/Define%20Classes) for constructors,
+inheritance, virtual classes and other examples.
 
 *   `[ca3cded]` Add IClass and IObject interfaces
 *   `[e033a1c]` Add CLASS support and AST updates
@@ -419,6 +455,11 @@ See the [Benchmarking recipe](gama.library/models/Recipes/System/Benchmarking.ga
   [`34477accf`](https://github.com/gama-platform/gama/commit/34477accf), #759;
   [`28c0d6da6`](https://github.com/gama-platform/gama/commit/28c0d6da6),
   [`513662253`](https://github.com/gama-platform/gama/commit/513662253)).
+- Content assist proposes attributes and actions appropriate to a member receiver after `.` and
+  actions in invocation contexts. Proposals show their kind, type and origin where available;
+  same-name overloads are grouped, with their signatures and documentation in the details
+  ([`2db4f40df`](https://github.com/gama-platform/gama/commit/2db4f40df),
+  [`d434f084b`](https://github.com/gama-platform/gama/commit/d434f084b)).
 
 #### Editor validation error reporting
 
@@ -561,6 +602,20 @@ test-experiment wizard remains available.
   [`30a69403e`](https://github.com/gama-platform/gama/commit/30a69403e),
   [`bdb3d869a`](https://github.com/gama-platform/gama/commit/bdb3d869a)).
 
+#### Model dependencies view
+
+**Show dependencies** in the navigator or GAML editor opens an interactive graph of a saved
+model or standalone experiment and its reachable imports. Arrows represent direct imports;
+shared dependencies appear once, and missing files remain visible. Cards open their files,
+and the view provides pan, zoom, fit, refresh and back/forward navigation. Optional **Sync with
+editor** follows the active model; it is off by default. Workspace changes to files in the graph
+refresh it automatically. The graph reads saved sources, not unsaved editor contents.
+
+An optional resource display shows literal file paths referenced by each model. It does not
+infer dynamically constructed paths, may include output filenames, and does not fetch remote
+resources. See the [Dependencies view documentation](gama.ui.navigator/README.md#dependencies)
+([`2f106dd50`](https://github.com/gama-platform/gama/commit/2f106dd50)).
+
 #### Workspace models organisation and navigator
 
 Plugins now contribute models through `models/{Data,Demos,Library,Recipes,Tutorials,Tests}/<GAMA projects>`; the `gama.models` extension point is removed. Projects are classified by location (not by natures), the contributing plugin is stored in the `.project` comment, and the GAMA nature is now `gama.workspace.nature` (the former ids are still recognised and migrated). The navigator gains a "Clean and update workspace..." command, hides empty top-level folders, and supports user *group folders* (plain directories of the workspace containing several projects, see #678) that can be created, renamed, deleted, filled by drag and drop, paste, and the New/Import project wizards.
@@ -596,6 +651,10 @@ In the **User** folder and its groups, **New...** offers **Group...** (a name di
   [`e2fb35357`](https://github.com/gama-platform/gama/commit/e2fb35357),
   [`7c298956e`](https://github.com/gama-platform/gama/commit/7c298956e),
   [`d09c3c568`](https://github.com/gama-platform/gama/commit/d09c3c568)).
+- Workspace library refresh reconciles generated test projects contributed under packaged
+  `models/Tests` and development `gaml/models/Tests` paths. Duplicate library-owned workspace
+  registrations are removed without deleting their files
+  ([`d77574150`](https://github.com/gama-platform/gama/commit/d77574150)).
 
 #### Navigator metadata during workspace recovery
 
@@ -604,6 +663,24 @@ This removes an uncancellable wait for the build's workspace lock when navigator
 labels need uncached metadata, notably after a crash. Metadata invalidation still
 uses file-system modification times; background and explicit workspace refreshes
 remain enabled.
+
+#### Navigator extension API
+
+The `gama.ui.navigator.topLevelFolders` extension point lets plugins add independent top-level
+folders and virtual hierarchies to the GAMA navigator. Contributions specify a stable,
+plugin-qualified ID, a provider class, an anchor before a built-in folder and an optional order.
+They can provide their own context-menu actions while opting out of standard workspace operations.
+The API does not register model-library categories or create workspace projects. GAMA's own
+Data, Demos, Library, Recipes, Tutorials, Tests and User folders use the same registry. See the
+[navigator extension guide](gama.ui.navigator/README.md#declaration-and-placement)
+([`e456d2839`](https://github.com/gama-platform/gama/commit/e456d2839)).
+
+#### Preference editor reset
+
+An individual preference's revert control can restore its built-in default even when the value
+has not been edited in the current preferences session. If the value has been edited, the first
+revert restores the value from when the editor opened; the control can then restore the default
+([`e90ea36b6`](https://github.com/gama-platform/gama/commit/e90ea36b6)).
 
 #### Tests view and test execution
 
@@ -623,10 +700,12 @@ Summaries and the compact view label unexecuted tests and assertions **not reach
 
 Before running the test suite, a discovery pass counts individual tests across its test experiments. The compact view shows “Discovering tests...” during this pass, then a live completed/total counter in both execution modes, retaining partial counts after Stop or timeout.
 
-- Test experiments work with `pref_parallel_simulations_all` enabled. Headless `-test` extracts
-  the complete test tree and extension bundles ship their test suites
-  ([`77e223678`](https://github.com/gama-platform/gama/commit/77e223678), #904;
-  [`ed19a52b4`](https://github.com/gama-platform/gama/commit/ed19a52b4),
+The view keeps up to **20** completed or stopped test-run reports in memory while it is open.
+Previous/next controls browse those reports, and rerun uses the selected report's original run
+selection ([`817f23568`](https://github.com/gama-platform/gama/commit/817f23568)).
+
+- Headless `-test` extracts the complete test tree and extension bundles ship their test suites
+  ([`ed19a52b4`](https://github.com/gama-platform/gama/commit/ed19a52b4),
   [`a978b0013`](https://github.com/gama-platform/gama/commit/a978b0013)).
 - **Run this test** executes only the GAML test under the caret, in either test execution mode.
   Failed assertions display evaluated operands; the first non-warning failure stops the test,
@@ -650,7 +729,8 @@ or moving GAMA to a newer Eclipse release.
 
 **Support > Install GAMA extensions... > Install Copilot extension** now uses that site rather than the running GAMA
 release's update repository; subsequent updates use **Support > Check for updates...**.
-License acceptance, trust checks, GitHub sign-in and entitlement requirements remain.
+GitHub sign-in and entitlement requirements remain; the simplified installer's license and
+publisher-trust defaults are described below.
 The installer checks for the GAMA wrapper feature, so an upstream-only Copilot
 installation can also acquire the GAMA integration.
 
@@ -670,6 +750,23 @@ and [installation documentation](.github/SUPPORT.md#installing-gama-extensions).
   ([`e069b5f52`](https://github.com/gama-platform/gama/commit/e069b5f52), #1254;
   [`755acd4d6`](https://github.com/gama-platform/gama/commit/755acd4d6),
   [`b815e0c8f`](https://github.com/gama-platform/gama/commit/b815e0c8f)).
+
+#### Extension discovery and installation
+
+**Support > Install GAMA extensions...** discovers available features and categories from the
+GAMA, plugin, Shared Models and Copilot update sites. Discovery runs in the background; users
+can refresh the list, inspect descriptions, and see which features are installed or have newer
+versions available. **Choose plugins to install...** selects individual features or categories
+and resolves them together, with a review of dependency additions, replacements and removals
+before installation.
+
+Finishing this simplified installer automatically accepts the selected features' and dependencies'
+licenses. **Trust all plugin publishers, including unsigned plugins** is enabled by default for
+that installation; uncheck it to retain the normal Eclipse trust prompts. Install only from
+sources you trust. These defaults do not change the separate general-purpose extension installer.
+See the [installation and trust details](.github/SUPPORT.md#installing-gama-extensions)
+([`1cc4d38b6`](https://github.com/gama-platform/gama/commit/1cc4d38b6),
+[`63b0ed7ce`](https://github.com/gama-platform/gama/commit/63b0ed7ce)).
 
 #### GitHub Copilot integration (gama.copilot)
 
@@ -790,7 +887,7 @@ The graphical modelling plugin ([gama-platform-plugins/gama.graphical.modeling](
 
 ##### Appearance and navigation
 - Updated look: rounded boxes with pastel fills, readable text colours, thinner colour-coded relations, multiline attributes and new SVG icons. Diagrams from older versions are converted to the new look when opened, and grid snapping is disabled.
-- **Layout** uses GAMA's Jungrapht Sugiyama hierarchical algorithm, from top to bottom. Boxes are first fitted to their contents. Connections use orthogonal routes with filled arrowheads and routing lanes that avoid crossing boxes. Opening an existing diagram keeps its saved positions.
+- **Layout** uses GAMA's Jungrapht Sugiyama hierarchical algorithm, from left to right. Boxes are first fitted to their contents. Connections use orthogonal routes with filled arrowheads and routing lanes that avoid crossing boxes. Opening an existing diagram keeps its saved positions.
 - New toolbar controls for zooming in and out and for fitting the diagram to the view. Trackpad pinch zooming is supported, and dragging the background pans the canvas. Diagrams fit the view when first opened.
 
 #### Bundled library models
@@ -817,10 +914,10 @@ The graphical modelling plugin ([gama-platform-plugins/gama.graphical.modeling](
 
 #### Shared models (gama.shared.models)
 
-- **New "GAMA Shared Models" extension.** This new installable tool (feature `gama.feature.shared.models`, listed in the *Tool* category) adds a **Community** folder above **User** in the GAMA navigator. Use it to browse community projects from [gama-platform/gama.models](https://github.com/gama-platform/gama.models) and import them into your workspace.
+- **New "GAMA Shared Models" extension.** This tool (feature `gama.feature.shared.models`, listed in the *Tool* category) is included in the standard GAMA product and adds a **Community** folder above **User** in the navigator. Use it to browse community projects from [gama-platform/gama.models](https://github.com/gama-platform/gama.models) and import them into your workspace.
 - **Two catalogues.** *Published models* reads a public JSON registry with version, description, author, license and GAMA compatibility for each model. *Repository projects* lists the project folders in the repository, grouped by category (e.g. Generic, Thematic). A project appears as "remote project, N models". Expanding it shows its metadata (author, description, version, license, repository), not its files. Browsing never downloads archives or creates workspace projects.
 - **Import into workspace.** The context menu of a remote project offers **Import into workspace**, **Properties**, **Open repository** and **Refresh** (F5). Importing asks for a local project name, then copies the whole project into **User** as an independent local copy. The copy records its source and version or commit as project properties, and existing projects are never overwritten. Imports are verified: SHA-256 checksums are checked, size and entry counts are limited, unsafe paths are rejected, and legacy GAMA project natures are normalized. Network operations run as cancellable background jobs. If the network is unavailable, cached catalogues are used with an explicit offline/stale notice. No GitHub account is needed.
-- **Installation.** The tool is published as a versioned p2 update site at `https://gama-platform.org/gama.shared.models/`. GAMA 2026 already lists this site in **Install GAMA extensions…**, so the tool can be installed there with the other extensions. It is built on the new navigator API (`gama.ui.navigator.topLevelFolders`) that lets plug-ins add top-level folders to the navigator. Current limitations: only ZIP projects can be imported, and only their latest version. Version selection, `.gamp`/`.gamx` import and automatic updates are planned.
+- **Installation.** The tool is also published as a versioned p2 update site at `https://gama-platform.org/gama.shared.models/`, listed in **Install GAMA extensions…** for installation or updates. It is built on the new navigator API (`gama.ui.navigator.topLevelFolders`) that lets plug-ins add top-level folders to the navigator. Current limitations: only ZIP projects can be imported, and only their latest version. Version selection, `.gamp`/`.gamx` import and automatic updates are planned.
 
 #### Experimental plugins (gama.experimental)
 
@@ -844,11 +941,11 @@ the GAMA Server infrastructure and simulation performance.
 
 - **Experiments, simulations and batch:** [Development follow-up: explicit experiment and simulation contexts](#development-follow-up-explicit-experiment-and-simulation-contexts) · [Experiment execution controls and pause-state migration](#experiment-execution-controls-and-pause-state-migration) · [Platform-agent operations](#platform-agent-operations) · [Simulation concurrency defaults](#simulation-concurrency-defaults) · [Simulation lifecycle, scheduling and batch execution](#simulation-lifecycle-scheduling-and-batch-execution) · [Concurrency and parallel execution](#concurrency-and-parallel-execution) · [Automatic spatial-index synchronization](#automatic-spatial-index-synchronization) · [Passive populations and agent access](#passive-populations-and-agent-access) · [Runtime errors: persistent, clickable status](#runtime-errors-persistent-clickable-status)
 - **Parameters, consoles and UI controls:** [Parameters: display units (`unit:` facet)](#parameters-display-units-unit-facet) · [Parameters, monitors and launch controls](#parameters-monitors-and-launch-controls) · [Consoles: persistent contents, interactive console and history](#consoles-persistent-contents-interactive-console-and-history) · [Swiss-inspired simulation and editor palettes](#swiss-inspired-simulation-and-editor-palettes)
-- **Displays, layers and coordinates:** [Display viewport dimensions and mouse-coordinate aliases](#display-viewport-dimensions-and-mouse-coordinate-aliases) · [Overlays and display reliability](#overlays-and-display-reliability) · [Draft follow-up: persistent output presentation locals](#draft-follow-up-persistent-output-presentation-locals) · [Static layer visibility](#static-layer-visibility) · [CPU-side display preparation](#cpu-side-display-preparation) · [Java2D display responsiveness](#java2d-display-responsiveness) · [Snapshots and image saving: faster, optionally asynchronous](#snapshots-and-image-saving-faster-optionally-asynchronous) · [Additional display fixes](#additional-display-fixes)
+- **Displays, layers and coordinates:** [Display viewport dimensions and mouse-coordinate aliases](#display-viewport-dimensions-and-mouse-coordinate-aliases) · [Explicit display-layer coordinates](#explicit-display-layer-coordinates) · [Overlay UI controls and adaptive text](#overlay-ui-controls-and-adaptive-text) · [Overlays and display reliability](#overlays-and-display-reliability) · [Persistent output presentation locals](#persistent-output-presentation-locals) · [Static layer visibility](#static-layer-visibility) · [CPU-side display preparation](#cpu-side-display-preparation) · [Java2D display responsiveness](#java2d-display-responsiveness) · [Snapshots and image saving: faster, optionally asynchronous](#snapshots-and-image-saving-faster-optionally-asynchronous) · [Additional display fixes](#additional-display-fixes)
 - **OpenGL and OpenGL4:** [OpenGL4: native OpenGL 4.1 core-profile renderer](#opengl4-native-opengl-41-core-profile-renderer) · [OpenGL4 geometry reuse](#opengl4-geometry-reuse) · [OpenGL4 chart textures](#opengl4-chart-textures) · [OpenGL4 text contours](#opengl4-text-contours) · [OpenGL4 fixed-pipeline lighting](#opengl4-fixed-pipeline-lighting) · [OpenGL4 raster uploads](#opengl4-raster-uploads) · [OBJ loading and rendering](#obj-loading-and-rendering) · [Improved OpenGL rendering for maps and map-like environments](#improved-opengl-rendering-for-maps-and-map-like-environments) · [OpenGL text and polygon drawing reuse](#opengl-text-and-polygon-drawing-reuse) · [OpenGL FPS overlay shutdown](#opengl-fps-overlay-shutdown) · [Optional OpenGL rendering diagnostics](#optional-opengl-rendering-diagnostics)
-- **Charts:** [Charts: dynamic bodies, distinct names and stable colors](#charts-dynamic-bodies-distinct-names-and-stable-colors) · [Chart legends, bounds and default properties](#chart-legends-bounds-and-default-properties) · [Independent series-chart rendering](#independent-series-chart-rendering) · [Chart image sizing in OpenGL](#chart-image-sizing-in-opengl)
+- **Charts:** [Charts: dynamic bodies, distinct names and stable colors](#charts-dynamic-bodies-distinct-names-and-stable-colors) · [Chart quality and Java2D rendering](#chart-quality-and-java2d-rendering) · [Chart legends, bounds and default properties](#chart-legends-bounds-and-default-properties) · [Independent series-chart rendering](#independent-series-chart-rendering) · [Chart image sizing in OpenGL](#chart-image-sizing-in-opengl)
 - **Keyboard and mouse listeners:** [BIG CHANGE: keyboard combinations in display events](#big-change-keyboard-combinations-in-display-events) · [Generic keyboard and mouse event listeners](#generic-keyboard-and-mouse-event-listeners) · [BEHAVIOR CHANGE: macOS 3D camera controls use CMD, not CTRL](#behavior-change-macos-3d-camera-controls-use-cmd-not-ctrl)
-- **GAMA Server:** [GAMA Server: full exchange logs](#gama-server-full-exchange-logs) · [GAMA Server: desktop server disabled by default](#gama-server-desktop-server-disabled-by-default) · [GAMA Server, headless and TCP follow-ups](#gama-server-headless-and-tcp-follow-ups)
+- **GAMA Server:** [Desktop Server Console](#desktop-server-console) · [GAMA Server: full exchange logs](#gama-server-full-exchange-logs) · [GAMA Server: desktop server disabled by default](#gama-server-desktop-server-disabled-by-default) · [GAMA Server, headless and TCP follow-ups](#gama-server-headless-and-tcp-follow-ups)
 - **Simulation performance:** [Spatial routing and movement performance](#spatial-routing-and-movement-performance) · [Quadtree query and update speed](#quadtree-query-and-update-speed) · [Octree query and update speed](#octree-query-and-update-speed) · [Movement along paths and graphs](#movement-along-paths-and-graphs) · [Routing cache and weight-update speed](#routing-cache-and-weight-update-speed) · [Endpoint route candidate construction](#endpoint-route-candidate-construction) · [Shared container type descriptions](#shared-container-type-descriptions) · [Two-argument numeric minimum and maximum](#two-argument-numeric-minimum-and-maximum) · [Fixed-argument operator invocation](#fixed-argument-operator-invocation) · [Runtime arguments and population queries](#runtime-arguments-and-population-queries)
 
 #### Development follow-up: explicit experiment and simulation contexts
@@ -924,10 +1021,11 @@ preference beyond the current experiment.
 #### Simulation concurrency defaults
 
 The global preference for parallel simulation scheduling has been removed. Experiments without a `parallel:` facet
-now step their simulations sequentially, including batch experiments. Set `parallel: true` on the experiment to use
-the configured thread count, or `parallel: n` to specify the maximum number of concurrent simulations. Headless
-non-batch experiments remain sequential. Each simulation still has its own thread regardless of the scheduling limit.
-Existing models and scripts that relied on `gama.pref_parallel_simulations` must use the experiment facet instead.
+use the configured thread count (four by default), except headless non-batch experiments, which remain sequential.
+Set `parallel: false` to step simulations sequentially, `parallel: true` to use the configured thread count, or
+`parallel: n` to cap the number of concurrent simulations. Each simulation still has its own thread regardless
+of the scheduling limit. Existing models and scripts that relied on `gama.pref_parallel_simulations` must use
+the experiment facet instead ([`b3ea49895`](https://github.com/gama-platform/gama/commit/b3ea49895)).
 
 Batch experiments now default to grouping simulations from different parameter sets in both GUI and headless modes.
 Use `group_parameter_sets: false` to process one parameter set at a time. This choice changes when experiment
@@ -992,6 +1090,9 @@ of `false` should use `group_parameter_sets: false` to preserve their evaluation
   [`0a8fe4f0c`](https://github.com/gama-platform/gama/commit/0a8fe4f0c),
   [`a5ff1a3c5`](https://github.com/gama-platform/gama/commit/a5ff1a3c5),
   [`55eaa76cd`](https://github.com/gama-platform/gama/commit/55eaa76cd)).
+- Co-model creation arguments can initialize a child experiment's attributes and model globals
+  before its simulation initialization. The experiment UI can also select nested experiments
+  and simulations in co-models.
 
 #### Concurrency and parallel execution
 
@@ -1182,6 +1283,44 @@ the former extent because aspect-ratio fitting and projection also affect it.
 See the [migration reference](MIGRATION_GUIDE_2026.md#display-dimensions-and-mouse-coordinates)
 and [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md).
 
+#### Explicit display-layer coordinates
+
+Layer placement is now explicit: `coordinates: #world` uses model units and follows the camera;
+`coordinates: #screen` attaches the frame to the viewport and uses logical pixels, with values
+strictly below 1 interpreted as fractions. Negative screen positions count from the opposite edge,
+and omitting `size:` fills the reference extent. Overlays and charts default to screen placement;
+graphics and spatial layers default to world placement. For `graphics` and `overlay`, `referential:`
+can independently select the coordinate system of the drawings: world contents use model units,
+while screen contents use the layer frame. Screen overlays fit world drawings uniformly; screen
+graphics fit them independently on each axis. Overflow is not clipped.
+
+The former hybrid interpretation is not inferred automatically. In particular `{1,1}` is now one
+pixel by one pixel, not the full viewport, and layer-frame backgrounds default to transparent.
+Use omitted `size:` for a full-frame layer and specify an explicit background when needed. Review
+old fractional spatial placements and overlay geometry during migration. The
+[coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md) covers defaults,
+units, referentials, examples and migration
+([`cd5bd4578`](https://github.com/gama-platform/gama/commit/cd5bd4578)).
+
+#### Overlay UI controls and adaptive text
+
+Screen overlays now support `ui_button`, `ui_switch`, `ui_radio` and `ui_slider` across Java2D,
+OpenGL and OpenGL4. `var:` binds a writable model value; `value:` is read-only and requires a
+change handler. Buttons can be momentary or boolean toggles, radios clear other selections in
+their overlay group, and sliders support bounds, steps and optional continuous updates. Handlers
+run in the enclosing output's context. The first implementation is pointer-only: keyboard focus,
+activation and accessibility support are not provided.
+
+Control labels default to `#adaptive`, which chooses black or white using the rendered background;
+ordinary `draw` text can opt in with `color: #adaptive`. Adaptive controls share a bounded scene
+readback per overlay; ordinary adaptive text samples the scene per string, which can be costly in
+OpenGL for many labels. Prefer explicit colors for high-volume ordinary text. See the
+[control and coordinate guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#overlay-ui-controls-initial-pointer-implementation)
+([`406d4c89a`](https://github.com/gama-platform/gama/commit/406d4c89a),
+[`94a0a501a`](https://github.com/gama-platform/gama/commit/94a0a501a),
+[`5a3c12443`](https://github.com/gama-platform/gama/commit/5a3c12443),
+[`8366e039b`](https://github.com/gama-platform/gama/commit/8366e039b)).
+
 #### Overlays and display reliability
 
 - Overlay position/size interpretation is shared by Java2D, OpenGL, OpenGL4 and image exports.
@@ -1213,18 +1352,22 @@ and [display-coordinate guide](gama.documentation/files/input/markdown/DisplayCo
   ([`80daed784`](https://github.com/gama-platform/gama/commit/80daed784), #810;
   [`04f1d704a`](https://github.com/gama-platform/gama/commit/04f1d704a), #1214;
   [`3095ffa7c`](https://github.com/gama-platform/gama/commit/3095ffa7c)).
+- A display-toolbar **Lock scale** toggle preserves the rendered scale when a Java2D, OpenGL or
+  OpenGL4 viewport is resized. Turning the lock off resumes fit-to-view behavior
+  ([`b72d1a799`](https://github.com/gama-platform/gama/commit/b72d1a799)).
 - Switching inspected agents refreshes monitor values instead of retaining the previous agent's
   value. Matrix parameter editing restores row controls and validates on OK, leaving the dialog
   open on invalid input rather than failing during disposal
   ([`a138bbf79`](https://github.com/gama-platform/gama/commit/a138bbf79), #383;
   [`da4739414`](https://github.com/gama-platform/gama/commit/da4739414), #936).
 
-#### Draft follow-up: persistent output presentation locals
+<a id="draft-follow-up-persistent-output-presentation-locals"></a>
 
-**Status:** implemented on the branch of draft
-[PR #1313](https://github.com/gama-platform/gama/pull/1313), including
-[`828cff24c`](https://github.com/gama-platform/gama/commit/828cff24c50f24b1e173f9d1c3418ac09a2c13cf),
-not yet merged or released. This entry is separate from the historical audit above.
+#### Persistent output presentation locals
+
+**Status:** merged in [PR #1313](https://github.com/gama-platform/gama/pull/1313), including
+[`828cff24c`](https://github.com/gama-platform/gama/commit/828cff24c50f24b1e173f9d1c3418ac09a2c13cf).
+This change is part of the current unreleased GAMA 2026 development.
 
 Typed declarations directly inside `output` and `permanent` now define persistent
 lexical locals. Model authors can move presentation-only fonts, colors, positions and other
@@ -1697,6 +1840,18 @@ operation. The measurements do not force GPU completion and are not GPU executio
 
 Manual regression models are available in `Tests/Chart Tests/models` (`Chart Varying Datalist Regression`, `Chart Duplicate Names Regression`, `Chart Dynamic Body Regression`).
 
+#### Chart quality and Java2D rendering
+
+The chart facet `quality:` (0.1–2.0) overrides the **Chart raster scale** preference for an
+individual chart where the renderer uses a raster. The preference scales raster-backed charts
+relative to device resolution and is capped by image dimensions and memory limits. Native Java2D
+JFreeChart rendering draws directly to the target rather than applying this raster scale; recent
+Java2D work improves chart responsiveness and rendering quality through direct drawing and safer
+offscreen updates. Chart typography and logical layout are independent of raster scale. See the
+[chart resolution guide](gama.documentation/files/input/markdown/DisplayCoordinates.md#chart-resolution-and-typography)
+([`95d43a764`](https://github.com/gama-platform/gama/commit/95d43a764),
+[`b6edd174a`](https://github.com/gama-platform/gama/commit/b6edd174a)).
+
 #### Chart legends, bounds and default properties
 
 - Chart legends support left/right/top/bottom placement, hidden (`none`) and anchored
@@ -1825,6 +1980,18 @@ Clients can also send `{"type":"server_log","enabled":true}` (or `false`) to tog
 
 The GUI logging preference also takes effect immediately, without restarting GAMA or disconnecting clients. The log-directory preference still applies to the next server run.
 
+#### Desktop Server Console
+
+The **Server Console** view is available in both the modeling and simulation perspectives,
+separate from experiment consoles. It shows server state, port, connected clients, requests and
+errors in a bounded journal that persists while the view is closed and across GUI server restarts.
+Toolbar controls start, stop and restart the desktop server, change its port, list clients, and
+search, pause, clear or export the displayed console. Console pause affects only output, not the
+server or experiment; stopping disconnects clients but leaves the experiment open. These are local
+desktop controls, not remote administration commands. See the
+[server console guide](gama.headless/README.md#desktop-server-console-and-controls)
+([`48e7ddc61`](https://github.com/gama-platform/gama/commit/48e7ddc61)).
+
 #### GAMA Server: desktop server disabled by default
 
 The `pref_enable_server` preference now defaults to `false`, so GAMA does not start the desktop WebSocket server automatically for a new preference store. Enable **Enable GAMA server mode** in **Preferences > Network > Server mode**, or set `-Dpref_enable_server=true` in `Gama.ini`. Existing saved preference values and explicit JVM system properties retain their precedence.
@@ -1887,6 +2054,8 @@ The `pref_enable_server` preference now defaults to `false`, so GAMA does not st
 - Network disconnect closes the agent's registered servers, removes registrations and closes
   TCP sockets before readers, avoiding shutdown hangs and leaked connections
   ([`8afa0128d`](https://github.com/gama-platform/gama/commit/8afa0128d), #483).
+- Servers accept UTF-8 JSON requests in binary WebSocket frames as well as text frames
+  ([`4297e6392`](https://github.com/gama-platform/gama/commit/4297e6392)).
 
 #### Spatial routing and movement performance
 
