@@ -39,6 +39,9 @@
 			<id>gama-shared-models</id>
 			<url>https://gama-platform.org/gama.shared.models/</url>
 			<layout>p2</layout>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 
