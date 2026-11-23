@@ -150,9 +150,16 @@ jobs:
           output: gama.p2site/category.xml
 
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS -Dmaven.resolver.validation=MILD
+        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS $BUILD_CACHE_ARGUMENT -Dmaven.resolver.validation=MILD
         env:
           MVN_EXTRA_ARGUMENTS: ${{ inputs.mvn_extra_arguments }}
+          # The maven-build-cache extension breaks non-SNAPSHOT builds: Tycho injects each bundle's
+          # nested Bundle-ClassPath jars as system-scope dependencies on the bundle itself
+          # (same GAV once the version has no qualifier), and the extension then fails with
+          # "Checksum for project is already calculating. Is there a cyclic dependencies?".
+          # Only pass the flag when the cache must be off, so build.sh's per-module
+          # "-Dmaven.build.cache.enabled=false" for annotations/processor is never overridden.
+          BUILD_CACHE_ARGUMENT: ${{ (!inputs.USE_BUILD_CACHE || inputs.IS_STABLE_RELEASE) && '-Dmaven.build.cache.enabled=false' || '' }}
 
       - uses: ./.github/actions/maven-dependency-cache
         name: Save Maven Dependency Cache
