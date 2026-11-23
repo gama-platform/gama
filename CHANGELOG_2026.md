@@ -82,9 +82,9 @@ for example `create person(age: 20) number: 10;`.
 and lights, and `device:` for events. The compiler still accepts their former `type:` selector,
 but emits a deprecation warning. For inspection, use `inspect` for agents or `browse` for tables
 instead of specifying `type: agent` or `type: table`. Other, genuinely type-related `type:`
-facets retain their meaning. These selector migrations are performed during compilation, not
-necessarily rewritten in the source by the syntax converter; update the declarations themselves
-to remove the warnings. Standalone experiment files can also start with pragmas, like model files
+facets retain their meaning. The syntax converter rewrites these selectors in source, and also
+renames `content_coordinates:` to `referential:` on `graphics` and `overlay` layers.
+Standalone experiment files can also start with pragmas, like model files
 ([`454eee6ce`](https://github.com/gama-platform/gama/commit/454eee6ce), #1312;
 [`c1217803a`](https://github.com/gama-platform/gama/commit/c1217803a)).
 

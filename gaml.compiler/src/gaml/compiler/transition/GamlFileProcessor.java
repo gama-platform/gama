@@ -22,7 +22,7 @@ import gama.dev.DEBUG;
  *
  * <p>
  * By default the processor is pre-loaded with all built-in transformers
- * (one for each Python migration script):
+ * (including the former Python migration scripts):
  * </p>
  * <ol>
  * <li>{@link FixDiffuseVar} – replaces {@code diffuse var:} with
@@ -47,6 +47,8 @@ import gama.dev.DEBUG;
  *       {@code do name}</li>
  * <li>{@link FixListOf} – replaces {@code list of: T} with
  *       {@code list<T>}</li>
+ * <li>{@link FixLegacyFacets} – migrates deprecated selectors and layer referentials
+ *       after the older syntax rewrites</li>
  *
 </ol>
 *
@@ -188,6 +190,7 @@ public class GamlFileProcessor {
 		transformers.add(new FixDoAction());
 		transformers.add(new FixDoParentheses());
 		transformers.add(new FixActionArguments());
+		transformers.add(new FixLegacyFacets());
 	}
 
 	/**

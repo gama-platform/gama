@@ -1507,6 +1507,25 @@ do my_action with: (agents: ag, values: [1, 2, 3]);
 
 ---
 
+### Deprecated selector and layer facets
+
+**Convert to GAMA 2026 syntax...** updates these facets in `.gaml` and `.experiment` files:
+
+| Declaration | Before | After |
+|---|---|---|
+| Experiment | `experiment demo type: gui` | `experiment demo mode: gui` |
+| Display | `display scene type: opengl` | `display scene renderer: opengl` |
+| Chart or light | `type:` | `kind:` |
+| Event | `type:` | `device:` |
+| Inspector | `inspect target type: agent` | `inspect target` |
+| Table browser | `inspect target type: table` | `browse target` |
+| Graphics or overlay layer | `content_coordinates:` | `referential:` |
+
+Genuine typing facets are not renamed. The converter leaves duplicate or conflicting facets for
+manual review, and applies this pass only if the file parses after the earlier syntax rewrites.
+Changes that depend on model intent, such as moving experiment attributes into output blocks or
+adjusting display coordinates, still require manual migration.
+
 ### 1.6 `overlay` layers — consistent position, size and contents
 
 The `position` and `size` facets of `overlay` are now interpreted identically by 2D (java2D) and 3D (opengl) displays, and follow their documentation (issues #354, #589, #656, #997):
