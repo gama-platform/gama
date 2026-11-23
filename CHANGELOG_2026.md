@@ -75,41 +75,51 @@ and the discovery and installation of optional extensions, plugins and models.
 
 **GAML 2026 is not source-compatible with all GAMA 2025-06 models.** The rewritten grammar
 standardizes declarations, action signatures/calls and named arguments, removes several legacy
-forms, and separates display/experiment identifiers from their visible titles. This is a
+forms, and supports distinct display/experiment identifiers and visible titles. This is a
 model-source migration, not just an internal compiler refactoring: older models may fail to
 parse or compile until converted.
 
-The main changes are listed below. The translator normalizes supported syntax forms but retains
-quoted display and experiment names for manual review:
+The main changes are listed below. Parenthesized action signatures/calls, generic list types and
+unbraced arrow expressions already existed in 2025-06. The translator normalizes supported syntax
+forms but retains quoted display and experiment names for manual review:
 
 | Area | Older syntax | GAML 2026 syntax |
 |---|---|---|
 | Action declaration, including no arguments | `action move { ... }` | `action move() { ... }` |
 | Typed action declaration | `int compute { return 1; }` | `int compute() { return 1; }` |
 | Action arguments and defaults | `action move { arg distance type: float default: 1.0; ... }` | `action move(float distance <- 1.0) { ... }` |
-| No-argument action call | `do move;` or `do action: move;` | `do move();` |
-| Named argument lists | `do move with: [distance::2.0];` | `do move with: (distance: 2.0);` (or `do move(distance: 2.0);`) |
-| Typed local declaration | `let n type: int value: 5;` | `int n <- 5;` |
+| No-argument action call | `do move;` or `do action: move;` | `do move();` (bare `do move;` still parses with a warning) |
+| Named action arguments | `do move with: [distance::2.0];` | `do move(distance: 2.0);` |
+| Block-style action call | `do move { arg distance value: 2; }` | `do move(distance: 2);` (review manually) |
+| Capturing an action result | `do count returns: n;` | `int n <- self.count();` (review return type and receiver) |
+| Legacy action operator | `self calculate [factor::2]` or `calculate(self, [factor::2])` | `self.calculate(factor: 2)` (review manually) |
+| Action return type | `action count type: int { ... }` | `int count() { ... }` (review manually) |
+| Typed local declaration | `let n type: int value: 5;` | `int n <- 5;` (optional modernization) |
 | Assignment | `set n value: 5;` | `n <- 5;` |
-| List content type | `list of: int` | `list<int>` |
+| List content type | `list values of: int;` | `list<int> values;` (optional modernization) |
 | Computed expression after `->` | `float doubled -> {value * 2};` | `float doubled -> value * 2;` |
-| Diffusion target | `diffuse var: heat ...;` | `diffuse heat ...;` |
-| State-transition target | `transition to: idle ...;` | `transition idle ...;` |
+| Explicit default facets | `if condition: ready { ... }`, `return value: x;`, `solve equation: eq;` | `if ready { ... }`, `return x;`, `solve eq;` (review manually) |
 | Image display layer | `image "background.png";` inside a display | `picture "background.png";` |
-| Display/experiment name and label | `display "3 Simulations" { ... }` | `display _3_Simulations title: "3 Simulations" { ... }` (same separation for `experiment`) |
+| Display/experiment name and label | `display "3 Simulations" { ... }` | `display _3_Simulations title: "3 Simulations" { ... }` (optional; quoted names remain accepted) |
 
-Parentheses are required on action **declarations**, even when empty; former body-level `arg`
-declarations are compilation errors. Write typed arguments and optional `<-` defaults in the
-signature. The translator also normalizes older call/declaration spellings; **not every old
-form in the table is rejected**: some legacy calls/facets remain accepted, and
+Parentheses are required on explicit `action` declarations, even when empty; older typed actions
+without them can still be accepted with a warning. Former body-level `arg` declarations are
+compilation errors. Write typed arguments and optional `<-` defaults in the signature. The
+translator normalizes common older spellings and flags unsupported forms; **not every old
+form in the table is rejected**: typed `let` / `list ... of:` forms remain supported, and
 `create ... with:` is deprecated rather than removed. Functional creation is also available,
 for example `create person(age: 20) number: 10;`.
+The converter adds parentheses to explicit `action` headers, but leaves ambiguous typed headers
+without parentheses for manual review.
+`diffuse var: heat` remains valid, and FSM transitions still require `transition to: idle`.
 
 **Selector facets:** use `mode:` for experiments, `renderer:` for displays, `kind:` for charts
 and lights, and `device:` for events. The compiler still accepts their former `type:` selector,
 but emits a deprecation warning. For inspection, use `inspect` for agents or `browse` for tables
 instead of specifying `type: agent` or `type: table`. Other, genuinely type-related `type:`
-facets retain their meaning. The syntax converter rewrites these selectors in source, and also
+facets retain their meaning. The [migration table](MIGRATION_GUIDE_2026.md#replacing-type-facets)
+shows every selector replacement, action return and argument types, and facets to keep.
+The syntax converter rewrites these selectors in source, and also
 renames `content_coordinates:` to `referential:` on `graphics` and `overlay` layers.
 It replaces `permanent` blocks with `output of: experiment` and adds `of: experiment` when a
 parameter's experiment attribute can be identified without a possible simulation-name collision.
@@ -124,9 +134,12 @@ Standalone experiment files can also start with pragmas, like model files
 ([`454eee6ce`](https://github.com/gama-platform/gama/commit/454eee6ce), #1312;
 [`c1217803a`](https://github.com/gama-platform/gama/commit/c1217803a)).
 
-The `with:` change concerns **argument passing**, not ordinary maps/pairs: map literals still
-use `::`. Removing braces after `->` concerns the outer expression wrapper, not normal statement
-blocks or point literals. Use `title:` when a human-readable label differs from the identifier;
+The action `with:` change concerns **action argument passing**, not ordinary maps/pairs: map literals
+still use `::`, and `user_command`, `create` and exploration `with:` values are preserved.
+The converter flags action `with:` facets for manual review: they may represent a legacy argument
+list or an actual argument named `with`. It also flags block-style calls and argument declarations
+whose facets cannot be safely moved. Removing braces after `->` concerns the outer expression wrapper, not normal
+statement blocks or point literals. Use `title:` when a human-readable label differs from the identifier;
 it is not necessary to add a title to every display or experiment.
 
 **Migrating existing models:** back up or commit your model sources, select the relevant
@@ -197,7 +210,7 @@ inheritance, virtual classes and other examples.
   legacy `create ... with:` is deprecated. **Migration:** the former `set variable value: ...`
   assignment syntax is removed; use `variable <- ...`. The
   [syntax migration reference](MIGRATION_GUIDE_2026.md#1-gaml-language-syntax-changes)
-  also documents argument-list, arrow-block, `diffuse` / `transition`, `picture` and
+  also documents action argument, arrow-block, `picture` and
   display/experiment-title changes
   ([`4d21b93da`](https://github.com/gama-platform/gama/commit/4d21b93da),
   [`f793a45f6`](https://github.com/gama-platform/gama/commit/f793a45f6)).
@@ -216,7 +229,8 @@ inheritance, virtual classes and other examples.
   [`9bed69341`](https://github.com/gama-platform/gama/commit/9bed69341), #1195;
   [`2637ba18b`](https://github.com/gama-platform/gama/commit/2637ba18b), #178).
 - Actions can be invoked on container/access expressions. Arguments evaluate in the caller's
-  scope and declaration order; temporary variables resolve in remote contexts, nested iterators
+  scope; avoid relying on evaluation order between argument expressions with side effects. Temporary
+  variables resolve in remote contexts, nested iterators
   restore `each`, and failing action calls in display events no longer fail silently
   ([`0543caf9c`](https://github.com/gama-platform/gama/commit/0543caf9c), #1164;
   [`cea9bf892`](https://github.com/gama-platform/gama/commit/cea9bf892),

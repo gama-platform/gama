@@ -1,7 +1,9 @@
 # GAMA 2026 — Migration Guide
 
 > **Who is this for?** Model authors, plugin developers and contributors upgrading to GAMA 2026.  
-> **What's covered?** Every breaking change in Java APIs, GAML syntax, and architecture — with before/after examples throughout.
+> **Baseline:** the stable [GAMA 2025-06 release (`2025.06.4`)](https://github.com/gama-platform/gama/releases/tag/2025.06.4).
+> Examples distinguish required fixes, deprecated syntax and optional modernization. See the
+> [changelog](CHANGELOG_2026.md) for the broader release history.
 
 ---
 
@@ -12,6 +14,10 @@
 | [Part 0](#part-0-changelog-at-a-glance) | Changelog at a glance |
 | [Part 1](#part-1-whats-new-and-why-it-matters) | What's new and why it matters |
 | [Part 2](#part-2-migration-reference) | Step-by-step migration reference |
+| [`type:` replacements](#replacing-type-facets) | Selector facets, action return and argument types, and typing facets to retain |
+| [Automatic conversion](#10-convert-models-automatically-first) | Context-menu converter, review comments and limitations |
+| [Action calls and declarations](#action-declarations-calls-and-legacy-statements) | Required fixes versus optional syntax modernization |
+| [Operators and data](#110-operator-and-data-semantics) | SQL, XML, Unicode, matrices and reproducibility |
 | [Experiment and simulation ownership](#experiment-and-simulation-ownership) | Populations, commands, outputs and case-by-case modeler migration guide |
 | [Ownership cookbook](#cookbook-the-most-frequent-fixes-in-a-few-lines) | Minimal before/after fixes: simulation variables in experiments, experiment parameters, populations, displays, commands |
 | [Presentation variables](#presentation-variables-in-experiments-migrate-to-output-locals) | Output locals, ownership, lifetime and inheritance |
@@ -27,9 +33,9 @@ A high-level summary of every area that changed. Use this to quickly assess what
 
 | Change | Impact |
 |---|---|
-| Upgraded to **JDK 25** and **Eclipse 2026-03** | Rebuild required; modern Java syntax now available |
+| **JDK 25** runtime/build and **Eclipse 2026-03** | Rebuild plugins; the annotation processor remains Java 21-compatible |
 | New **`gama.api`** module | Public interfaces decoupled from `gama.core` implementation |
-| **Factory pattern** enforced for all core types | `new GamaList()`, `new GamaPoint()` etc. are gone |
+| Some constructors are no longer public | Replace direct `GamaPoint` and `GamaMap` construction with factories |
 | **`Cast` utility class** reduced | Casting delegated to individual `IType` implementations |
 | **`AbstractPopulation`** centralises population logic | `createAgentAt` renamed to `createAgentAtIndex` |
 | **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
@@ -55,8 +61,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | New **`class`** and **`object`** keywords | New OOP constructs available in models |
 | Rewritten Xtext parser & AST | Faster compilation; some syntax constructs changed |
 | Arrow braces removed | `-> { ... }` becomes `-> ...` |
-| `with:` argument list syntax changed | `[a::1]` becomes `(a:1)` |
-| `diffuse var:` and `transition to:` removed | Use `diffuse` and `transition` directly |
+| Action calls with legacy `with:` arguments | `do move with: [distance::2]` becomes `do move(distance: 2)` |
 | `image` layer renamed to `picture` | Update display blocks |
 | Displays/experiments can separate identifiers and titles | Use `title:` when the UI label differs; quoted names remain accepted |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
@@ -71,21 +76,23 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
 | Explicit output owners and persistent presentation locals (draft PR) | Keep model/controller state as attributes; move output-only styling into `output` instead of relying on implicit experiment lookup |
 | Explicit experiment/simulation contexts (unreleased) | Select a simulation before accessing its populations; review command owners and batch facet name resolution |
-| Action signatures in parentheses; `arg` and `set ... value:` removed | `action move(float d <- 1.0) { ... }`, `do move();`, `n <- 5;` (applied by the translator) |
-| `type:` selector facets deprecated | `mode:` (experiments), `renderer:` (displays), `kind:` (charts, lights), `device:` (events) |
+| Explicit `action` signatures use parentheses; `arg` and `set ... value:` removed | `action move(float d <- 1.0) { ... }`, `n <- 5;` |
+| [`type:` selector facets deprecated](#replacing-type-facets) | `mode:`, `renderer:`, `kind:` or `device:`, depending on the statement |
 | Simulation `pause` / `resume` deprecated, `paused` read-only | `ask experiment { do pause(); }`, `experiment.is_paused` |
 | `pref_synchronize_quadtree`, `pref_parallel_simulations(_all)` removed | Delete them; use `parallel:` and `group_parameter_sets:` on experiments |
 | `ceil` returns `int`; geometry `envelope` attribute deprecated | Cast where a float is needed; use `envelope(geom)` |
-| SQL `select` returns a dataframe; `insert` uses `data:` | Update result indexing and insertion calls |
+| SQL skill renamed to `sql`; `select` returns a dataframe | Update `SQLSKILL`, result indexing and `insert` calls |
+| XML contents, Unicode indices, matrix append and sampling changed | [Review data and reproducibility](#110-operator-and-data-semantics) |
 | Playable packages use `.gamx`; macOS camera modifier is CMD | Rename former playable `.gamp` packages |
 | Python client 2.0: `GamaBaseClient` → `GamaAsyncClient` | Use `_async` / `_awaitable` methods |
+| TypeScript client 3.0 | Use `closeConnection()` and consume structured command answers |
 | `gama.models` extension point removed | Ship projects under `models/<category>/` in plugins |
 
 ## Engine, UI, and Graphics
 
 | Change | Impact |
 |---|---|
-| New **OpenGL 4.1** display plugin (`gama.ui.display.opengl4`) | Modern shader-based rendering; legacy OpenGL 2 pipeline removed |
+| New **OpenGL 4.1** display plugin (`gama.ui.display.opengl4`) | Shader-based renderer available alongside the existing `opengl` renderer |
 | New **launching overlay** | Visual improvement only, no code changes needed |
 | Major model-editing addition: **Previous versions** | Browse, compare and restore saved workspace versions; no GAML migration required |
 | Improved **concurrency** support | Internal threading improved; some scheduling APIs changed |
@@ -181,7 +188,9 @@ configuration preferences without overwriting existing user settings.
 
 ## 1. JDK 25 & Eclipse 2026-03
 
-GAMA 2026 moves entirely to **Java 25** and **Eclipse 2026-03 DSL**. This unlocks modern language features that are now used throughout the engine:
+GAMA's runtime and build use **Java 25** and **Eclipse 2026-03**. The annotation processor and
+annotations remain compatible with **Java 21**, the JDK used by Eclipse. Java 25 enables modern
+language features used throughout the engine:
 
 - **Pattern matching for `instanceof`** — eliminates redundant casts:
   ```java
@@ -193,7 +202,8 @@ GAMA 2026 moves entirely to **Java 25** and **Eclipse 2026-03 DSL**. This unlock
 - **Records, sealed classes, switch expressions** — used internally for cleaner data modelling.
 - **Superior concurrency** — virtual threads and structured concurrency improve parallel simulation scheduling.
 
-> **Action needed:** Recompile all plugins against JDK 25. No source changes are required solely for this upgrade, but you will benefit from updating your own code too.
+> **Action needed:** Recompile runtime plugins against JDK 25. Keep the annotation processor compatible
+> with Java 21; source changes may still be necessary for the API changes described below.
 
 ---
 
@@ -310,31 +320,31 @@ Several syntax shortcuts have also been cleaned up. See [Part 2, Section 1](#1-g
 
 ## 4. New OpenGL 4.1 Display Plugin
 
-The new **`gama.ui.display.opengl4`** plugin is a ground-up rewrite of the rendering engine, built on the **OpenGL 4.1 Core Profile**:
+The new **`gama.ui.display.opengl4`** plugin provides an **OpenGL 4.1 Core Profile** renderer:
 
-- All rendering now uses **shaders** (`.vert`/`.frag` files), **VAOs**, and **VBOs**.
-- The legacy OpenGL 2 fixed-function pipeline (`glBegin`/`glEnd`, `glMatrix*`) is gone.
-- The **JOML** library replaces the legacy matrix stack.
-- Result: higher frame rates, better polygon throughput, lower GPU memory usage.
+- `opengl4` uses **shaders**, **VAOs** and **VBOs** instead of fixed-function APIs.
+- The existing `opengl` renderer remains available; displays do not have to switch to `opengl4`.
 
-> **Action needed for display plugin authors:** Rendering code using the legacy OpenGL 2 API must be rewritten against the new shader-based pipeline.
+> **Action needed for display plugin authors:** Review renderer-specific code if integrating with
+> `opengl4`; code targeting the existing `opengl` renderer is not automatically required to use it.
 
 ---
 
 ## 5. New Architecture: the `gama.api` Module
 
-The single biggest architectural change is the introduction of **`gama.api`** — a dedicated module containing only public interfaces and contracts, with zero implementation code.
+The introduction of **`gama.api`** separates many shared contracts and types from `gama.core`.
 
 **Before (GAMA 2025 and earlier):**
 - Public interfaces and their implementations lived side by side in `gama.core`.
 - Plugin developers ended up importing implementation classes directly.
 
 **After (GAMA 2026):**
-- `gama.api` contains only interfaces (`IAgent`, `IPoint`, `IList`, …).
-- `gama.core` contains the implementations.
-- Plugin developers **only depend on `gama.api`**.
+- `gama.api` contains interfaces (`IAgent`, `IPoint`, `IList`, …), as well as implementation
+  classes and factories needed by the shared API.
+- Other runtime implementations remain in `gama.core`. Plugins can depend on `gama.api` for
+  shared contracts and also on `gama.core` when they need its implementation classes.
 
-This makes the platform significantly more stable: implementation classes can change freely without breaking plugin code.
+Update imports and bundle dependencies according to the classes the plugin actually uses.
 
 See [Part 2, Section 5](#5-package-mapping-gamaapi-module) for the full import mapping.
 
@@ -381,6 +391,44 @@ Work through each section that applies to your plugin. Each section is self-cont
 
 These changes affect `.gaml` model files. Simple syntax replacements can often be applied globally;
 changes involving ownership, state or presentation variables require reviewing their uses.
+
+### Replacing `type:` facets
+
+The replacement depends on **what `type:` means**. These selector facets are accepted for
+compatibility but produce deprecation warnings. The [converter](#10-convert-models-automatically-first)
+renames them when the file parses and marks duplicate or conflicting selectors for review.
+
+| Declaration | GAMA 2025-06 | GAMA 2026 |
+|---|---|---|
+| Experiment mode | `experiment main type: gui { ... }` | `experiment main mode: gui { ... }` |
+| Display renderer | `display scene type: opengl { ... }` | `display scene renderer: opengl { ... }` |
+| Chart kind | `chart "Population" type: series { ... }` | `chart "Population" kind: series { ... }` |
+| Light kind | `light "Sun" type: #direction;` | `light "Sun" kind: #direction;` |
+| Event device | `event #mouse_click type: "default" { ... }` | `event #mouse_click device: "default" { ... }` |
+| Agent inspector | `inspect "People" value: people type: agent;` | `inspect "People" value: people;` |
+| Table browser | `inspect "People" value: people type: table;` | `browse "People" value: people;` |
+
+`browse ... type: agent` and `browse ... type: table` follow the same rule: select `inspect`
+or `browse` according to the value, then remove `type:`. Unknown selector values require manual review.
+
+Other `type:` facets describe a **value's actual type**, not a selector:
+
+| Use | Migration |
+|---|---|
+| Action return type | `action count type: int { ... }` → `int count() { ... }`; review container `of:` / `index:` as well |
+| Body-level action argument | `arg distance type: float default: 1.0;` → `float distance <- 1.0` in the action signature |
+| Local variable | `let n type: int value: 5;` remains supported; `int n <- 5;` is an optional shorter form |
+| Parameter or user input | Keep the genuine typing facet, e.g. `parameter "Size" var: size type: int;` or `user_input "Size" returns: size type: int <- 10;` |
+
+The converter handles common body-level `arg` and simple local declarations; it preserves and flags
+legacy action return types and argument facets it cannot safely convert. Complex legacy `let`
+declarations remain valid and are left unchanged when their types or facets are ambiguous.
+It adds parentheses to explicit `action` declarations but leaves typed headers without parentheses
+alone, since they can resemble non-action blocks.
+For example, `arg values type: list of: int;`
+becomes `list<int> values` in the signature; `arg weights type: map index: string of: float;`
+can be written `map<string, float> weights`. Review `optional:` and defaults separately rather
+than discarding them. Do not globally replace every occurrence of `type:`.
 
 ### Experiment and simulation ownership
 
@@ -740,6 +788,25 @@ their cross-owner references depend on model behavior and cannot be rewritten re
 - For a standard simulation parameter (`of: simulation`), its `on_change:` facet or `{ ... }`
   callback block already runs in the `simulation` context: `ask simulation` is no longer needed
   there, whereas calling an experiment action like `update_outputs()` requires `experiment.`.
+- Parameter defaults cannot call actions, including when a default is inherited from the targeted
+  variable. Supply a simulation-independent expression explicitly in the parameter declaration,
+  or redesign initialization if the action needs a simulation.
+
+```gaml
+// Before: the parameter inherits an action call as its default
+global {
+    int herd_size <- initial_herd_size();
+    int initial_herd_size() { return 50; }
+}
+experiment herd mode: gui {
+    parameter "Herd size" var: herd_size;
+}
+
+// After: use an equivalent simulation-independent parameter default
+experiment herd mode: gui {
+    parameter "Herd size" var: herd_size <- 50;
+}
+```
 
 *Example — `Snake.gaml`, `Declaration of Parameters.gaml`, and `Parameters and Commands.gaml` (targeting experiment attributes):*
 ```gaml
@@ -1623,8 +1690,8 @@ not a cell agent.
 
 ### 1.0 Convert models automatically first
 
-Most syntax changes of this section are applied by the bundled translator. Commit or back up your
-models, select projects, folders or files in the navigator, and choose **Convert to GAMA 2026
+The bundled translator applies common syntax changes, not every possible legacy spelling. Commit or
+back up your models, select projects, folders or files in the navigator, and choose **Convert to GAMA 2026
 syntax...**. It rewrites `.gaml` and `.experiment` files **in place** (editor Undo cannot revert it).
 Besides syntax, the translator replaces `permanent` with `output of: experiment` and adds
 `of: experiment` when it can identify an unambiguous experiment parameter. Quoted experiment and
@@ -1639,20 +1706,21 @@ their experiments. While comments remain, rerunning does not duplicate them; aft
 the converter again will add applicable reminders again. The menu is available for files requiring
 either conversion or review, including mixed selections.
 
-The converter only edits `.gaml` and `.experiment` files. Java plugins, Python clients, saved
+The converter only edits `.gaml` and `.experiment` files. Java plugins, Python and TypeScript clients, saved
 simulations, OBJ data and packaged models must be reviewed separately; the general reminder points
 to this guide but does not inspect or convert those artifacts.
 
 ### Action declarations, calls and legacy statements
 
-Action signatures are now declared in parentheses, even when empty. Body-level `arg` declarations
-are compilation errors.
+Explicit `action` declarations require parentheses, even when empty. Older typed actions without
+parentheses can still be accepted with a warning; body-level `arg` declarations are compilation
+errors. Parenthesized signatures already existed in GAMA 2025-06.
 
 ```gaml
 // Before
 action move {
-    arg distance type: float default: 1.0;
     arg target type: point;
+    arg distance type: float default: 1.0;
     location <- location + (target - location) * distance;
 }
 int compute { return 1; }
@@ -1664,32 +1732,54 @@ action move(point target, float distance <- 1.0) {
 int compute() { return 1; }
 ```
 
-Calls, assignments, declarations and creation have shorter canonical forms:
+These examples show required changes alongside optional modernization:
 
 ```gaml
 // Before
-do move with: [target::{0, 0}];
+do move with: [target::{0, 0}];           // legacy action arguments
 do action: move with: [target::{0, 0}];
 do move with: [target::{0, 0}, distance::2.0];
 set n value: 5;                   // removed: compilation error
-let n type: int value: 5;
-list values of: int;
+let n type: int value: 5;         // still supported
+list values of: int;              // still supported
 create people number: 10 with: [age::20];   // deprecated, still accepted
 
 // After
 do move(target: {0, 0});
 do move(target: {0, 0});
-do move(target: {0, 0}, distance: 2.0);   // or: do move with: (target: {0, 0}, distance: 2.0);
+do move(target: {0, 0}, distance: 2.0);
 n <- 5;
-int n <- 5;
-list<int> values;
-create people(age: 20) number: 10;
+int n <- 5;                        // optional modernization
+list<int> values;                  // optional modernization
+create people(age: 20) number: 10; // preferred; review before changing
 ```
+
+`do move;` still parses with a warning; `do move();` is preferred. Direct argument facets such as
+`do move distance: 2;` also warn: use `do move(distance: 2);`. The converter marks remaining
+facet-based calls for review rather than rewriting `with:` automatically. The functional call and
+generic list forms were already available in 2025-06. Arguments now evaluate in the caller's scope;
+do not rely on an evaluation order between argument expressions with side effects.
+
+Some explicit default facets accepted by the 2025-06 grammar are no longer accepted in those
+positions. The converter flags these for manual correction when found:
+
+```gaml
+// Before                         // After
+if condition: ready { ... }       // if ready { ... }
+return value: result;             // return result;
+solve equation: growth;           // solve growth;
+experiment name: main type: gui { ... } // experiment main mode: gui { ... }
+```
+
+Likewise, remove the leading `name:` from species, grid, experiment, display and action headers.
+Other constructs, including reflexes and `let`, can still use `name:` as a facet; it is not
+globally removed.
 
 ### 1.1 Arrow (`->`) expressions — braces removed
 
 The outer curly braces around the expression of a `->` (computed attribute) are no longer valid.
-This concerns only the expression wrapper, not statement blocks or point literals.
+This concerns only the expression wrapper, not statement blocks or point literals. The unbraced
+form already worked in 2025-06.
 
 ```gaml
 // Before
@@ -1699,19 +1789,11 @@ float doubled -> {value * 2};
 float doubled -> value * 2;
 ```
 
-### 1.2 `diffuse var:` and `transition to:` — keyword removed
+### 1.2 `diffuse var:` and `transition to:` remain valid
 
-The `var:` and `to:` facets were redundant and have been removed.
-
-```gaml
-// Before
-diffuse var: heat;
-transition to: idle;
-
-// After
-diffuse heat;
-transition idle;
-```
+No migration is needed for either facet. `diffuse var: heat ...;` remains valid (`var:` may also
+be omitted), and an FSM transition still requires `transition to: idle ...;`. The converter leaves
+both unchanged.
 
 ### 1.3 `image` display layer → `picture`
 
@@ -1731,7 +1813,8 @@ display my_disp {
 
 ### 1.4 Display and experiment identifiers and titles
 
-Displays and experiments now enforce a strict separation between the **programmatic identifier** (used in code) and the **UI label** (shown to the user).
+Displays and experiments can use a **programmatic identifier** and a separate **UI label**.
+Quoted names remain accepted; renaming them is optional.
 
 ```gaml
 // Before
@@ -1743,40 +1826,76 @@ display _3_Simulations title: "3 Simulations" { ... }
 
 > **Rule of thumb:** Prefer a valid identifier (no spaces, no special characters) immediately after `display` or `experiment`, and use `title:` for the human-readable label. Quoted names remain accepted, and a `title:` is only needed when the label differs from the identifier. The converter keeps quoted names and adds a review comment. If you rename one manually, check for collisions and update references, including in headless scripts and GAMA Server clients.
 
-### 1.5 `with:` argument list syntax
+### 1.5 Action `with:` arguments and map-valued facets
 
-The map-literal syntax for argument passing has been replaced by a cleaner parenthesised syntax.
+For action calls, move legacy `with:` arguments into the call itself:
 
 ```gaml
 // Before
 do my_action with: [agents::ag, values::[1, 2, 3]];
 
 // After
-do my_action with: (agents: ag, values: [1, 2, 3]);
+do my_action(agents: ag, values: [1, 2, 3]);
 ```
 
-**Key differences:**
-- Outer `[...]` → `(...)`
-- Double-colon `::` → single colon `:`
+The converter leaves action `with:` facets intact and adds a review comment: without resolving the
+action's signature, it cannot distinguish a 2025-06 argument list from an actual argument named
+`with`. In the latter case use `do my_action(with: [key::value]);` instead. Review computed keys,
+extra facets and positional arguments as well. Parenthesized calls already existed in 2025-06.
 
-The converter only rewrites bracketed lists whose entries are unambiguous named arguments.
-Other `with:` values, including exploration lists of parameter maps, are preserved and flagged
-for review. Ordinary map/pair literals and nested pairs keep `::`.
+Older block-style calls also need their `arg` values moved into the parentheses:
+
+```gaml
+// Before
+do move { arg distance value: 2; }
+
+// After
+do move(distance: 2);
+```
+
+The converter flags these calls for review rather than rewriting the block.
+
+The former `returns:` facet no longer captures a `do` result. Assign the action call instead,
+using the action's return type and the appropriate receiver:
+
+```gaml
+// Before
+do count returns: n;
+
+// After
+int n <- self.count();
+```
+
+The converter preserves and flags `returns:` for review.
+
+Older action-operator forms also need an explicit receiver and functional arguments:
+
+```gaml
+// Before
+int n <- self calculate [factor::2];
+int m <- calculate(self, [factor::2]);
+
+// After
+int n <- self.calculate(factor: 2);
+int m <- self.calculate(factor: 2);
+```
+
+The converter flags possible legacy calls involving `self` or `myself`; check other receivers too.
+
+This is **not** a global `with:` replacement. `user_command ... with: [arg::value]` still takes
+a map, and exploration `with:` can contain lists of parameter maps. `create ... with:` also
+accepts a map, although it is deprecated in favor of functional creation. Leave these maps and
+their `::` pairs intact unless you deliberately migrate the enclosing statement.
 
 ---
 
-### Deprecated selector and layer facets
+### Other layer and ownership facets
 
-**Convert to GAMA 2026 syntax...** updates these facets in `.gaml` and `.experiment` files:
+The [selector table](#replacing-type-facets) lists `type:` replacements. **Convert to GAMA 2026
+syntax...** also updates these constructs in `.gaml` and `.experiment` files:
 
 | Declaration | Before | After |
 |---|---|---|
-| Experiment | `experiment demo type: gui` | `experiment demo mode: gui` |
-| Display | `display scene type: opengl` | `display scene renderer: opengl` |
-| Chart or light | `type:` | `kind:` |
-| Event | `type:` | `device:` |
-| Inspector | `inspect target type: agent` | `inspect target` |
-| Table browser | `inspect target type: table` | `browse target` |
 | Graphics or overlay layer | `content_coordinates:` | `referential:` |
 | Experiment-owned output | `permanent { ... }` | `output of: experiment { ... }` |
 | Experiment attribute parameter | `parameter "Setting" var: setting;` | `parameter "Setting" var: setting of: experiment;` |
@@ -1796,8 +1915,9 @@ Global skills or architectures also require review because they can contribute s
 Explicit owners are never overridden. `permanent` blocks retain their facets, contents and
 experiment-wide lifetime when rewritten.
 The converter also adds file-level reminders for ownership, display coordinates, container and grid
-semantics, charts, controls, removed preferences, SQL and operators when relevant constructs are
-present. It marks each overlay and each statement using `#display_width` or `#display_height` for
+semantics, charts, controls, removed preferences, SQL, XML, string indices, matrix concatenation,
+reproducibility and operators when relevant constructs are present. It marks each overlay and each
+statement using `#display_width` or `#display_height` for
 coordinate review. On simulation-owned outputs and commands, it also flags unqualified names that
 match experiment attributes or actions declared in the file, as well as common experiment control
 names. It also flags names matching same-file global attributes, actions or populations in
@@ -2003,6 +2123,11 @@ float is required (`float(ceil(x))`); `ceiling` is an equivalent spelling.
 **Geometry `envelope` attribute is deprecated.** Use the operator form, e.g. `envelope(shape)` instead
 of `shape.envelope`.
 
+**Mesh sources:** bare names such as `mesh terrain;` now use normal variable resolution. Ensure the
+name refers to a declared field, grid or file; an unknown name is an undefined-variable error.
+
+**Database skill:** replace `skills: [SQLSKILL]` with `skills: [sql]`.
+
 **SQL results are dataframes** (`gama.extension.database`, including `AgentDB`). `select` no longer
 returns `[column names, column types, rows]`, and `insert` replaces `columns:` / `values:` with a single
 `data:` argument (a positional list, a named map, or a dataframe for batch insertion). `create ... from:`
@@ -2021,6 +2146,36 @@ list first_row <- result row_at 0;
 do insert(params: PARAMS, into: "people", data: ["name"::"Ann", "age"::32]);
 ```
 
+**XML:** `xml_file(...).contents` is now the root element, not a map of raw file lines. It has
+`name`, `attributes`, `text` and `children` keys; child elements are maps with the same structure.
+
+```gaml
+xml_file config <- xml_file("config.xml");
+map<string, unknown> root <- config.contents;
+map<string, string> attributes <- map(root["attributes"]);
+list<map<string, unknown>> children <- list(root["children"]);
+write root["name"];
+```
+
+Update code that indexes XML by line. This representation is not lossless: comments, processing
+instructions, surrounding text whitespace and mixed-content ordering are not preserved. See the
+[XML example](gama.library/models/Data/Data%20Importation/models/XML%20File%20Import.gaml).
+
+**Unicode strings:** lengths and indices now count Unicode code points, not UTF-16 code units.
+Review stored indices and expected results for strings containing supplementary characters, including
+uses of `length`, `at`, `index_of`, `last_index_of` and `copy_between`.
+
+**Matrices and statistics:** `append_horizontally` now appends columns. Use `append_vertically`
+if the intended result is concatenated rows. Pearson `correlation` has been corrected; review
+expected results and thresholds that depended on the former calculation.
+
+**Random reproducibility:** assigning `rng_usage` now resets and advances the generator to an
+**absolute** raw-draw position instead of advancing relative to its current position. This does
+not restore cached Gaussian values, and the threaded generator cannot be restored this way.
+Latin-hypercube designs can also differ from 2025-06 for the same seed. Preserve old generated
+plans or regenerate and revalidate them; unchanged legacy `rnd` calls retain their seeded sequences.
+Nearest-neighbor ties can also consume random draws in a different order in the spatial index.
+
 **Lists and maps:** see [absence is not emptiness](#lists-and-maps-absence-is-not-emptiness-765).
 **Binary saves:** see [binary serialization compatibility](#binary-serialization-compatibility).
 
@@ -2036,9 +2191,14 @@ do insert(params: PARAMS, into: "people", data: ["name"::"Ann", "age"::32]);
   are compatible.
 - **Experiment files:** standalone experiments and library examples now use `.gaml`. `.experiment`
   files remain supported.
+- **Desktop server:** server mode defaults to off for new preferences. Enable **Network → Server
+  mode → Enable GAMA server mode** if clients need to connect.
 - **Python client (`gama_client` 2.0):** `GamaBaseClient` is renamed `GamaAsyncClient`, whose
   fire-and-forget methods take an `_async` suffix. In `GamaSyncClient`, plain methods now block until the
   server answers; use the `_awaitable` variants inside `asyncio` code. Python ≥ 3.10 is required.
+- **TypeScript / JavaScript client (`@gama-platform/gama-client` 3.0):** replace `disconnectGama`
+  with `closeConnection()`. Command answers are `GamaMessage` objects rather than strings; update
+  response handling accordingly. These client files are outside the GAML converter's scope.
 
 ---
 
@@ -2217,14 +2377,14 @@ for model-facing behavior and compatibility.
 | Extends | `IShape`, `IAttributed` | `IDelegatingShape` |
 | Container type | `IContainer.Addressable<String, Object>` | `IContainer.ToGet<String, Object>` |
 | `getLocation()` return type | `GamaPoint` | `IPoint` |
-| `getGeometry()` return type | `GamaShape` | `IShape` |
-| `getPeers()` | Mutable list | Read-only list |
-| `setPeers()` | Concrete implementation | Empty default method |
+| `setPeers()` | Abstract interface method | Empty default method |
 
 ### Practical impact
 
 - **Do not mutate agent attributes through the container interface.** Use proper variable evaluation via `scope.evaluate(expression, agent)`.
-- **Geometry access is now interface-typed.** If you need a concrete `GamaPoint`, cast explicitly — but prefer working with `IPoint`.
+- **Location access is now interface-typed.** If you need a concrete `GamaPoint`, cast explicitly — but prefer working with `IPoint`.
+- `getGeometry()` already returned `IShape` in 2025-06. `getPeers()` still returns an `IList`; the
+  usual agent implementation returns a copy. Do not rely on the default `setPeers()` to change peers.
 
 ---
 
@@ -2232,7 +2392,8 @@ for model-facing behavior and compatibility.
 
 ### New base class
 
-All population implementations should now extend `gama.core.metamodel.population.AbstractPopulation`, which centralises common logic that was previously duplicated.
+Population implementations can extend `gama.core.population.AbstractPopulation`, which centralises
+common logic that was previously duplicated.
 
 ### `IPopulation` API changes
 
@@ -2247,7 +2408,8 @@ All population implementations should now extend `gama.core.metamodel.population
 
 ## 5. Package Mapping: `gama.api` Module
 
-> **General rule:** Replace `gama.core` with `gama.api` in your import statements, then fix any remaining errors using the detail tables below.
+> **General rule:** Update imports for classes moved to `gama.api` using the tables below. Classes
+> that remain in `gama.core` retain that dependency; replacing every package prefix mechanically is unsafe.
 
 ### 5.1 GAML Types → `gama.api.gaml.types.*`
 
@@ -2284,22 +2446,20 @@ All population implementations should now extend `gama.core.metamodel.population
 
 ---
 
-## 6. Factory Pattern — Replace Direct Constructors
+## 6. Factory Pattern — Replace Inaccessible Constructors
 
-Direct instantiation of core GAMA types is **no longer allowed**. You must use the provided factory classes.
+Some formerly public constructors are no longer accessible outside their packages. Use the
+corresponding factories where a constructor has become inaccessible.
 
 > **Why?** Factories enforce correct type metadata and scope-awareness that constructors cannot guarantee.
 
 | Type | Before | After |
 |---|---|---|
-| `IList` | `new GamaList<>()` | `GamaListFactory.create(Types.STRING)` |
-| `IMap` | `new GamaMap<>()` | `GamaMapFactory.create(Types.STRING, Types.INT)` |
+| `IMap` | `new GamaMap(10, Types.STRING, Types.INT)` | `GamaMapFactory.create(Types.STRING, Types.INT, 10)` |
 | `IPoint` | `new GamaPoint(1.0, 2.0)` | `GamaPointFactory.create(1.0, 2.0)` |
-| `IShape` (circle) | `GamaGeometryType.buildCircle(10, pt)` | `GamaShapeFactory.buildCircle(10, pt)` |
-| `IColor` | `new GamaColor(255, 0, 0)` | `GamaColorFactory.get(255, 0, 0)` |
-| `IGraph` | `new GamaSpatialGraph(...)` | `GamaGraphFactory.createFromList(scope, edges, true)` |
 
-**Note:** When creating typed collections, always provide the element type(s) using constants from the `Types` class (e.g. `Types.STRING`, `Types.INT`, `Types.AGENT`).
+`GamaList` constructors were already protected in 2025-06, and `GamaListFactory` already existed.
+For typed collections, supply the appropriate element types, e.g. `GamaListFactory.create(Types.STRING)`.
 
 ---
 

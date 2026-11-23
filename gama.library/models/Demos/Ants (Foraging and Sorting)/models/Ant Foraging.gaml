@@ -25,7 +25,7 @@ global {
 	//Frequency of update of the grid
 	 
 	int grid_frequency <- 1 min: 1 max: 100;
-	//Number of food places among the grid
+	//Number of food places among the grid 
 	int number_of_food_places <- 5 min: 1; 
 	float grid_transparency <- 1.0; 
 	image_file ant_shape const: true <- file('../images/ant.png');
@@ -139,13 +139,13 @@ species ant skills: [moving] control: fsm {
 		do wander (amplitude: 90.0);
 		ant_grid here <- ant_grid(location);
 		float pr <- here.road;
-		transition to: carryingFood when: has_food;
-		transition to: followingRoad when: (pr > 0.05) and (pr < 4);
+		transition has_food to: carryingFood;
+		transition (pr > 0.05) and (pr < 4) to: followingRoad  ;
 	}
 	//State to carry food once it has been found
 	state carryingFood {
 		self.goto (target: center);
-		transition to: wandering when: !has_food;
+		transition !has_food to: wandering ;
 	}
 	//State to follow a pheromon road if once has been found
 	state followingRoad {

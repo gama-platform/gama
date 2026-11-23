@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** Lexical protection for the legacy, text-based conversion passes. */
 final class GamlSource {
 
 	private record Fragment(String placeholder, String original) {}
+	private static final Pattern POSSIBLE_FACET = Pattern.compile("\\b[A-Za-z_]\\w*\\s*:(?!:)");
 
 	private GamlSource() {}
+
+	static boolean containsPossibleFacet(final String code) {
+		return POSSIBLE_FACET.matcher(code).find();
+	}
 
 	static String codeOnly(final String source) {
 		final StringBuilder result = new StringBuilder(source);

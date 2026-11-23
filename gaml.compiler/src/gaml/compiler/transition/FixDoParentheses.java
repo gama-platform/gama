@@ -13,7 +13,8 @@ import java.util.regex.Pattern;
  *   do my_action;
  * </pre>
  *
- * <p>The new syntax requires an explicit (possibly empty) argument list:</p>
+ * <p>The preferred syntax uses an explicit (possibly empty) argument list;
+ * the bare call still parses with a warning:</p>
  * <pre>
  *   do my_action();
  * </pre>

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 /**
  * {@link IFileTransformer} that transforms old GAML {@code let} statements with
- * an explicit {@code type:} facet into modern typed variable declarations.
+ * an explicit {@code type:} facet into typed variable declarations. The original form remains supported.
  *
  * <h3>Handled forms</h3>
  * <ul>
@@ -64,6 +64,7 @@ public class FixLetStatement implements IFileTransformer {
 			+ "(.+?)"                       // group 4: value expression
 			+ "\\s*;",
 			Pattern.MULTILINE);
+	private static final Pattern SIMPLE_TYPE = Pattern.compile("[A-Za-z_]\\w*(?:\\s*<[^<>]+>)?");
 
 	@Override
 	public String transform(final String content) {
@@ -76,7 +77,10 @@ public class FixLetStatement implements IFileTransformer {
 			final String type    = mr.group(3);
 			final String value   = mr.group(4);
 
-			return indent + type + " " + varName + " <- " + value + ";";
+			if (!SIMPLE_TYPE.matcher(type.trim()).matches() || GamlSource.containsPossibleFacet(value)) {
+				return Matcher.quoteReplacement(mr.group(0));
+			}
+			return Matcher.quoteReplacement(indent + type + " " + varName + " <- " + value + ";");
 		});
 	}
 }

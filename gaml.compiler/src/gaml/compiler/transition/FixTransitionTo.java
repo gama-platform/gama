@@ -3,8 +3,7 @@ package gaml.compiler.transition;
 import java.util.regex.Pattern;
 
 /**
- * {@link IFileTransformer} that replaces occurrences of {@code transition to:}
- * (with any surrounding whitespace) by {@code transition } in GAML source files.
+ * Legacy transformer that removes {@code to:} from transition statements.
  *
  * <p>Examples:</p>
  * <pre>
@@ -12,9 +11,10 @@ import java.util.regex.Pattern;
  *   transition  to:   next_state  →  transition next_state
  * </pre>
  *
- * <p>The transformation is applied to the whole file content at once using
- * a single regex substitution.</p>
+ * @deprecated FSM transitions still require {@code to:}; this transformer can produce invalid models.
+ *             The default {@link GamlFileProcessor} preserves these statements.
  */
+@Deprecated
 public class FixTransitionTo implements IFileTransformer {
 
 	/**

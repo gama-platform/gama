@@ -21,20 +21,13 @@ import gama.dev.DEBUG;
  * GAML source file found recursively under a given root directory.
  *
  * <p>
- * By default the processor is pre-loaded with all built-in transformers
- * (including the former Python migration scripts):
+ * By default the processor is pre-loaded with the supported built-in transformers:
  * </p>
  * <ol>
- * <li>{@link FixDiffuseVar} – replaces {@code diffuse var:} with
- * {@code diffuse}</li>
- * <li>{@link FixTransitionTo} – replaces {@code transition to:} with
- * {@code transition}</li>
- * <li>{@link FixWithPairs} – transforms {@code with: [key::val]} to
- * {@code with: (key:val)}</li>
  * <li>{@link FixArrowBraces} – removes outer braces from
  * {@code -> { ... }} expressions</li>
  * <li>{@link FixActionParentheses} – adds missing empty parentheses to
- * parameter-less {@code action} and typed-action declarations
+ * parameter-less explicit {@code action} declarations
  * (e.g. {@code action foo \{} → {@code action foo() \{})</li>
 * <li>{@link FixSetStatement} and {@link FixListOf} – convert legacy
 * assignments and list type declarations</li>
@@ -44,8 +37,8 @@ import gama.dev.DEBUG;
  *       {@code do name}</li>
 * <li>{@link FixDoParentheses} and {@link FixActionArguments} – normalize
 * action calls and declarations</li>
-* <li>{@link FixLegacyFacets} – updates parsed display layers, selectors,
-* permanent outputs and identifiable parameter owners; preserves quoted names</li>
+* <li>{@link FixLegacyFacets} – reviews parsed action calls and updates display layers,
+* selectors, permanent outputs and identifiable parameter owners; preserves quoted names</li>
 * <li>{@link AddMigrationReviews} – adds reminders for manual review</li>
 * </ol>
 *
@@ -171,9 +164,6 @@ public class GamlFileProcessor {
 	 * </p>
 	 */
 	protected void registerBuiltInTransformers() {
-		addTextTransformer(new FixDiffuseVar());
-		addTextTransformer(new FixTransitionTo());
-		addTextTransformer(new FixWithPairs());
 		transformers.add(new FixArrowBraces());
 		addTextTransformer(new FixActionParentheses());
 		addTextTransformer(new FixSetStatement());

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 /**
  * {@link IFileTransformer} that transforms the old GAML {@code list of: T}
- * type syntax into the modern generic {@code list<T>} form.
+ * type syntax into the generic {@code list<T>} form. Both forms remain supported.
  *
  * <h3>Handled forms</h3>
  * <pre>

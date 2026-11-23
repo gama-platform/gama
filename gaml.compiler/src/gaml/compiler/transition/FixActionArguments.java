@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 /**
  * {@link IFileTransformer} that converts inline `arg` statements into explicit
- * arguments in the action signature.
+ * arguments in the action signature. Arguments with unsupported facets are left for manual review.
  *
  * <p>In older GAML syntax, arguments were often described inside the action body:</p>
  * <pre>
@@ -73,17 +73,14 @@ public class FixActionArguments implements IFileTransformer {
 	/**
 	 * Matches an individual arg statement.
 	 */
-	private static final Pattern ARG_PATTERN = Pattern.compile("arg\\s+([A-Za-z_]\\w*)([^;]*);");
+	private static final Pattern ARG_PATTERN = Pattern.compile("\\barg\\s+([A-Za-z_]\\w*)([^;]*);");
+	private static final Pattern ARG_KEYWORD = Pattern.compile("\\barg\\b");
 
 	/**
-	 * Matches the type attribute within an arg statement.
+	 * Only move declarations whose type and optional default can be preserved without interpreting other facets.
 	 */
-	private static final Pattern TYPE_PATTERN = Pattern.compile("\\btype:\\s*(.*?)(?=\\s+\\b[a-z]+:|$)");
-
-	/**
-	 * Matches the default attribute within an arg statement.
-	 */
-	private static final Pattern DEFAULT_PATTERN = Pattern.compile("\\bdefault:\\s*(.*?)(?=\\s+\\b[a-z]+:|$)");
+	private static final Pattern SUPPORTED_ATTRIBUTES = Pattern.compile(
+			"\\s*type:\\s*([A-Za-z_]\\w*(?:\\s*<[^<>]+>)?)(?:\\s+default:\\s*(\\S[\\s\\S]*?))?\\s*");
 
 	// -----------------------------------------------------------------------
 	// IFileTransformer
@@ -106,41 +103,41 @@ public class FixActionArguments implements IFileTransformer {
 			final String name = mr.group(5);
 			final String existingArgs = mr.group(6) != null ? mr.group(6).trim() : "";
 			final String argsBlock = mr.group(7);
-			
+
+			if (!existingArgs.isEmpty()) return Matcher.quoteReplacement(mr.group(0));
 			final Matcher argMatcher = ARG_PATTERN.matcher(argsBlock);
 			final StringBuilder newArgs = new StringBuilder();
-			boolean first = existingArgs.isEmpty();
-			
-			if (!first) {
-				newArgs.append(existingArgs);
-			}
+			boolean first = true;
+			int converted = 0;
 			
 			while (argMatcher.find()) {
+				final Matcher attributes = SUPPORTED_ATTRIBUTES.matcher(argMatcher.group(2));
+				if (!attributes.matches() || attributes.group(2) != null
+						&& GamlSource.containsPossibleFacet(attributes.group(2))) {
+					return Matcher.quoteReplacement(mr.group(0));
+				}
 				if (!first) {
 					newArgs.append(", ");
 				}
 				first = false;
+				converted++;
 				
 				final String argName = argMatcher.group(1);
-				final String attrs = argMatcher.group(2);
-				
-				final Matcher typeMatcher = TYPE_PATTERN.matcher(attrs);
-				final String argType = typeMatcher.find() ? typeMatcher.group(1).trim() : null;
-				
-				final Matcher defMatcher = DEFAULT_PATTERN.matcher(attrs);
-				final String argDef = defMatcher.find() ? defMatcher.group(1).trim() : null;
-				
-				if (argType != null) {
-					newArgs.append(argType).append(" ");
-				}
+				final String argType = attributes.group(1).trim();
+				final String argDef = attributes.group(2);
+
+				newArgs.append(argType).append(" ");
 				newArgs.append(argName);
 				if (argDef != null) {
-					newArgs.append(" <- ").append(argDef);
+					newArgs.append(" <- ").append(argDef.trim());
 				}
+			}
+			if (converted != ARG_KEYWORD.matcher(argsBlock).results().count()) {
+				return Matcher.quoteReplacement(mr.group(0));
 			}
 			
 			// Extract any comments from the argsBlock by removing the arg lines
-			String remainingBody = argsBlock.replaceAll("(?m)^([ \\t]*)arg\\b[^;]+;[ \\t]*", "$1");
+			String remainingBody = ARG_PATTERN.matcher(argsBlock).replaceAll("");
 			// Clean up extra empty lines left behind by the removal
 			remainingBody = remainingBody.replaceAll("(?m)^[ \\t]*\\n+", "");
 			

@@ -41,7 +41,7 @@ import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VariableRef;
 
 /**
- * Updates legacy selectors, layer referentials and statically identifiable experiment ownership in parseable GAML source.
+ * Updates legacy selectors, layer referentials and statically identifiable experiment ownership.
  */
 final class FixLegacyFacets implements IFileTransformer {
 
@@ -159,6 +159,9 @@ final class FixLegacyFacets implements IFileTransformer {
 			case "chart", "light" -> renameFacet(statement, "type:", "kind:", edits, reviews);
 			case "event" -> renameFacet(statement, "type:", "device:", edits, reviews);
 			case "inspect", "browse" -> migrateInspection(content, statement, edits, reviews);
+			case "do", "invoke" -> {
+				if (statement instanceof S_Do call) reviewActionArguments(call, reviews);
+			}
 			case "graphics" -> renameFacet(statement, "content_coordinates:", "referential:", edits, reviews);
 			case "overlay" -> {
 				renameFacet(statement, "content_coordinates:", "referential:", edits, reviews);
@@ -513,6 +516,23 @@ final class FixLegacyFacets implements IFileTransformer {
 			if (!leaf.isHidden()) spelling.append(leaf.getText());
 		}
 		return key.contentEquals(spelling);
+	}
+
+	private static void reviewActionArguments(final S_Do call,
+			final Map<FacetsAndBlock, List<Review>> reviews) {
+		if (call.getFacets().isEmpty()) return;
+		if (call.getFacets().stream().anyMatch(f -> hasKey(f, "returns:"))) {
+			review(reviews, call, "action result", "The returns: facet no longer captures the result. "
+					+ "Use a typed assignment such as int result <- self.count(); and check the action's return type.");
+		}
+		if (call.getFacets().stream().anyMatch(f -> hasKey(f, "with:"))) {
+			review(reviews, call, "action arguments", "For a 2025-06 argument list, replace "
+					+ "do move with: [distance::2]; with do move(distance: 2);. If with is an actual argument, "
+					+ "use do move(with: [...]); instead. Check the action's signature.");
+		} else if (call.getFacets().stream().anyMatch(f -> !hasKey(f, "returns:"))) {
+			review(reviews, call, "action arguments", "Move legacy argument facets into the action call, "
+					+ "for example do move(distance: 2);. Check duplicate facets and the action's signature.");
+		}
 	}
 
 	private static void renameFacet(final FacetsAndBlock statement, final String oldKey, final String newKey,

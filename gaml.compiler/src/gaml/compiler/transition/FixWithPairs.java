@@ -4,9 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@link IFileTransformer} that transforms {@code with:} argument lists in
- * GAML source files from the old bracket / double-colon pair syntax to the new
- * parenthesis / single-colon syntax.
+ * Legacy transformer that changes bracketed {@code with:} pairs to parenthesized lists.
  *
  * <p>Examples:</p>
  * <pre>
@@ -31,9 +29,12 @@ import java.util.regex.Pattern;
  *       {@code :}.</li>
  * </ol>
  *
- * <p>Nested {@code [...]} expressions and their contents are left completely
- * untouched.</p>
+ * <p>Nested {@code [...]} expressions and their contents are left completely untouched.</p>
+ *
+ * @deprecated A {@code with:} facet can be a map, not an action argument list; this transformer can
+ *             change its meaning. Use {@link GamlFileProcessor}, which flags action calls for review.
  */
+@Deprecated
 public class FixWithPairs implements IFileTransformer {
 
 	/**
