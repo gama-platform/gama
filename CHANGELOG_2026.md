@@ -26,7 +26,7 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 This release is organised in five topics:
 
-- [1. Modelling(#1-modelling-and-exploring-models)
+- [1. Modelling](#1-modelling-and-exploring-models)
 - [2. Experimenting and visualising](#2-experimenting-and-visualising)
 - [3. Sharing and deploying models](#3-sharing-and-deploying-models)
 - [4. Developing GAMA](#4-developing-gama)
