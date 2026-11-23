@@ -4,14 +4,8 @@ package gaml.compiler.transition;
  * {@link IFileTransformer} that removes the outermost curly braces surrounding
  * the body of {@code ->} (arrow) expressions in GAML source files.
  *
- * <p>Examples:</p>
- * <pre>
- *   action my_action -> { do something; };
- *       → action my_action -> do something;
- *
- *   -> { if (true) { do A; } };
- *       → -> if (true) { do A; };
- * </pre>
+ * A point literal such as {@code -> {1, 2}} is already a valid expression and
+ * must retain its braces.
  *
  * <p>The parser correctly handles:</p>
  * <ul>
@@ -104,8 +98,6 @@ public class FixArrowBraces implements IFileTransformer {
 
 				// If the next non-whitespace character is '{', remove the braces
 				if (i < n && text.charAt(i) == '{') {
-					result.append(' '); // standardise to a single space
-
 					int braceDepth = 1;
 					int j = i + 1;
 					final int contentStart = j;
@@ -147,6 +139,12 @@ public class FixArrowBraces implements IFileTransformer {
 					if (braceDepth == 0) {
 						// Extract and clean inner content
 						String inner = text.substring(contentStart, j).strip();
+						if (isPointLiteral(inner)) {
+							result.append(ws).append(text, i, j + 1);
+							i = j + 1;
+							continue;
+						}
+						result.append(' ');
 						// Prevent double semicolons: -> { do A; }; → -> do A;
 						if (inner.endsWith(";")) {
 							inner = inner.substring(0, inner.length() - 1).stripTrailing();
@@ -171,6 +169,25 @@ public class FixArrowBraces implements IFileTransformer {
 		}
 
 		return result.toString();
+	}
+
+	private static boolean isPointLiteral(final String expression) {
+		final String code = GamlSource.codeOnly(expression);
+		int parentheses = 0, brackets = 0, braces = 0;
+		for (int i = 0; i < code.length(); i++) {
+			switch (code.charAt(i)) {
+				case '(' -> parentheses++;
+				case ')' -> parentheses--;
+				case '[' -> brackets++;
+				case ']' -> brackets--;
+				case '{' -> braces++;
+				case '}' -> braces--;
+				case ',' -> {
+					if (parentheses == 0 && brackets == 0 && braces == 0) return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

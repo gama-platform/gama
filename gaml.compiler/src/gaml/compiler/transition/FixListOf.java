@@ -55,12 +55,17 @@ public class FixListOf implements IFileTransformer {
 	private static final Pattern PATTERN = Pattern.compile(
 			"\\blist\\b"
 			+ "\\s++of:\\s*+"
-			+ "([A-Za-z_]\\w*+(?:<[^>]++>)?)");  // group 1: type expression
+			+ "([A-Za-z_]\\w*+(?:<[^<>]++>)?)(?![\\w<])");
+
+	private static final Pattern DECLARATION = Pattern.compile(
+			"\\blist\\s+([A-Za-z_]\\w*)\\s+of:\\s*([A-Za-z_]\\w*+(?:<[^<>]+>)?)(?![\\w<])");
 
 	@Override
 	public String transform(final String content) {
-		final Matcher m = PATTERN.matcher(content);
-		if (!m.find()) { return content; }
-		return PATTERN.matcher(content).replaceAll(mr -> "list<" + mr.group(1) + ">");
+		final String declarations = DECLARATION.matcher(content)
+				.replaceAll(mr -> "list<" + mr.group(2) + "> " + mr.group(1));
+		final Matcher m = PATTERN.matcher(declarations);
+		if (!m.find()) { return declarations; }
+		return PATTERN.matcher(declarations).replaceAll(mr -> "list<" + mr.group(1) + ">");
 	}
 }

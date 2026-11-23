@@ -55,6 +55,7 @@ public class ConvertToGama2026Handler extends AbstractHandler {
 		final boolean ok = MessageDialog.openConfirm(HandlerUtil.getActiveShell(event), "Convert to GAMA 2026 syntax",
 				"All .gaml and .experiment files in the " + resources.size()
 						+ " selected item(s) will be rewritten in place to the GAMA 2026 syntax.\n\n"
+						+ "Review comments will be added even when no syntax change is needed.\n\n"
 						+ "This cannot be undone: please make a backup (or use version control) first. Continue?");
 		if (!ok) return null;
 		// Unsaved edits would be lost or conflict with the rewritten files

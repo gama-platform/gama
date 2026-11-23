@@ -388,7 +388,7 @@
                      variable="selection">
                   <iterate
                         ifEmpty="false"
-                        operator="and">
+                        operator="or">
                      <adapt
                            type="org.eclipse.core.resources.IResource">
                         <test

@@ -17,8 +17,8 @@ import java.util.regex.Pattern;
  *       → with: (agents:ag, values:[1,2,3])
  * </pre>
  *
- * <p>Multi-line {@code with: [...]} blocks are also handled correctly because
- * the transformation operates on the entire file text at once.</p>
+ * <p>Only lists of named arguments are converted. Ordinary lists, including
+ * batch exploration parameter sets, retain their brackets.</p>
  *
  * <h3>Rules applied</h3>
  * <ol>
@@ -42,7 +42,8 @@ public class FixWithPairs implements IFileTransformer {
 	 * the {@code [} is present but not consumed, so that {@link #findMatchingBracket}
 	 * can locate it precisely via {@link Matcher#end()}.
 	 */
-	private static final Pattern WITH_PREFIX = Pattern.compile("with:\\s*(?=\\[)");
+	private static final Pattern WITH_PREFIX = Pattern.compile("\\bwith:\\s*(?=\\[)");
+	private static final Pattern NAMED_ARGUMENT = Pattern.compile("\\s*[A-Za-z_]\\w*\\s*::");
 
 	/**
 	 * Find the index of the {@code ]} that closes the {@code [} at position
@@ -100,40 +101,70 @@ public class FixWithPairs implements IFileTransformer {
 	 */
 	static String transformContent(final String content) {
 		final StringBuilder result = new StringBuilder(content.length());
-		int depth = 0;
-		boolean inString = false;
+		final String code = GamlSource.codeOnly(content);
+		int depth = 0, parentheses = 0, braces = 0;
 		for (int i = 0; i < content.length(); i++) {
 			final char ch = content.charAt(i);
-			if (inString) {
-				if (ch == '\\') {
-					result.append(ch);
-					result.append(content.charAt(i + 1));
-					i++;
-					continue;
-				}
-				if (ch == '"') { inString = false; }
-				result.append(ch);
-			} else {
-				if (ch == '"') {
-					inString = true;
-					result.append(ch);
-				} else if (ch == '[') {
+			switch (code.charAt(i)) {
+				case '[' -> {
 					depth++;
 					result.append(ch);
-				} else if (ch == ']') {
+				}
+				case ']' -> {
 					depth--;
 					result.append(ch);
-				} else if (ch == ':' && depth == 0
-						&& i + 1 < content.length() && content.charAt(i + 1) == ':') {
-					// Top-level "::" → replace with single ":"
-					result.append(':');
-					i++; // skip the second ':'
-				} else {
+				}
+				case '(' -> {
+					parentheses++;
 					result.append(ch);
 				}
+				case ')' -> {
+					parentheses--;
+					result.append(ch);
+				}
+				case '{' -> {
+					braces++;
+					result.append(ch);
+				}
+				case '}' -> {
+					braces--;
+					result.append(ch);
+				}
+				case ':' -> {
+					if (depth == 0 && parentheses == 0 && braces == 0
+							&& i + 1 < code.length() && code.charAt(i + 1) == ':') {
+						result.append(':');
+						i++;
+					} else {
+						result.append(ch);
+					}
+				}
+				default -> result.append(ch);
 			}
 		}
 		return result.toString();
+	}
+
+	private static boolean namedArguments(final String content) {
+		final String code = GamlSource.codeOnly(content);
+		int brackets = 0, parentheses = 0, braces = 0, start = 0;
+		for (int i = 0; i < code.length(); i++) {
+			switch (code.charAt(i)) {
+				case '[' -> brackets++;
+				case ']' -> brackets--;
+				case '(' -> parentheses++;
+				case ')' -> parentheses--;
+				case '{' -> braces++;
+				case '}' -> braces--;
+				case ',' -> {
+					if (brackets == 0 && parentheses == 0 && braces == 0) {
+						if (!NAMED_ARGUMENT.matcher(code.substring(start, i)).lookingAt()) return false;
+						start = i + 1;
+					}
+				}
+			}
+		}
+		return NAMED_ARGUMENT.matcher(code.substring(start)).lookingAt();
 	}
 
 	/**
@@ -152,8 +183,9 @@ public class FixWithPairs implements IFileTransformer {
 	@Override
 	public String transform(final String content) {
 		final StringBuilder result = new StringBuilder(content.length());
+		final String code = GamlSource.codeOnly(content);
 		int pos = 0;
-		final Matcher m = WITH_PREFIX.matcher(content);
+		final Matcher m = WITH_PREFIX.matcher(code);
 		boolean changed = false;
 
 		while (m.find()) {
@@ -161,15 +193,17 @@ public class FixWithPairs implements IFileTransformer {
 			if (m.start() < pos) { continue; }
 
 			final int bracketStart = m.end(); // index of the '['
-			final int bracketEnd = findMatchingBracket(content, bracketStart);
+			final int bracketEnd = findMatchingBracket(code, bracketStart);
 			if (bracketEnd == -1) { continue; } // no matching ']' — skip
+			final String arguments = content.substring(bracketStart + 1, bracketEnd);
+			if (!namedArguments(arguments)) { continue; }
 
 			// Append everything up to the '['
 			result.append(content, pos, bracketStart);
 			// Opening '(' instead of '['
 			result.append('(');
 			// Transformed inner content
-			result.append(transformContent(content.substring(bracketStart + 1, bracketEnd)));
+			result.append(transformContent(arguments));
 			// Closing ')' instead of ']'
 			result.append(')');
 			pos = bracketEnd + 1;

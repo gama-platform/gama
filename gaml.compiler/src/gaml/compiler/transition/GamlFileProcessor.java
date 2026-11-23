@@ -29,10 +29,6 @@ import gama.dev.DEBUG;
  * {@code diffuse}</li>
  * <li>{@link FixTransitionTo} – replaces {@code transition to:} with
  * {@code transition}</li>
- * <li>{@link FixDisplayExperimentNames} – rewrites quoted display/experiment
- * names to identifier + {@code title:} syntax</li>
- * <li>{@link FixImageToPicture} – replaces the {@code image} layer keyword
- * with {@code picture} inside {@code display} blocks</li>
  * <li>{@link FixWithPairs} – transforms {@code with: [key::val]} to
  * {@code with: (key:val)}</li>
  * <li>{@link FixArrowBraces} – removes outer braces from
@@ -40,25 +36,22 @@ import gama.dev.DEBUG;
  * <li>{@link FixActionParentheses} – adds missing empty parentheses to
  * parameter-less {@code action} and typed-action declarations
  * (e.g. {@code action foo \{} → {@code action foo() \{})</li>
- *   
-<li>{@link FixLetStatement} – transforms {@code let var type:T value:V;}
- *       into {@code T var <- V;}</li>
+* <li>{@link FixSetStatement} and {@link FixListOf} – convert legacy
+* assignments and list type declarations</li>
+* <li>{@link FixLetStatement} – transforms {@code let var type:T value:V;}
+* into {@code T var <- V;}</li>
  * <li>{@link FixDoAction} – replaces {@code do action: name} with
  *       {@code do name}</li>
- * <li>{@link FixListOf} – replaces {@code list of: T} with
- *       {@code list<T>}</li>
- * <li>{@link FixLegacyFacets} – migrates deprecated selectors, layer referentials,
- *       permanent outputs and identifiable experiment parameters after the older syntax rewrites,
- *       and marks cases that require review with {@code TODO GAMA 2026} comments</li>
- *
-</ol>
+* <li>{@link FixDoParentheses} and {@link FixActionArguments} – normalize
+* action calls and declarations</li>
+* <li>{@link FixLegacyFacets} – updates parsed display layers, selectors,
+* permanent outputs and identifiable parameter owners; preserves quoted names</li>
+* <li>{@link AddMigrationReviews} – adds reminders for manual review</li>
+* </ol>
 *
-* 
-<p>
-Additional transformers can be registered at any time via
+* <p>Additional transformers can be registered at any time via
 * {@link #addTransformer(IFileTransformer)}. The transformers are always
-* applied in registration order.
-</p>
+* applied in registration order.</p>
 *
 * 
 <h3>Typical usage</h3>
@@ -178,20 +171,23 @@ public class GamlFileProcessor {
 	 * </p>
 	 */
 	protected void registerBuiltInTransformers() {
-		transformers.add(new FixDiffuseVar());
-		transformers.add(new FixTransitionTo());
-		transformers.add(new FixDisplayExperimentNames());
-		transformers.add(new FixImageToPicture());
-		transformers.add(new FixWithPairs());
+		addTextTransformer(new FixDiffuseVar());
+		addTextTransformer(new FixTransitionTo());
+		addTextTransformer(new FixWithPairs());
 		transformers.add(new FixArrowBraces());
-		transformers.add(new FixActionParentheses());
-		transformers.add(new FixSetStatement());
-		transformers.add(new FixListOf());
-		transformers.add(new FixLetStatement());
-		transformers.add(new FixDoAction());
-		transformers.add(new FixDoParentheses());
-		transformers.add(new FixActionArguments());
+		addTextTransformer(new FixActionParentheses());
+		addTextTransformer(new FixSetStatement());
+		addTextTransformer(new FixListOf());
+		addTextTransformer(new FixLetStatement());
+		addTextTransformer(new FixDoAction());
+		addTextTransformer(new FixDoParentheses());
+		addTextTransformer(new FixActionArguments());
 		transformers.add(new FixLegacyFacets());
+		transformers.add(new AddMigrationReviews());
+	}
+
+	private void addTextTransformer(final IFileTransformer transformer) {
+		transformers.add(content -> GamlSource.transformCode(transformer, content));
 	}
 
 	/**

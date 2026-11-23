@@ -58,7 +58,7 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | `with:` argument list syntax changed | `[a::1]` becomes `(a:1)` |
 | `diffuse var:` and `transition to:` removed | Use `diffuse` and `transition` directly |
 | `image` layer renamed to `picture` | Update display blocks |
-| Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
+| Displays/experiments can separate identifiers and titles | Use `title:` when the UI label differs; quoted names remain accepted |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
 | Display dimensions always mean logical viewport pixels | Review former zoom-dependent world-extent calculations; prefer explicit mouse-coordinate aliases |
 | Optional OpenGL map ordering | Add `map_order: true` to suitable flat displays or enable the rendering preference |
@@ -1626,10 +1626,22 @@ not a cell agent.
 Most syntax changes of this section are applied by the bundled translator. Commit or back up your
 models, select projects, folders or files in the navigator, and choose **Convert to GAMA 2026
 syntax...**. It rewrites `.gaml` and `.experiment` files **in place** (editor Undo cannot revert it).
-Then review the diff, validate the models and run their experiments. Besides syntax, the translator
-replaces `permanent` with `output of: experiment` and adds `of: experiment` to parameters targeting
-attributes declared in their experiment (or a parent experiment in the same file). Other ownership
-changes (Recipes 1 and 3–6 above), presentation variables, container types and `nil` remain manual.
+Besides syntax, the translator replaces `permanent` with `output of: experiment` and adds
+`of: experiment` when it can identify an unambiguous experiment parameter. Quoted experiment and
+display names are retained rather than renamed automatically, so references and distinct names cannot
+silently change.
+
+The converter adds a general `TODO GAMA 2026` migration reminder to every processed GAML file and
+additional reminders for constructs that may need manual work. These are review prompts, not proof
+that a particular change is necessary or that every affected expression was found. Review the diff
+and each reminder against this guide, remove the comments when finished, validate the models and run
+their experiments. While comments remain, rerunning does not duplicate them; after removal, running
+the converter again will add applicable reminders again. The menu is available for files requiring
+either conversion or review, including mixed selections.
+
+The converter only edits `.gaml` and `.experiment` files. Java plugins, Python clients, saved
+simulations, OBJ data and packaged models must be reviewed separately; the general reminder points
+to this guide but does not inspect or convert those artifacts.
 
 ### Action declarations, calls and legacy statements
 
@@ -1717,7 +1729,7 @@ display my_disp {
 }
 ```
 
-### 1.4 Display and experiment identifiers — explicit `title:` required
+### 1.4 Display and experiment identifiers and titles
 
 Displays and experiments now enforce a strict separation between the **programmatic identifier** (used in code) and the **UI label** (shown to the user).
 
@@ -1729,7 +1741,7 @@ display "3 Simulations" { ... }
 display _3_Simulations title: "3 Simulations" { ... }
 ```
 
-> **Rule of thumb:** Prefer a valid identifier (no spaces, no special characters) immediately after `display` or `experiment`, and use `title:` for the human-readable label. Quoted names remain accepted by the parser, and a `title:` is only needed when the label differs from the identifier. The translator performs this conversion; update references to renamed experiments and displays, including in headless scripts and GAMA Server clients.
+> **Rule of thumb:** Prefer a valid identifier (no spaces, no special characters) immediately after `display` or `experiment`, and use `title:` for the human-readable label. Quoted names remain accepted, and a `title:` is only needed when the label differs from the identifier. The converter keeps quoted names and adds a review comment. If you rename one manually, check for collisions and update references, including in headless scripts and GAMA Server clients.
 
 ### 1.5 `with:` argument list syntax
 
@@ -1746,6 +1758,10 @@ do my_action with: (agents: ag, values: [1, 2, 3]);
 **Key differences:**
 - Outer `[...]` → `(...)`
 - Double-colon `::` → single colon `:`
+
+The converter only rewrites bracketed lists whose entries are unambiguous named arguments.
+Other `with:` values, including exploration lists of parameter maps, are preserved and flagged
+for review. Ordinary map/pair literals and nested pairs keep `::`.
 
 ---
 
@@ -1779,9 +1795,23 @@ standalone experiments require review because their simulation declarations are 
 Global skills or architectures also require review because they can contribute simulation attributes.
 Explicit owners are never overridden. `permanent` blocks retain their facets, contents and
 experiment-wide lifetime when rewritten.
-Not every semantic change can be detected automatically. Changes that depend on model intent, such
-as moving experiment attributes into output blocks or adjusting display coordinates, still require
-manual migration even if no comment was inserted.
+The converter also adds file-level reminders for ownership, display coordinates, container and grid
+semantics, charts, controls, removed preferences, SQL and operators when relevant constructs are
+present. It marks each overlay and each statement using `#display_width` or `#display_height` for
+coordinate review. On simulation-owned outputs and commands, it also flags unqualified names that
+match experiment attributes or actions declared in the file, as well as common experiment control
+names. It also flags names matching same-file global attributes, actions or populations in
+experiment-owned code and experiment facets. Such matches are candidates, not proven errors: local
+shadowing and nested `ask` contexts can change their meaning. Choose between output locals,
+`experiment.` and an experiment owner based on the intended lifetime and behavior; use an explicit
+simulation reference where experiment-owned code needs simulation state.
+
+The converter does not link imported models or resolve extension-contributed declarations. It adds
+an additional output/command reminder when imports, a standalone experiment or an unresolved parent
+could hide declarations, and an experiment-level reminder when imports, inheritance or global skills
+and architectures may hide owner declarations. Validate compiler diagnostics and review contexts even
+when no specific reference is marked; the reminders cannot identify every affected expression or
+external dependency.
 
 ### 1.6 `overlay` layers — consistent position, size and contents
 

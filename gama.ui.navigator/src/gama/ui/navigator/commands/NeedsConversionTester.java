@@ -22,7 +22,7 @@ import gaml.compiler.transition.GamlFileProcessor;
 
 /**
  * Tells whether a resource contains (or is) a GAML file that the GAMA 2026 conversion would modify, i.e. a file
- * suspected to use the old syntax. Results are cached per file and invalidated when the file is modified.
+ * needing syntax conversion or migration review. Results are cached per file and invalidated when the file is modified.
  */
 public class NeedsConversionTester extends PropertyTester {
 

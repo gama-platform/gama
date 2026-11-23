@@ -17,6 +17,32 @@ Unmerged branches are outside the historical audit. Changes in companion reposit
 graphical modelling and LLM plugins) are summarised in the relevant topics from their own histories since July 2025.
 Later follow-ups are also included; this version remains unreleased.
 
+### New GAML operators since 2025.06.4
+
+The following new operator spellings were introduced in the period covered by this changelog.
+Each spelling is listed once; existing operators that only gained overloads are not repeated.
+
+- **Strings and containers:** `as_list`, `atan2_rad`, `ceiling`, `ends_with`, `enumerate`,
+  `format`, `from_hsb`, `is_alpha`, `is_alphanum`, `is_ascii`, `is_decimal`, `is_digit`,
+  `is_lower`, `is_upper`, `is_whitespace`, `join`, `replace_first`, `slice`, `starts_with`,
+  `string_with`, `sublist`, `submatrix`, `tokenize_regex`, `trim`, `whitespace`.
+- **Iteration:** `reduce`, `scan`.
+- **Dataframes and databases:** `add_column`, `cell`, `dataframe_with`, `filter`, `iloc`,
+  `load_sql`, `load_table`, `pivot`, `pretty_print`, `remove_empty`, `save_table`,
+  `select_columns`.
+- **Matrices, geometry and colors:** `convolution`, `convolve`, `horizontal_flip`, `ifelse`,
+  `native_identity`, `rotation_matrix`, `scale_matrix`, `shift`, `vertical_flip`,
+  `vintage_colors`.
+- **Statistics:** `anova`, `glm`, `hsic`, `hsic_p_value`, `morris_analysis`, `multi_anova`,
+  `power_test`, `rolling_se`, `rolling_vc`, `sobol_analysis`, `spearman_correlation`,
+  `stochanalysis`.
+- **SPARQL:** `sparql_query`.
+- **Physics joints:** `create_ball_and_socket_joint`, `create_cone_twist_joint`,
+  `create_distance_joint`, `create_fixed_joint`, `create_hinge_joint`,
+  `create_hinge_joint_with_axis`, `create_rope_joint`, `create_slider_joint`,
+  `create_slider_joint_with_axis`, `create_wheel_joint`, `destroy_joint`,
+  `with_max_motor_force`, `with_motor_speed`.
+
 For migration-sensitive additions, start with the [GAML syntax overhaul and translator](#breaking-change-gaml-syntax-overhaul-and-model-translator),
 then see [compiler diagnostics](#compiler-diagnostics-dates-and-expression-semantics),
 [SQL/dataframes](#dataframes-and-database-migration), [numeric/container behavior](#gaml-string-container-and-numeric-correctness)
@@ -53,7 +79,8 @@ forms, and separates display/experiment identifiers from their visible titles. T
 model-source migration, not just an internal compiler refactoring: older models may fail to
 parse or compile until converted.
 
-The main changes and the older forms normalized by the translator are:
+The main changes are listed below. The translator normalizes supported syntax forms but retains
+quoted display and experiment names for manual review:
 
 | Area | Older syntax | GAML 2026 syntax |
 |---|---|---|
@@ -87,8 +114,12 @@ renames `content_coordinates:` to `referential:` on `graphics` and `overlay` lay
 It replaces `permanent` blocks with `output of: experiment` and adds `of: experiment` when a
 parameter's experiment attribute can be identified without a possible simulation-name collision.
 Explicit parameter owners are preserved. Search converted files for `TODO GAMA 2026` comments:
-they explain unresolved parameter owners, callbacks and conflicting facets. A file-level comment
-also identifies syntax errors that prevent this pass from running.
+they identify unresolved parameter owners, callbacks, conflicting facets and quoted identifiers.
+File-level reminders flag semantic areas to review and external resources that the converter cannot
+inspect. Localized reminders also flag overlays, viewport-dimension expressions and possible
+cross-owner references in experiment code, outputs and commands. These are review candidates, not
+proof of errors or complete detection. A separate comment identifies syntax errors that prevent the
+parsed-source pass from running.
 Standalone experiment files can also start with pragmas, like model files
 ([`454eee6ce`](https://github.com/gama-platform/gama/commit/454eee6ce), #1312;
 [`c1217803a`](https://github.com/gama-platform/gama/commit/c1217803a)).
@@ -100,14 +131,16 @@ it is not necessary to add a title to every display or experiment.
 
 **Migrating existing models:** back up or commit your model sources, select the relevant
 projects, folders or files in the navigator, then choose **Convert to GAMA 2026 syntax...**.
-The bundled Java translator applies the conversions above to `.gaml` and `.experiment` files,
-recursively for selected directories. It requests confirmation and saves open editors before
+The bundled Java translator applies supported conversions to `.gaml` and `.experiment` files,
+recursively for selected directories, and adds a general review reminder to each processed file.
+It requests confirmation and saves open editors before
 rewriting files **in place**; the operation cannot be undone through editor Undo.
 
 Review the diff, validate the converted models and run their experiments afterward. The translator
-automates supported syntax rewrites, not arbitrary semantic/API migration: review generated
-identifiers and references to renamed experiments/displays (including server clients), and handle
-changes such as SQL/dataframe results, Fory saves and explicit `nil` separately. Conversion is
+automates supported syntax rewrites, not arbitrary semantic/API migration: review the generated
+reminders and handle changes such as SQL/dataframe results, Fory saves and explicit `nil`
+separately. If you rename an experiment or display, update its references (including server clients).
+Conversion is
 not a guarantee that every older model will run unchanged.
 
 See the [detailed migration reference](MIGRATION_GUIDE_2026.md#1-gaml-language-syntax-changes),
