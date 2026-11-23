@@ -84,6 +84,11 @@ but emits a deprecation warning. For inspection, use `inspect` for agents or `br
 instead of specifying `type: agent` or `type: table`. Other, genuinely type-related `type:`
 facets retain their meaning. The syntax converter rewrites these selectors in source, and also
 renames `content_coordinates:` to `referential:` on `graphics` and `overlay` layers.
+It replaces `permanent` blocks with `output of: experiment` and adds `of: experiment` when a
+parameter's experiment attribute can be identified without a possible simulation-name collision.
+Explicit parameter owners are preserved. Search converted files for `TODO GAMA 2026` comments:
+they explain unresolved parameter owners, callbacks and conflicting facets. A file-level comment
+also identifies syntax errors that prevent this pass from running.
 Standalone experiment files can also start with pragmas, like model files
 ([`454eee6ce`](https://github.com/gama-platform/gama/commit/454eee6ce), #1312;
 [`c1217803a`](https://github.com/gama-platform/gama/commit/c1217803a)).
@@ -1913,7 +1918,7 @@ of `ctrl+a` and `ctrl+shift+a`. The explicit separator form, e.g. `#ctrl + "+a"`
 Windows/Meta elsewhere; it is **not** a portable alias for CTRL.
 
 Combinations fire on key press, including native auto-repeat, when the display has keyboard focus. Their blocks
-execute in the experiment context; use `ask simulation` to change simulation state. Legacy key events continue
+execute on the output's owner: the simulation by default, the experiment in `output of: experiment`. Legacy key events continue
 to be dispatched as before. Built-in camera, display and workbench shortcuts remain active rather than being
 overridden. Validation warns specifically about CTRL-based OpenGL events on Windows and known shortcut conflicts; OS or
 workbench interception can still prevent delivery.
@@ -1950,8 +1955,8 @@ that received the event.
 
 The three new input values are scoped to their corresponding callback, including nested `ask` blocks
 and called actions; outside it they are empty strings, not the last event. Store a value in a model
-variable to use it later. Blocks run in the experiment context, so use `ask simulation` to change global
-simulation state. Listeners observe rather than consume input: existing event layers, display navigation,
+variable to use it later. Blocks run on the output's owner (the simulation by default, the experiment in
+`output of: experiment`); use `experiment.` or `ask simulation` to cross that boundary. Listeners observe rather than consume input: existing event layers, display navigation,
 context menus and shortcuts remain active. Mouse wheel and key-release events are not included, and the
 operating system or workbench may intercept input before it reaches the display.
 

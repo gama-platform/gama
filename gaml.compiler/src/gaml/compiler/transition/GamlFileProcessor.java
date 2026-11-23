@@ -47,8 +47,9 @@ import gama.dev.DEBUG;
  *       {@code do name}</li>
  * <li>{@link FixListOf} – replaces {@code list of: T} with
  *       {@code list<T>}</li>
- * <li>{@link FixLegacyFacets} – migrates deprecated selectors and layer referentials
- *       after the older syntax rewrites</li>
+ * <li>{@link FixLegacyFacets} – migrates deprecated selectors, layer referentials,
+ *       permanent outputs and identifiable experiment parameters after the older syntax rewrites,
+ *       and marks cases that require review with {@code TODO GAMA 2026} comments</li>
  *
 </ol>
 *

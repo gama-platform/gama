@@ -13,6 +13,7 @@
 | [Part 1](#part-1-whats-new-and-why-it-matters) | What's new and why it matters |
 | [Part 2](#part-2-migration-reference) | Step-by-step migration reference |
 | [Experiment and simulation ownership](#experiment-and-simulation-ownership) | Populations, commands, outputs and case-by-case modeler migration guide |
+| [Ownership cookbook](#cookbook-the-most-frequent-fixes-in-a-few-lines) | Minimal before/after fixes: simulation variables in experiments, experiment parameters, populations, displays, commands |
 | [Presentation variables](#presentation-variables-in-experiments-migrate-to-output-locals) | Output locals, ownership, lifetime and inheritance |
 | [Facet compilation contexts](#facet-compilation-contexts-for-plugin-developers) | Declaring and implementing model-context facets |
 
@@ -70,6 +71,15 @@ Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 | Built-in action arguments check container content/key types | Declare spatial networks as `graph<geometry, geometry>` rather than bare `graph`; review list/map argument types too |
 | Explicit output owners and persistent presentation locals (draft PR) | Keep model/controller state as attributes; move output-only styling into `output` instead of relying on implicit experiment lookup |
 | Explicit experiment/simulation contexts (unreleased) | Select a simulation before accessing its populations; review command owners and batch facet name resolution |
+| Action signatures in parentheses; `arg` and `set ... value:` removed | `action move(float d <- 1.0) { ... }`, `do move();`, `n <- 5;` (applied by the translator) |
+| `type:` selector facets deprecated | `mode:` (experiments), `renderer:` (displays), `kind:` (charts, lights), `device:` (events) |
+| Simulation `pause` / `resume` deprecated, `paused` read-only | `ask experiment { do pause(); }`, `experiment.is_paused` |
+| `pref_synchronize_quadtree`, `pref_parallel_simulations(_all)` removed | Delete them; use `parallel:` and `group_parameter_sets:` on experiments |
+| `ceil` returns `int`; geometry `envelope` attribute deprecated | Cast where a float is needed; use `envelope(geom)` |
+| SQL `select` returns a dataframe; `insert` uses `data:` | Update result indexing and insertion calls |
+| Playable packages use `.gamx`; macOS camera modifier is CMD | Rename former playable `.gamp` packages |
+| Python client 2.0: `GamaBaseClient` → `GamaAsyncClient` | Use `_async` / `_awaitable` methods |
+| `gama.models` extension point removed | Ship projects under `models/<category>/` in plugins |
 
 ## Engine, UI, and Graphics
 
@@ -400,8 +410,180 @@ owner (`simulation` or `experiment`), and crossing the boundary requires explici
 | `parameter` | `simulation` (`of: simulation`) | Add `of: experiment` when `var:` targets an `experiment` attribute; inside `on_change:` / `{ ... }`, qualify experiment members with `experiment.` |
 | `user_command` | `simulation` (`of: simulation`) | Add `of: experiment` when the command targets the experiment or iterates over `simulations` |
 | `output` (displays, layers, `event`, `overlay`, `ui_*`, `monitor`, `chart`) | `simulation` (`of: simulation`) | Move display-only styling into `output`, qualify shared controller state with `experiment.`, or use `output of: experiment` (`permanent`) for experiment-level dashboards |
-| `test` / `setup` inside `experiment type: test` | `experiment` | Move `test` and `setup` blocks into `global` (recommended), or wrap body in `ask simulation { ... }` |
+| `test` / `setup` inside `experiment mode: test` | `experiment` | Move `test` and `setup` blocks into `global` (recommended), or wrap body in `ask simulation { ... }` |
 | Batch `until:`, `record:`, and method `minimize:` / `maximize:` | `simulation` (evaluated on each simulation) | Qualify experiment attributes with `experiment.`; other batch `method` configuration facets remain in `experiment` context |
+
+#### Cookbook: the most frequent fixes in a few lines
+
+The minimal model below is used by every recipe. Each recipe shows what used to compile, the
+diagnostic you now get, and the smallest correct replacement. The detailed cases that follow give
+more context and real examples from the model library.
+
+```gaml
+model cookbook
+
+global {
+    int nb_people <- 100;
+    float infection_rate <- 0.05;
+    action reset() { ask people { do die(); } create people number: nb_people; }
+}
+
+species people {}
+```
+
+**Recipe 1 — A simulation (global) variable is accessed directly in the experiment.**
+These references no longer compile, because `self` is the experiment there and global attributes
+are not looked up implicitly anymore.
+
+```gaml
+// Before
+experiment main mode: gui {
+    int initial_size <- nb_people;                 // read
+    init { infection_rate <- 0.1; }                // write
+    reflex log { write "Rate: " + infection_rate; }
+}
+
+// After — qualify with simulation. (the current simulation of the experiment)
+experiment main mode: gui {
+    int initial_size <- simulation.nb_people;
+    init { simulation.infection_rate <- 0.1; }
+    reflex log { write "Rate: " + simulation.infection_rate; }
+}
+
+// After — or, for several statements, run them in the simulation
+experiment main mode: gui {
+    init {
+        ask simulation {
+            infection_rate <- 0.1;
+            nb_people <- 200;
+        }
+    }
+}
+
+// With several simulations, choose explicitly which ones are concerned
+experiment main mode: gui {
+    reflex sync { ask simulations { infection_rate <- 0.1; } }
+}
+```
+
+**Recipe 2 — A parameter targets an experiment attribute but does not say so.**
+The [translator](#10-convert-models-automatically-first) fixes this for unambiguous attributes declared
+in the same file; imported or ambiguous built-in targets must be reviewed by hand.
+Parameters target `global` attributes by default (`of: simulation`). For an attribute declared in the
+experiment, compilation reports `No simulation attribute named speed. Use of: experiment to target the
+experiment attribute`.
+
+```gaml
+// Before
+experiment main mode: gui {
+    float speed <- 0.1;
+    parameter "Speed" var: speed min: 0.0 max: 1.0;
+    parameter "Delay" var: minimum_cycle_duration;   // built-in experiment attribute
+}
+
+// After
+experiment main mode: gui {
+    float speed <- 0.1;
+    parameter "Speed" of: experiment var: speed min: 0.0 max: 1.0;
+    parameter "Delay" of: experiment var: minimum_cycle_duration;
+}
+```
+
+The reverse also matters: a parameter **without** `of:` must name a `global` attribute, and its
+`on_change:` / `{ ... }` block runs in the simulation. In an `of: experiment` parameter, the block runs
+in the experiment, so simulation members must be qualified:
+
+```gaml
+experiment main mode: gui {
+    float speed <- 0.1;
+    parameter "Population" var: nb_people { do reset(); }                        // simulation context
+    parameter "Speed" of: experiment var: speed { ask simulations { do reset(); } } // experiment context
+}
+```
+
+**Recipe 3 — A species population is created or queried in the experiment.**
+Compilation reports `The population of people belongs to a simulation. Access it in an explicit
+simulation context, for example ask simulation { ... }.`
+
+```gaml
+// Before
+experiment main mode: gui {
+    init { create people number: 10; }
+    reflex count { write length(people); }
+}
+
+// After
+experiment main mode: gui {
+    init { ask simulation { create people number: 10; } }
+    reflex count { write length(simulation.people); }
+}
+```
+
+**Recipe 4 — A display uses a variable declared in the experiment.**
+Outputs run in the simulation by default. Choose depending on what the variable is for:
+
+```gaml
+// Before
+experiment main mode: gui {
+    rgb background_color <- #black;          // only used to draw
+    float zoom <- 1.0;                       // controlled by an experiment parameter
+    parameter "Zoom" var: zoom;
+    output {
+        display map background: background_color { camera #default distance: 100 / zoom; }
+    }
+}
+
+// After
+experiment main mode: gui {
+    float zoom <- 1.0;
+    parameter "Zoom" of: experiment var: zoom;
+    output {
+        rgb background_color <- #black;      // presentation-only: becomes an output local
+        display map background: background_color { camera #default distance: 100 / experiment.zoom; }
+    }
+}
+```
+
+**Recipe 5 — A command or event controls the experiment.**
+`user_command` defaults to `of: simulation`; display events and `ui_*` controls run on the output's owner
+(the simulation by default).
+
+```gaml
+// Before
+experiment main mode: gui {
+    user_command "Reset" { ask world { do reset(); } }
+    user_command "Pause all" { do pause(); }
+    output { display map { event #mouse_down { do pause(); } } }
+}
+
+// After
+experiment main mode: gui {
+    user_command "Reset" { do reset(); }                  // already in the simulation
+    user_command "Pause all" of: experiment { do pause(); }
+    output { display map { event #mouse_down { experiment.pause(); } } }
+}
+```
+
+**Recipe 6 — An experiment action manipulates the simulation.**
+Move the action to `global` when it only concerns the model, or keep it in the experiment and add
+`actions_context: simulation` when the experiment is an adapter whose actions all concern its simulation:
+
+```gaml
+// Before
+experiment main mode: gui {
+    action double_rate() { infection_rate <- infection_rate * 2; }
+}
+
+// After — preferred: the action belongs to the model
+global {
+    action double_rate() { infection_rate <- infection_rate * 2; }
+}
+
+// After — alternative: experiment actions execute in its current simulation
+experiment main mode: gui actions_context: simulation {
+    action double_rate() { infection_rate <- infection_rate * 2; }
+}
+```
 
 Below are the concrete migration cases encountered across the GAMA model library, with before/after
 examples taken directly from migrated models.
@@ -433,12 +615,12 @@ experiment main {
 *Example — `Exploration.gaml` and `TCP Teleportation.gaml` (initializing simulation globals in `experiment init`):*
 ```gaml
 // Before (Exploration.gaml)
-experiment batch_abstract type: batch virtual: true until: (time > end_cycle) {
+experiment batch_abstract mode: batch virtual: true until: (time > end_cycle) {
     init { is_batch <- true; }
 }
 
 // After
-experiment batch_abstract type: batch virtual: true until: (time > end_cycle) {
+experiment batch_abstract mode: batch virtual: true until: (time > end_cycle) {
     init { simulation.is_batch <- true; }
 }
 
@@ -483,7 +665,7 @@ the compiler.
 *Example — `Soccer Experiments.gaml` and `Ant Foraging (Charts examples).gaml` (`experiment init` populating the model):*
 ```gaml
 // Before (Ant Foraging (Charts examples).gaml)
-experiment "Experiment" type: gui {
+experiment "Experiment" mode: gui {
     list<list<int>> nbants;
     list<string> statesnames;
 
@@ -501,7 +683,7 @@ experiment "Experiment" type: gui {
 }
 
 // After: ask simulation for population queries; use myself (or experiment) for experiment lists
-experiment "Experiment" type: gui {
+experiment "Experiment" mode: gui {
     list<list<int>> nbants;
     list<string> statesnames;
 
@@ -524,7 +706,7 @@ experiment "Experiment" type: gui {
 *Example — `Classes and Objects Showcase.gaml` and `Camera Definitions.gaml` (reflexes and dynamic experiment attributes):*
 ```gaml
 // Before
-experiment "Object diagnostics" type: gui {
+experiment "Object diagnostics" mode: gui {
     point p -> first(objects).location;
     reflex diagnose when: (cycle mod 10) = 0 and cycle > 0 {
         ask painter { write name; }
@@ -532,7 +714,7 @@ experiment "Object diagnostics" type: gui {
 }
 
 // After
-experiment "Object diagnostics" type: gui {
+experiment "Object diagnostics" mode: gui {
     point p -> first(simulation.objects).location;
     reflex diagnose when: (cycle mod 10) = 0 and cycle > 0 {
         ask simulation.painter { write name; }
@@ -546,6 +728,12 @@ experiment "Object diagnostics" type: gui {
 
 Parameters declared in an experiment now default to `of: simulation` with **no implicit fallback**
 to `experiment`.
+The syntax converter adds `of: experiment` when `var:` names an unambiguous attribute declared
+directly in that experiment, or inherited from a parent experiment in the same model and file.
+It preserves explicit `of:` facets. Where an imported model, a simulation attribute or a built-in
+such as `seed` makes ownership uncertain, it leaves the parameter unchanged and inserts a
+`TODO GAMA 2026` comment explaining what to check. It also marks parameter callbacks for review:
+their cross-owner references depend on model behavior and cannot be rewritten reliably.
 - If a `parameter` targets an attribute declared in `experiment` (including built-in experiment
   attributes like `minimum_cycle_duration` or the experiment's own `seed`), you must add
   `of: experiment`.
@@ -556,14 +744,14 @@ to `experiment`.
 *Example — `Snake.gaml`, `Declaration of Parameters.gaml`, and `Parameters and Commands.gaml` (targeting experiment attributes):*
 ```gaml
 // Before (Snake.gaml)
-experiment snake_game type: gui autorun: true {
+experiment snake_game mode: gui autorun: true {
     float minimum_cycle_duration <- 0.3;
     parameter "Size of the environment" var: environment_size <- 30 min: 10 max: 100;
     parameter "Game speed (0.0: fast; 1.0: slow)" var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
 }
 
 // After: minimum_cycle_duration belongs to experiment
-experiment snake_game type: gui autorun: true {
+experiment snake_game mode: gui autorun: true {
     float minimum_cycle_duration <- 0.3;
     parameter "Size of the environment" var: environment_size <- 30 min: 10 max: 100;
     parameter "Game speed (0.0: fast; 1.0: slow)" of: experiment var: minimum_cycle_duration <- 0.2 min: 0.0 max: 1.0;
@@ -573,7 +761,7 @@ experiment snake_game type: gui autorun: true {
 *Example — `Spatial Queries.gaml`, `Simplification and Buffer.gaml`, and `Circle.gaml` (parameter change callbacks):*
 ```gaml
 // Before (Spatial Queries.gaml & Simplification and Buffer.gaml)
-experiment Spatialqueries type: gui {
+experiment Spatialqueries mode: gui {
     parameter "Query" var: type_query on_change: {
         ask simulation { do apply_query(); }
         do update_outputs();
@@ -584,7 +772,7 @@ experiment Spatialqueries type: gui {
 }
 
 // After: the callback is already in simulation context; qualify experiment.update_outputs()
-experiment Spatialqueries type: gui {
+experiment Spatialqueries mode: gui {
     parameter "Query" var: type_query on_change: {
         do apply_query();
         experiment.update_outputs();
@@ -597,7 +785,7 @@ experiment Spatialqueries type: gui {
 
 *Example — `Testing Restitution.gaml` (experiment parameter broadcasting to multiple simulations):*
 ```gaml
-experiment "Test Restitution !" type: gui {
+experiment "Test Restitution !" mode: gui {
     float wall_restitution <- 1.0 min: 0.0 max: 1.0;
 
     parameter "Restitution of the walls" of: experiment var: wall_restitution {
@@ -641,7 +829,7 @@ user_command "Layout graph" {
 *Example — `Particle Life.gaml` and `DEM Generator.gaml` (moving simulation-manipulating actions from `experiment` to `global`):*
 ```gaml
 // Before: action declared in experiment but mutating global variables
-experiment ParticleLife type: gui {
+experiment ParticleLife mode: gui {
     action randomize_matrix() {
         A_0_0 <- rnd(-1.0, 1.0);
         do sync_matrix_from_vars();
@@ -657,14 +845,14 @@ global {
     }
 }
 
-experiment ParticleLife type: gui {
+experiment ParticleLife mode: gui {
     user_command "Random matrix" { do randomize_matrix(); }
 }
 ```
 
 *Example — `Testing Restitution.gaml` and `EXPERIMENT_AGENT.md` (commands that belong to the experiment):*
 ```gaml
-experiment "Test Restitution !" type: gui {
+experiment "Test Restitution !" mode: gui {
     user_command "  Move balls" color: rgb(133, 177, 205) of: experiment {
         ask simulations {
             ask ball { do apply(impulse: ball_impulse); }
@@ -694,7 +882,7 @@ every `display`, `event` handler, `overlay` control (`ui_button`, `ui_slider`, `
 *Example — `Boids.gaml`, `Snake.gaml`, `Event Layer.gaml`, `Mouse Drag.gaml`, and `Display UI Controls - Interactions.gaml`:*
 ```gaml
 // Before: redundant ask simulation inside simulation-owned display events and UI buttons
-display map type: 2d {
+display map renderer: 2d {
     species boids;
     event #mouse_move { ask simulation { do move_goal(); } }
     overlay position: {16, 16} size: {360, 400} {
@@ -705,7 +893,7 @@ display map type: 2d {
 }
 
 // After: event and ui_button blocks already execute on the simulation
-display map type: 2d {
+display map renderer: 2d {
     species boids;
     event #mouse_move { do move_goal(); }
     overlay position: {16, 16} size: {360, 400} {
@@ -772,7 +960,7 @@ Because `output { ... }` runs in the `simulation` context, it no longer sees att
 
 *Example of Pattern B — `Flow on Terrain.gaml` and `Camera Shared Zoom.gaml` (shared camera parameters across simulations):*
 ```gaml
-experiment "Four different scales" type: gui {
+experiment "Four different scales" mode: gui {
     point camera_loc <- #from_up_front;
     int distance <- 500;
     init {
@@ -784,7 +972,7 @@ experiment "Four different scales" type: gui {
 
     output {
         layout #split;
-        display "Flow" type: 3d {
+        display "Flow" renderer: 3d {
             camera #default location: experiment.camera_loc distance: experiment.distance dynamic: true;
             mesh cell;
         }
@@ -794,14 +982,14 @@ experiment "Four different scales" type: gui {
 
 *Example of Pattern C — `Display UI Controls - Simulation Toolbar.gaml`:*
 ```gaml
-experiment "Simulation toolbar in the display" type: gui {
+experiment "Simulation toolbar in the display" mode: gui {
     bool autohide <- true;
     bool show <- true;
     point location_of_controls <- {12, 12};
     point size_of_controls <- {264, 56};
 
     output of: experiment {
-        display "Native experiment controls" type: opengl background: #white axes: false {
+        display "Native experiment controls" renderer: opengl background: #white axes: false {
             agents "Agents" value: simulation.particle;
             event #mouse_move {
                 show <- autohide ? (#mouse_location_in_display > location_of_controls)
@@ -838,7 +1026,7 @@ complementing adjustments apply:
 *Example — Adapter experiments (`SIR_abm_comodel.gaml` and `move_comodel.gaml`):*
 ```gaml
 // Before (SIR_abm_comodel.gaml)
-experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' type: gui {
+experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' mode: gui {
     int get_num_S() {
         return length(Host where (each.state = 0));
     }
@@ -852,7 +1040,7 @@ experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' type: gui {
 
 // After: actions_context: simulation lets actions access Host directly;
 // sibling experiment actions are called on experiment
-experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' type: gui actions_context: simulation {
+experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' mode: gui actions_context: simulation {
     int get_num_S() {
         return length(Host where (each.state = 0));
     }
@@ -865,7 +1053,7 @@ experiment ABMcomodel model: '../Legacy_models/SIR_ABM.gaml' type: gui actions_c
 }
 
 // Before (move_comodel.gaml)
-experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' type: gui {
+experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' mode: gui {
     point centroid <- {200, 580};
     action transform_environment() {
         loop t over: list(building) {
@@ -876,7 +1064,7 @@ experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' 
 }
 
 // After: building is resolved in simulation; centroid is qualified with experiment.
-experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' type: gui actions_context: simulation {
+experiment movecomodel model: '../../../Evacuation/models/Continuous Move.gaml' mode: gui actions_context: simulation {
     point centroid <- {200, 580};
     action transform_environment() {
         loop t over: list(building) {
@@ -933,14 +1121,14 @@ global {
 
 ---
 
-#### Case 8: Unit tests (`experiment type: test`)
+#### Case 8: Unit tests (`experiment mode: test`)
 
-A `test` or `setup` block placed inside `experiment ... type: test` runs in the `experiment`
+A `test` or `setup` block placed inside `experiment ... mode: test` runs in the `experiment`
 context and can no longer directly create model species, access their populations, or read/write
 `global` attributes without qualification. You have two migration options:
 
 1. **Recommended — Move `setup` and `test` blocks into `global` and leave an empty test experiment
-   (`experiment MyTest type: test;`):**
+   (`experiment MyTest mode: test;`):**
    In `global`, tests run directly in the simulation context (`create my_species`, `my_species[0]`,
    `do _step_()`, and global attributes/actions work without qualification).
    *Models migrated this way:* `Ant Foraging Tests.gaml`, `TestBDI.gaml`, `BDIAdvancedTest.gaml`,
@@ -957,7 +1145,7 @@ context and can no longer directly create model species, access their population
 // Before
 species bdi_agent control: simple_bdi;
 
-experiment testBDI type: test autorun: true {
+experiment testBDI mode: test autorun: true {
     setup {
         create bdi_agent {
             do add_belief(new_predicate("test1"));
@@ -981,13 +1169,13 @@ global {
 }
 
 species bdi_agent control: simple_bdi;
-experiment testBDI type: test autorun: true;
+experiment testBDI mode: test autorun: true;
 ```
 
 *Example — Option 2: Keeping tests in `experiment` with `ask simulation` or `simulation.` (`NestingTest.gaml` / `Consistency Test.gaml`):*
 ```gaml
 // Using ask simulation for agent creation and population queries (NestingTest.gaml)
-experiment NestingTest type: test autorun: true {
+experiment NestingTest mode: test autorun: true {
     test "Micro Species Creation" {
         ask simulation {
             create macro_agent number: 1 returns: macros;
@@ -999,7 +1187,7 @@ experiment NestingTest type: test autorun: true {
 }
 
 // Qualifying global variables with simulation. (Consistency Test.gaml)
-experiment consistency_test type: test {
+experiment consistency_test mode: test {
     test "consistency" {
         simulation.with_viz <- false;
         assert simulation.diff1 < 0.6;
@@ -1061,7 +1249,7 @@ inside simulation-facing output code:
 ```gaml
 global {}
 
-experiment styled type: gui {
+experiment styled mode: gui {
     font label_font <- font("Helvetica", 14);
     rgb accent <- #teal;
 
@@ -1080,7 +1268,7 @@ When these values are presentation-only, move both the font and the color into t
 ```gaml
 global {}
 
-experiment styled type: gui {
+experiment styled mode: gui {
     output {
         font label_font <- font("Helvetica", 14);
         rgb accent <- #teal;
@@ -1132,7 +1320,7 @@ size still needs an attribute target; a parameter declared outside the output ca
 bind an output local:
 
 ```gaml
-experiment adjustable type: gui {
+experiment adjustable mode: gui {
     int label_size <- 14;
     parameter "Label size" of: experiment var: label_size min: 8 max: 40;
 
@@ -1235,7 +1423,7 @@ outputs are copied into the child. A duplicate declaration within one block rema
 error. For example, a child can override the size used by an inherited font and display:
 
 ```gaml
-experiment base type: gui {
+experiment base mode: gui {
     output of: experiment {
         int label_size <- 14;
         font label_font <- font("Helvetica", label_size);
@@ -1245,7 +1433,7 @@ experiment base type: gui {
     }
 }
 
-experiment larger parent: base type: gui {
+experiment larger parent: base mode: gui {
     output of: experiment {
         int label_size <- 20;
     }
@@ -1433,16 +1621,70 @@ The string-based grid `matrix_with` and `set_values` operators are removed. The 
 `{columns, rows} matrix_with expression` is unchanged: its `each` denotes a coordinate point,
 not a cell agent.
 
-### 1.1 Arrow (`->`) expressions — braces removed
+### 1.0 Convert models automatically first
 
-The outer curly braces around the body of `->` expressions are no longer valid.
+Most syntax changes of this section are applied by the bundled translator. Commit or back up your
+models, select projects, folders or files in the navigator, and choose **Convert to GAMA 2026
+syntax...**. It rewrites `.gaml` and `.experiment` files **in place** (editor Undo cannot revert it).
+Then review the diff, validate the models and run their experiments. Besides syntax, the translator
+replaces `permanent` with `output of: experiment` and adds `of: experiment` to parameters targeting
+attributes declared in their experiment (or a parent experiment in the same file). Other ownership
+changes (Recipes 1 and 3–6 above), presentation variables, container types and `nil` remain manual.
+
+### Action declarations, calls and legacy statements
+
+Action signatures are now declared in parentheses, even when empty. Body-level `arg` declarations
+are compilation errors.
 
 ```gaml
 // Before
-action my_action -> { do something; };
+action move {
+    arg distance type: float default: 1.0;
+    arg target type: point;
+    location <- location + (target - location) * distance;
+}
+int compute { return 1; }
 
 // After
-action my_action -> do something;
+action move(point target, float distance <- 1.0) {
+    location <- location + (target - location) * distance;
+}
+int compute() { return 1; }
+```
+
+Calls, assignments, declarations and creation have shorter canonical forms:
+
+```gaml
+// Before
+do move with: [target::{0, 0}];
+do action: move with: [target::{0, 0}];
+do move with: [target::{0, 0}, distance::2.0];
+set n value: 5;                   // removed: compilation error
+let n type: int value: 5;
+list values of: int;
+create people number: 10 with: [age::20];   // deprecated, still accepted
+
+// After
+do move(target: {0, 0});
+do move(target: {0, 0});
+do move(target: {0, 0}, distance: 2.0);   // or: do move with: (target: {0, 0}, distance: 2.0);
+n <- 5;
+int n <- 5;
+list<int> values;
+create people(age: 20) number: 10;
+```
+
+### 1.1 Arrow (`->`) expressions — braces removed
+
+The outer curly braces around the expression of a `->` (computed attribute) are no longer valid.
+This concerns only the expression wrapper, not statement blocks or point literals.
+
+```gaml
+// Before
+float doubled -> {value * 2};
+
+// After
+float doubled -> value * 2;
 ```
 
 ### 1.2 `diffuse var:` and `transition to:` — keyword removed
@@ -1487,7 +1729,7 @@ display "3 Simulations" { ... }
 display _3_Simulations title: "3 Simulations" { ... }
 ```
 
-> **Rule of thumb:** The name immediately after `display` or `experiment` must now be a valid identifier (no spaces, no special characters). Use `title:` for the human-readable label.
+> **Rule of thumb:** Prefer a valid identifier (no spaces, no special characters) immediately after `display` or `experiment`, and use `title:` for the human-readable label. Quoted names remain accepted by the parser, and a `title:` is only needed when the label differs from the identifier. The translator performs this conversion; update references to renamed experiments and displays, including in headless scripts and GAMA Server clients.
 
 ### 1.5 `with:` argument list syntax
 
@@ -1520,11 +1762,26 @@ do my_action with: (agents: ag, values: [1, 2, 3]);
 | Inspector | `inspect target type: agent` | `inspect target` |
 | Table browser | `inspect target type: table` | `browse target` |
 | Graphics or overlay layer | `content_coordinates:` | `referential:` |
+| Experiment-owned output | `permanent { ... }` | `output of: experiment { ... }` |
+| Experiment attribute parameter | `parameter "Setting" var: setting;` | `parameter "Setting" var: setting of: experiment;` |
 
-Genuine typing facets are not renamed. The converter leaves duplicate or conflicting facets for
-manual review, and applies this pass only if the file parses after the earlier syntax rewrites.
-Changes that depend on model intent, such as moving experiment attributes into output blocks or
-adjusting display coordinates, still require manual migration.
+Genuine typing facets are not renamed. The converter inserts `TODO GAMA 2026` comments beside
+duplicate or conflicting facets, unresolved parameter owners and parameter callbacks, explaining
+why they need review. Search for these comments, decide how each construct should behave and remove
+the comments when finished. Re-running the converter does not duplicate them. If parsing fails
+after the earlier rewrites, a file-level comment asks the modeller to fix the syntax and rerun;
+the converter removes that comment once the file parses.
+
+Parameter ownership is inferred only from unambiguous attribute declarations in the same experiment
+or its same-file parent experiments. Where a simulation attribute has the same name, the converter
+preserves the former simulation-first resolution rather than guessing; imported models and
+standalone experiments require review because their simulation declarations are not in the file.
+Global skills or architectures also require review because they can contribute simulation attributes.
+Explicit owners are never overridden. `permanent` blocks retain their facets, contents and
+experiment-wide lifetime when rewritten.
+Not every semantic change can be detected automatically. Changes that depend on model intent, such
+as moving experiment attributes into output blocks or adjusting display coordinates, still require
+manual migration even if no comment was inserted.
 
 ### 1.6 `overlay` layers — consistent position, size and contents
 
@@ -1601,7 +1858,7 @@ blending over earlier fragments instead of competing for depth.
 To enable it for a specific display, add the facet to the display declaration:
 
 ```gaml
-display my_map type: opengl map_order: true {
+display my_map renderer: opengl map_order: true {
     species roads;
     species buildings;
     species people;
@@ -1647,7 +1904,7 @@ clears its parsed data so the next access reloads it.
 The body of a `chart` was only executed once, when the chart was created; only the `value` of its data was then re-evaluated. It is now re-evaluated at every step (#403):
 
 ```gaml
-chart "Rewards" type: series {
+chart "Rewards" kind: series {
     if (cycle > 1) { data "Instant reward" value: reward color: #blue; }   // now appears at cycle 2
     data "period " + (cycle div 10) value: reward;                       // a new series every 10 cycles
     loop g over: groups { data g.name value: g.reward; }                 // follows the current groups
@@ -1659,6 +1916,99 @@ chart "Rewards" type: series {
 - Legends are only displayed names (#785): two `data "a"` statements now produce two series (previously, the second replaced the first), and duplicated category labels are no longer merged.
 
 > **Action needed:** none for charts whose body only contains `data`/`datalist` statements with constant legends. Charts whose legends depend on changing expressions (e.g. `data "value at " + cycle ...`) now create a new series at each change: use a constant legend to keep a single series. Models relying on duplicated legends to merge series must use a single `data` statement.
+
+### 1.8 Execution controls: `pause`, `resume` and `paused`
+
+Pausing and resuming are experiment controls. The simulation-side `pause` / `resume` actions are
+deprecated delegates, and the simulation `paused` attribute is deprecated and read-only (assigning it
+is now a compilation error; its former setter did nothing).
+
+```gaml
+// Before (in global or a species)
+reflex stop when: cycle = 100 { do pause; }
+reflex restart when: ready { do resume; }
+paused <- true;
+
+// After
+reflex stop when: cycle = 100 { ask experiment { do pause(); } }
+reflex restart when: ready { ask experiment { do play(); } }
+
+// Reading the state
+bool scheduler_paused <- experiment.is_paused;        // same as experiment.status = "PAUSED"
+bool held_by_user <- simulation.is_on_user_hold;      // user-interaction hold only
+```
+
+### 1.9 Removed preferences: spatial-index synchronization and parallel simulations
+
+These preferences no longer exist; delete reads, assignments and save/restore code that use them.
+
+| Removed | Replacement |
+|---|---|
+| `gama.pref_synchronize_quadtree` | None: synchronization is now decided automatically for each simulation |
+| `gama.pref_parallel_simulations` | Experiment facet `parallel:` (`false`, `true` or a maximum number of concurrent simulations) |
+| `gama.pref_parallel_simulations_all` | Batch facet `group_parameter_sets:` (now `true` by default in GUI and headless) |
+
+```gaml
+// Before
+global {
+    init {
+        gama.pref_synchronize_quadtree <- true;
+        gama.pref_parallel_simulations <- false;
+    }
+}
+
+// After: nothing for the spatial index; scheduling is set on the experiment
+experiment explore mode: batch parallel: false group_parameter_sets: false { ... }
+```
+
+Experiments without `parallel:` now use the configured thread count (four by default), except headless
+non-batch experiments. GUI batches that relied on the former default of `pref_parallel_simulations_all`
+(`false`) should add `group_parameter_sets: false` to keep evaluating one parameter set at a time.
+
+### 1.10 Operator and data semantics
+
+**`ceil` returns an integer.** `ceil(4.2)` is now `5` (an `int`), not `5.0`. Cast explicitly where a
+float is required (`float(ceil(x))`); `ceiling` is an equivalent spelling.
+
+**Geometry `envelope` attribute is deprecated.** Use the operator form, e.g. `envelope(shape)` instead
+of `shape.envelope`.
+
+**SQL results are dataframes** (`gama.extension.database`, including `AgentDB`). `select` no longer
+returns `[column names, column types, rows]`, and `insert` replaces `columns:` / `values:` with a single
+`data:` argument (a positional list, a named map, or a dataframe for batch insertion). `create ... from:`
+on SQL results uses column names.
+
+```gaml
+// Before
+list<list> result <- select(params: PARAMS, select: "SELECT name, age FROM people");
+list<list> rows <- result[2];
+do insert(params: PARAMS, into: "people", columns: ["name", "age"], values: ["Ann", 32]);
+
+// After
+dataframe result <- select(params: PARAMS, select: "SELECT name, age FROM people");
+list<string> names <- result column_at "name";
+list first_row <- result row_at 0;
+do insert(params: PARAMS, into: "people", data: ["name"::"Ann", "age"::32]);
+```
+
+**Lists and maps:** see [absence is not emptiness](#lists-and-maps-absence-is-not-emptiness-765).
+**Binary saves:** see [binary serialization compatibility](#binary-serialization-compatibility).
+
+### 1.11 Interaction, packaging and clients
+
+- **macOS 3D camera modifier:** in OpenGL and OpenGL4, camera navigation that used CTRL now uses
+  **CMD** on macOS. CTRL becomes available to model keyboard events. Windows and Linux keep CTRL.
+- **Keyboard combinations** (`event "ctrl+shift+a"`, `event #cmd + "+" + #enter`) are additive: existing
+  single-key events are unchanged. The modifier set must match exactly, and the block runs on the
+  output's owner like any other event (see [Case 5](#case-5-display-event-layers-and-overlay-ui-controls-ui_button-ui_slider-)).
+- **Playable packages:** `.gamx` is now the playable-package extension and `.gamp` the editable
+  project archive. Rename playable packages previously exported as `.gamp` to `.gamx`; their contents
+  are compatible.
+- **Experiment files:** standalone experiments and library examples now use `.gaml`. `.experiment`
+  files remain supported.
+- **Python client (`gama_client` 2.0):** `GamaBaseClient` is renamed `GamaAsyncClient`, whose
+  fire-and-forget methods take an `_async` suffix. In `GamaSyncClient`, plain methods now block until the
+  server answers; use the `_awaitable` variants inside `asyncio` code. Python ≥ 3.10 is required.
 
 ---
 
@@ -1945,3 +2295,23 @@ The static `Cast` utility class has been significantly reduced. Type-specific ca
 | `obj` | The object to cast |
 | `param` | An optional type parameter (usually `null`) |
 | `copy` | `true` to return a copy, `false` to allow returning the original |
+
+---
+
+## 8. Contributing models from a plugin
+
+The `gama.models` extension point has been removed. A plugin now contributes models by shipping GAMA
+projects in a conventional folder structure; the category is given by the folder, not by the project
+nature:
+
+```
+my.plugin/
+  models/
+    Library/<GAMA project>/...
+    Recipes/<GAMA project>/...
+    Tests/<GAMA project>/...      (also Data, Demos, Tutorials)
+```
+
+Remove the `gama.models` contribution from `plugin.xml`, move the projects under the matching
+`models/<category>/` folder, and make sure `build.properties` includes `models/`. The GAMA project
+nature is now `gama.workspace.nature`; former nature ids are still recognised and migrated.
