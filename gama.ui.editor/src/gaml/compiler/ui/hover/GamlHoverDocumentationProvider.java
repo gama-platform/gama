@@ -432,7 +432,24 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	 */
 	private IGamlDescription specialCaseVariableRef(final VariableRef vr) {
 		VarDefinition vd = vr.getRef();
-		return documenter.getGamlDocumentation(vd);
+		IGamlDescription contextual = documenter.getGamlDocumentation(vd);
+		if (contextual != null) return contextual;
+		if (!(vr.eContainer() instanceof Facet facet)) return null;
+		if (!(caseFacet(facet) instanceof IArtefact.Facet description) || !description.isLabel()
+				|| description.isNewTemp()) return null;
+
+		String name = EGaml.getInstance().getKeyOf(vr);
+		String facetName = EGaml.getInstance().getKeyOf(facet);
+		if (facet.eContainer() instanceof S_Display && IKeyword.RENDERER.equals(facetName)) {
+			IDisplayCreator renderer = GamaAdditionRegistry.getDisplay(name);
+			if (renderer != null) return renderer;
+		} else if (facet.eContainer() instanceof S_Experiment && IKeyword.MODE.equals(facetName)
+				&& IExperimentDescription.getExperimentCreator(name) instanceof ExperimentAgentDescription experiment) {
+			return experiment;
+		}
+		IGamlDocumentation documentation = description.getDocumentation();
+		return new Result("Value <i>" + HtmlEscapers.htmlEscaper().escape(name) + "</i> of facet <i>"
+				+ facetName + "</i>", documentation == null ? "" : documentation.toString());
 	}
 
 	/**
