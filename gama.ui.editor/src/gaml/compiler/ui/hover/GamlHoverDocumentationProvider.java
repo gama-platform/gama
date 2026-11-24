@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
+import com.google.common.html.HtmlEscapers;
 import com.google.inject.Inject;
 
 import gama.annotations.constants.IKeyword;
@@ -38,10 +39,13 @@ import gama.api.utils.files.IGamaFileMetaData;
 import gaml.compiler.EGaml;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
+import gaml.compiler.gaml.BooleanLiteral;
+import gaml.compiler.gaml.DoubleLiteral;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.Import;
+import gaml.compiler.gaml.IntLiteral;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Parameter;
 import gaml.compiler.gaml.S_Callable;
@@ -174,6 +178,21 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	}
 
 	@Override
+	public IGamlDescription caseIntLiteral(final IntLiteral literal) {
+		return new Result(literal.getOp(), "Literal expression of type int");
+	}
+
+	@Override
+	public IGamlDescription caseDoubleLiteral(final DoubleLiteral literal) {
+		return new Result(literal.getOp(), "Literal expression of type float");
+	}
+
+	@Override
+	public IGamlDescription caseBooleanLiteral(final BooleanLiteral literal) {
+		return new Result(literal.getOp(), "Literal expression of type bool");
+	}
+
+	@Override
 	public IGamlDescription caseStringLiteral(final StringLiteral string) {
 		final URI iu = detector.getURI(string);
 		if (iu != null) {
@@ -206,7 +225,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			}
 			if (file != null) return new Result("File " + file.getFullPath(), doc);
 		}
-		return null;
+		return new Result(HtmlEscapers.htmlEscaper().escape(StringUtils.toGaml(string.getOp(), false)),
+				"Literal expression of type string");
 	}
 
 	@Override

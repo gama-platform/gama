@@ -24,6 +24,7 @@ import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.documentation.IDocManager;
 import gama.dev.DEBUG;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.validation.GamlAutoValidation;
 
@@ -262,8 +263,9 @@ public class GamlResourceDocumenter implements IDocManager {
 			final BooleanSupplier valid) {
 		if (desc == null || !valid.getAsBoolean()) return false;
 		final EObject e = desc.getUnderlyingElement();
-		if (e == null) return true; // We return true to continue exploring if other descriptions should be documented
-		if (!internalSetGamlDocumentation(resource, generation, e, desc)) return false;
+		// The synthetic model and its standalone experiment share the same source node.
+		boolean syntheticModel = desc instanceof IModelDescription && e instanceof StandaloneExperiment;
+		if (e != null && !syntheticModel && !internalSetGamlDocumentation(resource, generation, e, desc)) return false;
 		return desc.visitOwnChildren(d -> internalDoDocument(resource, generation, d, valid));
 	}
 

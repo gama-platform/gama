@@ -286,22 +286,29 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 */
 	@Override
 	public String documentSignature() {
+		return documentSignature((IExpression[]) null);
+	}
+
+	@Override
+	public String documentSignature(final IExpression... operands) {
 		if (isAccumulator()) {
 			return "container values, " + (signature.size() == 4 ? "unknown initial_value, " : "") + "expression body";
 		}
-		if (!(support instanceof final Method method)) return signature.asPattern(false);
+		final Signature documentedSignature =
+				operands != null && operands.length == signature.size() ? new Signature(operands) : signature;
+		if (!(support instanceof final Method method)) return documentedSignature.asPattern(false);
 		final StringBuilder builder = new StringBuilder();
 		int signatureIndex = 0;
 		if (!Modifier.isStatic(method.getModifiers()) && signatureIndex < signature.size()) {
-			appendDocumentedOperand(builder, null, signature.get(signatureIndex++));
+			appendDocumentedOperand(builder, null, documentedSignature.get(signatureIndex++));
 		}
 		for (final Parameter parameter : method.getParameters()) {
 			if (parameter.getType() == IScope.class) { continue; }
-			if (signatureIndex >= signature.size()) return signature.asPattern(false);
+			if (signatureIndex >= signature.size()) return documentedSignature.asPattern(false);
 			appendDocumentedOperand(builder, parameter.isNamePresent() ? parameter.getName() : null,
-					signature.get(signatureIndex++));
+					documentedSignature.get(signatureIndex++));
 		}
-		return signatureIndex == signature.size() ? builder.toString() : signature.asPattern(false);
+		return signatureIndex == signature.size() ? builder.toString() : documentedSignature.asPattern(false);
 	}
 
 	/**

@@ -101,7 +101,7 @@ public class GamlGlobalDocGuesser {
 					? symbol.getDocumentation(keyword) : delegate.getDocumentation();
 			String docStr = orig != null ? orig.toString() : "";
 			String banner = "<div class=\"gaml-hover-banner\">"
-					+ "<i>GAML Reference (uncompiled model) &mdash; " + hint + "</i></div>";
+					+ "<i>GAML Reference &mdash; " + hint + "</i></div>";
 			return new GamlConstantDocumentation(banner + docStr);
 		}
 

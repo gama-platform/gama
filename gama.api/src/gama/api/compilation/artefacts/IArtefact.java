@@ -21,6 +21,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
 
@@ -578,6 +579,14 @@ public interface IArtefact extends IGamlDescription {
 		 * @return
 		 */
 		String documentSignature();
+
+		/**
+		 * Documents a compiled call using its operand types, retaining the reference signature when unavailable.
+		 *
+		 * @param operands the compiled operands
+		 * @return the contextual signature
+		 */
+		default String documentSignature(final IExpression... operands) { return documentSignature(); }
 	}
 
 	/**

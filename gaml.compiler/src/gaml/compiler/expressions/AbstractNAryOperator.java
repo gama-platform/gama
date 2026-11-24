@@ -294,7 +294,7 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 		final StringBuilder sb = new StringBuilder(50);
 		sb.append("operator ").append(getName()).append(" (");
 		if (prototype != null) {
-			sb.append(prototype.documentSignature());
+			sb.append(prototype.documentSignature(exprs));
 		} else if (exprs != null) {
 			for (final IExpression expr : exprs) {
 				sb.append(expr == null ? "nil" : expr.getGamlType().getName());

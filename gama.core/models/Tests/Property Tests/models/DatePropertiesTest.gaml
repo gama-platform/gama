@@ -13,7 +13,7 @@ experiment DatePropertiesTest mode: test autorun: true {
 	date random_date() {
 		return date([rnd(1900, 2100), rnd(1, 12), rnd(1, 28), rnd(0, 23), rnd(0, 59), rnd(0, 59)]);
 	}
-
+ 
 	test "Shifting by a fixed duration forth and back gives back the date" {
 		seed <- 1.0;
 		list<string> failures <- [];

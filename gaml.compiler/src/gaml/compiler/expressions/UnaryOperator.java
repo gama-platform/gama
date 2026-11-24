@@ -135,7 +135,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	public String getTitle() {
 		final StringBuilder sb = new StringBuilder(50);
 		sb.append("operator ").append(getName()).append(" (");
-		sb.append(prototype == null ? child == null ? "nil" : child.getGamlType().getName() : prototype.documentSignature());
+		sb.append(prototype == null ? child == null ? "nil" : child.getGamlType().getName() : prototype.documentSignature(child));
 		sb.append(") returns ").append(getGamlType().getName());
 		return sb.toString();
 	}
