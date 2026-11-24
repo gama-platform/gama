@@ -791,7 +791,10 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			final EList<gaml.compiler.gaml.Facet> facets, final ITypeDescription species) {
 		final String name = EGAML.getKeyOf(nameExpr);
 		final IActionDescription action = species.getAction(name);
-		if (action == null) return null;
+		if (action == null) {
+			reportMisplacedExperimentAction(name, nameExpr);
+			return null;
+		}
 		// Build Arguments directly from Facet nodes — read-only, no EMF reparenting.
 		final Arguments arguments = new Arguments();
 		final List<String> expectedArgs = action.getArgNames();
@@ -1191,6 +1194,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (result != null) return result;
 		result = tryFunctionAttributeCall(op, object);
 		if (result != null) return result;
+		if (!GAML.containsOperatorNamed(op) && reportMisplacedExperimentAction(op, object)) return null;
 		final List<Expression> args = EGAML.getExprsOf(object.getRight());
 		if (IArtefact.Operator.isAccumulator(op)) {
 			if (args.size() < 2 || args.size() > 3) {
@@ -1210,6 +1214,43 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			default -> FACTORY.createOperator(op, context.getContext(), object,
 					toArray(transform(args, this::compile), IExpression.class));
 		};
+	}
+
+	/**
+	 * Reports a specific error when an action that only exists in experiments is called from a non-experiment context
+	 * (e.g. {@code update_outputs()} called in the global section or in a species).
+	 *
+	 * @param name
+	 *            the name of the action that could not be resolved in the current context
+	 * @param source
+	 *            the EMF object on which the error is reported
+	 * @return true if an error has been reported, false otherwise
+	 */
+	boolean reportMisplacedExperimentAction(final String name, final EObject source) {
+		final IDescription caller = context.getContext();
+		if (caller == null || name == null) return false;
+		final ITypeDescription td = caller.getTypeContext();
+		if (td == null || td instanceof IExperimentDescription) return false;
+		final IType<?> experimentType = Types.get(EXPERIMENT);
+		final ITypeDescription builtIn = experimentType == null ? null : experimentType.getSpecies();
+		if (builtIn != null && builtIn.hasAction(name, false)) {
+			caller.error("'" + name + "' is an action of the experiment and is not available in " + td.getName()
+					+ ". Prefix it with 'experiment.' (e.g. experiment." + name + "()) or use 'ask experiment { do "
+					+ name + "(); }'", IGamlIssue.WRONG_CONTEXT, source);
+			return true;
+		}
+		final IModelDescription md = caller.getModelDescription();
+		if (md == null) return false;
+		for (final IExperimentDescription ed : md.getExperiments()) {
+			if (ed.hasAction(name, false)) {
+				caller.error("'" + name + "' is an action defined in experiment " + ed.getName()
+						+ " and cannot be called from " + td.getName()
+						+ ". Actions defined in an experiment can only be called within this experiment",
+						IGamlIssue.WRONG_CONTEXT, source);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1390,7 +1431,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 				if (isExp) {
 					context.getContext().error("The action " + s + " must be defined in the experiment",
 							IGamlIssue.UNKNOWN_ACTION, object);
-				} else {
+				} else if (!reportMisplacedExperimentAction(s, object)) {
 					context.getContext().error("The action " + s + " is unknown", IGamlIssue.UNKNOWN_ACTION, object);
 				}
 				return null;
