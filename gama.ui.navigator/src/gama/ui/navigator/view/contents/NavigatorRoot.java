@@ -20,6 +20,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 
 import gama.api.GAMA;
 import gama.api.constants.GamlFileExtension;
+import gama.ui.shared.utils.PreferencesHelper;
 
 /**
  * The Class NavigatorRoot.
@@ -139,8 +140,30 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	@Override
 	public Object[] getNavigatorChildren() {
 		final TopLevelFolder user = getUserFolder();
-		return java.util.Arrays.stream(getFolders())
-				.filter(f -> f == user || f.isVisibleWhenEmpty() || f.hasChildren()).toArray();
+		final java.util.Set<String> hidden = getHiddenFolderIds();
+		return java.util.Arrays.stream(getFolders()).filter(f -> f == user
+				|| !hidden.contains(f.getId()) && (f.isVisibleWhenEmpty() || f.hasChildren())).toArray();
+	}
+
+	/** Ids of the top-level folders hidden by the user. */
+	public static java.util.Set<String> getHiddenFolderIds() {
+		final String value = PreferencesHelper.NAVIGATOR_HIDDEN_FOLDERS.getValue();
+		if (value == null || value.isBlank()) return java.util.Set.of();
+		final java.util.Set<String> result = new java.util.LinkedHashSet<>();
+		for (final String id : value.split(",")) { if (!id.isBlank()) { result.add(id.strip()); } }
+		return result;
+	}
+
+	/** Whether the folder is hidden by the user. The User folder can never be hidden. */
+	public boolean isHidden(final TopLevelFolder folder) {
+		return folder != null && folder != getUserFolder() && getHiddenFolderIds().contains(folder.getId());
+	}
+
+	/** Shows or hides the folder with this id, and saves the preference. */
+	public static void setHidden(final String id, final boolean hidden) {
+		final java.util.Set<String> ids = new java.util.LinkedHashSet<>(getHiddenFolderIds());
+		if (hidden ? !ids.add(id) : !ids.remove(id)) return;
+		PreferencesHelper.NAVIGATOR_HIDDEN_FOLDERS.set(String.join(",", ids)).save();
 	}
 
 	/**

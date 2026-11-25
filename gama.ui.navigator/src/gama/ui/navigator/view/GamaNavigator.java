@@ -39,7 +39,9 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IDecoratorManager;
@@ -208,6 +210,10 @@ public class GamaNavigator extends CommonNavigator
 				((VirtualContent<?>) p).getParent()) {
 			ancestors.add(0, p);
 		}
+		// Files of hidden top-level folders are not revealed
+		if (!ancestors.isEmpty() && ancestors.get(0) instanceof TopLevelFolder top
+				&& NavigatorRoot.getInstance().isHidden(top))
+			return;
 		// Use the top level folder actually displayed, in case the virtual folders have been recreated since
 		if (!ancestors.isEmpty() && ancestors.get(0) instanceof TopLevelFolder top) {
 			for (final TreeItem item : viewer.getTree().getItems()) {
@@ -340,6 +346,18 @@ public class GamaNavigator extends CommonNavigator
 						separate(mainMenu);
 						check("Most recent first", PreferencesHelper.NAVIGATOR_RECENT_FIRST,
 								event -> PreferencesHelper.NAVIGATOR_RECENT_FIRST.save());
+					}
+					separate(mainMenu);
+					final Menu folderMenu = sub("Show...");
+					final NavigatorRoot root = NavigatorRoot.getInstance();
+					final TopLevelFolder user = root.getUserFolder();
+					for (final TopLevelFolder folder : root.getFolders()) {
+						if (folder == null) { continue; }
+						final String id = folder.getId();
+						final boolean shown = !root.isHidden(folder);
+						check(folderMenu, folder.getName(), shown, SelectionListener
+								.widgetSelectedAdapter(event -> NavigatorRoot.setHidden(id, shown)))
+										.setEnabled(folder != user);
 					}
 					separate(mainMenu);
 					separate(mainMenu, "Search in:");

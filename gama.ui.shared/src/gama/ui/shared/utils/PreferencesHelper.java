@@ -137,6 +137,13 @@ public class PreferencesHelper {
 						WorkbenchHelper.refreshNavigator();
 					}).hidden();
 
+	/** Comma-separated ids of the top-level navigator folders hidden by the user (the User folder is always shown). */
+	public static final Pref<String> NAVIGATOR_HIDDEN_FOLDERS =
+			create("pref_navigator_hidden_folders", "Top-level folders hidden in navigator", "", IType.STRING, false)
+					.in(NAME, WORKSPACE).inPlayer(false).onChange(newValue -> {
+						WorkbenchHelper.refreshNavigator();
+					}).hidden();
+
 	/** The Constant NAVIGATOR_OUTLINE. */
 	public static final Pref<Boolean> NAVIGATOR_OUTLINE =
 			create("pref_navigator_display_outline", "Display the outline of GAML files in navigator", false,
