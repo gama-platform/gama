@@ -289,7 +289,7 @@ public class ThemeHelper {
 			e.printStackTrace();
 		}
 		final ITheme theme = getEngine().getActiveTheme();
-		if (theme != null) return false; // && theme.getId().startsWith(id)
+		if (theme != null && id.equals(theme.getId())) return false;
 		getThemeEngine().setTheme(id, true);
 		return true;
 	}
