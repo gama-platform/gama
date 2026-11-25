@@ -358,14 +358,14 @@ public class ExecutionContext implements IExecutionContext {
 		final IExecutionContext o = outer;
 		if (shared) {
 			synchronized (this) {
-				if (local != null && local.containsKey(name)) {
-					local.put(name, value);
-					return;
+				if (local != null) {
+					final Object current = local.get(name);
+					if (current != null || local.containsKey(name)) { local.put(name, value); return; }
 				}
 			}
-		} else if (local != null && local.containsKey(name)) {
-			local.put(name, value);
-			return;
+		} else if (local != null) {
+			final Object current = local.get(name);
+			if (current != null || local.containsKey(name)) { local.put(name, value); return; }
 		}
 		if (o != null) { o.setTempVar(name, value); }
 	}
@@ -375,9 +375,15 @@ public class ExecutionContext implements IExecutionContext {
 		final IExecutionContext o = outer;
 		if (shared) {
 			synchronized (this) {
-				if (local != null && local.containsKey(name)) return local.get(name);
+				if (local != null) {
+					final Object value = local.get(name);
+					if (value != null || local.containsKey(name)) return value;
+				}
 			}
-		} else if (local != null && local.containsKey(name)) return local.get(name);
+		} else if (local != null) {
+			final Object value = local.get(name);
+			if (value != null || local.containsKey(name)) return value;
+		}
 		return o == null ? null : o.getTempVar(name);
 	}
 
