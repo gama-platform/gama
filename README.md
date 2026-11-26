@@ -42,5 +42,7 @@ Contributions are welcome through pull requests. Read the
 
 ## Acknowledgments
 
+Some bundled sample models in GAMA contain OpenStreetMap data: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), available under the [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/).
+
 ![YourKit logo](https://www.yourkit.com/images/yk_logo.svg)
 GAMA is supported by YourKit LLC and its [Java Profiler](https://www.yourkit.com/java/profiler/index.jsp).
