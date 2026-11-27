@@ -69,6 +69,11 @@ import gama.gaml.statements.WriteStatement.WriteValidator;
 						optional = true,
 						doc = @doc ("The string to be appened at the end of the message. By default it's a new line character: '\\n' or '\\r\\n' depending on the operating system.")),
 				@facet (
+						name = "clear",
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("If true, clears the shared execution console before writing the message. Defaults to false. With buffered output, the console is cleared when the message is released.")),
+				@facet (
 						name = IKeyword.BUFFERING,
 						type = { IType.STRING },
 						optional = true,
@@ -96,7 +101,9 @@ import gama.gaml.statements.WriteStatement.WriteValidator;
 		value = "The statement makes the agent output an arbitrary message in the console.",
 		usages = { @usage (
 				value = "Outputting a message",
-				examples = { @example ("write \"This is a message from \" + self;") }) })
+				examples = { @example ("write \"This is a message from \" + self;"),
+						@example (value = "write \"Current cycle: \" + cycle clear: true;", test = false),
+						@example (value = "write \"\" end: \"\" clear: true;", test = false) }) })
 @validator (WriteValidator.class)
 public class WriteStatement extends AbstractStatement {
 
@@ -141,6 +148,9 @@ public class WriteStatement extends AbstractStatement {
 	/** The end. */
 	final IExpression end;
 
+	/** Whether to clear the console before writing. */
+	final IExpression clear;
+
 	/**
 	 * Instantiates a new write statement.
 	 *
@@ -153,6 +163,7 @@ public class WriteStatement extends AbstractStatement {
 		color = getFacet(IKeyword.COLOR);
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
 		end = getFacet(IKeyword.END);
+		clear = getFacet("clear");
 	}
 
 	@Override
@@ -173,14 +184,15 @@ public class WriteStatement extends AbstractStatement {
 
 			var messageToSend = new StringBuilder(mes);
 			if (end != null) {
-				messageToSend.append(Cast.asString(scope, end));
+				messageToSend.append(Cast.asString(scope, end.value(scope)));
 			} else {
 				messageToSend.append(StringUtils.LN);
 			}
 
 			// DEBUG.OUT(
 			// "" + getName() + " asking to write and passing " + scope.getRoot() + " as the corresponding agent");
-			BufferingUtils.getInstance().askWriteConsole(scope, messageToSend, rgb, strategy);
+			BufferingUtils.getInstance().askWriteConsole(scope, messageToSend, rgb, strategy,
+					clear != null && Cast.asBool(scope, clear.value(scope)));
 		}
 		return mes;
 	}

@@ -67,14 +67,24 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 		}
 
 		@Override
+		public void informConsole(final String msg, final ITopLevelAgent root, final IColor color,
+				final boolean clear) {
+			deliver(ConsoleEvent.info(msg, root, color), clear);
+		}
+
+		@Override
 		public void debugConsole(final int cycle, final String msg, final ITopLevelAgent root, final IColor color) {
 			accept(ConsoleEvent.debug(cycle, msg, root, color));
 		}
 
 		@Override
 		public void accept(final ConsoleEvent event) {
+			deliver(event, false);
+		}
+
+		private void deliver(final ConsoleEvent event, final boolean clear) {
 			final String msg = displayMessage(event);
-			if (msg == null || msg.isEmpty()) return;
+			if ((msg == null || msg.isEmpty()) && !clear) return;
 			// Forward the first non-empty line to the status bar so it is visible
 			// even before the console view has opened (e.g. during experiment launch).
 			if (msg != null && !msg.isBlank()) {
@@ -85,12 +95,19 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				}
 			}
 			// Even view lookup can restore SWT controls; never do it on a console producer's thread.
-			WorkbenchHelper.asyncRun(() -> displayConsoleMessage(event, msg));
+			WorkbenchHelper.asyncRun(() -> displayConsoleMessage(event, msg, clear));
 		}
 
-		private void displayConsoleMessage(final ConsoleEvent event, final String msg) {
+		private void displayConsoleMessage(final ConsoleEvent event, final String msg, final boolean clear) {
 			final IGamaView.Console console = (Console) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, false);
 			synchronized (bufferLock) {
+				if (clear) {
+					consoleBuffer.clear();
+					bufferedCharacters = 0;
+					bufferTruncationMarker = "";
+					if (console != null) { ((IGamaView) console).reset(); }
+				}
+				if (msg == null || msg.isEmpty()) return;
 				if (console != null && !replayingBuffer && consoleBuffer.isEmpty()) {
 					console.append(msg, event.agent(), event.color());
 					return;

@@ -128,6 +128,9 @@ public class BufferingUtils {
 		/** The rewrite. */
 		protected boolean rewrite;
 
+		/** Whether the console should be cleared before this buffer is written. */
+		private final boolean clearConsole;
+
 		/** A weak reference used only to flush pending console output globally. */
 		private final WeakReference<IAgent> owner;
 
@@ -147,6 +150,7 @@ public class BufferingUtils {
 			rewrite = rewriteFile;
 			color = null;
 			owner = null;
+			clearConsole = false;
 		}
 
 		/**
@@ -158,15 +162,17 @@ public class BufferingUtils {
 		 *            the text color
 		 */
 		public TextBuffer(final CharSequence initialContent, final IColor textColor) {
-			this(initialContent, textColor, null);
+			this(initialContent, textColor, null, false);
 		}
 
-		private TextBuffer(final CharSequence initialContent, final IColor textColor, final IAgent owner) {
+		private TextBuffer(final CharSequence initialContent, final IColor textColor, final IAgent owner,
+				final boolean clearConsole) {
 			content = new StringBuilder(initialContent);
 			color = textColor;
 			encoding = null;
 			rewrite = false;
 			this.owner = owner == null ? null : new WeakReference<>(owner);
+			this.clearConsole = clearConsole;
 		}
 
 		/**
@@ -279,15 +285,25 @@ public class BufferingUtils {
 	 */
 	public boolean askWriteConsole(final IScope scope, final StringBuilder content, final IColor color,
 			final BufferingStrategies bufferingStrategy) {
+		return askWriteConsole(scope, content, color, bufferingStrategy, false);
+	}
+
+	/**
+	 * Writes a console message, clearing the console immediately before it is delivered when requested.
+	 * Buffered messages retain this operation until their normal flush.
+	 */
+	public boolean askWriteConsole(final IScope scope, final StringBuilder content, final IColor color,
+			final BufferingStrategies bufferingStrategy, final boolean clearConsole) {
 		IAgent owner = scope.getSimulation();
 		switch (bufferingStrategy) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
 				if (bufferingStrategy == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
-				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgent, content, color);
+				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgent, content, color, clearConsole);
 			case PER_CYCLE_BUFFERING:
-				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgentForCycles, content, color);
+				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgentForCycles, content, color,
+						clearConsole);
 			case NO_BUFFERING:
-				scope.getGui().getConsole().informConsole(content.toString(), scope.getRoot(), color);
+				scope.getGui().getConsole().informConsole(content.toString(), scope.getRoot(), color, clearConsole);
 				return true;
 			default:
 				IScope ownerScope = owner.getScope();
@@ -358,12 +374,13 @@ public class BufferingUtils {
 	 * @return true if the operation was successful, false otherwise
 	 */
 	protected static boolean appendWriteConsoleRequestToMap(final IAgent owner,
-			final Map<String, List<TextBuffer>> bufferingMap, final StringBuilder content, final IColor color) {
+			final Map<String, List<TextBuffer>> bufferingMap, final StringBuilder content, final IColor color,
+			final boolean clearConsole) {
 		boolean[] success = { true };
 		final String ownerReference = AgentReference.of(owner).toString();
 		bufferingMap.compute(ownerReference, (key, requests) -> {
 			if (requests == null) { requests = new ArrayList<>(); }
-			if (!requests.isEmpty()) {
+			if (!clearConsole && !requests.isEmpty()) {
 				TextBuffer last = requests.get(requests.size() - 1);
 				if (last.color == null && color == null || last.color != null && last.color.equals(color)) {
 					last.content.append(content);
@@ -371,7 +388,7 @@ public class BufferingUtils {
 				}
 			}
 			try {
-				requests.add(new TextBuffer(content, color, owner));
+				requests.add(new TextBuffer(content, color, owner, clearConsole));
 			} catch (Exception ex) {
 				GAMA.reportError(owner.getScope(), GamaRuntimeException.create(ex, owner.getScope()), false);
 				success[0] = false;
@@ -464,7 +481,8 @@ public class BufferingUtils {
 			if (currentOwner == null) return null;
 			var scope = currentOwner.getScope();
 			for (var task : tasks) {
-				scope.getGui().getConsole().informConsole(task.content.toString(), scope.getRoot(), task.color);
+				scope.getGui().getConsole().informConsole(task.content.toString(), scope.getRoot(), task.color,
+						task.clearConsole);
 			}
 			return null;
 		});

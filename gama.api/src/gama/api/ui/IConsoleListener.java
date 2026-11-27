@@ -150,6 +150,15 @@ public interface IConsoleListener extends IConsoleSink {
 	void informConsole(String s, ITopLevelAgent root, IColor color);
 
 	/**
+	 * Delivers a message after optionally clearing the console. Implementations with asynchronous
+	 * delivery can override this to keep the clear and message ordered.
+	 */
+	default void informConsole(final String s, final ITopLevelAgent root, final IColor color, final boolean clear) {
+		if (clear) { eraseConsole(false); }
+		accept(ConsoleEvent.info(s, root, color));
+	}
+
+	/**
 	 * Displays an informational message in the console.
 	 * 
 	 * <p>This is a convenience method that calls {@link #informConsole(String, ITopLevelAgent, IColor)}

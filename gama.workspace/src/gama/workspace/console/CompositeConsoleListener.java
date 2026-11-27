@@ -57,6 +57,21 @@ public class CompositeConsoleListener implements IConsoleListener {
 	}
 
 	@Override
+	public void informConsole(final String s, final ITopLevelAgent root, final IColor color, final boolean clear) {
+		if (!clear) {
+			informConsole(s, root, color);
+			return;
+		}
+		for (IConsoleSink sink : sinks) {
+			if (sink instanceof IConsoleListener listener) {
+				listener.informConsole(s, root, color, true);
+			} else {
+				sink.accept(ConsoleEvent.info(s, root, color));
+			}
+		}
+	}
+
+	@Override
 	public void debugConsole(final int cycle, final String s, final ITopLevelAgent root, final IColor color) {
 		accept(ConsoleEvent.debug(cycle, s, root, color));
 	}
